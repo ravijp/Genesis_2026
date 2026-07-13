@@ -1,0 +1,44 @@
+# INDEX — machine-readable repo map
+
+> **Maintenance rule:** any commit that adds, moves, or removes a file MUST update this index in the same commit. One line per file: what it is + status.
+> Status legend: `[stable]` authored & reviewed · `[generating]` agent currently writing · `[skeleton]` structure awaiting content · `[source]` external input, do not edit.
+
+## Reading order for a fresh LLM session
+1. `CLAUDE.md` — session rules (uv env, bias containment, conventions)
+2. `INDEX.md` — this file
+3. `PLAN.md` — current phase, gates, decision log
+4. `00_sources/kickoff-notes.md` — competition facts (rubric, timeline, rules)
+5. Files of the current phase (see PLAN.md status)
+
+## Root
+- `README.md` — human-facing charter: mission, competition facts, repo map, status `[stable]`
+- `CLAUDE.md` — LLM session instructions for this project `[stable]`
+- `INDEX.md` — this map `[stable]`
+- `PLAN.md` — master plan: 5 phases with gates, operating model, decision log, risks, open questions `[stable]`
+- `pyproject.toml` / `uv.lock` / `.python-version` — uv-managed Python env (3.13; pytest + ruff in dev group) `[stable]`
+- `.gitignore` — standard Python template (covers `.venv`) `[source]`
+
+## 00_sources/ — primary inputs
+- `2026 Zenon Agentic AI Competition Kickoff.pdf` — official GC kickoff deck, 9 pages, June 2026 `[source]`
+- `kickoff-notes.md` — distilled competition facts: tracks, 12-week timeline, deliverables, rules, judging rubric, committee `[stable]`
+- `zenon-client-context.md` — client roster with evidence, engagement signals, domain mapping, open identity questions `[stable]`
+- `zenon-linkedin-posts.md` — full extraction of Zenon's LinkedIn posts (vision-transcribed from 20 screenshots) + analysis: PE-portfolio positioning, clients, agentic themes `[stable]`
+
+## 01_research/ — July-2026 research briefs (agent fleet output)
+- `agentic-ai-landscape.md` — models, agent stacks, MCP/A2A, orchestration, evals/observability, enterprise platforms, security; commodity-vs-cutting-edge verdicts `[landed 2026-07-14, unreviewed]`
+- `startup-landscape.md` — ~$2.5B YTD agentic funding, YC RFS themes, 30-row funding table, white space (HOA bank-side ops, compliance-aware collections, loyalty ops, payroll exceptions), graveyard, 15 seeds `[landed 2026-07-14, unreviewed]`
+- `lessons-from-prior-work.md` — forensic scrutiny of igupta branch (verdict B−, bimodal): root causes, salvage list, do/don't rules, idea autopsy, fact-check audit `[landed 2026-07-14, unreviewed]`
+- `retail-agentic-commerce.md` — salvaged sub-brief: ACP/AP2/UCP protocols, Instant Checkout reversal, Amazon v. Perplexity, agent-readiness playbook, traffic/margin numbers `[partial — retailer-internal agents + Kohl's still open]`
+- `finance.md` — TOP-PRIORITY industry brief `[in-flight — agent not yet reported]`
+- `pharma.md` — clinical ops, PV, regulatory, MLR `[in-flight — agent not yet reported]`
+- `media.md` — Dow Jones, licensing economics, B2B-data agents `[in-flight — agent synthesizing; child briefs on Bloomberg/S&P/Moody's/LSEG/FactSet/newsrooms completed]`
+
+## 02_ideas/ — ideation machinery
+- `METHOD.md` — evidence → 50+ ideas pipeline: pattern×value-chain matrix, multi-agent divergence, anti-slop gate, sizing model, synthetic-data playbook, anchoring rules `[stable]`
+- `RUBRIC.md` — scoring aligned to official judging weights + hard gates + degrees of freedom `[stable]`
+- `backlog.md` — the idea backlog; seeded from research briefs, grows during Phase 2 `[skeleton]`
+
+## Later phases (created when opened)
+- `03_selection/` — scoring runs, top-10 diligence, top-3 memo
+- `04_architecture/` — competition build design
+- `05_build/` — MVP source
