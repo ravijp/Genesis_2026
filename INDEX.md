@@ -47,7 +47,7 @@
 
 - `METHOD.md` — evidence → 50+ ideas pipeline: pattern×value-chain matrix, multi-agent divergence, anti-slop gate, sizing model, synthetic-data playbook, anchoring rules `[stable]`
 - `RUBRIC.md` — scoring aligned to official judging weights + hard gates + degrees of freedom `[stable]`
-- `backlog.md` — the idea backlog: 85 research seeds (71 + 14 audit-recovered, S-072..S-085 not yet clustered) + Round-1 divergence list (46 clusters R-001..R-046, gated, NOT locked — awaiting human additions) `[landed 2026-07-14, review pending]`
+- `backlog.md` — the idea backlog: 85 research seeds (all clustered as of 2026-07-14) + Round-1 divergence list (56 clusters R-001..R-056, gated, NOT locked — awaiting human additions; freshness F-tags rolling out) `[landed 2026-07-14, review pending]`
 - `round1-raw-agent-outputs.md` — verbatim outputs of the 3 ideation agents + session contributor, provenance for the Round-1 clusters `[stable]`
 
 ## Later phases (created when opened)
