@@ -1,0 +1,214 @@
+# North-Star Concepts (Stage 1b)
+
+**Provenance:** authored 2026-07-14 by the main Claude session (Fable) per Ravi's directive — "north-star ideas which are new and can change the problem space… CTO-level depth." Non-independent (author had full evidence-base exposure); adversarial red-team pass by 2 sonnet agents follows (verdicts folded in below when done). Every claim traces to `01_research/` or `00_sources/`; no new research was performed. Format per `METHOD.md` Stage 1b. Pointer entries live in `backlog.md` (N-tier); scoring per RUBRIC — full frame for A1/A4, competition slice for G2/A3.
+
+**The organizing thesis behind the set:** our evidence says the 2024-25 wave (doer-agents for single workflows) is already crowded and funded — Salient, Fazeshift, NavaX, Falcon MLR, Medable are shipped realities. The 2026-27 white space our briefs actually document is **the accountability, trust, and deployment infrastructure the agent economy now requires**: who supervises agents, who attributes their actions, who certifies them, how autonomy is *earned* rather than asserted, and how enterprises deploy them without multi-year integration projects. Six of seven concepts sit on that thesis; each still demos as a concrete client workflow, not abstract infrastructure.
+
+---
+
+## N-001 — The Decision Assurance Stack (agent supervision for regulated finance)
+
+**The reframe.** Banks will not be limited by how many agents they can build — they'll be limited by how many they can *defend to an examiner*. Today every agent (vendor or in-house) ships its own logs in its own shape, and no system can answer the regulator's actual question: "show me every decision this system took on a vulnerable customer, prove it followed policy, and show me the ones it got wrong." The product is the supervision layer: record → replay → conformance-check → attribute → escalate, for *any* agent the bank runs. Whoever owns the decision-evidence layer owns the deployment bottleneck — every doer-agent, including competitors', becomes demand for this product.
+
+**Why now (dated).** FCA Mills Review published 2026-07-06 recommending both "enable foundations for agentic finance" and an "AI-enabled supervisory model" (finance.md §3); Barclays sits inside FCA AI Live Testing cohort 2, Apr–Dec 2026; Fed/OCC/FDIC revised MRM guidance (2026-04-17) *explicitly excludes* agentic AI from scope — banks must self-govern in a vacuum; EU AI Act Art-50 disclosure binds 2026-08-02; Klarna's public reversal is the canonical quality-drift precedent; 88% of orgs reported agent security incidents (landscape §7). Regulators are building AI supervision; banks have nothing symmetrical.
+
+**Architecture (CTO register).**
+
+- *Decision ledger:* append-only, hash-chained event store capturing every agent action as OTel GenAI spans enriched with domain events — decision, evidence cited, policy version, model version, HITL state. Framework-agnostic ingestion (the audited agent can be LangGraph, Agentforce, or a black box emitting traces) — that neutrality is the moat vs. platform-native observability.
+- *Two-layer conformance engine:* deterministic policies-as-code (Cedar-style) for hard constraints — Reg-F 7-in-7 contact counting, Consumer Duty vulnerable-customer triggers, delegation-of-authority limits — and a calibrated LLM judge panel (different model family than the audited agent, per landscape E55) for soft constraints: tone, fair-value reasoning, escalation adequacy. Judge–human agreement stats are a first-class published metric, not internal telemetry.
+- *Replay engine:* reconstructs any past decision under the same inputs and policy version; supports counterfactuals ("should case #17 have escalated?") — the examiner-conversation killer feature.
+- *Quality tripwires (the anti-Klarna loop):* per-segment metrics (nuanced-case resolution, complaint rate, re-contact) with automatic scope-reduction recommendations when quality drifts — subsumes R-047.
+- *Autonomy gradient of the stack itself:* read-only observer → flagging → pre-action blocking gate (tool-call interception at the MCP gateway, the AgentCore Gateway/Policy pattern). Blocking mode runs deterministic checks first to hold a <500ms budget; LLM judgment is async/batch (Haiku/Sonnet-tier — cheap).
+- *Outputs:* per-account audit packets, monthly conformance reports, violation exception queues — examiner-ready artifacts of record.
+- *Threat model:* audited agents gaming the judge → randomized sampling + hidden holdout policies; log tampering → hash chain; prompt injection via case content → judges see structured extracts, not raw text.
+- *Evals:* seeded-violation corpus (planted Reg-F breach, missed vulnerability signal, tone violation); precision/recall on violation detection; judge-calibration agreement published.
+
+**Why a platform template can't do it.** Agentforce Command Center / LangSmith / AgentCore Observability watch *their own* stack's health (latency, tokens, traces). None encode *financial-conduct semantics* — Consumer Duty fair-value tests, Reg-F counting rules, UDAAP patterns, examiner-pack formats. The domain layer is codified regulatory logic, and it is exactly what a free template cannot replicate (METHOD principle 4).
+
+**Applicability matrix.** Anchor: **Barclays** (collections + live FCA testing posture). Transfers: Lendmark (Reg-F), WAB/Huntington (any agent rollout), Capital One/Amex (UDAAP, servicing agents), ampliFI (loyalty ops agents), Morgan Stanley (suitability supervision — subsumes R-028's intent). Segment: every FCA/OCC-regulated institution deploying agents — and every >$30B US bank left to self-govern by the MRM carve-out.
+
+**Freshness:** F1. Closest shipped: LLM-observability vendors (LangSmith, Braintrust — dev-tool-shaped, no conduct semantics); Salient's UDAAP monitoring (a feature of its own collector, not an independent layer over heterogeneous agents).
+
+**Competition slice (≤6 wk).** "Supervise a collections agent month": a synthetic AI-collector's 200-case month with 6 planted defects (3 Reg-F violations, 2 missed vulnerability escalations, 1 tone breach). The stack ingests traces, catches the plants, produces the examiner pack; live moment — judge picks any case, gets full replay + counterfactual in seconds; finale — blocking-gate mode intercepts a violating contact attempt in real time. Sizing: agents M (auditor + judge panel) · tools S (ledger, policy engine, packet generator) · UI M (single supervision dashboard) · data S (one corpus: case transcripts with embedded policy pack) · evals S (seeded golden set) → 2M, fits.
+Subsumes/elevates: R-002, R-018, R-021, R-028, R-030, R-047; complements any doer-agent build as its governance layer.
+
+**Pre-mortem.** Reads as "a compliance dashboard" if the demo leads with reports — must lead with the live blocking-gate and replay moments. Second risk: judges see it as a feature of a collections build rather than a product — counter by auditing a *black-box* agent in the demo, not our own.
+
+---
+
+## N-002 — The Mandate Fabric (accountability for agent-initiated commerce)
+
+**The reframe.** The networks built rails for agents to *pay* (Agentic Tokens, AP2 mandates, TAP identity, x402) but nobody built the layer for when agents *err*. The entire dispute stack — reason codes, evidence rules, representment, liability — assumes a human cardholder made a choice. In agent-initiated commerce the operative question becomes "what exactly was authorized, by whom, under which mandate, and did the agent exceed it?" — a cryptographic-plus-reasoning problem no chargeback vendor is built for. The product is mandate-chain accountability: forensics, liability attribution, settlement integrity, and pre-go-live conformance, as one fabric across protocols.
+
+**Why now (dated).** Visa Trusted Agent Protocol 2025-10-14; Mastercard Agent Pay first live transaction Apr 2026, Agent Pay for Machines Jun 2026; **Amex ACE agent-error purchase protection Apr 2026 — the first issuer product monetizing exactly this gap, proof of willingness to pay**; x402 at 165M+ agent transactions; "as of 2026, no jurisdiction has enacted regulation specifically addressing autonomous AI purchasing" (finance.md §2e); protocol fragmentation is permanent (OpenAI retreated from in-chat checkout Mar 2026 while Google expands — retail-agentic-commerce.md §4); 261M disputes/$33.8B (2025) is the cost backdrop.
+
+**Architecture (CTO register).**
+
+- *Canonical authorization graph:* parsers for heterogeneous consent artifacts — AP2 signed Intent→Cart→Payment mandate chains, Mastercard Agentic Tokens (card+agent+merchant+consent binding), ACP handoffs, TAP attestations — normalized into one graph model. Deterministic signature/scope verification happens *outside* the model; LLM reasoning is reserved for genuine ambiguity (was "running shoes under $100" satisfied by a $99.99 + $12 shipping purchase?).
+- *Attribution reasoner (P6 coordinator):* evidence-gatherer sub-agents per party record system (issuer, network, merchant, agent platform) → ruling with the mandate chain as proof, into four liability buckets: consumer-authorized / agent-within-mandate / agent-exceeded-mandate (protection program pays — the ACE case) / fraud (classic chargeback).
+- *Settlement-integrity verifier (P4, continuous):* reconciles agent-initiated tokens vs. ledger settlement vs. loyalty accrual; flags orphaned mandates, duplicate agent purchases, accrual leakage — subsumes R-024.
+- *Onboarding conformance (pre-transaction):* validates a merchant/issuer integration before go-live — consent-binding fields, token scopes, cross-protocol policy mismatches — subsumes R-048.
+- *Autonomy:* rulings drafted autonomously; release gated below a confidence threshold to a human adjudicator; thresholds are eval-tuned, not vibes-tuned.
+- *Threat model:* forged party logs → signatures verified deterministically; prompt injection via dispute narratives → strict schema extraction before any reasoning.
+- *Evals:* seeded corpus of ambiguous authorization scenarios (scope edge cases, human-then-agent cart modification, replayed mandates); ruling accuracy vs. ground truth; cost-per-ruling target <$1 vs. $9-10 issuer processing per dispute (finance.md §2e).
+
+**Why a platform template can't do it.** Requires encoding four live protocol specs plus network dispute rules (reason codes, fee ladders, representment timelines) plus liability logic that exists nowhere yet — three moats deep, none of them available as a template.
+
+**Applicability matrix.** Anchor: **Visa** (TAP/ICC surface). Transfers: Mastercard, Amex (ACE's underwriting *needs* this adjudication), Capital One (issuer disputes ops), ampliFI (loyalty accrual leg), Kohl's (merchant side). Segment: every issuer, network, and PSP touching agent-initiated payments.
+
+**Freshness:** F1. Closest shipped: Chargebacks911/Chargeflow (rules-based, pre-agentic, human-cardholder assumptions); Amex ACE (protection product, not resolution tooling); Visa TAP (identity rail, not adjudication).
+
+**Competition slice (≤6 wk).** Dispute-attribution ruling engine over synthetic Agent Pay/AP2 mandate logs: 50 disputed agent transactions, 10 seeded ambiguous. Demo: judge picks a dispute → agent reconstructs the mandate chain live, renders a ruling with cryptographic citations; one case visibly escalates to the human adjudicator because the chain is genuinely broken (the honesty moment). Sizing: agents M (evidence gatherers + reasoner) · tools S (mandate parser, ledger query, ruling generator) · UI M (case view with chain visualization) · data S (one corpus: synthetic mandate/transaction logs) · evals S → 2M, fits.
+Subsumes/elevates: R-012, R-024, R-048; adjacent to R-034.
+
+**Pre-mortem.** Judges unfamiliar with the protocols need a 2-minute setup — open with the Amex-ACE question ("when the agent buys the wrong thing, who pays?"), not the protocol alphabet. Volume risk: live agent-transactions are still "hundreds" at Visa — frame as the infrastructure the networks' own 2026 holiday-scale prediction requires.
+
+---
+
+## N-003 — Loyalty as a Financial System (trust architecture for the agent economy)
+
+**The reframe.** Loyalty programs hold billions in points liability and increasingly settle real money, yet are "secured like marketing databases, not financial systems" (finance.md §2g) — while agent-mediated commerce simultaneously (a) floods them with non-human traffic, (b) turns every offer into a machine-exploitable contract, and (c) threatens to disintermediate them entirely. The reframe: run loyalty operations with financial-system controls — interaction authenticity, offer-exploitability underwriting, ledger-grade points reconciliation, and agent-aware adjudication — as one trust architecture rather than four point tools.
+
+**Why now (dated).** Agentic-browser traffic +7,851% YoY, >95% of it hitting retail/streaming/travel (HUMAN Security 2026 primary); Eagle Eye: "loyalty programs aren't ready for AI agents" (2026); no pure-play loyalty-ops agent winner exists (startup-landscape §2l — named open white space); PYMNTS: "the most consequential customer a brand acquires in 2026 may be an AI agent"; ampliFI confirmed greenfield (no AI initiative, pass-2 verified); Stabile (Nov 2025) covers the *consumer* side only.
+
+**Architecture (CTO register).**
+
+- One event stream, four coordinated services:
+- *Authenticity scorer (P5):* per-interaction classification — human / legitimate delegated agent / abusive automation — fusing velocity features, mandate presence (ties into TAP/AP2 identity, and into N-002's graph), and behavioral-sequence reasoning. Two-tier cost design: small-model streaming first-pass under a sub-second budget, LLM escalation only for ambiguity — the cost/latency engineering story judges reward (landscape §8).
+- *Offer red-teamer (P3/P4):* pre-launch adversarial simulation where an attacker-agent fleet *literally attempts to exploit* a draft promotion in a sandbox — repeat-claim farming, account-ring stacking, transfer chains, agent-swarm redemption — returning an exploitability score and concrete fixes. Offers become underwritten products, not marketing copy.
+- *Points-liability reconciler (P4/P8):* issuer↔processor ledger audit; accrual/redemption/breakage anomalies; monthly liability report — financial controls applied to a system that never had them (subsumes R-029).
+- *Adjudicator (P6):* sub-second offer decisions distinguishing human members from agent-mediated buyers, logic exposed in an adjudication log (subsumes R-026).
+- *HITL rule:* the system never auto-suspends a member — it proposes with an evidence file (the McClatchy/Klarna lesson applied to loyalty).
+- *Evals:* seeded fraud rings and seeded exploit paths in synthetic program data; catch-rate/false-positive dashboards; red-team coverage measured against hand-designed exploits.
+
+**Why a platform template can't do it.** The domain layer is loyalty economics itself — accrual rules, tier math, breakage accounting, card-linked-offer flows, issuer-processor reconciliation formats. Sierra/Decagon-class CX platforms have none of it; fraud vendors (Riskified et al.) don't model offer economics or points ledgers.
+
+**Applicability matrix.** Anchor: **ampliFI** (direct product-line extension sold through to its FI clients). Transfers: Amex/Capital One (proprietary rewards), Kohl's (retail loyalty + card-linked offers), Visa/Mastercard (network offer platforms). Segment: any FI or retail loyalty operator — programs are universal, protections are nonexistent.
+
+**Freshness:** F1 on the integrated architecture; components F1/F2 (closest: Eagle Eye names the gap without an agent-native product; Stabile is consumer-side; card-fraud vendors lack offer/points semantics).
+
+**Competition slice (≤6 wk).** Red-teamer + authenticity scorer on a synthetic program: (1) a draft promotion is red-teamed live — the attacker fleet finds a stacking exploit the human designer missed, returns the fixed offer design with an exploitability score; (2) the scorer flags an agentic-redemption ring in the live stream and explains the giveaway pattern. Two demo moments, one dataset. Sizing: agents M (attacker fleet + scorer + case-builder) · tools S · UI M (program dashboard) · data S (one synthetic program: members, transactions, offers) · evals S → 2M, fits.
+Subsumes/elevates: R-015, R-016, R-017, R-026, R-027, R-029; retail leg of R-034.
+
+**Pre-mortem.** "Forward-looking threat, where's today's P&L?" — counter by pairing the futures (agent traffic) with a bleeding today-cost (rewards fraud rings, promo abuse) in the same demo; impact framing leads with fraud-loss avoidance per finance.md's own advice.
+
+---
+
+## N-004 — The Exception-Operations Platform (autonomy that is earned, not asserted)
+
+**The reframe.** HOA lockbox exceptions, payroll garnishments, AML alert dispositions, dispute intake, cash-application breaks — the market treats these as five products (Vantaca, Niural, Bretton, Chargeflow, HighRadius). They are one problem shape: **high-volume regulated queues where 80-95% of cases are mechanical and the tail needs judgment under policy**. The platform insight: the durable IP isn't any single case-worker agent — it's the **autonomy-graduation machinery**: every queue starts fully supervised, and autonomy is *promoted per case-class only by accumulated eval evidence*, with automatic demotion on drift. Autonomy becomes a measured, auditable property of the system, not a vendor claim.
+
+**Why now (dated).** Menlo: only ~16% of enterprise "agent" deployments are true agents — trust, not capability, is the constraint; every funded player is a single-queue silo (Salient collections, Fazeshift AR, Vantaca HOA-management-side, Warp/Niural payroll) leaving the cross-queue platform unclaimed; "autonomous QC gate, human at exceptions only" is flagged in pharma.md §4 as aspiration-not-proven — a working demonstration stands out; Sonnet-5-class pricing (intro $2/$10) makes per-exception economics work; a16z/Bessemer outcome-pricing thesis ("$ per exception resolved") is the commercial wrapper.
+
+**Architecture (CTO register).**
+
+- *Queue abstraction:* an exception = {case facts, policy pack, authority matrix, artifact spec}. Domain adapters (remittance semantics, garnishment priority-stacking, alert dispositions) are configuration + domain tools on a shared spine — not new platforms.
+- *Case-worker loop (P1):* intake/extraction → hypothesis → tool-verified evidence-gathering → action proposal → **deterministic policy check** → HITL gate per current autonomy tier → artifact of record.
+- *Autonomy-graduation controller (the core IP — deliberately deterministic code, not an agent):* per-queue, per-case-class trust ledger tracking measured accuracy against sampled human review; tiers (observe → propose → act-with-review → act-with-sampling) move **only** on statistical eval evidence, with automatic demotion on drift. The anti-Klarna control loop, productized (P7).
+- *Shared compliance spine:* audit ledger, policies-as-code, delegation-of-authority checks (R-030 generalized), examiner packs — architecturally the same components as N-001, which is the portfolio coherence story.
+- *Evals:* per-queue golden sets with seeded edge cases; **pass^k reliability per case class** (the 2026 benchmark vocabulary — landscape §5); cost/latency per exception on the dashboard; the eval harness literally *is* the product's control surface.
+
+**Why a platform template can't do it.** Copilot Studio gives you a workflow builder; it does not give you HOA bylaw/lien-threshold semantics, garnishment priority stacking across jurisdictions, or a statistically-governed autonomy ladder with demotion rules. Domain policy packs + graduation machinery are the moats.
+
+**Applicability matrix.** Anchor: **Western Alliance** (HOA lockbox/delinquency — the bank-side white space; $124.2B annual assessments, no bank advertises AI in the chain). Transfers: ADP (payroll exceptions/garnishments), Visa/Capital One (dispute intake), Invesco/Morgan Stanley (cash application), Huntington (SMB onboarding docs). Segment: mid-market FI back offices — the PE-portfolio sweet spot Zenon sells into.
+
+**Freshness:** F2 on any single queue (categories proven by the silos); **F1 on the graduation platform** — no named player ships evidence-gated autonomy tiers as the product.
+
+**Competition slice (≤6 wk).** HOA lockbox cash-application with visible autonomy graduation: 500 synthetic remittances stream through; the demo *opens* in fully-supervised mode, the eval dashboard accumulates accuracy live, and mid-demo the controller **promotes** the routine match-class to act-with-sampling — while ambiguous split-payments visibly stay gated — then a planted drift event triggers an automatic demotion. Autonomy earned, then revoked, on stage. No other team will show that. Sizing: agents S (one case-worker; the controller is deterministic code) · tools S (remittance parser, ledger, packet generator) · UI M (queue + trust dashboard) · data S (one linked corpus: remittances + assessment ledger + bylaws pack) · evals M (golden set + auto-scoring — evals are the product) → 2M, fits.
+Subsumes/elevates: R-004 (slice), R-005, R-008, R-023, R-030; pattern-general over R-022's parked space.
+
+**Pre-mortem.** Platform ambition reads as over-scope — the demo must be ONE queue with the platform as the path-to-production story, not a five-queue tour. "HOA is niche" — counter with the $124B sizing plus the same spine's payroll/disputes applicability said in one sentence.
+
+---
+
+## N-005 — Zero-Integration Autonomy (governed computer-use over legacy operations)
+
+**The reframe.** The binding constraint on mid-market agentic deployment is not model capability — it's integration: core-banking and servicing systems with no APIs, nine-system sprawl, 12-18-month data projects. Computer-use models now exceed the human ceiling on desktop benchmarks (OSWorld: agents low-80s vs. human ~72 — landscape §1). That inverts the deployment equation: the agent operates the *existing screens* under a governed harness, delivering autonomy in weeks while the data foundation is still being fixed. The product is not "RPA with AI" — it's a **governed computer-use worker**: least-privilege session isolation, allowed-screen manifests, a screenshot-hashed visual audit ledger, compiled-SOP execution, and drift recovery.
+
+**Why now (dated).** Anthropic models hold top OSWorld spots (Opus 4.7 at 82.3%); computer use is first-class across all three frontier vendors with route-by-workload as best practice (landscape §1); Zenon's public thesis is "fix the data foundation first, 4-8-week engagements" (zenon-client-context) — this is the complementary wedge that delivers operating value *during* foundation work; the mid-market PE portfolio is precisely the no-API estate; prompt injection is OWASP's #1 unsolved risk (landscape §7), which makes a *structurally defended* screen-agent a differentiator rather than a liability.
+
+**Architecture (CTO register).**
+
+- *Session harness:* one isolated microVM per session; least-privilege credentials; an **allowed-screen manifest** (the agent may only interact with enumerated screens/fields — authorization enforced outside the model, per landscape §7 principle 5).
+- *Visual audit ledger:* every action recorded as {screenshot-before, action, screenshot-after, content-hash} — a tamper-evident, human-reviewable trail that makes screen-driven work *more* auditable than most API automation.
+- *Task compiler:* SOP documents → verified action graphs. Production runs execute compiled plans; free-form exploration exists only in supervised recording mode used to *learn* a SOP. This bounds the blast radius that kills naive computer-use demos.
+- *Verifier (separate model):* checks post-state against expected state (did the payment post? does the ledger reflect it?) before any commit step; irreversible actions HITL-gated by tier (graduation logic shared with N-004).
+- *Drift detection:* UI layout changed → halt, re-verify plan against the manifest, recover or escalate. This is the exact failure mode that killed selector-based RPA; vision + reasoning solves it and the demo should prove it.
+- *Injection defense:* screen content is data, never instructions — content-source tagging plus the action allow-list means a memo field reading "transfer all funds" is inert. Say this out loud in the demo; it addresses the #1 enterprise objection structurally.
+- *Cost/latency:* computer use is token-heavy — route perception to a vision model, plan-following to a small model; batch windows for queue work; publish cost-per-task.
+- *Evals:* task-completion pass^k on the synthetic legacy app; actions-per-task efficiency; **drift-injection tests** (mutate the UI mid-eval, measure recovery rate).
+
+**Why a platform template can't do it.** Microsoft Computer Use / Nova Act / Operator are generic automation primitives. The product is the governance harness (manifests, visual ledger, compiled SOPs, drift recovery) plus banking-operations SOP semantics — neither ships in any template. Note for carding: UiPath-class "agentic automation" marketing exists — verify what they actually ship before the pitch (T7 item).
+
+**Applicability matrix.** Anchor: **Lendmark** (servicing productionization engagement; low API maturity; anchor is the *demo* stage — the buyer story generalizes past its willingness-to-pay discount). Transfers: WAB (HOA/branch ops), Huntington (SMB servicing), ADP (client-side payroll systems), Kohl's (store back-office). Segment: every PE-portfolio mid-market company with a legacy estate — arguably the most Zenon-shaped concept in this file.
+
+**Freshness:** F2 — computer-use capability is commodity; the governed harness for regulated ops is the open wedge (closest: RPA incumbents with agentic branding; generic vendor computer-use tools).
+
+**Competition slice (≤6 wk).** A synthetic green-screen servicing terminal (we build the fake legacy app — that's the data plan). The agent works a payment-reversal exception end-to-end; mid-demo a **planted UI-layout change** hits → the agent detects drift, halts, re-verifies, recovers; a planted injection string in a memo field is visibly ignored; the judge then audits the run via the screenshot-hashed ledger. Sizing: agents M (operator + verifier) · tools S · UI M (the synthetic legacy app + audit viewer) · data S (synthetic servicing accounts) · evals S (golden tasks + drift suite) → 2M, fits.
+Elevates: P8 pattern across R-008/R-023's manual-intake edges; new capability axis no R-cluster used.
+
+**Pre-mortem.** Live computer-use reliability on stage — mitigate with the scripted golden path + recorded fallback (PLAN.md demo doctrine) and rehearse the drift moment specifically. Judges may pattern-match "RPA 2.0" — the drift-recovery and injection-defense moments exist precisely to break that pattern.
+
+---
+
+## N-006 — The Agent Underwriting Bureau (certification and evidence for a market that can't verify claims)
+
+**The reframe.** Every vendor now claims "agentic AI"; Gartner counts ~130 genuine builders among thousands and predicts >40% of agentic projects canceled by 2027 (pharma.md §4); our own landscape brief documents SEO sites *fabricating benchmark scores wholesale* (§5 warning). Enterprises buying agents — or defending build-vs-buy to a board — have no ratings agency, no underwriting lab, no standardized evidence. The product: a harness that takes any agent (API, MCP, or UI via N-005 tech), runs domain-scenario batteries + adversarial probes + cost/latency profiling against seeded ground truth, and emits a **reproducible certification scorecard** — the artifact procurement, model-risk, and (soon) insurers all need. HAL-grade methodology (landscape §5), productized for buyers.
+
+**Why now (dated).** AIUC ($15M seed, Jun 2025; AIUC-1 certification + insurance; predicts a $500B agent-insurance market by 2030) proves demand but is insurance-first, not evaluation-deep; AWS AgentCore Evaluations (GA 2026-03-31) ships 13 evaluators as *components for your own pipeline*, not buyer-side judgments; the interagency MRM guidance (Apr 2026) pushes validation onto banks with no framework; the benchmark-fabrication epidemic is a trust vacuum with a date on it; Genesis's own AI judge institutionalizes exactly this scoring pattern.
+
+**Architecture (CTO register).**
+
+- *Scenario compiler:* domain pack (collections, KYC, disputes…) → parameterized synthetic scenario batteries with seeded ground truth; versioned and reproducible; every engagement grows the pack library (the compounding moat).
+- *Execution harness:* containerized target-agent adapters (OpenAI-compatible API / MCP / UI-driven); parallel battery runs; **pass^k reliability and per-step compounding-error decomposition** (the 0.9⁴≈66% argument made measurable); cost and latency per outcome.
+- *Adversarial battery:* prompt-injection probes (direct + indirect via documents), policy-violation lures, distribution-shift cases — the OWASP-shaped tests enterprises don't know how to run.
+- *Judge layer:* calibrated LLM-judge from a *different model family* than the target, with a human-calibration sample and agreement statistics **printed on the scorecard** — methodological honesty as a product feature.
+- *Deliverable:* standardized scorecard (task success, pass^k, policy adherence, injection resistance, cost, latency) + an evidence bundle (traces, seeds, replay script) the buyer can re-run to reproduce every number.
+- *Threat model:* target agents overfitting to known batteries → holdout scenarios + per-engagement parameterization.
+
+**Why a platform template can't do it.** Evaluation *components* are everywhere (AgentCore, LangSmith, Braintrust); buyer-side black-box certification with domain scenario packs, adversarial batteries, and reproducibility bundles exists nowhere. The domain packs are the unreplicable layer.
+
+**Applicability matrix.** Anchor: **Barclays** (vendor-vs-build diligence; FCA AI Live Testing demands exactly this evidence class). Transfers: WAB/Huntington (vendor quals), J&J (GxP vendor assessment against the FDA-EMA principles), Kohl's (retail agent vendors), and Zenon itself — every internal build ships with a Bureau scorecard (dogfooding that also feeds the AI judge). Segment: any regulated buyer of agents.
+
+**Freshness:** F2 (closest: AIUC — insurance + audit framing, thin published evaluation depth; AgentCore Evaluations — components, not certification).
+
+**Competition slice (≤6 wk).** Certify two black-box collections agents — we build one good and one subtly flawed. The harness runs the battery live; the scorecard exposes the flawed agent's policy violations and injection vulnerability with the compounding-error math shown; the judge is handed the evidence bundle and *re-runs a scenario themselves* to reproduce the number. Sizing: agents M (orchestrator + judges) · tools S · UI M (scorecard) · data M→S (one collections scenario pack) · evals — the build *is* the eval harness → 2M, fits.
+Subsumes/elevates: R-049 (S-085/S-080), S-061; methodologically feeds every other N-concept.
+
+**Pre-mortem.** Two named risks. (1) Track boundary: the kickoff lists "eval frameworks" under **Track C** — this must be framed as a *client-facing procurement/model-risk workflow* (persona: head of third-party risk; artifact: the certification report his committee signs) and confirmed with the GC before carding. (2) "Meta" risk — judges may want a business workflow, not tooling; the two-agent certify-off demo is the counter.
+
+---
+
+## N-007 — The Agent-Ready Enterprise (productizing a client's data + policy surface for agent consumers)
+
+**The reframe.** Every major financial-data firm spent 2025-26 turning proprietary data into governed agent surfaces — S&P/Kensho MCP, Moody's Agentic Solutions, FactSet's first production MCP server (450 clients engaged, 13x QoQ API growth), LSEG Everywhere (media-findings-digest). Mid-market enterprises have the same proprietary data and none of the machinery. The product: an **agent that builds the surface** — ingests a client's schema, docs, and policies, and drafts the governed MCP server + semantic skills + entitlement rules + usage metering + conformance evals; a red-team agent then attacks the entitlements before go-live. It converts Zenon's "fix the data foundation" consulting motion into a productized asset with a new monetizable surface at the end.
+
+**Why now (dated).** The agent-ready-data wave is the single strongest cross-cutting theme in our media research; MCP is the settled standard (Linux Foundation Dec 2025, ~97M monthly SDK downloads) so plumbing is commodity — *governance and semantics are the product*; Morgan Stanley opened stock-plan platforms to external agents Jun 2026 (first major Wall St bank — direction of travel for everyone's clients); YC's Summer-2026 RFS names "Software for Agents" as a category; Dow Jones R&C ships **no agentic product** on its screening data (confirmed absence) — the anchor crossover.
+
+**Architecture (CTO register).**
+
+- *Builder agent (P8):* schema/doc/policy ingestion → drafts the MCP server (tool definitions, typed responses), the **semantic skills layer** (what fields *mean*: screening-risk taxonomies, curve semantics, entitlement classes — the part generic codegen gets wrong), and policies-as-code (who may ask what; PII redaction; rate/spend caps per agent identity). Human review gates each generated layer.
+- *Entitlement-aware gateway:* per-agent identity, scoped tool grants, metered usage ledger (the monetization surface).
+- *Red-team agent (P3):* attacks the generated surface pre-go-live — scope escalation, entitlement bypass, injection-via-data — producing a findings report the builder must clear.
+- *Conformance evals:* golden Q&A per dataset with citation-grounding checks; every consumer answer must trace to entitled rows.
+- *Consumer proof:* a reference workflow agent consumes the surface to complete a real task end-to-end — the surface is proven by use, not asserted.
+
+**Why a platform template can't do it.** "We support MCP" is explicitly table stakes (landscape §3). The product is the semantic + entitlement layer and the agent-that-builds-it speed ("client data to governed agent surface in days"), neither of which any template ships.
+
+**Applicability matrix.** Anchor: **Dow Jones** (R&C screening data → a governed screening surface banks' agents can consume; pairs natively with R-010). Transfers: ampliFI (loyalty data to issuer agents), Kohl's (product data to shopping agents — subsumes R-035's remediation half), Invesco (fund data), any client with proprietary data. Segment: the entire Zenon PE-portfolio motion, productized.
+
+**Freshness:** F2 (playbook proven at data-giant scale; the mid-market productization with builder + red-team agents is open).
+
+**Competition slice (≤6 wk).** DJ-style synthetic risk dataset → builder agent generates the governed surface live → a bank-onboarding agent consumes it to screen a synthetic applicant with row-level citations → the red-team agent attempts an entitlement bypass on stage and is blocked, with the attempt in the usage ledger. Sizing: agents M (builder + consumer + red-team) · tools S · UI M (publisher console) · data S (one synthetic dataset + policy pack) · evals S → 2M, fits.
+Subsumes/elevates: S-059/R-035 (remediation half), D's data-productization one-liner; pairs with R-010.
+
+**Pre-mortem.** Highest risk in this file of reading as plumbing ("you built an MCP server") — the pitch must lead with the builder-agent speed and the blocked-attack moment, never the protocol. If the demo can't make governance *visceral* in 30 seconds, this concept belongs in the Zenon-asset track rather than the competition shortlist — flag honestly at scoring.
+
+---
+
+## Cross-cutting notes for scoring (T6)
+
+1. **Portfolio coherence:** N-001/N-004 share a compliance spine; N-002/N-003 share the mandate/identity graph; N-006 can certify whatever we build; N-005 is a deployment wedge for all of them. Whichever slice is chosen, the others become the path-to-production narrative — that is deliberate.
+2. **The originality posture** of the whole set: second-order agentic (govern/attribute/certify/graduate) rather than another doer-agent — directly counters the strongest staleness pattern found in Round-1 (F3 tier) and rides what the evidence says is 2026-27's actual wave.
+3. **Every slice was sized to ≤2 M axes** against METHOD's table; sizes are self-assessed and red-team-checked (B4), not measured — G2 re-check happens at carding.
+4. Red-team verdicts (2 sonnet agents: freshness/narrowness attack + feasibility/depth attack) to be folded in below each concept after the B4 pass.

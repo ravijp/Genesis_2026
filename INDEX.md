@@ -49,6 +49,7 @@
 - `RUBRIC.md` — scoring aligned to official judging weights + hard gates + degrees of freedom `[stable]`
 - `backlog.md` — the idea backlog: 85 research seeds (all clustered as of 2026-07-14) + Round-1 divergence list (56 clusters R-001..R-056, gated, NOT locked — awaiting human additions; freshness F-tags rolling out) `[landed 2026-07-14, review pending]`
 - `round1-raw-agent-outputs.md` — verbatim outputs of the 3 ideation agents + session contributor, provenance for the Round-1 clusters `[stable]`
+- `north-stars.md` — Stage-1b north-star concepts N-001..N-007: problem-space reframes at CTO depth with ≤6-wk competition slices (Ravi directive 2026-07-14); red-team verdicts pending `[generating]`
 
 ## Later phases (created when opened)
 
