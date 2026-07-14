@@ -18,7 +18,7 @@ Research/mechanical agents = **sonnet or haiku**, prompts must say "Do NOT spawn
 
 | ID | P | Task | Status |
 |---|---|---|---|
-| T1 | P0 | Finance brief → `01_research/finance.md` | REVIEW (landed 2026-07-14, ~340 lines, spot-checked; top nodes: Barclays collections w/ FCA Mills Review hook, WAB HOA bank-side white space) |
+| T1 | P0 | Finance brief → `01_research/finance.md` | REVIEW (pass 2 enrichment + fact-check 2026-07-14: Mills Review published 2026-07-06 w/ agentic-finance rec, Barclays in FCA AI Live Testing, HOA market sized ($124.2B), Salient/Kastle/InDebted verified, 3 pass-1 numbers withdrawn (₹ cost-to-collect = recycled vendor hypothetical, KYC $13-130 mis-transcribed, Zyphe 35-45% self-flagged unconfirmed). Open items listed in brief §"Open verification items" → feeds T7) |
 | T2 | P0 | Retail internal-ops brief → `01_research/retail-internal-ops.md` | REVIEW (landed 2026-07-14, 197 lines; standout seeds: markdown/inventory-exception agent, returns-fraud triage) |
 | T3 | P1 | Verify pharma.md completeness | DONE (2026-07-14 — 181 lines, ends with Sources + flagged-unverified section; complete) |
 | T4 | P1 | Haiku collation of research seeds into `02_ideas/backlog.md` | DONE (2026-07-14 — **71 seeds** S-001..S-071 across 7 briefs; haiku missed the landscape brief, patched manually. **Redux 2026-07-14:** 7-agent per-brief completeness audit recovered 14 more seeds → S-072..S-085, total **85**; new seeds flagged for clustering before Round-1 lock; no errata in existing seeds beyond the already-parked S-055 stretch) |

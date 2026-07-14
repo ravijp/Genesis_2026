@@ -32,7 +32,7 @@
 - `retail-internal-ops.md` — retailer-internal agent deployments (Sparky, Magic Apron, Mylow...), value-chain verdicts, Kohl's turnaround context, vendor map incl. returns-fraud white space `[landed 2026-07-14, review pending]`
 - `pharma.md` — clinical ops, PV, regulatory, MLR `[landed 2026-07-14 — verify completeness, agent died right after writing]`
 - `media-findings-digest.md` — preserved essentials from ~12 completed media child briefs: agent-ready-data/MCP wave (S&P, Moody's, LSEG, FactSet, Bloomberg), compliance-vendor map, DJ R&C white space, newsroom agents, rights-tech `[stable]`
-- `finance.md` — TOP-PRIORITY value-chain deep dive: collections (FCA/Consumer Duty), HOA bank-side ops, SMB virtual RM, disputes, wealth, loyalty; deployments table, ROI benchmarks, 2026 regulatory posture `[landed 2026-07-14, review pending]`
+- `finance.md` — TOP-PRIORITY value-chain deep dive: collections (Mills Review published, FCA AI Live Testing), HOA bank-side ops (sized, Vantaca context), SMB virtual RM, disputes (agent-attribution wedge), wealth, loyalty; fact-checked ROI table with withdrawn-claims log `[enriched pass 2 + citation fact-check 2026-07-14, human review pending]`
 
 ## Root (tracking)
 - `actions-items.md` — resume point: prioritized remaining research (P0 finance, P0 retail), token-discipline rules for agents, deferred items, open questions for Ravi `[stable]`
