@@ -67,7 +67,7 @@ domain · persona · autonomy level (copilot → supervised autonomy → full au
 
 ## Judge panel protocol
 
-3 independent opus judge agents, no shared context, distinct lenses:
+3 independent judge agents, no shared context, distinct lenses:
 
 1. **Client buyer** — "would I pay for a POC of this?"
 2. **CTO** — "is this technically impressive and shippable?"

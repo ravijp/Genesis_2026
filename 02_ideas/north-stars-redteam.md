@@ -1,6 +1,6 @@
 # North-Star Red-Team — Verbatim Verdicts + Adjudication (2026-07-14)
 
-Two sonnet agents, adversarial by instruction, evidence-base-only (no web), non-independent of the evidence base but independent of the author. Agent E = freshness/narrowness attack; Agent F = feasibility/depth/demo attack. Full verdicts below, then the session's adjudication (what was accepted into `north-stars.md`, what was rejected and why).
+Two adversarial agents, adversarial by instruction, evidence-base-only (no web), non-independent of the evidence base but independent of the author. Agent E = freshness/narrowness attack; Agent F = feasibility/depth/demo attack. Full verdicts below, then the session's adjudication (what was accepted into `north-stars.md`, what was rejected and why).
 
 ## Adjudication summary (read this first)
 

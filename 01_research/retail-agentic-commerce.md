@@ -1,6 +1,6 @@
 # Retail — The Agentic Commerce Wave (as of 2026-07-14)
 
-> **Provenance note:** The full retail research track failed mid-run (session limit). This file preserves the completed sub-brief on agentic commerce protocols and the threat/opportunity for retailers — salvaged verbatim from the completed research sub-agent. The follow-up pass (retailer-internal deployments, merchandising/pricing/markdown agents, Kohl's situation, vendor map) **landed 2026-07-14 as `retail-internal-ops.md`** (T2).
+> **Scope note:** This brief covers agentic-commerce protocols (ACP/AP2/UCP) and the retailer threat/opportunity picture. Retailer-internal deployments, merchandising/pricing agents, the Kohl's situation, and the vendor map live in the companion brief, `retail-internal-ops.md`.
 
 ## 1. ChatGPT Shopping / Instant Checkout + Agentic Commerce Protocol (ACP)
 

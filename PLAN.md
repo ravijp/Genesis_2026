@@ -11,7 +11,7 @@ The kickoff deck's 12-week calendar: validation ended Jul 6 · Demo 1 Jul 20 · 
 ### P1 — Research (opened 2026-07-14, in flight)
 
 Seven parallel tracks, July-2026 currency, all in `01_research/`:
-agentic-AI landscape (opus) · finance = top priority (opus) · pharma (sonnet) · media (sonnet) · retail (sonnet) · startup/funding landscape (opus) · lessons-from-prior-work scrutiny (opus).
+agentic-AI landscape · finance (top priority) · pharma · media · retail · startup/funding landscape · lessons-from-prior-work scrutiny.
 **Gate:** all briefs landed, spot-checked, INDEX updated; digest of cross-cutting themes; every brief ends in candidate use-case seeds.
 
 ### P2 — Ideation (next)
@@ -49,6 +49,11 @@ Eval-first build in sprints aligned to competition checkpoints. Demo script incl
 - **2026-07-14** — Python env: uv-managed (3.13), pytest + ruff dev group.
 - **2026-07-14 (Ravi)** — Official checkpoint dates expected to postpone; **idea-freeze starts the build clock**. Plan against build-weeks-from-freeze, not calendar dates.
 - **2026-07-14 (Ravi, review session)** — Ideation corrections adopted: (a) ideas are **problem-space products**, clients are the lens — one-liners carry an applicability line (anchor + ≥2 transfers), single-client-only caps A1 at 3; (b) **freshness gate** added as METHOD Test 11 (F1/F2/F3 vs named closest incumbent) — 10 already-shipped-at-scale clusters parked with rework notes; (c) **north-star tier (Stage 1b)** added — 7 CTO-depth problem-space concepts authored (`02_ideas/north-stars.md`), adversarially red-teamed same day (N-007 parked, N-006 conditional on GC track ruling). Organizing thesis: second-order agentic (govern/attribute/certify/graduate agents) is the 2026-27 white space our evidence supports.
+- **2026-07-15 (Ravi)** — **Finance-first scope:** T6 scoring proceeds on the finance clusters + finance-anchored N-tier only; Retail/Pharma/Media clusters deferred (retained, revivable), not killed.
+- **2026-07-15** — **Team review pass folded:** Ishant/Namit reviewed backlog copies offline; comments captured as dated neutral notes on 15 finance clusters; 4 new verification items added to weakest-claims (fed to T7). ELI5 plain-language lines added to all active clusters + north stars. **Round-1 lock NOT declared** — Ravi decides after reading the 2026-07-15 findings digest; igupta quarantine remains in force.
+- **2026-07-15** — **Selection methodology adopted** (evidence-backed protocol, researched 2026-07-15): independent judge contexts (no score visibility between judges), rubric-anchored integer scoring with mandatory per-score citations, presentation-order randomization, **minority-veto on kill signals** (one credible objection forces rework — never averaged away), premortem before kill-pass, retrieval-grounded idea generation. Applies to this session's north-star work and to T6.
+- **2026-07-15 (Ravi)** — **Model policy for make-or-break work:** fable-class agents for the far-sighted/judging-critical tasks (idea generation contrast, competition judging, contrarian kill-pass); opus for deep scrutiny; sonnet for scoped research/extraction. North-star tier being re-thought toward ~10 concepts with honest confidence tiers.
+- **2026-07-15 (Ravi)** — **Ideation stance: startup-grade, two-stage.** (a) Lenses upgraded from corporate CTO-depth to **founder-CEO** (startup-scale dreaming, category creation) + **founding chief architect** (the engineer who takes an idea to a funded MVP in 6 months); judge panel personas follow (CEO · chief architect · AI-engineering judge). (b) **Vision/grounding decoupled to avoid competition bias:** open-thinking generation runs unbounded by competition constraints (no 6-week/synthetic-data/rubric self-censoring), then a separate grounding pass narrows each vision to a competition MVP slice. North stars carry BOTH layers — full-potential arc + ≤6-wk slice — so the entry reads as chapter one of something big.
 
 ## Risks
 

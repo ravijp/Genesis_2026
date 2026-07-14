@@ -37,4 +37,4 @@ Managed with uv: `uv sync`, then `uv run python <script>`. Conventions in [CLAUD
 
 ## Status (2026-07-14)
 
-Phase 1 (Research) in flight: 6-track research fleet + prior-work scrutiny landing in `01_research/`. Next: Phase 2 ideation sprint to 50+ ideas.
+**Status (2026-07-15):** Phase 2 (Ideation) in flight — research briefs landed in `01_research/`; Round-1 clusters + north-star tier gated in `02_ideas/` (finance-first scope), lock pending. Next: north-star v2 + T6 scoring round.

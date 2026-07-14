@@ -41,7 +41,7 @@ Evidence base  →   Divergence 50+   →   Anti-slop gate  →  Idea cards top~
 
 ## Stage 1b — North-star concepts (added 2026-07-14 per Ravi)
 
-A tier above one-liners: concepts that **reframe a problem space**, not automate a task — authored at CTO depth, main-session model (not delegated to cheap agents), then adversarially red-teamed. Live in `north-stars.md` (N-001..), with pointer entries in the backlog so lock/scoring covers them. Each concept must carry:
+A tier above one-liners: concepts that **reframe a problem space**, not automate a task — authored at CTO depth (not delegated), then adversarially red-teamed. Live in `north-stars.md` (N-001..), with pointer entries in the backlog so lock/scoring covers them. Each concept must carry:
 
 - **The reframe** — what the problem space becomes if this exists (one paragraph, no buzzwords)
 - **Why now** — dated capability + regulatory + market inflections from `01_research/`
@@ -91,7 +91,7 @@ Scoring rule: north stars are scored on the **competition slice** for feasibilit
 
 ## Stage 4 — Scoring & diligence
 
-Score per `RUBRIC.md`: 3 independent opus judge agents (client-buyer lens · CTO lens · competition-judge lens; no shared context) + Ravi + me. Integer 1–5 per axis + one-line evidence + confidence H/M/L. Axis spread >2 → adjudicate with evidence, never average away.
+Score per `RUBRIC.md`: 3 independent judge agents (client-buyer lens · CTO lens · competition-judge lens; no shared context) + Ravi + me. Integer 1–5 per axis + one-line evidence + confidence H/M/L. Axis spread >2 → adjudicate with evidence, never average away.
 Top 10 → diligence sprints: competitor scan, synthetic-data feasibility spike, sizing check. Top 3 → pre-mortem, 5-minute demo script, build plan. Ravi picks the build + a fallback.
 
 ## Sizing model (the ≤6-week reality test)

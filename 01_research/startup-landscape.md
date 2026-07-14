@@ -2,7 +2,7 @@
 
 *Research brief for Zenon "Genesis" — Track A "Client-Facing Solutions." Purpose: use the startup/funding lens to (a) confirm where demand is validated by fresh capital, and (b) mine raw or under-served theses we can execute *better* inside a named Zenon enterprise client (finance, media, pharma, retail, HCM/payroll).*
 
-> **WebSearch status: AVAILABLE and used extensively** (~30 searches + ~8 deep page fetches). Every quantitative claim below carries an inline source link and, where the source gives one, a date. Where a figure comes from a secondary aggregator rather than a primary announcement, that is noted.
+> **Sourcing discipline:** every quantitative claim below carries an inline source link and, where the source gives one, a date. Where a figure comes from a secondary aggregator rather than a primary announcement, that is noted.
 
 ---
 

@@ -1,6 +1,6 @@
 # Forensic Review: Lessons from Prior Work (Ishant / `origin/igupta/ideation-and-research`)
 
-**Reviewer:** Claude (forensic quality scrutinizer) · **Date:** 2026-07-14 · **Scope:** read-only review of all 19 files on `origin/igupta/ideation-and-research`, plus a July-2026 web fact-check.
+**Review:** forensic quality scrutiny (read-only) · **Date:** 2026-07-14 · **Scope:** all 19 files on `origin/igupta/ideation-and-research`, plus a July-2026 web fact-check.
 
 **One-line verdict:** The body of work is bimodal. The `ideation_IG/` folder and the `Zenon project history/` are weak-to-thin generic AI output (grade D–C). The `research_IG/` sweep (WS1–WS7) is genuinely good — heavily cited, dated, self-critical, and full of salvageable assets (grade B/B+). Ravi's "generic AI slop" verdict is fair for what he likely saw first (the ideation folder and the client histories); it undersells the research folder, which is the real prize here.
 

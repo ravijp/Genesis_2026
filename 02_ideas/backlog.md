@@ -100,11 +100,11 @@ Status: **active** — Phase 2 in flight: 85 seeds collated; Round-1 clusters ga
 - **S-060**: Claims-extraction + verification agent for research/editorial workflows (Semafor Intelligence pattern, applied to financial research at MS/Invesco).
 - **S-061**: Evals-first agent governance harness as a differentiator in ANY build (Bloomberg CTO quote; AI-judge scoring).
 
-_Collated verbatim on 2026-07-14 by mechanical pass; no dedup or judgment applied. Total: 71 seeds (S-062..S-071 from agentic-ai-landscape.md added manually)._
+_Collated 2026-07-14; verbatim, no dedup or judgment applied. Total: 71 seeds (S-062..S-071 from agentic-ai-landscape.md)._
 
-### Audit-recovered seeds (T4 redux, 2026-07-14)
+### Audit-recovered seeds (2026-07-14)
 
-_A 7-agent per-brief completeness audit (one sonnet auditor per brief, diffing brief vs. seed list) recovered these. **Folded into Round-1 on 2026-07-14:** ten new clusters R-047..R-056 (tagged *audit-recovered*), S-077→R-035 variant, S-084→R-018 note, S-083 parked at intake (freshness gate — Bloomberg ASKB ships it). Audit also confirmed: retail-internal-ops, startup-landscape, and agentic-ai-landscape sections complete; two further candidates (x402/AP2 settlement reconciliation, non-human agent-identity auditing) dropped as already covered by R-024/R-025; S-055's insurance stretch re-confirmed (already parked)._
+_A per-brief completeness audit (brief vs. seed list) recovered these. **Folded into Round-1 on 2026-07-14:** ten new clusters R-047..R-056 (tagged *audit-recovered*), S-077→R-035 variant, S-084→R-018 note, S-083 parked at intake (freshness gate — Bloomberg ASKB ships it). Audit also confirmed: retail-internal-ops, startup-landscape, and agentic-ai-landscape sections complete; two further candidates (x402/AP2 settlement reconciliation, non-human agent-identity auditing) dropped as already covered by R-024/R-025; S-055's insurance stretch re-confirmed (already parked)._
 
 From finance.md:
 
@@ -114,7 +114,7 @@ From retail-agentic-commerce.md:
 
 - **S-073**: AI-referral SEO/GEO optimization agent • continuously monitors how AI shopping surfaces (ChatGPT, Perplexity, Gemini) represent a retailer's products and autonomously patches structured data/content • demo moment: agent detects a mis-surfaced product in an AI shopping answer, diagnoses the missing schema attribute, patches it live • Kohl's — monetizes §7's AI-referral numbers (traffic +670-758% YoY, +31% conversion lift).
 - **S-074**: Agentic checkout abandonment-diagnosis agent • reasons across the in-chat checkout funnel to diagnose why abandonment is high and recommend fixes • demo moment: replays a synthetic failed in-chat checkout and pinpoints the friction step • Kohl's/Visa — grounded in Walmart's 1.18% conversion / 77.45% abandonment vs. 2.5-3% benchmark (§1).
-- **S-075**: Agent-payments network onboarding & mandate-compliance assurance agent • validates a merchant/issuer's Agent Pay / Intelligent Commerce Connect integration pre-go-live: Agentic Token config, consent-binding, cross-protocol (ACP/AP2/UCP) policy mismatches • demo moment: agent onboards a synthetic merchant to two competing protocols simultaneously and catches a missing consent-binding field before a live transaction fails • Visa/Mastercard/Amex — pre-transaction complement to R-012's post-hoc dispute attribution • evidence: retail-agentic-commerce.md §5 + finance.md §1 ("hundreds of controlled real-world agent transactions" by Dec 2025). _(merged from independent finance + retail auditor findings)_
+- **S-075**: Agent-payments network onboarding & mandate-compliance assurance agent • validates a merchant/issuer's Agent Pay / Intelligent Commerce Connect integration pre-go-live: Agentic Token config, consent-binding, cross-protocol (ACP/AP2/UCP) policy mismatches • demo moment: agent onboards a synthetic merchant to two competing protocols simultaneously and catches a missing consent-binding field before a live transaction fails • Visa/Mastercard/Amex — pre-transaction complement to R-012's post-hoc dispute attribution • evidence: retail-agentic-commerce.md §5 + finance.md §1 ("hundreds of controlled real-world agent transactions" by Dec 2025). _(merged finance + retail findings)_
 - **S-076**: Cross-surface persistent-cart reconciliation agent • tracks one shopper's cart state across agent surfaces (Search, Gemini, retailer site) and resolves price/inventory conflicts before checkout • demo moment: reconciles a cart modified on two surfaces and resolves a price mismatch • Kohl's • evidence: §4 Google "Universal Cart" (I/O 2026).
 - **S-077**: Continuous agentic-readiness competitive benchmark • recurring re-scan and re-score of client vs. named competitors' PDPs/feeds (DC360×ReFiBuy quarterly benchmark pattern) • demo moment: agent detects a competitor's readiness-score change and re-ranks the client • Kohl's • _variant of S-028 (one-time audit → continuous monitoring product); low-confidence distinctness._
 
@@ -139,7 +139,7 @@ _Audit pass 2026-07-14: 14 seeds recovered (S-072..S-085). New total: **85 seeds
 
 ## Round-1 ideas (divergence sprint)
 
-**Run 2026-07-14.** 3 independent sonnet agents (A=operator-pain, B=startup-thesis, C=demo-first; no shared context, anchoring quarantine held) + Claude session (D, gap-filling, non-independent). Raw outputs verbatim in `round1-raw-agent-outputs.md`. 99 agent one-liners + 8 session one-liners → deduped to **46 clusters** below. **Lens convergence** (how many independent lenses produced it) is a selection signal for Stage 3. **NOT LOCKED — Ishant/Namit review folded 2026-07-15; lock decision rests with Ravi after the 2026-07-15 findings digest; only after lock may the igupta catalog cross-check run.**
+**Run 2026-07-14.** Four ideation lenses — A=operator-pain, B=startup-thesis, C=demo-first (independent, no shared context, anchoring quarantine held) + D=gap-fill (non-independent). Raw one-liners verbatim in `round1-raw-agent-outputs.md`; 99 + 8 → deduped to **46 clusters** below. **Lens convergence** (how many independent lenses produced it) is a selection signal for Stage 3. **NOT LOCKED — Ishant/Namit review folded 2026-07-15; lock decision rests with Ravi after the 2026-07-15 findings digest; only after lock may the igupta catalog cross-check run.**
 
 Anti-slop gate applied at one-liner depth (auto-kill list + obvious test failures); full 10-test scoring happens at Stage 3 card level (T6). Gate: ✅ pass · 🔧 rework note · killed items are in Parked/killed.
 
@@ -334,7 +334,7 @@ _R-047..R-056 carry tags inline; the 36 surviving original clusters are tagged h
 2. **R-041 Invesco variant** — SEC Marketing Rule angle is pattern-transfer with no direct brief evidence; needs a research spot-check before it can be carded.
 3. **Agent-cited stats** (Salient/Kastle 20-30%, Vantaca $300M, 7,851% YoY, 165M+ agent txns, Visa fee ladder, Taktile $110M, Klarna reversal) are relayed from briefs marked *unreviewed* — T7 spot-check must hit any of these before they enter a pitch.
 4. **Agent A's "~₹600/account" cost-to-collect** figure looks like a currency artifact (₹ in a UK/US context) — verify against finance.md before reuse.
-5. **Lens convergence is inflated by shared evidence** — all three agents read the same briefs (whose seed sections overlap the S-collation), so 3/3 convergence signals "prominent in evidence," not independent invention. Treat as salience, not validation.
+5. **Lens convergence is inflated by shared evidence** — all three independent lenses drew on the same briefs (whose seed sections overlap the S-collation), so 3/3 convergence signals "prominent in evidence," not independent invention. Treat as salience, not validation.
 6. **R-003 collections baseline (added 2026-07-15)** — the channel-by-risk-bucket practice cited in review is team domain input, not yet a citable source; source it (and quantify cost-to-collect delta vs that baseline) before pitch.
 7. **R-004 per-bank savings (added 2026-07-15)** — HOA market is sized, but bank-side P&L impact of automated cash application is not; needs an estimate before carding.
 8. **R-008 pain point (elevated 2026-07-15)** — two reviewers independently flagged the unverified onboarding-hours claim; source it or re-anchor the cluster.

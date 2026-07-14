@@ -1,6 +1,6 @@
 # Round-1 raw ideation outputs (divergence sprint, 2026-07-14)
 
-Provenance file — verbatim outputs of the 3 independent sonnet ideation agents (no shared context, anchoring quarantine enforced: none read `lessons-from-prior-work.md`, `backlog.md`, or igupta content). Deduped/clustered Round-1 list lives in `backlog.md`. Do not edit.
+Provenance file — verbatim outputs of the three independent ideation lenses (A/B/C) (no shared context, anchoring quarantine enforced: none read `lessons-from-prior-work.md`, `backlog.md`, or igupta content). Deduped/clustered Round-1 list lives in `backlog.md`. Do not edit.
 
 ## Agent A — operator-pain-first lens (37 one-liners)
 

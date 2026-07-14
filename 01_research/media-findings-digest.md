@@ -1,6 +1,6 @@
 # Media & Information Services — Findings Digest (as of 2026-07-14)
 
-> **Provenance:** The media research agent completed ~12 child deep-dives but died at a session limit before synthesizing. This digest preserves the load-bearing findings from those completed briefs (full raw results in this session's task transcripts). Full synthesis is optional (see actions-items.md P3).
+> **Scope note:** Load-bearing findings from the media research track. The full synthesis lives in `media.md` (this file remains the quick-reference digest).
 
 ## The big cross-cutting pattern: "agent-ready data" is the 2025-26 gold rush
 
