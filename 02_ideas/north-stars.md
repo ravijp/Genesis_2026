@@ -8,6 +8,8 @@
 
 ## N-001 — The Decision Assurance Stack (agent supervision for regulated finance)
 
+*ELI5: An AI worker that records, replays, and checks every decision a bank's automated systems make, so the bank can prove to a regulator it followed the rules and catch the ones it got wrong.*
+
 **The reframe.** Banks will not be limited by how many agents they can build — they'll be limited by how many they can *defend to an examiner*. Today every agent (vendor or in-house) ships its own logs in its own shape, and no system can answer the regulator's actual question: "show me every decision this system took on a vulnerable customer, prove it followed policy, and show me the ones it got wrong." The product is the supervision layer: record → replay → conformance-check → attribute → escalate, for *any* agent the bank runs. Whoever owns the decision-evidence layer owns the deployment bottleneck — every doer-agent, including competitors', becomes demand for this product.
 
 **Why now (dated).** FCA Mills Review published 2026-07-06 recommending both "enable foundations for agentic finance" and an "AI-enabled supervisory model" (finance.md §3); Barclays sits inside FCA AI Live Testing cohort 2, Apr–Dec 2026; Fed/OCC/FDIC revised MRM guidance (2026-04-17) *explicitly excludes* agentic AI from scope — banks must self-govern in a vacuum; EU AI Act Art-50 disclosure binds 2026-08-02; Klarna's public reversal is the canonical quality-drift precedent. Regulators are building AI supervision; banks have nothing symmetrical. *[revised post-red-team: the 88%-security-incident stat was removed from this argument — it evidences security incidents, not conduct violations; the pitch line is now explicitly a feature-to-platform thesis: Salient ships UDAAP monitoring as a feature of its own collector (finance.md §2a) — we generalize that into a standalone, agent-agnostic supervision product.]*
@@ -38,6 +40,8 @@ Subsumes/elevates: R-002, R-018, R-021, R-028, R-030, R-047; complements any doe
 
 ## N-002 — The Mandate Fabric (accountability for agent-initiated commerce)
 
+*ELI5: An AI worker that figures out who's on the hook when an automated shopping tool makes a mistaken purchase, and checks the payment settlement matches what was actually authorized.*
+
 **The reframe.** The networks built rails for agents to *pay* (Agentic Tokens, AP2 mandates, TAP identity, x402) but nobody built the layer for when agents *err*. The entire dispute stack — reason codes, evidence rules, representment, liability — assumes a human cardholder made a choice. In agent-initiated commerce the operative question becomes "what exactly was authorized, by whom, under which mandate, and did the agent exceed it?" — a cryptographic-plus-reasoning problem no chargeback vendor is built for. The product is mandate-chain accountability: forensics, liability attribution, settlement integrity, and pre-go-live conformance, as one fabric across protocols.
 
 **Why now (dated).** Visa Trusted Agent Protocol 2025-10-14; Mastercard Agent Pay first live transaction Apr 2026, Agent Pay for Machines Jun 2026; **Amex ACE agent-error purchase protection Apr 2026 — the first issuer product monetizing exactly this gap, proof of willingness to pay**; x402 volume: 165M+ agent txns by May 2026 per agentic-ai-landscape.md §3, vs. ">100M since May 2025" per startup-landscape.md §3 — *cross-brief discrepancy, flagged to T7; use the conservative >100M until resolved [revised post-red-team]*; "as of 2026, no jurisdiction has enacted regulation specifically addressing autonomous AI purchasing" (finance.md §2e); protocol fragmentation is permanent (OpenAI retreated from in-chat checkout Mar 2026 while Google expands — retail-agentic-commerce.md §4); 261M disputes/$33.8B (2025) is the cost backdrop.
@@ -66,6 +70,8 @@ Subsumes/elevates: R-012, R-024, R-048; adjacent to R-034.
 ---
 
 ## N-003 — Loyalty as a Financial System (trust architecture for the agent economy)
+
+*ELI5: An AI worker that runs a company's loyalty program like a bank account: spotting fake reward claims, stress-testing new promotions for loopholes, and auditing the points balance.*
 
 **The reframe.** Loyalty programs hold billions in points liability and increasingly settle real money, yet are "secured like marketing databases, not financial systems" (finance.md §2g) — while agent-mediated commerce simultaneously (a) floods them with non-human traffic, (b) turns every offer into a machine-exploitable contract, and (c) threatens to disintermediate them entirely. The reframe: run loyalty operations with financial-system controls — interaction authenticity, offer-exploitability underwriting, ledger-grade points reconciliation, and agent-aware adjudication — as one trust architecture rather than four point tools.
 
@@ -96,6 +102,8 @@ Subsumes/elevates: R-015, R-016, R-017, R-026, R-027, R-029; retail leg of R-034
 
 ## N-004 — The Exception-Operations Platform (autonomy that is earned, not asserted)
 
+*ELI5: An AI worker that handles routine paperwork exceptions, like overdue dues or payroll errors, itself, earning more independence over time only as it proves it's getting them right.*
+
 **The reframe.** HOA lockbox exceptions, payroll garnishments, AML alert dispositions, dispute intake, cash-application breaks — the market treats these as five products (Vantaca, Niural, Bretton, Chargeflow, HighRadius). They are one problem shape: **high-volume regulated queues where 80-95% of cases are mechanical and the tail needs judgment under policy**. The platform insight: the durable IP isn't any single case-worker agent — it's the **autonomy-graduation machinery**: every queue starts fully supervised, and autonomy is *promoted per case-class only by accumulated eval evidence*, with automatic demotion on drift. Autonomy becomes a measured, auditable property of the system, not a vendor claim.
 
 **Why now (dated).** Menlo: only ~16% of enterprise "agent" deployments are true agents — trust, not capability, is the constraint; every funded player is a single-queue silo (Salient collections, Fazeshift AR, Vantaca HOA-management-side, Warp/Niural payroll) leaving the cross-queue platform unclaimed; the "autonomous QC gate, human at exceptions only" pattern is flagged as aspiration-not-proven — *pharma-manufacturing evidence (pharma.md §4), cited here as a cross-domain pattern analogy, not domain proof [relabeled post-red-team]*; per-exception economics to be computed at carding with actual token/task measurements rather than asserted from model price cards *[revised post-red-team]*; a16z/Bessemer outcome-pricing thesis ("$ per exception resolved") is the commercial wrapper.
@@ -122,6 +130,8 @@ Subsumes/elevates: R-004 (slice), R-005, R-008, R-023, R-030; pattern-general ov
 ---
 
 ## N-005 — Zero-Integration Autonomy (governed computer-use over legacy operations)
+
+*ELI5: An AI worker that operates a company's old desktop screens directly, like a human employee would, to get tasks done without waiting for a costly systems overhaul.*
 
 **The reframe.** The binding constraint on mid-market agentic deployment is not model capability — it's integration: core-banking and servicing systems with no APIs, nine-system sprawl, 12-18-month data projects. Computer-use models now exceed the human ceiling on desktop benchmarks (OSWorld: agents low-80s vs. human ~72 — landscape §1). That inverts the deployment equation: the agent operates the *existing screens* under a governed harness, delivering autonomy in weeks while the data foundation is still being fixed. The product is not "RPA with AI" — it's a **governed computer-use worker**: least-privilege session isolation, allowed-screen manifests, a screenshot-hashed visual audit ledger, compiled-SOP execution, and drift recovery.
 
@@ -153,6 +163,8 @@ Elevates: P8 pattern across R-008/R-023's manual-intake edges; new capability ax
 
 ## N-006 — The Agent Underwriting Bureau (certification and evidence for a market that can't verify claims)
 
+*ELI5: An AI worker that tests any company's automated system against tough scenarios and hands back an independent, reproducible report card so buyers can trust its claims.*
+
 > **CONDITIONAL *[post-red-team]*: hard precondition — written GC confirmation that this qualifies as Track A (the kickoff lists "eval frameworks" under Track C, committee approval required). No carding, no scoring as a build candidate until that confirmation exists. Fold into T8's GC questions. Second honesty note: the evals axis is the product and is therefore L — the slice sits exactly at the 1L+2M ceiling with zero slack.**
 
 **The reframe.** Every vendor now claims "agentic AI"; Gartner counts ~130 genuine builders among thousands and predicts >40% of agentic projects canceled by 2027 (pharma.md §4); our own landscape brief documents SEO sites *fabricating benchmark scores wholesale* (§5 warning). Enterprises buying agents — or defending build-vs-buy to a board — have no ratings agency, no underwriting lab, no standardized evidence. The product: a harness that takes any agent (API, MCP, or UI via N-005 tech), runs domain-scenario batteries + adversarial probes + cost/latency profiling against seeded ground truth, and emits a **reproducible certification scorecard** — the artifact procurement, model-risk, and (soon) insurers all need. HAL-grade methodology (landscape §5), productized for buyers.
@@ -182,6 +194,8 @@ Subsumes/elevates: R-049 (S-085/S-080), S-061; methodologically feeds every othe
 ---
 
 ## N-007 — The Agent-Ready Enterprise (productizing a client's data + policy surface for agent consumers)
+
+*ELI5: An AI worker that takes a company's raw data and rules and builds a secure, permission-controlled version other AI tools can safely query, then tries to break in to prove it's locked down.*
 
 > **PARKED FOR COMPETITION *[post-red-team, 2026-07-14]* — retained as a Zenon-asset concept.** Both red-teamers and this concept's own pre-mortem converge: it sits closest to the commodity floor ("MCP is table stakes" — our own landscape brief), the semantic-layer verification story is missing, and the genuinely fresh part (an agent that *builds* the governed surface) is undifferentiated from what the data giants may already run internally. Not in the Track-A scoring pool. Revive only with a client-specific semantic-mapping problem none of S&P/Moody's/FactSet/LSEG already solved. The text below is retained as the Zenon-asset spec.
 

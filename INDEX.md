@@ -49,9 +49,9 @@
 
 - `METHOD.md` — evidence → 50+ ideas pipeline: pattern×value-chain matrix, multi-agent divergence, anti-slop gate, sizing model, synthetic-data playbook, anchoring rules `[stable]`
 - `RUBRIC.md` — scoring aligned to official judging weights + hard gates + degrees of freedom `[stable]`
-- `backlog.md` — the idea backlog: 85 seeds (all clustered) · 46 active clusters (10 F3 parked by freshness gate) with F-tier/incumbent/applicability retro-tags · N-tier pointers · gate math (52 pre-human, ≥50 holds) · NOT locked — awaiting human additions `[updated 2026-07-14, review pending]`
+- `backlog.md` — the idea backlog: 85 seeds (all clustered) · 46 active clusters (10 F3 parked by freshness gate) with F-tier/incumbent/applicability retro-tags + ELI5 lines · team review notes folded 2026-07-15 · finance-first scope 2026-07-15 (Retail/Pharma/Media deferred, not killed) · N-tier pointers · gate math (52 pre-human, ≥50 holds) · NOT locked — lock decision pending `[updated 2026-07-15]`
 - `round1-raw-agent-outputs.md` — verbatim outputs of the 3 ideation agents + session contributor, provenance for the Round-1 clusters `[stable]`
-- `north-stars.md` — Stage-1b north-star concepts N-001..N-007: problem-space reframes at CTO depth with ≤6-wk competition slices (Ravi directive 2026-07-14); red-teamed + revised same day (N-007 parked, N-006 conditional on GC track ruling) `[landed 2026-07-14, human review pending]`
+- `north-stars.md` — Stage-1b north-star concepts N-001..N-007: problem-space reframes at CTO depth with ≤6-wk competition slices (Ravi directive 2026-07-14); red-teamed + revised same day (N-007 parked, N-006 conditional on GC track ruling); ELI5 lines added 2026-07-15; v2 expansion to ~10 concepts in progress 2026-07-15 `[updated 2026-07-15, human review pending]`
 - `north-stars-redteam.md` — verbatim verdicts of the 2 adversarial sonnet red-team agents + session adjudication (accepted/rejected attacks, standing rules) `[stable]`
 
 ## Later phases (created when opened)
