@@ -47,6 +47,8 @@ Mirrors the official Genesis judging weights exactly (kickoff deck, slide 8). Sc
 
 *Freshness note (2026-07-14):* METHOD Test-11 F-tier feeds this axis — **F1** (no incumbent ships it) may score 5; **F2** (category proven, wedge open) caps at 4 unless a genuinely novel crossover lifts it; **F3** (shipped at scale) is parked pre-scoring. North-star concepts (Stage 1b) score A1/A4 on the full frame and G2/A3 on their competition slice.
 
+*Two-horizon note (2026-07-15, T14):* the **day-1 story** (zero-agent-client reality) scores A1/A3/G2; the **vision arc** scores A4 (and A1 upside). A concept with no honest day-1 story is a horizon bet: it may keep a strong A4 but cannot lead the build regardless of total.
+
 ### A5 — Presentation potential · 10%
 
 - **5** — Visceral 30-second demo moment + a one-sentence story a judge retells at dinner.
@@ -67,10 +69,12 @@ domain · persona · autonomy level (copilot → supervised autonomy → full au
 
 ## Judge panel protocol
 
-3 independent judge agents, no shared context, distinct lenses:
+3 independent judge agents, no shared context, no score visibility between judges, presentation order randomized per judge (protocol adopted 2026-07-15):
 
-1. **Client buyer** — "would I pay for a POC of this?"
-2. **CTO** — "is this technically impressive and shippable?"
-3. **Competition judge** — "does this win against 20 other demos on the official rubric?"
+1. **Founder-CEO** — "is this a company, and would the named client pay for a POC this quarter?"
+2. **Founding chief architect** — "is this technically impressive AND shippable to a funded MVP?"
+3. **AI-engineering / competition judge** — "does this win against 20 other demos on the official rubric (evals, reproducibility, accuracy/cost/latency evidence)?"
 
-Plus Ravi and me scoring independently. Output: per-axis integers + evidence lines + confidence → ranked list + rationale memo in `03_selection/`. Axis spread >2 → adjudicated with evidence, not averaged.
+Plus Ravi and me scoring independently. Output: per-axis integers + a citation per score + confidence → ranked list + rationale memo in `03_selection/`. Axis spread >2 → adjudicated with evidence, not averaged. **Minority-veto:** one credible kill objection forces rework — never averaged away. Premortem precedes any kill-pass.
+
+**Corrected external-judge model (Ravi, 2026-07-15):** the real panel is SaaS-minded leadership just learning agentic — trivial-then-suddenly-hard questions. Every finalist carries rehearsed answers to the standing checklist (METHOD.md Stage-3 card template): user story · run requirements · infrastructure · willingness-to-pay · scaling · vision realism · evals · guardrails · failure handling + logging · cost · latency · dollar impact.

@@ -309,6 +309,8 @@ _R-047..R-056 carry tags inline; the 36 surviving original clusters are tagged h
 
 ### North-star tier (Stage 1b pointers — v2 roster 2026-07-15; full text, tiers, and verdicts in `north-stars.md`)
 
+> **v3 re-tiering (2026-07-15, T14):** the tier labels below are v2-era. The two-horizon re-grounding re-tiered the roster — N-004/N-008 → GROUNDED LEAD, N-001 → GROUNDED LAYER, N-002/N-009 → **HORIZON BET** (honest demotion: no day-1 story at zero-agent clients), N-005/N-003/N-012 → GROUNDED-GATED. Authoritative scoreboard: `north-stars.md` v3; build candidates (combined pitches CP-1/2/3 + red-team verdicts): `grounded-track.md`.
+
 _v2 (2026-07-15): tier re-generated via two-stage ideation (open-thinking generation decoupled from competition grounding), scored by an independent 3-persona judge panel (founder-CEO / chief architect / AI-engineering judge) and an adversarial kill-pass; originality independently collision-verified with dated sources. 10 active concepts below; rework requirements + demoted/parked reasoning live inline in `north-stars.md`._
 
 - **N-002** Mandate Fabric — **CORE** — F1 (independently confirmed 2026-07-15) — accountability for agent-initiated commerce — subsumes R-012, R-024, R-048 — anchor Visa → MC, Amex, CapOne, ampliFI

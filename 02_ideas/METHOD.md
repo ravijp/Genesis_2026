@@ -76,22 +76,32 @@ Scoring rule: north stars are scored on the **competition slice** for feasibilit
 ```markdown
 ### IDEA-NNN — <name>
 - One-liner:
+- ELI5:
 - Client hook & value-chain node:
 - Persona & workflow today (volumes/costs; UNKNOWN — get from [X] where missing):
+- DAY-1 STORY (two-horizon rule, T14): works at a client with zero agents in production — persona, trigger, end-to-end story, artifact, buyer, dollar path, runs-on-what. No honest day-1 story → the card is a horizon bet and cannot lead.
+- VISION ARC (the 2-3 year story the slice is chapter one of):
 - Agentic core: pattern(s) · autonomy level · tools · HITL gates
 - Verification & evals plan:
 - Synthetic data plan (incl. seeded ground truth):
 - Demo moment (the 30 seconds that wins):
+- Appetite one-liner (T14 gate): the aha/sales/winner moment in one sentence — if the author can't write it, the card doesn't lead:
 - Differentiation vs 2 named alternatives:
 - Evidence anchors:
 - Build size: agents [S/M/L] · tools [S/M/L] · UI [S/M/L] · data [S/M/L] · evals [S/M/L] → overall
 - Pre-mortem headline (the most likely way this dies):
-- Gate: 10/10 with notes
+- SaaS-judge checklist (T13, standing — one line each, "UNKNOWN — get from [X]" allowed but visible):
+  - User story · What it takes to run it · Infrastructure required · Will the client pay (and what) ·
+    How it scales · Vision: dreamy vs realistic · Evals · Guardrails · Failure handling + logging ·
+    Cost · Latency · Dollar impact (or hard proxy metric)
+- Gate: 11/11 with notes
 ```
+
+*Card-template rationale (2026-07-15, Ravi's v2 review):* the judge panel is SaaS-minded leadership just learning agentic — expect trivial-then-suddenly-hard questions. Every carded concept carries ready, grounded answers to the checklist; every finalist rehearses them.
 
 ## Stage 4 — Scoring & diligence
 
-Score per `RUBRIC.md`: 3 independent judge agents (client-buyer lens · CTO lens · competition-judge lens; no shared context) + Ravi + me. Integer 1–5 per axis + one-line evidence + confidence H/M/L. Axis spread >2 → adjudicate with evidence, never average away.
+Score per `RUBRIC.md`: 3 independent judge agents (founder-CEO lens · founding-chief-architect lens · AI-engineering/competition-judge lens — personas per Ravi 2026-07-15; no shared context, no score visibility between judges) + Ravi + me. **Standing protocol (adopted 2026-07-15, evidence-backed):** rubric-anchored integer 1–5 per axis + a mandatory per-score citation into `01_research/`/`00_sources/` + confidence H/M/L; presentation order randomized per judge; **minority-veto on kill signals** — one credible objection forces rework, never averaged away; premortem before any kill-pass. Two-horizon scoring: day-1 story scores A1/A3/G2, vision arc scores A4 — never crosswise. Axis spread >2 → adjudicate with evidence.
 Top 10 → diligence sprints: competitor scan, synthetic-data feasibility spike, sizing check. Top 3 → pre-mortem, 5-minute demo script, build plan. Ravi picks the build + a fallback.
 
 ## Sizing model (the ≤6-week reality test)
