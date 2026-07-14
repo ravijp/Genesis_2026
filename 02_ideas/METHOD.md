@@ -33,15 +33,31 @@ Evidence base  →   Divergence 50+   →   Anti-slop gate  →  Idea cards top~
 | P7 | Self-improving ops loop | Evals in production drive prompt/policy updates with HITL |
 | P8 | Legacy workflow modernizer | Agent wraps a manual SOP / green-screen process into a governed API |
 
-**Protocol:** 3 independent ideation agents with distinct lenses — (a) operator-pain-first, (b) startup-thesis-first, (c) demo-first — plus me plus Ravi. No shared context between agents. Each idea is one line: `[node] × [pattern] × [client]: the 10-second story` + evidence link. Target: **≥50 pre-dedup, ≥50% finance.** Then dedupe/cluster.
+**Protocol:** 3 independent ideation agents with distinct lenses — (a) operator-pain-first, (b) startup-thesis-first, (c) demo-first — plus me plus Ravi. No shared context between agents. Target: **≥50 pre-dedup, ≥50% finance.** Then dedupe/cluster.
+
+**One-liner format (problem-space-first, amended 2026-07-14 per Ravi):** `[problem-space product] × [pattern]: the 10-second story` + evidence link + **applicability line** — design-anchor client **plus ≥2 other applicable Zenon clients or a named market segment**. Clients are the lens, not the idea: an idea that only works for one client gets flagged (park or justify). *(Round-1 clusters R-001..R-046 predate this rule and used `[node] × [pattern] × [client]`; the applicability line is retro-applied.)*
 
 **Round-1 lock**, then and only then: igupta catalog cross-check (what did we both find = probably obvious; what did only he find = evaluate fresh; what did only we find = potential originality).
+
+## Stage 1b — North-star concepts (added 2026-07-14 per Ravi)
+
+A tier above one-liners: concepts that **reframe a problem space**, not automate a task — authored at CTO depth, main-session model (not delegated to cheap agents), then adversarially red-teamed. Live in `north-stars.md` (N-001..), with pointer entries in the backlog so lock/scoring covers them. Each concept must carry:
+
+- **The reframe** — what the problem space becomes if this exists (one paragraph, no buzzwords)
+- **Why now** — dated capability + regulatory + market inflections from `01_research/`
+- **Architecture sketch (CTO register)** — agent topology, autonomy gradient + HITL gates, verification spine, protocol surfaces (MCP/A2A/AP2/x402 where real), memory/state, eval-harness design, threat-model nod, cost/latency posture
+- **Why a platform template can't do it** — the proprietary domain layer vs Agentforce/Copilot/AgentCore/free Anthropic templates
+- **Applicability matrix** — anchor client + every transferable Zenon client + market segment
+- **Competition slice** — a ≤6-build-week walking-skeleton demo with seeded-ground-truth data plan and the 30-second demo moment. **A north star without a demoable slice is a research project → fails G2/A3.**
+- **Pre-mortem** — the most likely way it dies
+
+Scoring rule: north stars are scored on the **competition slice** for feasibility/sizing (G2, A3) and on the **full frame** for impact/originality (A1, A4).
 
 ## Stage 2 — Anti-slop gate
 
 **Auto-kill list** (no rework, just kill): generic RAG chatbot over documents · "chat with your X" · meeting/email summarizer · generic customer-support bot · code assistant · anything whose demo is a text box answering questions.
 
-**Ten tests — all must pass:**
+**Eleven tests — all must pass:**
 
 1. Names the workflow it changes and the persona who does it today (title, team)
 2. Produces an **artifact of record** (memo, case decision, filing, updated system state) — not just an answer
@@ -53,6 +69,7 @@ Evidence base  →   Divergence 50+   →   Anti-slop gate  →  Idea cards top~
 8. SME nod test: a practitioner would say "yes, that's the real pain"
 9. Demo moment describable in one sentence
 10. Differentiation line vs 2 named alternatives (vendor, startup, or status quo)
+11. **Freshness gate (added 2026-07-14):** name the closest *shipped* product or funded startup as of the ideation date and state what is materially new vs. it. Classify **F1** (no incumbent ships it — genuine frontier) / **F2** (category proven by a named player, the specific enterprise wedge is open) / **F3** (shipped at scale by an incumbent — park with a rework note unless a sharp, demo-visible differentiator is stated). Rationale: Round-1 promoted ~10 clusters whose exact shape incumbents already run at scale (NavaX 1M+ PV cases, Veeva Falcon MLR, Medable TMF, MS Debrief at 98% adoption) even though our own briefs flagged them — evidence salience is not novelty.
 
 ## Stage 3 — Idea cards (top ~20)
 

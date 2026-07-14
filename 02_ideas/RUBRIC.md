@@ -6,7 +6,7 @@ Mirrors the official Genesis judging weights exactly (kickoff deck, slide 8). Sc
 
 | Gate | Test |
 |---|---|
-| G1 | Anti-slop: 10/10 on METHOD.md Stage-2 tests |
+| G1 | Anti-slop: 11/11 on METHOD.md Stage-2 tests (incl. Test 11 freshness gate) |
 | G2 | Sizing: fits ≤6 build-weeks for 2–3 people (≤1 L axis, ≤2 M axes) |
 | G3 | Synthetic data plan credible, with seeded ground truth |
 | G4 | Demoable in ≤5 minutes by one presenter |
@@ -22,6 +22,8 @@ Mirrors the official Genesis judging weights exactly (kickoff deck, slide 8). Sc
 - **5** — Named client + quantified pain + Zenon could credibly sell the POC within weeks; PE-portfolio-grade ROI story (payback measured in months). Adjacent to a live engagement (collections, HOA/SMB banking, lending, loyalty, payroll) = instant credibility.
 - **3** — Plausible dollar value for a real client type, not yet quantified.
 - **1** — "Someone might want this."
+
+*Generalizability note (2026-07-14, Ravi):* clients are the lens, not the idea. Multi-client problem-space applicability (anchor client + ≥2 transferable clients or a named segment) **strengthens** this score; an idea that only works for one client **caps at 3** even with a live-engagement hook. A named first customer is still required — "problem-space product with a design anchor," not "logo pitch."
 
 ### A2 — Technical depth & innovation · 25%
 
@@ -42,6 +44,8 @@ Mirrors the official Genesis judging weights exactly (kickoff deck, slide 8). Sc
 - **5** — White space or a novel crossover (e.g., two client domains fused); differentiated vs named startups; not in the graveyard.
 - **3** — Fresh twist on a known category.
 - **1** — Graveyard category (generic SDR, notetaker, doc chatbot).
+
+*Freshness note (2026-07-14):* METHOD Test-11 F-tier feeds this axis — **F1** (no incumbent ships it) may score 5; **F2** (category proven, wedge open) caps at 4 unless a genuinely novel crossover lifts it; **F3** (shipped at scale) is parked pre-scoring. North-star concepts (Stage 1b) score A1/A4 on the full frame and G2/A3 on their competition slice.
 
 ### A5 — Presentation potential · 10%
 
