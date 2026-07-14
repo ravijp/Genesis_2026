@@ -19,7 +19,7 @@ Research/mechanical agents = **sonnet or haiku**, prompts must say "Do NOT spawn
 | ID | P | Task | Status |
 |---|---|---|---|
 | T1 | P0 | Finance brief → `01_research/finance.md` (sonnet, scope in git history of this file) | CLAIMED (2026-07-14, Claude session — agent running) |
-| T2 | P0 | Retail internal-ops brief → `01_research/retail-internal-ops.md` | CLAIMED (2026-07-14, Claude session — agent running) |
+| T2 | P0 | Retail internal-ops brief → `01_research/retail-internal-ops.md` | REVIEW (landed 2026-07-14, 197 lines; standout seeds: markdown/inventory-exception agent, returns-fraud triage) |
 | T3 | P1 | Verify pharma.md completeness | DONE (2026-07-14 — 181 lines, ends with Sources + flagged-unverified section; complete) |
 | T4 | P1 | Haiku collation: gather all "Candidate use-case seeds" from `01_research/*.md` into `02_ideas/backlog.md` (verbatim, no invention) | OPEN — blocked on T1/T2 |
 | T5 | P1 | Phase 2 ideation sprint per `02_ideas/METHOD.md`: 3 sonnet ideation agents (operator-pain / startup-thesis / demo-first lenses) + humans → ≥50 one-liners → anti-slop gate. igupta catalog ONLY after Round-1 lock | OPEN — blocked on T4 |

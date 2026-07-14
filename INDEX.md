@@ -28,7 +28,8 @@
 - `agentic-ai-landscape.md` — models, agent stacks, MCP/A2A, orchestration, evals/observability, enterprise platforms, security; commodity-vs-cutting-edge verdicts `[landed 2026-07-14, unreviewed]`
 - `startup-landscape.md` — ~$2.5B YTD agentic funding, YC RFS themes, 30-row funding table, white space (HOA bank-side ops, compliance-aware collections, loyalty ops, payroll exceptions), graveyard, 15 seeds `[landed 2026-07-14, unreviewed]`
 - `lessons-from-prior-work.md` — forensic scrutiny of igupta branch (verdict B−, bimodal): root causes, salvage list, do/don't rules, idea autopsy, fact-check audit `[landed 2026-07-14, unreviewed]`
-- `retail-agentic-commerce.md` — salvaged sub-brief: ACP/AP2/UCP protocols, Instant Checkout reversal, Amazon v. Perplexity, agent-readiness playbook, traffic/margin numbers `[partial — see actions-items.md P0]`
+- `retail-agentic-commerce.md` — salvaged sub-brief: ACP/AP2/UCP protocols, Instant Checkout reversal, Amazon v. Perplexity, agent-readiness playbook, traffic/margin numbers `[stable]`
+- `retail-internal-ops.md` — retailer-internal agent deployments (Sparky, Magic Apron, Mylow...), value-chain verdicts, Kohl's turnaround context, vendor map incl. returns-fraud white space `[landed 2026-07-14, review pending]`
 - `pharma.md` — clinical ops, PV, regulatory, MLR `[landed 2026-07-14 — verify completeness, agent died right after writing]`
 - `media-findings-digest.md` — preserved essentials from ~12 completed media child briefs: agent-ready-data/MCP wave (S&P, Moody's, LSEG, FactSet, Bloomberg), compliance-vendor map, DJ R&C white space, newsroom agents, rights-tech `[stable]`
 - `finance.md` — TOP-PRIORITY industry brief `[MISSING — agent died before writing; re-run per actions-items.md P0]`
