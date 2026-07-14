@@ -59,6 +59,14 @@
 - `north-stars-redteam.md` — verbatim adversarial red-team verdicts (freshness + feasibility passes) + adjudication (accepted/rejected attacks, standing rules) `[stable]`
 - `reground-brief.md` — T14 executable spec from Ravi's v2 review (2026-07-15): two-horizon rule (day-1 story at zero-agent clients + vision arc), grounded/visionary balance, SaaS-minded-leadership judge model + question checklist, appetite gate; kickoff prompt for the fresh session at the bottom `[stable]`
 
+## 02_ideas_v2/ — fresh-lens ideation redo (T16, opened 2026-07-15)
+
+> Bias note: `02_ideas/` is retained untouched as the coverage-check corpus; v2 sessions must not read it (or old idea content anywhere) until the protocol's Stage 7. If you are a fresh session running T16: read only `CLAUDE.md` + `02_ideas_v2/PROTOCOL.md` and stop reading this INDEX now.
+
+- `PROTOCOL.md` — executable spec for the v2 ideation pipeline: quarantine rules, direction stratification, 6 ordinary-persona generators, verification, novelty-protected judging, coverage cross-check; kickoff prompt at the bottom `[stable]`
+- `RESEARCH-BASIS.md` — cited evidence behind every protocol rule (fixation, persona diversity, direction stratification, judge unreliability, novelty protection) `[stable]`
+- `ideas.md` — the v2 idea portfolio (single file, both horizons per card, 80/20) `[not yet created — Stage 8 deliverable]`
+
 ## Later phases (created when opened)
 
 - `03_selection/` — scoring runs, top-10 diligence, top-3 memo
