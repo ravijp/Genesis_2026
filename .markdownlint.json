@@ -1,5 +1,6 @@
 {
-  "comment": "Tuned to this repo's conventions: numbered inline citations like [1]/[E44]/[P12] are NOT reference links (MD052); research briefs use compact table separators |---| (MD060); long cited lines are intentional (MD013); inline HTML and emphasis-as-heading appear in salvaged agent output (MD033, MD036).",
+  "comment": "Tuned to this repo's conventions: numbered inline citations like [1]/[E44]/[P12] are NOT reference links (MD052); research briefs use compact table separators |---| (MD060); long cited lines are intentional (MD013); inline HTML and emphasis-as-heading appear in salvaged agent output (MD033, MD036); underscore emphasis is house style in ideation docs (MD049).",
+  "MD049": false,
   "default": true,
   "MD013": false,
   "MD033": false,

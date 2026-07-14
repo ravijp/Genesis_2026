@@ -203,6 +203,61 @@ Anti-slop gate applied at one-liner depth (auto-kill list + obvious test failure
 - **R-055** Rights/royalty clearance & reconciliation agent × P1/P4 × Dow Jones (any content licensor): multi-step rights clearance + royalty reconciliation across licensors/platforms, incl. pay-per-crawl (TollBit/Cloudflare) agent-traffic monetization; artifact = disputed-royalty trace with citation trail. — audit-recovered · seed S-081 · media-findings-digest.md ✅ F1 (closest: Whip Media Helix pilot; Rightsline agentic is roadmap-only — digest flags zero genuinely agentic entrant)
 - **R-056** Newsroom verification/monitoring pipeline × P2/P4 × Dow Jones: multi-agent open-source-verification workflow (ingest → triangulate → confirm) surfacing only provenance-backed leads, designed around the McClatchy union-backlash lesson via HITL transparency; artifact = confirmed-lead brief with provenance chain. Distinct from R-045 (corpus mining) and R-046 (claims extraction). — audit-recovered · seed S-082 · media-findings-digest.md ✅ F2 (closest: BBC Haystack / Mediahuis are in-house builds; no vendor product)
 
+### Freshness & applicability retro-tags (applied 2026-07-14 per METHOD Test-11)
+
+_R-047..R-056 carry tags inline; the 36 surviving original clusters are tagged here. F1 = no incumbent ships it · F2 = category proven, named wedge open · F3 = shipped at scale (moved to Parked). "Feeds N-xxx" = subsumed/elevated by a north-star concept (see `north-stars.md`)._
+
+| R | F | Closest incumbent (per briefs) | Applicability: anchor → transfers |
+|---|---|---|---|
+| R-001 | F2 | Salient ($60M a16z, ~$25M ARR, US-only; no named UK deployment) | Barclays → Lendmark, CapOne, any FCA/CFPB-regulated lender |
+| R-002 | F1/F2 | Salient UDAAP monitoring (a feature of its own collector) | Barclays/Lendmark → any consumer-credit book · feeds N-001 |
+| R-003 | F2 | TrueAccord + optimization vendors; no audited cost benchmark exists | Barclays → Lendmark, CapOne |
+| R-004 | F2 | Vantaca $1.25B (mgmt-co side); HighRadius 95%+ generic cash-app | WAB → First Citizens, Pacific Premier, Axos; 373k-assoc/$124.2B market · feeds N-004 |
+| R-005 | F1 | none — bank-side lien workflow unclaimed | WAB → any association-banking specialist |
+| R-006 | F2 | Vantaca (mgmt-side reporting, budgets <2 min) | WAB → same segment |
+| R-007 | F2 | True Link Retina (consumer-side, at Huntington) | WAB/Huntington → any SMB bank |
+| R-008 | F2 | EliseAI pattern + generic onboarding vendors | WAB/Huntington → any SMB bank · feeds N-004 |
+| R-009 | F2 | ComplyAdvantage Mesh (~85% L1 auto-resolve, doer-side); QC-of-dispositions layer open | CapOne/WAB → any AML function |
+| R-010 | F1 | DJ ships no agentic product on R&C data (confirmed absence, media.md §1) | DJ × Barclays/WAB → any bank buying screening data |
+| R-012 | F1 | rails shipped (TAP, Agent Pay, ACE protection); resolution tooling absent | Visa/MC → Amex, CapOne, ampliFI · feeds N-002 |
+| R-015 | F1 | Eagle Eye names the gap; loyalty-ops vendors not agent-native | ampliFI → issuers, Kohl's · feeds N-003 |
+| R-016 | F1 | none — pre-launch offer red-teaming unshipped | ampliFI → issuers, retail · feeds N-003 |
+| R-017 | F2 | issuer fraud tooling exists; rewards-ring investigation agent open | ampliFI/issuers → any loyalty program · feeds N-003 |
+| R-018 | F2 | LLM-observability vendors (dev-tool-shaped, no conduct semantics) | cross-cutting; layer not pitch · feeds N-001 |
+| R-019 | F2 | Salient/AgentCollect (category proven) | Lendmark (WTP caveat) → any installment lender |
+| R-020 | F2 | Taktile $110M (SMB decisioning) | WAB/Huntington/Lendmark → sub-$250K SMB credit segment |
+| R-021 | F2 | fair-lending/MRM tooling adjacent; agentic fairness-verifier open | WAB/CapOne → any credit book · feeds N-001 |
+| R-023 | F2 | Warp/Niural (full-stack SMB payroll); exceptions wedge open | ADP → any payroll platform / large employer · feeds N-004 |
+| R-024 | F1 | none named — x402/AP2 settlement assurance (note: 165M vs >100M txn figures disagree across briefs → T7) | Visa/Amex/ampliFI → networks, PSPs · feeds N-002 |
+| R-025 | F2 | Oasis $120M (generic non-human IAM) | Visa/Amex/CapOne → any bank; bank-domain auditor open |
+| R-026 | F2 | Eagle Eye flags unreadiness; no agent-native adjudicator | ampliFI/Kohl's → issuers, retail · feeds N-003 |
+| R-027 | F2 | Riskified-class + Domo (single-signal each) | ampliFI → issuers; cross-signal fusion open · feeds N-003 |
+| R-028 | F2 | ⚠ anchor unverified (weakest-claims #1) | MS/Invesco → any wealth manager; suitability variant of N-001 |
+| R-029 | F1 | none — points-ledger issuer↔processor reconciliation | ampliFI → issuers, processors · feeds N-003 |
+| R-030 | F1 | none — delegation-of-authority verifier | Lendmark → any servicer · feeds N-001/N-004 |
+| R-031 | F2 | Domo Return Abuse AI Agent (named; field fragmented) | Kohl's → any retailer with returns exposure |
+| R-032 | F2 | Revionics (alpha multi-agent, 2026 launch — early) | Kohl's → any mid-market retailer |
+| R-033 | F2 | SAP/Dataiku pilots; 6-wk exception-triage shape open | Kohl's → any retailer |
+| R-034 | F1/F2 | Visa TAP is the rail; retailer-edge classifier open | Kohl's/ampliFI/Visa → any retailer edge · adjacent N-002/N-003 |
+| R-035 | F2 | DC360×ReFiBuy benchmark (scores, doesn't remediate) | Kohl's → any mid-market retailer |
+| R-039 | F2⚠ | BMS×Anthropic names deviation→CAPA as its enterprise use case (a deployment, not a buyable product) — borderline; differentiator = QP-gate + Purolea warning-letter framing for non-Claude-Enterprise clients | J&J → any GxP manufacturer |
+| R-040 | F2 | citation-locked RAG is a known pattern; regulated-HA-response wedge + Elsa narrative | J&J → any regulated filer |
+| R-043 | F1 | none — no vendor bridges the PV→RA silo (pharma.md explicit) | J&J → any pharma |
+| R-045 | F2 | WSJ Orca (in-house, INMA award; no vendor product) | DJ → any data business |
+| R-046 | F2 | Semafor Intelligence (in-house pipeline; media.md §3) | DJ/MS → editorial + research orgs |
+
+### North-star tier (Stage 1b pointers — full text + red-team verdicts in `north-stars.md` / `north-stars-redteam.md`)
+
+- **N-001** Decision Assurance Stack — F1 — agent supervision for regulated finance (record→replay→conformance→attribute) — subsumes/elevates R-002, R-018, R-021, R-028, R-030, R-047 — anchor Barclays → every finance client
+- **N-002** Mandate Fabric — F1 — accountability for agent-initiated commerce (attribution, settlement integrity, conformance) — subsumes R-012, R-024, R-048 — anchor Visa → MC, Amex, CapOne, ampliFI, Kohl's
+- **N-003** Loyalty as a Financial System — F2 — authenticity + offer red-teaming + points-liability controls — subsumes R-015, R-016, R-017, R-026, R-027, R-029 — anchor ampliFI → issuers, retail — *red-team: most buildable slice*
+- **N-004** Exception-Operations Platform — F2 + graduation demo mechanic — evidence-gated autonomy over regulated exception queues — subsumes R-004(slice), R-005, R-008, R-023, R-030 — anchor WAB → ADP, Visa, Invesco
+- **N-005** Zero-Integration Autonomy — F2 — governed computer-use over legacy ops UIs — capability axis no R-cluster used — anchor Lendmark(demo)/WAB → mid-market legacy estates — *UiPath-class verification = T7 hard item*
+- **N-006** Agent Underwriting Bureau — F2 — **CONDITIONAL: GC written Track-A confirmation required (eval frameworks listed under Track C)** — subsumes R-049 — anchor Barclays → any regulated agent buyer
+- **N-007** Agent-Ready Enterprise — **PARKED for competition** (Zenon-asset concept; red-team REFUTED for Track A) — subsumed R-035's remediation half
+
+**Gate math (2026-07-14):** active scoring pool = 46 R-clusters (56 minus 10 F3-parked) + 6 scoreable N-concepts (N-007 parked; N-006 conditional) = **52 pre-human-additions — ≥50 gate holds**. Finance share of R-clusters: 29/46 ≈ 63% (≥50% gate holds; N-001/N-002/N-004 are finance-anchored on top).
+
 ### Weakest claims & how to verify (gaps companion)
 
 1. **R-028 (suitability assurance)** — asserted anchor "finance.md wealth section covers Reg BI/suitability" not confirmed; verify finance.md actually supports it or re-anchor before carding.
@@ -212,6 +267,21 @@ Anti-slop gate applied at one-liner depth (auto-kill list + obvious test failure
 5. **Lens convergence is inflated by shared evidence** — all three agents read the same briefs (whose seed sections overlap the S-collation), so 3/3 convergence signals "prominent in evidence," not independent invention. Treat as salience, not validation.
 
 ## Parked / killed (with reason)
+
+### F3 tier — parked 2026-07-14 by the freshness gate (METHOD Test-11; Ravi decision: park with rework notes, don't delete)
+
+_Each of these passed the original 10-test gate but is already shipped at scale by a named incumbent — our own briefs flagged every one; salience-driven convergence promoted them anyway. Revival requires the stated differentiator, demo-visible._
+
+- **R-011 Chargeback evidence-assembly** (was Finance; lenses A,B,C · seeds S-009,S-047) — Chargebacks911/Chargeflow/Chargeback Gurus are mature SaaS; finance.md §2e's own verdict: the classic node "stays weak… seed #10 is the live opportunity here, not seed #9." Revive only inside N-002's mandate-native frame.
+- **R-013 Advisor pre-meeting synthesis** (was Finance; lenses A,B,C · seed S-011) — Morgan Stanley shipped Debrief (98% advisor-team adoption) + AskResearchGPT; finance.md §2f: "WEAK for a NEW build." Revive only with a demo-visible differentiator a 98%-adopted incumbent doesn't already have.
+- **R-014 Investment-diligence data-room agent** (was Finance; lenses A,B · seed S-054) — Zarna/DiligenceSquared (YC F25) plus funded diligence tooling own the lane. Revive with a proprietary fund-doc-semantics layer or not at all.
+- **R-022 AR/cash-application back-office** (was Finance; lenses A,B · seed S-049) — Fazeshift (>90% AR automation), Daylit (opex −75%), HighRadius 95%+ touchless; Anthropic's free GL-reconciler template sets the commodity floor (lessons file). Revive only as an N-004 queue with a domain policy pack.
+- **R-036 Merchandise procurement ops cell** (was Retail; lens B · seed S-053) — AgentOS ($85M a16z), Lumari, Lio, Traza all ship procurement agents; no wedge was stated. Revive with a retail-merchandising-specific domain layer.
+- **R-037 Vendor-contract obligation tracker** (was Retail; lenses A,B · seeds S-051,S-071) — Harvey ($11B)/Legora ($5.6B)/Eudia own contract review at scale. Revive only with a sharply non-legal ops wedge (e.g., SLA-breach detection wired to operational data).
+- **R-038 PV case intake → ICSR drafter** (was Pharma; lenses A,C · seed S-016) — ArisGlobal NavaX processes 1M+ live safety cases (2.5M projected mid-2026); pharma.md calls PV "dominated by ArisGlobal." A 6-week build reads as a NavaX demo clone; clone risk terminal.
+- **R-041 MLR promotional compliance gate** (was Pharma; lenses A,D · seed S-019) — Veeva Falcon MLR shipped 2026-06-23 (Copli acquisition; 70%+ manual-labor-reduction target) — three weeks before our ideation run. D's Invesco SEC-Marketing-Rule variant survives as a research question (weakest-claims #2), not a cluster.
+- **R-042 TMF document ops** (was Pharma; lens A · seed S-020) — Medable TMF Agent shipped 2026-01-06 on Agent Studio; the "95% manual" stat is the incumbent's own pitch line. Clone risk terminal.
+- **R-044 APQR cross-system aggregation** (was Pharma; lens A · seed S-025) — LG CNS ships an agentic APQR product on AWS Marketplace with the exact plan-execute-verify trace we'd demo. Clone risk terminal.
 
 - **B: prior-auth/denial-appeal agent for "J&J-adjacent patient access"** (S-052) — 🔧 parked for rework: J&J is a manufacturer, not a provider; the persona/workflow mapping (who at J&J runs denial appeals?) fails test 1. Revive only if re-scoped to a named market-access/hub-services workflow.
 - **B: insurance underwriting triage (Corgi/Harper transfer, S-055)** — parked: no Zenon client operates insurance underwriting; "lending adjacency" is a stretch on the client hook. Folded into R-020 where the credit angle survives.
