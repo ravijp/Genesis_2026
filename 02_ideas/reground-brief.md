@@ -1,6 +1,6 @@
 # Re-grounding Brief (T14) — from Ravi's v2 review, 2026-07-15
 
-**Status: OPEN — this brief is the executable spec for the next working session.** Round-1 lock is HOLD until this pass lands. Kickoff prompt at the bottom.
+**Status: T14 EXECUTED 2026-07-15 (north-stars v3 + grounded-track.md + red-team). Then CORRECTED by Ravi same day — see the addendum at the bottom, which supersedes the literal reading of the two-horizon rule and is the spec for T15.**
 
 ## Why (Ravi's review, distilled)
 
@@ -31,3 +31,12 @@
 ## Kickoff prompt for the fresh session (paste as-is)
 
 > Read `CLAUDE.md`, `INDEX.md`, then `PLAN.md` (decision log, 2026-07-15 entries) and `02_ideas/reground-brief.md` — the brief is your executable spec; follow its rules exactly (two-horizon rule, balance requirement, judge model, appetite gate, question checklist, standing constraints). Inputs to read before writing: `02_ideas/north-stars.md` (v2 — vision layers to keep, slices to re-ground), `02_ideas/backlog.md` (finance clusters incl. review notes — the grounded-track source), `00_sources/zenon-client-context.md`, `01_research/finance.md`. The 2026-07-15 temp workdir `C:\tmp\genesis-review-2026-07-15\` has supporting analysis if needed (judge reports, collision scan, kill-pass). Deliver the brief's five deliverables. Work main-session-first; use agents only where the brief's agent policy allows and only if they genuinely add contrast (e.g., one fable pass to pressure-test the combined pitches through the SaaS-minded-leadership judge lens). Do not read the igupta/ideation-and-research branch. When done, present the revised scoreboard + the 2-3 combined pitches and ask Ravi for the lock call.
+
+---
+
+## ADDENDUM (Ravi, 2026-07-15, post-T14) — corrections that supersede the literal rules above; spec for T15
+
+1. **"Zero agents in production" was the gist, not a literal design assumption.** Ground every idea in the client's **researched, actual AI-adoption state** — e.g., Barclays has ongoing work in this space (Copilot at 50k, GenAI contact-centre summarization in production, FCA AI Live Testing cohort 2). The question is: *given the current state of financial companies' AI adoption, what can be built that excites them to pay for a 1-year engagement?* The per-client states live in `01_research/client-ai-state-map.md`.
+2. **Engagement economics define the idea shape.** Zenon's model: competition MVP → pitch to a Zenon client (Barclays engagement has a revenue-share model) → **~3 weeks to fit the MVP into their infrastructure** → POC / Phase 1 / Phase 2 over ~1 year → stable production-deployed agentic solution → client team takes over. Every carded idea therefore needs: (a) a **3-week-fit story** — thin integration surface (file/read-only exports or one API), policy-as-config, client-cloud deployable, HITL from day 1 so risk sign-off is fast, and a result metric measurable within weeks of fitting; (b) a **1-year engagement arc** — what is live at POC/P1/P2, what Zenon delivers at each phase, what gets handed over.
+3. **Portfolio mix 80/20.** ~80% of the pool = ideas that earn their keep in the present state (production-fit agents per rule 2, following all principles — HITL, audit, evals); ~20% = far-future north stars kept for vision. This requires a **completely fresh ideation pass** for the 80% pool (T15) — pinning-to-present is the generation frame, not a post-hoc filter on the existing demo-optimized clusters.
+4. **"SaaS-minded judge" = a preparedness checklist**, not a formal judge persona — keep the 12 questions as required card answers; don't over-engineer scoring machinery around the persona.

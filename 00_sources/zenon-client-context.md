@@ -6,7 +6,7 @@ Provenance: Ravi's client list (2026-07-14) + engagement artifacts observed in R
 
 | Client | Domain | Value-chain surface for ideas | Evidence beyond the list |
 |---|---|---|---|
-| **Barclays (BCS)** | Banking (UK) | **Collections & recoveries optimisation** — active engagement (kickoff deck + daily syncs, Jun–Jul 2026) | Strong — live workstream |
+| **Barclays (BCS)** | Banking (UK) | **Collections & recoveries optimisation** — active engagement (kickoff deck + daily syncs, Jun–Jul 2026); **revenue-share commercial model** (Ravi, 2026-07-15) | Strong — live workstream |
 | **Western Alliance Bank (WAB)** | Banking (US) | **HOA/community-association banking**, AI use-case discovery, **virtual RM for small-business banking** | Strong — discovery decks Feb–Mar 2026 |
 | **Capital One** | Banking/cards | Cards, servicing, disputes | Listed |
 | **Visa** | Payments | Network, agentic commerce, disputes, risk | Listed |

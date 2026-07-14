@@ -1,6 +1,6 @@
 # Grounded Track (T14) — day-1 use cases + combined pitches
 
-**Status: 2026-07-15 — drafted per `reground-brief.md`, then red-teamed by a 3-lens independent panel (SaaS-minded-leadership judge · founding chief architect · skeptical buyer replaying the v2 critique) and reworked per the adjudicated verdicts (§3). Lock decision with Ravi (T12).**
+**Status: 2026-07-15 — drafted per `reground-brief.md`, red-teamed by a 3-lens independent panel and reworked per the adjudicated verdicts (§3). Then T15 (Ravi's correction, same day): the fresh production-track pass in `02_ideas/production-track.md` supersedes the "zero-agent day-1" frame — CP-1 confirmed (= P-002 + graduation), CP-2 re-grounded as the P-001+P-003 pair, CP-3 notably absent from both fresh ideation lenses (buyer-timing objection corroborated; N-008 stays a concept lead, the engagement is event-driven). Lock decision with Ravi (T12).**
 
 This file is deliverable 2 of the re-grounding pass: the resurrected first-order use cases with **day-1 stories** (work at a client with zero agents in production), and the **combined pitches** — one grounded doer workflow + exactly one second-order differentiator — that are the likely build candidates. The differentiator answers "why is this not just SaaS"; the doer answers "why would my client pay this quarter." Tiers and the full two-horizon concept text live in `north-stars.md` (v3); evidence lives in `01_research/finance.md` and `00_sources/zenon-client-context.md`.
 
