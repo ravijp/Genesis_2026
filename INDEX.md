@@ -54,6 +54,7 @@
 - `round1-raw-agent-outputs.md` — verbatim Round-1 divergence one-liners under the four ideation lenses (A operator-pain / B startup-thesis / C demo-first + D gap-fill); provenance for the Round-1 clusters `[stable]`
 - `north-stars.md` — **v2 (2026-07-15)**: 10 active north-star concepts (5 CORE / 1 STRONG spike-gated / 1 CANDIDATE / 2 STRETCH / 1 GATED) + parked appendix, each with full-potential VISION + ≤6-wk competition SLICE + ELI5 + judge-panel and kill-pass verdicts folded in; new v2 concepts N-008 (remediation), N-009 (agent-to-agent servicing desk), N-010..N-012; N-006 parked on F3 collision `[v2 2026-07-15, human review pending]`
 - `north-stars-redteam.md` — verbatim adversarial red-team verdicts (freshness + feasibility passes) + adjudication (accepted/rejected attacks, standing rules) `[stable]`
+- `reground-brief.md` — T14 executable spec from Ravi's v2 review (2026-07-15): two-horizon rule (day-1 story at zero-agent clients + vision arc), grounded/visionary balance, SaaS-minded-leadership judge model + question checklist, appetite gate; kickoff prompt for the fresh session at the bottom `[stable]`
 
 ## Later phases (created when opened)
 
