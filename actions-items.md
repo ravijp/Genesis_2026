@@ -22,7 +22,7 @@ Research/mechanical agents = **sonnet or haiku**, prompts must say "Do NOT spawn
 | T2 | P0 | Retail internal-ops brief → `01_research/retail-internal-ops.md` | REVIEW (landed 2026-07-14, 197 lines; standout seeds: markdown/inventory-exception agent, returns-fraud triage) |
 | T3 | P1 | Verify pharma.md completeness | DONE (2026-07-14 — 181 lines, ends with Sources + flagged-unverified section; complete) |
 | T4 | P1 | Haiku collation of research seeds into `02_ideas/backlog.md` | DONE (2026-07-14 — **71 seeds** S-001..S-071 across 7 briefs; haiku missed the landscape brief, patched manually) |
-| T5 | P1 | Phase 2 ideation sprint per `02_ideas/METHOD.md`: 3 sonnet ideation agents (operator-pain / startup-thesis / demo-first lenses) + humans → ≥50 one-liners → anti-slop gate. igupta catalog ONLY after Round-1 lock | OPEN — blocked on T4 |
+| T5 | P1 | Phase 2 ideation sprint per `02_ideas/METHOD.md`: 3 sonnet ideation agents (operator-pain / startup-thesis / demo-first lenses) + humans → ≥50 one-liners → anti-slop gate. igupta catalog ONLY after Round-1 lock | CLAIMED (2026-07-14, Claude session) |
 | T6 | P1 | Rubric scoring round: enrich top ~20 into idea cards, judge-panel scoring per `02_ideas/RUBRIC.md`, top-10 → top-3 memo in `03_selection/` | OPEN — blocked on T5 |
 | T7 | P2 | Human review pass of research briefs (spot-check citations, esp. anything time-sensitive before it enters a pitch) | OPEN |
 | T8 | P2 | Ask GC: validation-checkpoint status, API budget, AWS account access | OPEN (human task — any of the three) |
