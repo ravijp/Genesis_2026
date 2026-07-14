@@ -54,10 +54,13 @@ Eval-first build in sprints aligned to competition checkpoints. Demo script incl
 | Official calendar already mid-flight | Confirm checkpoint expectations with GC; deliverables list drives sprint plan regardless |
 | Stale "why now" hooks | Re-verify every date/stat at pitch time (EU AI Act high-risk deadline already moved once → 2027-12-02) |
 
+## Team & operating answers (resolved Jul 2026)
+
+- **Team:** Ravi, Ishant, Namit. No named task owners — work runs Claude-heavy with human reviews in between. Tasks live on the board in `actions-items.md`: anyone (human or Claude session) **autopicks the top OPEN item**, marks it CLAIMED, commits, and moves it to REVIEW/DONE.
+- **HNB = Huntington National Bank** (confirmed).
+- **ADP & Lendmark:** fair game as targets, but historically low willingness-to-pay → penalize on the impact/POC-path axis.
+
 ## Open questions for Ravi
 
-1. **HNB** — Huntington National Bank or Hatton National Bank? (Affects finance idea targeting.)
-2. Team roster for the competition (2–3 people) — who besides you, and what skills?
-3. API budget / AWS account access details from GC?
-4. Status with GC: has our team's validation checkpoint been handled, or do we owe a problem statement immediately?
-5. Confirm client list interpretations in `00_sources/zenon-client-context.md` (esp. ampliFI, ADP, Lendmark as fair game for idea targeting).
+1. API budget / AWS account access details from GC?
+2. Status with GC: has our team's validation checkpoint been handled, or do we owe a problem statement immediately?

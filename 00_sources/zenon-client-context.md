@@ -13,7 +13,7 @@ Provenance: Ravi's client list (2026-07-14) + engagement artifacts observed in R
 | **AmEx** | Payments/cards | Cards, merchant services, servicing | Listed |
 | **Morgan Stanley** | Wealth/capital markets | Advisor workflows, research | Listed |
 | **Invesco** | Asset management | Research, ops, distribution | Listed |
-| **HNB** | Banking — **identity unconfirmed** | UNKNOWN — get from Ravi (Huntington National Bank vs Hatton National Bank) | Open question |
+| **HNB = Huntington National Bank** | Banking (US regional) | Retail/commercial banking, SMB, payments, servicing | Confirmed by Ravi (Jul 2026) |
 | **Dow Jones** | Media / information services | Newsroom, Factiva, **Risk & Compliance screening** (finance crossover) | Listed |
 | **J&J** | Pharma | Clinical ops, PV, regulatory, commercial | Listed |
 | **Kohl's** | Retail | Department-store ops, pricing/markdowns, loyalty, care | Listed |
@@ -25,6 +25,8 @@ Provenance: Ravi's client list (2026-07-14) + engagement artifacts observed in R
 |---|---|---|
 | **ADP** | HCM/payroll | "Agentic Workflow for Missing TAX ID" (Sep 2025), Personalization Platform POV (Feb 2026), "Accelerating Agentic AI" deck |
 | **Lendmark Financial (LFS)** | Consumer lending | Daily syncs, Productionization Strategy & Roadmap (Jan 2026) |
+
+> **Willingness-to-pay note (Ravi, Jul 2026):** ADP and Lendmark are fair game as idea targets, but both have shown **less tendency to pay** historically. Score them lower on the "Zenon impact / POC path" axis; prefer Barclays, WAB, Huntington, Visa/AmEx/CapOne, Morgan Stanley/Invesco as the named first customer in pitches.
 
 ## Zenon positioning (from LinkedIn corpus — see `zenon-linkedin-posts.md`)
 
