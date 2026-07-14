@@ -37,6 +37,7 @@
 **Vulnerable-customer scale (Financial Lives 2024, the most current official wave):** **26.4M UK adults (49%) showed characteristics of vulnerability** in May 2024; 13.1M (24%) had low financial resilience; 7.4M were struggling to pay bills/credit commitments in Jan 2024 ([FCA Financial Lives 2024](https://www.fca.org.uk/publication/financial-lives/financial-lives-survey-2024-key-findings.pdf)). No FCA Consumer Duty enforcement action naming a collections firm was found (11 open Consumer Duty investigations span other sectors) — an absence-of-evidence finding, not proof of absence ([Linklaters, 2026](https://financialregulation.linklaters.com/post/102mk6d/fca-enforcement-of-the-consumer-duty-what-do-we-know)).
 
 **Vendors active — verified pass 2:**
+
 - **Salient** — the strongest proof point: $60M Series A at $350M valuation led by a16z (2025-07-28); "Taylor" voice agent for collections calls with FDCPA/TCPA/CFPB compliance built in plus automated UDAAP monitoring of both AI and human agents; named customers Westlake Financial, Exeter Finance, Consumer Portfolio Services (CPS publicly announced deployment) + "three publicly listed banks"; claims >$1B transactions processed, 60% handle-time reduction ([a16z, 2025-07-28](https://a16z.com/announcement/investing-in-salient/); [CPS IR](https://ir.consumerportfolio.com/news-releases/news-release-details/consumer-portfolio-services-deploys-ai-powered-servicing)).
 - **InDebted** — Collect (third-party) + Receive (first-party) lines; AI assistants at 97% classification accuracy, 80% first-pass resolution (Feb 2024–Aug 2025 window); last raise A$60M Series C (Sep 2024, >A$350M valuation); CEO search reportedly underway mid-2026 (single-source — verify before citing) ([InDebted](https://www.indebted.co/en-us/solution/collect-ai/); [TechCrunch, 2026-07-05](https://techcrunch.com/2026/07/05/almost-40-new-unicorns-have-been-minted-so-far-this-year-here-they-are/)).
 - **Kastle** — **[corrected pass 2]** not general collections: it is a **mortgage-servicing** voice-agent startup ($2.8M raised, YC + Commerce Ventures; direct ICE MSP integration) ([Tracxn](https://tracxn.com/d/companies/kastle/__VyPXv-K5qnkBwLdfybhkhtYqlO8BnaHx1WaDaPC9bgE/funding-and-investors); [NMP](https://nationalmortgageprofessional.com/news/kastle-integrates-ice-msp-bring-ai-into-mortgage-servicing-workflows)).
@@ -133,6 +134,7 @@
 | AI-agent/agentic-browser retail traffic growth | +7,851% YoY (2025) | [HUMAN Security 2026 report](https://www.humansecurity.com/learn/resources/2026-state-of-ai-traffic-cyberthreat-benchmarks/) | ✓ **[re-cited to primary, pass 2]** |
 
 **Withdrawn in pass 2 (do not cite):**
+
 - ~~Cost-to-collect ₹600→₹240/account, 25%→32% recovery, 60-75% agent deflection~~ — not present at cited URL; an unattributed illustrative hypothetical recycled across vendor blogs.
 - ~~KYC manual checks $13-130~~ — mismatch with source (actual: $1-15 per flagged case).
 - ~~Adverse-media false positives 35-45% (Zyphe)~~ — the source's own text brackets the figure as unconfirmed-pending-telemetry.

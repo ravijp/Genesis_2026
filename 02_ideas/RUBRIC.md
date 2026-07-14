@@ -16,28 +16,35 @@ Mirrors the official Genesis judging weights exactly (kickoff deck, slide 8). Sc
 ## Scored axes (weights = official rubric)
 
 ### A1 — Zenon impact · 25%
+
 *Official: revenue potential / time savings.*
+
 - **5** — Named client + quantified pain + Zenon could credibly sell the POC within weeks; PE-portfolio-grade ROI story (payback measured in months). Adjacent to a live engagement (collections, HOA/SMB banking, lending, loyalty, payroll) = instant credibility.
 - **3** — Plausible dollar value for a real client type, not yet quantified.
 - **1** — "Someone might want this."
 
 ### A2 — Technical depth & innovation · 25%
+
 - **5** — Verifiable multi-step autonomy with self-correction; orchestration or domain encoding judges haven't seen; the proprietary domain layer is visible in the demo (not claimed, shown).
 - **3** — Solid single-agent + tools done well.
 - **1** — Prompt wrapper / template clone.
 
 ### A3 — Feasibility & production readiness · 25%
+
 *The AI judge lives here: evals, reproducibility, accuracy/cost/latency evidence are scored deliverables.*
+
 - **5** — Walking skeleton imaginable in week 1; eval design exists on day 0; fresh-machine reproducible; AWS-deployable; the path-to-production one-pager writes itself.
 - **3** — Buildable with identified risks.
 - **1** — Research project in disguise.
 
 ### A4 — Originality · 15%
+
 - **5** — White space or a novel crossover (e.g., two client domains fused); differentiated vs named startups; not in the graveyard.
 - **3** — Fresh twist on a known category.
 - **1** — Graveyard category (generic SDR, notetaker, doc chatbot).
 
 ### A5 — Presentation potential · 10%
+
 - **5** — Visceral 30-second demo moment + a one-sentence story a judge retells at dinner.
 - **3** — Explainable with effort.
 - **1** — Needs 10 minutes of context before anything happens.
@@ -45,6 +52,7 @@ Mirrors the official Genesis judging weights exactly (kickoff deck, slide 8). Sc
 ## Degrees of freedom
 
 **(a) As scoring tie-breakers** (when weighted totals are close):
+
 1. Client transferability depth — does a named engagement adjacency exist today?
 2. Demo fragility — live-failure risk, recorded-fallback quality
 3. Data credibility — will synthetic data convince a domain expert?
@@ -56,6 +64,7 @@ domain · persona · autonomy level (copilot → supervised autonomy → full au
 ## Judge panel protocol
 
 3 independent opus judge agents, no shared context, distinct lenses:
+
 1. **Client buyer** — "would I pay for a POC of this?"
 2. **CTO** — "is this technically impressive and shippable?"
 3. **Competition judge** — "does this win against 20 other demos on the official rubric?"

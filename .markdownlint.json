@@ -1,0 +1,9 @@
+{
+  "comment": "Tuned to this repo's conventions: numbered inline citations like [1]/[E44]/[P12] are NOT reference links (MD052); research briefs use compact table separators |---| (MD060); long cited lines are intentional (MD013); inline HTML and emphasis-as-heading appear in salvaged agent output (MD033, MD036).",
+  "default": true,
+  "MD013": false,
+  "MD033": false,
+  "MD036": false,
+  "MD052": false,
+  "MD060": false
+}

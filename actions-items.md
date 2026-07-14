@@ -27,7 +27,7 @@ Research/mechanical agents = **sonnet or haiku**, prompts must say "Do NOT spawn
 | T7 | P2 | Human review pass of research briefs (spot-check citations, esp. anything time-sensitive before it enters a pitch) | OPEN |
 | T8 | P2 | Ask GC: validation-checkpoint status, API budget, AWS account access | OPEN (human task — any of the three) |
 | T9 | P3 | Optional full `media.md` synthesis from `media-findings-digest.md` + session task transcripts | OPEN |
-| T10 | P3 | Markdown-lint cleanup (MD060/MD022 warnings across docs) | OPEN |
+| T10 | P3 | Markdown-lint cleanup (MD060/MD022 warnings across docs) | DONE (2026-07-14 — MD022/MD032 blank-line fixes applied whitespace-only across 10 docs; `.markdownlint.json` added tuning MD052/MD060/MD013 to repo citation/table conventions instead of churning every brief; also fixed stale notes: retail-commerce header now points to landed T2 brief, landscape source [22] re-pointed to primary METR TH1.1 and stale "sources to be appended" line removed) |
 
 ## Done log
 

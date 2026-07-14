@@ -5,6 +5,7 @@ Source: `2026 Zenon Agentic AI Competition Kickoff.pdf` (official Genesis Commit
 ## What the competition is
 
 **"Genesis: Zenon's GenAI Competition 2026"** — kicked off June 2026. Objectives (slide 2):
+
 1. Accelerate **Agentic AI capability** development within the firm
 2. **Surface real-world solution ideas** applicable to clients and internal operations
 3. Develop an AI-first, engineering-focused culture

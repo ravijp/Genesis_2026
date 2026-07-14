@@ -251,6 +251,7 @@ The platforms a finance/pharma/retail/HCM client will benchmark a custom build a
 ### Build-vs-platform guidance for an AWS custom agentic build (2-3 ppl, 6-7 wks, Anthropic/OpenAI allowed)
 
 **The decision is not "AgentCore *or* a framework" — it's "framework always; add AgentCore components only where they replace real infra work."** The agent *logic* should live in **Claude Agent SDK or LangGraph** regardless (faster iteration, local debuggability, model-agnostic). Then cherry-pick AgentCore where it's expensive to build and cheap to adopt:
+
 - **Runtime** — for session isolation, long-running (8 hr) agents, or serverless scale without managing ECS. (Short request/response? plain Lambda/Fargate may be simpler.)
 - **Identity** (free via Runtime/Gateway) — if agents act **on behalf of users** with OAuth (tedious to build).
 - **Memory** — managed long-term/episodic memory vs rolling your own vector store + retrieval.
@@ -260,6 +261,7 @@ The platforms a finance/pharma/retail/HCM client will benchmark a custom build a
 **Pragmatic path given the AWS constraint: Claude Agent SDK/LangGraph agents deployed on AgentCore Runtime, adding Identity/Memory/Policy as needed.**
 
 **What the platforms do that a custom build must consciously match or deliberately skip:**
+
 1. **Observability/tracing** — *match* (OpenTelemetry is table stakes, cheap).
 2. **Guardrails/policy** — *match a basic version* (enterprises won't trust an ungoverned agent).
 3. **Identity & on-behalf-of auth** — *match if* the use case touches user-specific data; else skip.
@@ -366,17 +368,17 @@ Drawn from the client roster (finance-heavy: Visa, Amex, Morgan Stanley, Capital
 13. Agent identity/authorization governance — https://aport.io/blog/best-ai-agent-authentication-authorization-2026/ ; arXiv "Authorization Propagation in Multi-Agent AI Systems," 2026 — https://arxiv.org/pdf/2605.05440
 15. Claude Fable 5 announcement (GA 2026-06-09, $10/$50, 1M context, long-running agents) — https://www.anthropic.com/news/claude-fable-5-mythos-5 ; https://www.anthropic.com/claude/fable
 15b. Gemini 3.1 / 3.5 Pro specs & pricing, Antigravity — https://llm-stats.com/blog/research/gemini-3.1-pro-launch ; https://www.developersdigest.tech/blog/gemini-3-5-pro-developer-guide-2026 ; https://www.eesel.ai/blog/google-gemini-3-pricing
+
 16. Open-weights for agentic coding 2026 (DeepSeek V4, Kimi K2.6, Qwen 3.x, GLM) — https://www.mindstudio.ai/blog/best-open-source-llms-agentic-coding-2026 ; https://tech-insider.org/best-open-source-llm-2026/ ; https://wavect.io/blog/open-weight-llm-comparison-2026/
 17. MCP governance/spec/registry (Linux Foundation Agentic AI Foundation Dec 2025; spec 2025-11-25; ~97M downloads) — https://workos.com/blog/everything-your-team-needs-to-know-about-mcp-in-2026
 17b. Claude Platform Models Overview (authoritative model IDs, context, pricing) & Claude API skill — https://platform.claude.com/docs/en/about-claude/models/overview
+
 18. OpenAI AgentKit (Agent Builder, ChatKit, Connector Registry, Agents SDK, Evals; 2025-10-06) & Agents SDK Apr-2026 sandbox update — https://openai.com/index/introducing-agentkit/ ; https://openai.com/index/the-next-evolution-of-the-agents-sdk/
 19. Framework adoption/stars 2026 (LangGraph enterprise list, CrewAI/AutoGen/smolagents/Pydantic AI) — https://medium.com/@atnoforgenai/10-ai-agent-frameworks-you-should-know-in-2026-langgraph-crewai-autogen-more-2e0be4055556 ; https://dev.to/linou518/the-2026-ai-agent-framework-decision-guide-langgraph-vs-crewai-vs-pydantic-ai-b2h ; https://alicelabs.ai/en/insights/best-ai-agent-frameworks-2026
 20. Claude Agent SDK production features (renamed Sept 2025; subagents/skills/MCP; Dynamic Workflows + Performance Outcomes June 2026) — https://code.claude.com/docs/en/agent-sdk/overview ; https://www.totalum.app/blog/claude-agent-sdk-totalum-2026 ; https://inference.net/content/claude-agent-sdk-production-guide/
 21. Computer-use agents & OSWorld 2026 (Opus 4.7 82.3%; Operator 69.9%; route-by-workload) — https://www.digitalapplied.com/blog/computer-use-agents-2026-claude-openai-gemini-matrix ; https://coasty.ai/blog/osworld-benchmark-results-2026-ai-computer-use-agents-ranked
-22. METR Task-Completion Time Horizons (Opus 4.6 ~14.5 hrs Feb 2026; doubling ~4.3 months) — https://metr.org/time-horizons/ ; https://epoch.ai/benchmarks/metr-time-horizons ; https://agentmarketcap.ai/blog/2026/04/11/new-moores-law-ai-agent-task-horizons-2026
+22. METR Task-Completion Time Horizons — primary is TH1.1 (2026-01-29): Claude Opus 4.5 ≈ 320 min (~5.3 hr) @50%, long-run doubling ~7 months (accelerated to ~89 days P50 since 2024); see §5 E44/E45. *(The "~14.5 hr / 4.3-month doubling" figures circulating on SEO sites are superseded per §5's source-quality warning — do not cite.)* — https://metr.org/blog/2026-1-29-time-horizon-1-1/ ; https://metr.org/time-horizons/ ; https://epoch.ai/benchmarks/metr-time-horizons
 23. Agentic AI in financial services (KYC/AML, fraud alert investigation, reconciliation, parallel onboarding) — https://www.mckinsey.com/capabilities/risk-and-resilience/our-insights/how-agentic-ai-can-change-the-way-banks-fight-financial-crime ; https://www.kore.ai/blog/ai-agents-in-finance-banking-12-proven-use-cases-2026 ; https://appstekcorp.com/blog/agentic-ai-for-kyc-and-compliance/
 24. Agent benchmarks 2026 (tau2-bench policy adherence/GLM-5.2 99.1%; GAIA HAL; six benchmarks that matter incl. METR) — https://github.com/sierra-research/tau2-bench ; https://awesomeagents.ai/leaderboards/agentic-ai-benchmarks-leaderboard/ ; https://decodethefuture.org/en/ai-agent-benchmarks-2026/ ; https://pricepertoken.com/leaderboards/benchmark/tau2
 25. Claude Agent SDK Dynamic Workflows + Performance Outcomes (grader-driven revise loops), June 2026 — https://www.totalum.app/blog/claude-code-subagents-totalum ; https://linas.substack.com/p/anthropic-claude-2026-every-launch-guide
 26. Agentic payments protocol status (x402/AP2/ACP/MPP) & AWS Bedrock AgentCore payments — https://www.crossmint.com/learn/agentic-payments-protocols-compared ; https://aws.amazon.com/blogs/machine-learning/agents-that-transact-introducing-amazon-bedrock-agentcore-payments-built-with-coinbase-and-stripe/ ; https://www.openfort.io/blog/agentic-payments-landscape
-
-*(Sources 5/6 sub-sections — §5b evals/observability and §6b enterprise-platforms deep-dives — are being finalized from dedicated sub-agent research and will be appended with their own numbered sources.)*

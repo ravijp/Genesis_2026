@@ -42,6 +42,7 @@
 ## 2. Vertical AI-agent raises by domain (Zenon-relevant)
 
 ### 2a. Financial-services ops — collections, lending, servicing
+
 - **Salient** — AI-native loan servicing & collections (auto/consumer finance): automates outbound calls, servicing, regulatory audit, disputes, claims. **$60M Series A** (a16z-backed), ~**$25M ARR** in ~2 years, deployments processing billions in loans (e.g., Consumer Portfolio Services). Claims 80-90% of outbound calls automated, +20-30% payment rates. ([a16z](https://a16z.com/announcement/investing-in-salient/); [WebProNews](https://www.webpronews.com/salients-ai-loan-machine-25m-arr-in-two-years-without-a-single-customer-loss/); [StockTitan/CPSS](https://www.stocktitan.net/news/CPSS/consumer-portfolio-services-deploys-ai-powered-servicing-platform-uxgwpzptlf1v.html))
 - **Kastle (YC)** — AI voice agents for mortgage servicing & consumer-lending collections (payment collection, escrow Q&A). **~$2.8M** across 2 rounds; latest seed Mar 2025. ([YC](https://www.ycombinator.com/companies/kastle); [Crunchbase](https://www.crunchbase.com/organization/kastle))
 - **AgentCollect (YC)** — B2B debt collection via AI agents. ([YC](https://www.ycombinator.com/companies/agentcollect))
@@ -49,6 +50,7 @@
 - **Market context:** New York Fed (May 2026) — US household debt **$18.8T**, ~4.8-5.0% of balances delinquent; AI-for-collections market ~$3.34B (2024) → ~$15.9B (2034). McKinsey digital-first collections: resolution up multiple points, collection costs down ≥15%. ([HES FinTech](https://hesfintech.com/blog/ai-in-debt-collection-key-trends-and-approaches/); [Barclays US](https://cards.barclaycardus.com/banking/about-us/news-and-views/insights/top-five-ai-innovations-shaping-consumer-banking-in-2026/))
 
 ### 2b. Financial-services ops — CFO-suite, accounting, AR/finance back-office
+
 - **Basis** — end-to-end AI agents for accounting firms (accounting/tax/audit). **$100M Series B at $1.15B** (Feb 24, 2026), led by a16z, w/ Tiger Global, Sequoia, YC. ([CPA Practice Advisor](https://www.cpapracticeadvisor.com/2026/02/24/basis-raises-100-million-to-deploy-ai-agents-for-accounting-firms/178759/); [SiliconANGLE](https://siliconangle.com/2026/02/24/ai-accounting-startup-basis-secures-100m-1-15b-valuation-firms-adopt-agent-based-workflows/))
 - **Rillet** — AI-native ERP / accounting. **$70M Series B** (a16z + ICONIQ, w/ Sequoia, Oak HC/FT), ~Aug 2025 — 10 weeks after a $25M Series A; >$100M raised in <1 year. ([Rillet](https://www.rillet.com/blog/rillet-raises-70m-series-b-from-andreessen-horowitz-and-iconiq); [Crunchbase](https://news.crunchbase.com/fintech/startup-rillet-ai-seriesb-a16z-iconiq/))
 - **Fazeshift** — AI agents for accounts receivable (invoicing, collections, payment matching, reconciliation across NetSuite/Salesforce/bank portals; claims >90% of manual AR automated). **$17M Series A** (May 7, 2026), led by F-Prime; Gradient Ventures, YC, Wayfinder, Pioneer, Ritual; $22M total. ([Crunchbase](https://news.crunchbase.com/fintech/fazeshift-accounts-receivable-ai-finance-ops-startup-funding/))
@@ -57,39 +59,49 @@
 - **Demand context:** 54% of CFOs name integrating AI agents as their #1 digital-transformation priority (Deloitte 2026 CFO Signals); 76% of CFOs allocating budget to autonomous finance agents; 2026 agentic-AI spend ~$12.4B. ([ChatFin](https://chatfin.ai/blog/2026-finance-ai-spending-cfo-strategies-for-autonomous-agent-deployment/))
 
 ### 2c. Compliance / KYC-AML / regulatory screening
+
 - **Diligent AI (YC)** — AI agents for end-to-end KYC/AML (clearing false positives, registry/adverse-media search, sanctions/payment-screening resolution). **€2.1M seed** (Mar 4, 2026), led by Speedinvest w/ Shapers, YC; angels from N26, Allica, IDnow. ([EU-Startups](https://www.eu-startups.com/2026/03/yc-backed-diligent-ai-raises-e2-1-million-to-automate-kyc-and-aml-workflows-using-ai-agents/))
 - **Norm Ai** — regulatory-compliance agents; **>$140M** raised (Coatue, Bain Capital, Citi Ventures). **Bretton AI (formerly Greenlite)** — **$75M Series B** (Sapphire). **Spektr** — **$20M** (AI KYC/AML). **Steward** — **$5M** (AML/KYC onboarding, $100B assets). **Sphinx** — **$7.1M seed**. ([PYMNTS](https://www.pymnts.com/news/artificial-intelligence/2026/this-ceo-just-raised-110-million-to-make-banks-agent-first/); [AML Network](https://amlnetwork.org/aml-news/diligent-ai-secures-e2-1-million-seed-funding-to-automate-kyc-and-aml-compliance-workflows-with-ai-agents/); [Fintech Global](https://fintech.global/2026/03/18/ai-compliance-platform-steward-secures-5m-funding/))
 - **Context:** global AML compliance costs >$200B/yr; false positives waste up to 95% of investigator time. ([AML Network](https://amlnetwork.org/aml-news/diligent-ai-secures-e2-1-million-seed-funding-to-automate-kyc-and-aml-compliance-workflows-with-ai-agents/))
 
 ### 2d. Banking back-office & SMB/commercial banking
+
 - Nearly half of Tier-1 banks to deploy back-office agents by 2026 (KYC, loan-doc processing, transaction monitoring, regulatory reporting); reported 90% cut in KYC onboarding time, 50% less AML investigation time, 2.3x ROI within 13 months. **Unit21** ~$92M (used by Chime, Intuit, Sallie Mae). Small-dollar (<$250K) SMB lending via cash-flow analysis is repeatedly cited as an open opportunity. ([Beam](https://beam.ai/agentic-insights/ai-agents-banking-2026-beyond-chatbots); [Kore.ai](https://www.kore.ai/blog/ai-agents-in-finance-banking-12-proven-use-cases-2026))
 
 ### 2e. Insurance ops (claims, underwriting, brokerage)
+
 - **AI captured 95.2% of all insurtech funding in Q1 2026** ($1.63B total, best since Q3 2022). **Corgi** (AI-native insurer) **$108M**; **Harper** (AI commercial-insurance brokerage) **$47M** seed+A; 65% of insurers planning scaled claims agents in 2026. ([FinanceX](https://www.financexmagazine.com/post/insurtech-s-1-63-billion-tell-ai-is-no-longer-the-pitch-it-s-the-plumbing); [Insurance Business](https://www.insurancebusinessmag.com/us/news/technology/quick-everyone-lets-make-an-insurance-ai-startup-581088.aspx))
 
 ### 2f. Healthcare admin (RCM, prior auth, clinical ops) — relevant to J&J-adjacent payer/provider workflows
+
 - US loses **$262B/yr** to revenue-cycle inefficiency; denial rates 30% (2022) → 41% (2025); RCM AI market $14.9B (2024) → $21.7B (2025). **Adonis** (AI-first RCM, ex-Palantir) 4x revenue growth 2025; **Abridge** **$250M at $2.7B** (Apr 2026); CMS 2026 rules cut prior-auth turnaround 14→7 days (regulatory tailwind). ([Innovaccer](https://innovaccer.com/blogs/selecting-agentic-ai-healthcare); [Aspirion](https://www.aspirion.com/the-year-ai-transformed-revenue-cycle-2025-insights-and-2026-predictions/))
 
 ### 2g. Legal / contracts
+
 - **Harvey** — **$200M at $11B** (Mar 25, 2026, GIC + Sequoia); ~$190M ARR, 3.9x YoY; expanding agent capabilities. **Legora** — **$550M Series D** (Accel, Mar 2026) + $50M extension → **$5.6B** (Nvidia, Atlassian); acquired Walter AI. **Eudia** — **$105M Series A** (General Catalyst), in-house legal at F500. Legal is the most mature vertical (Harvey ~$300M ARR by May 2026 per one source). ([CNBC](https://www.cnbc.com/2026/03/25/legal-ai-startup-harvey-raises-200-million-at-11-billion-valuation.html); [TechCrunch](https://techcrunch.com/2026/04/30/legal-ai-startup-legora-hits-5-6-valuation-and-its-battle-with-harvey-just-got-hotter/); [aifundingtracker](https://aifundingtracker.com/top-legal-ai-startups/))
 
 ### 2h. Real-estate / property management (HOA-adjacent — Western Alliance)
+
 - **Vantaca** — AI HOA/community-association management. **$300M at $1.25B** (Oct 2025). ([The AI Consulting Network](https://www.theaiconsultingnetwork.com/blog/proptech-ai-unicorns-2026-cre-investment-surge))
 - **EliseAI** — AI property-management assistant (tenant comms, tours, lease audits, maintenance). **$250M at $2.2B** (Aug 2025); Bessemer-highlighted. ([The AI Consulting Network](https://www.theaiconsultingnetwork.com/blog/proptech-ai-unicorns-2026-cre-investment-surge); [Bessemer](https://www.bvp.com/atlas/the-state-of-ai-2025))
 - **Juniper Square** — AI fund admin/IR/CRM for RE investment managers. **$130M at $1.1B** (Jun 2025). **Assembly (YC)** — AI-native HOA management. Proptech VC hit ~$1.7B in Jan 2026 alone (+176% YoY). ([The AI Consulting Network](https://www.theaiconsultingnetwork.com/blog/proptech-ai-unicorns-2026-cre-investment-surge))
 
 ### 2i. Customer ops / CX
+
 - **Decagon** — AI customer-support agents. **$250M Series D at $4.5B** (Jan 2026, Coatue + Index); ~$481M total; ~$35M ARR; +100 enterprise logos in 2025 (incl. financial services). **Sierra** — ~$100M ARR (Oct 2025, +400% YoY), **$350M** round (Greenoaks) at **$10B**. **Crescendo** — per-resolution pricing (~$1.25/resolution). **Parloa** $350M, **Netomi** $110M, **Wonderful** $150M. **Outcome pricing is the norm here.** ([Bloomberg](https://www.bloomberg.com/news/articles/2026-01-28/ai-customer-support-startup-decagon-valued-at-4-5-billion); [Businesswire](https://www.businesswire.com/news/home/20250623894798/en/Decagon-Raises-$131M-at-$1.5B-Valuation-to-Deliver-Concierge-Customer-Experience-with-AI-Agents); [Sacra](https://sacra.com/research/sierra-vs-decagon/))
 
 ### 2j. Procurement / supply chain
+
 - **AgentOS** (Berlin) **$85M Series B** (a16z), valuation tied to cutting opex 30%. **Lumari (YC)** — sourcing/RFQ/PO agents (ex-Google/Tesla/Amazon/Stripe). **Lio** — multi-agent procurement (vendor research→negotiation→approval→tracking). **Traza** — **$2.1M pre-seed** (Base10), procurement for manufacturers/construction. ([New Market Pitch](https://newmarketpitch.com/blogs/news/agentic-ai-funding-trends); [Pulse2](https://pulse2.com/traza-2-1-million-raised-to-automate-procurement-and-supply-chain-operations-with-ai-workers/))
 
 ### 2k. HR / payroll ops (ADP)
+
 - **Warp** — AI-native employee management (payroll, HR, compliance, benefits, IT). **$85M** (Battery, Peak XV, Sound, Sapphire, SV Angel, Homebrew). ([asanify digest](https://asanify.com/blog/news/ai-agents-enterprise-stack-april-28-2026/))
 - **Niural** — AI payroll/PEO + compliance; **Series A extended to $52M** (+$21M); >$200M annualized gross revenue on PEO after an Aetna partnership (Apr 2026); launching "Niural AI Labs" for *long-horizon agents in high-stakes regulated areas* (workflow orchestration, automated compliance). **Central** and **Payslip** (Salica) also funded. ([Fundraise Insider](https://fundraiseinsider.com/blog/niural-adds-21m-expanding-series-a-to-52m-for-ai-payroll/))
 - **Note:** Big incumbents are moving (Sage rolling AI agents across finance/HR/ops, Apr 2026) — meaning ADP itself is a *buyer/partner* under competitive pressure. ([Sage](https://www.sage.com/en-us/news/press-releases/2026/04/sage-expands-ai-agents-across-finance-hr-and-operations-to-automate-workflows/))
 
 ### 2l. Loyalty / payments ops (ampliFI, Amex, Visa)
+
 - No breakout *pure-play* "loyalty-ops agent" unicorn yet — this is **open white space**. The action is in **agentic commerce**: PayPal↔Perplexity embedded checkout; Stabile (loyalty autopilot rewarding purchases made via ChatGPT/Copilot/Google AI Mode, launched Nov 5, 2025); PYMNTS: *"the most consequential customer a brand acquires in 2026 may be an AI agent."* Dispute resolution, fraud orchestration, routing, and pricing are increasingly agent-run in real time. ([PYMNTS agentic loyalty](https://www.pymnts.com/artificial-intelligence-2/2026/how-brands-are-reinventing-loyalty-for-the-ai-decision-maker/); [Chain Store Age](https://chainstoreage.com/when-ai-agents-shop-us-how-will-loyalty-programs-keep))
 
 ---
@@ -158,6 +170,7 @@
 ## White space & the graveyard
 
 ### White space (pain repeatedly named, no clear enterprise-embedded winner)
+
 1. **Compliant, empathetic collections & loss-mitigation** — Salient/Kastle prove outbound automation, but the *hard, defensible* part (state-by-state FDCPA/Reg-F compliance, hardship detection, promise-to-pay orchestration, human handoff on distress signals) inside a *named card/consumer-lending book* is unclaimed. Direct fit: **Barclays collections, Lendmark**. ([HES FinTech](https://hesfintech.com/blog/ai-in-debt-collection-key-trends-and-approaches/))
 2. **HOA / community-association *bank-side* finance ops** — Vantaca/Assembly own the management-company side; nobody owns the *bank's* view: cash application of homeowner dues, reserve-fund monitoring, delinquency/lien workflows, fraud on association accounts. Direct fit: **Western Alliance HOA banking**. ([AI Consulting Network](https://www.theaiconsultingnetwork.com/blog/proptech-ai-unicorns-2026-cre-investment-surge))
 3. **Loyalty/rewards ops in the agentic-commerce era** — no pure-play winner; agent-mediated purchasing threatens to disintermediate loyalty. Direct fit: **ampliFI, Amex, Visa**. ([PYMNTS](https://www.pymnts.com/artificial-intelligence-2/2026/how-brands-are-reinventing-loyalty-for-the-ai-decision-maker/))
@@ -165,6 +178,7 @@
 5. **Dispute / chargeback orchestration** — cited as increasingly agent-run but no clear standalone winner; fits **Visa/Amex/Capital One**. ([PYMNTS](https://www.pymnts.com/artificial-intelligence-2/2026/how-brands-are-reinventing-loyalty-for-the-ai-decision-maker/))
 
 ### The graveyard (do NOT pitch these)
+
 - **Generic AI SDRs / outbound "AI BDR"** — 50-70% annual churn, deliverability collapse, brand/domain damage, commoditized datasets, "18-month half-life." ([DigitalApplied](https://www.digitalapplied.com/blog/case-against-ai-sdrs-contrarian-analysis-2026))
 - **Meeting notetakers / transcription** — accuracy commoditized (90-95%+ across 8 tools); differentiators are just integrations. ([Laxis](https://www.laxis.com/blog/state-of-meeting-note-taking-2026/))
 - **Thin "chat-layer" wrappers with no proprietary data/workflow moat** — ~80% of AI startups projected to fail by end-2026; margins collapse as models commoditize. ([IdeaProof](https://ideaproof.io/failures/ai-startups))
@@ -206,6 +220,7 @@
 ## Sources
 
 **YC batches & RFS**
+
 - YC Requests for Startups — https://www.ycombinator.com/rfs
 - The VC Corner, YC Summer 2026 RFS — https://www.thevccorner.com/p/yc-summer-2026-requests-for-startups-ideas
 - CB Insights, YC Summer 2025 — https://www.cbinsights.com/research/y-combinator-summer2025/
@@ -217,6 +232,7 @@
 - PitchBook, YC all-in on agents — https://pitchbook.com/news/articles/y-combinator-is-going-all-in-on-ai-agents-making-up-nearly-50-of-latest-batch
 
 **VC theses**
+
 - a16z, outcome-based pricing — https://a16z.com/newsletter/december-2024-enterprise-newsletter-ai-is-driving-a-shift-towards-outcome-based-pricing/
 - Bessemer, State of AI 2025 — https://www.bvp.com/atlas/the-state-of-ai-2025
 - Bessemer, Building Vertical AI (Jan 2026 PDF) — https://www.bvp.com/assets/uploads/2026/01/BUILDING-VERTICAL-AI_PDF_BESSEMER_VENTURE_PARTNERS_BOOK_JANUARY_2026.pdf
@@ -225,11 +241,13 @@
 - Menlo Ventures, State of GenAI in the Enterprise 2025 — https://menlovc.com/perspective/2025-the-state-of-generative-ai-in-the-enterprise/
 
 **Funding trends / market**
+
 - New Market Pitch, agentic-AI funding trends 2026 — https://newmarketpitch.com/blogs/news/agentic-ai-funding-trends
 - New Market Pitch, agentic-AI funding analysis 2025-26 — https://newmarketpitch.com/blogs/news/agentic-ai-funding-analysis
 - SaaS Mag, vertical AI eating SaaS — https://www.saasmag.com/vertical-ai-agents-eating-horizontal-saas/
 
 **Financial-services ops**
+
 - a16z, Investing in Salient — https://a16z.com/announcement/investing-in-salient/
 - WebProNews, Salient $25M ARR — https://www.webpronews.com/salients-ai-loan-machine-25m-arr-in-two-years-without-a-single-customer-loss/
 - StockTitan/CPSS deploys Salient — https://www.stocktitan.net/news/CPSS/consumer-portfolio-services-deploys-ai-powered-servicing-platform-uxgwpzptlf1v.html
@@ -251,43 +269,52 @@
 - Kore.ai, 12 banking use cases — https://www.kore.ai/blog/ai-agents-in-finance-banking-12-proven-use-cases-2026
 
 **Compliance / KYC-AML**
+
 - EU-Startups, Diligent AI €2.1M — https://www.eu-startups.com/2026/03/yc-backed-diligent-ai-raises-e2-1-million-to-automate-kyc-and-aml-workflows-using-ai-agents/
 - AML Network, Diligent AI + regtech rounds — https://amlnetwork.org/aml-news/diligent-ai-secures-e2-1-million-seed-funding-to-automate-kyc-and-aml-compliance-workflows-with-ai-agents/
 - Fintech Global, Steward $5M — https://fintech.global/2026/03/18/ai-compliance-platform-steward-secures-5m-funding/
 
 **Healthcare admin**
+
 - Innovaccer, agentic RCM 2026 — https://innovaccer.com/blogs/selecting-agentic-ai-healthcare
 - Aspirion, RCM 2025 insights / 2026 predictions — https://www.aspirion.com/the-year-ai-transformed-revenue-cycle-2025-insights-and-2026-predictions/
 
 **Legal**
+
 - CNBC, Harvey $11B — https://www.cnbc.com/2026/03/25/legal-ai-startup-harvey-raises-200-million-at-11-billion-valuation.html
 - TechCrunch, Legora $5.6B — https://techcrunch.com/2026/04/30/legal-ai-startup-legora-hits-5-6-valuation-and-its-battle-with-harvey-just-got-hotter/
 - aifundingtracker, legal AI — https://aifundingtracker.com/top-legal-ai-startups/
 
 **Real estate / HOA**
+
 - The AI Consulting Network, proptech AI unicorns 2026 — https://www.theaiconsultingnetwork.com/blog/proptech-ai-unicorns-2026-cre-investment-surge
 - YC, Housing & Real Estate companies — https://www.ycombinator.com/companies/industry/housing-and-real-estate
 
 **Customer ops**
+
 - Bloomberg, Decagon $4.5B — https://www.bloomberg.com/news/articles/2026-01-28/ai-customer-support-startup-decagon-valued-at-4-5-billion
 - Businesswire, Decagon $131M — https://www.businesswire.com/news/home/20250623894798/en/Decagon-Raises-$131M-at-$1.5B-Valuation-to-Deliver-Concierge-Customer-Experience-with-AI-Agents
 - Sacra, Sierra vs Decagon — https://sacra.com/research/sierra-vs-decagon/
 
 **Procurement / HR-payroll**
+
 - Pulse2, Traza $2.1M — https://pulse2.com/traza-2-1-million-raised-to-automate-procurement-and-supply-chain-operations-with-ai-workers/
 - Fundraise Insider, Niural $52M — https://fundraiseinsider.com/blog/niural-adds-21m-expanding-series-a-to-52m-for-ai-payroll/
 - asanify, AI enterprise stack (Warp) — https://asanify.com/blog/news/ai-agents-enterprise-stack-april-28-2026/
 - Sage, AI agents across finance/HR/ops — https://www.sage.com/en-us/news/press-releases/2026/04/sage-expands-ai-agents-across-finance-hr-and-operations-to-automate-workflows/
 
 **Loyalty / agentic commerce**
+
 - PYMNTS, reinventing loyalty for the AI decision-maker — https://www.pymnts.com/artificial-intelligence-2/2026/how-brands-are-reinventing-loyalty-for-the-ai-decision-maker/
 - Chain Store Age, AI agents shop for us — https://chainstoreage.com/when-ai-agents-shop-us-how-will-loyalty-programs-keep
 
 **Insurance**
+
 - FinanceX, insurtech $1.63B Q1 2026 — https://www.financexmagazine.com/post/insurtech-s-1-63-billion-tell-ai-is-no-longer-the-pitch-it-s-the-plumbing
 - Insurance Business, "make an insurance AI startup" — https://www.insurancebusinessmag.com/us/news/technology/quick-everyone-lets-make-an-insurance-ai-startup-581088.aspx
 
 **Agent infrastructure**
+
 - Chainalysis, x402 agentic payments — https://www.chainalysis.com/blog/x402-agentic-payments-adoption/
 - PRNewswire, Fireblocks x402 suite — https://www.prnewswire.com/news-releases/fireblocks-joins-x402-foundation-launches-agentic-payments-suite-302777251.html
 - SC Media, Oasis Security $120M — https://www.scworld.com/brief/oasis-security-raises-120-million-for-non-human-identity-management
@@ -303,6 +330,7 @@
 - GeekWire, CodeIntegrity $5M — https://www.geekwire.com/2026/codeintegrity-raises-4-8m-to-put-permanent-guardrails-on-unpredictable-ai-agents/
 
 **Graveyard**
+
 - DigitalApplied, case against AI SDRs — https://www.digitalapplied.com/blog/case-against-ai-sdrs-contrarian-analysis-2026
 - Laxis, state of note-taking 2026 — https://www.laxis.com/blog/state-of-meeting-note-taking-2026/
 - IdeaProof, AI startups that failed — https://ideaproof.io/failures/ai-startups

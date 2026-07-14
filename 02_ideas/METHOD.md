@@ -42,6 +42,7 @@ Evidence base  →   Divergence 50+   →   Anti-slop gate  →  Idea cards top~
 **Auto-kill list** (no rework, just kill): generic RAG chatbot over documents · "chat with your X" · meeting/email summarizer · generic customer-support bot · code assistant · anything whose demo is a text box answering questions.
 
 **Ten tests — all must pass:**
+
 1. Names the workflow it changes and the persona who does it today (title, team)
 2. Produces an **artifact of record** (memo, case decision, filing, updated system state) — not just an answer
 3. Touches a system of record (real or faithfully simulated)

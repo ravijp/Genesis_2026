@@ -9,23 +9,28 @@ The kickoff deck's 12-week calendar: validation ended Jul 6 · Demo 1 Jul 20 · 
 ## Phases & gates
 
 ### P1 — Research (opened 2026-07-14, in flight)
+
 Seven parallel tracks, July-2026 currency, all in `01_research/`:
 agentic-AI landscape (opus) · finance = top priority (opus) · pharma (sonnet) · media (sonnet) · retail (sonnet) · startup/funding landscape (opus) · lessons-from-prior-work scrutiny (opus).
 **Gate:** all briefs landed, spot-checked, INDEX updated; digest of cross-cutting themes; every brief ends in candidate use-case seeds.
 
 ### P2 — Ideation (next)
+
 Divergence to **50+ ideas** using the pattern × value-chain matrix and multi-agent divergence protocol (METHOD.md), then the anti-slop gate. Ideas come from OUR evidence base; the igupta idea catalog is consulted only after Round-1 lock, as an overlap/coverage check.
 **Gate:** ≥50 ideas, each traceable to evidence, ≥50% finance; survivors of anti-slop gate enriched into idea cards.
 
 ### P3 — Selection (top 3 → final 1)
+
 Two-round scoring per RUBRIC.md: broad screen (me + independent judge-agent panel + Ravi) → top ~10 diligence sprints (competitor scan, synthetic-data feasibility, build sizing) → **top 3 with pre-mortems, 5-minute demo scripts, and build estimates** → Ravi picks the build (plus a designated fallback).
 **Gate:** top-3 memo in `03_selection/`, decision recorded here.
 
 ### P4 — Architecture
+
 For the chosen idea: agent topology, tool/MCP surface, synthetic-data pipeline with seeded ground truth, eval harness (the AI judge scores engineering quality — evals are a scoring weapon, not overhead), AWS deployment shape (CodeCommit), observability, cost/latency budget, HITL checkpoints.
 **Gate:** design doc reviewed + walking skeleton runs end-to-end on one golden-path case.
 
 ### P5 — Build & Demo
+
 Eval-first build in sprints aligned to competition checkpoints. Demo script includes one **deliberate failure-recovery moment** (agent catches a planted problem and corrects — the single best anti-slop demo device). Week-10 deliverables: client one-pager, accuracy/cost/latency summary, path-to-production spec, 1-min video.
 **Gate:** two full dry runs; demo survives without live-API dependence (recorded fallback ready).
 
