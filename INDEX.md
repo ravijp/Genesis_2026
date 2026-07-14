@@ -37,6 +37,7 @@
 - `retail-internal-ops.md` — retailer-internal agent deployments (Sparky, Magic Apron, Mylow...), value-chain verdicts, Kohl's turnaround context, vendor map incl. returns-fraud white space `[landed 2026-07-14, review pending]`
 - `pharma.md` — clinical ops, PV, regulatory, MLR `[landed 2026-07-14 — verify completeness, agent died right after writing]`
 - `media-findings-digest.md` — preserved essentials from ~12 completed media child briefs: agent-ready-data/MCP wave (S&P, Moody's, LSEG, FactSet, Bloomberg), compliance-vendor map, DJ R&C white space, newsroom agents, rights-tech `[stable]`
+- `media.md` — full synthesis of the ~12 media child briefs the dead agent never wrote: DJ/News Corp AI specifics, newsroom agents (Mediahuis/McClatchy/Semafor Intelligence), 5-vertical rights/royalty negative sweep (Whip Media Helix strongest anchor), ad-tech governed-autonomy, media AI economics, commodity-vs-cutting-edge, unverified-claims log `[landed 2026-07-14, unreviewed]`
 - `finance.md` — TOP-PRIORITY value-chain deep dive: collections (Mills Review published, FCA AI Live Testing), HOA bank-side ops (sized, Vantaca context), SMB virtual RM, disputes (agent-attribution wedge), wealth, loyalty; fact-checked ROI table with withdrawn-claims log `[enriched pass 2 + citation fact-check 2026-07-14, human review pending]`
 
 ## Root (tracking)
@@ -49,7 +50,8 @@
 - `RUBRIC.md` — scoring aligned to official judging weights + hard gates + degrees of freedom `[stable]`
 - `backlog.md` — the idea backlog: 85 research seeds (all clustered as of 2026-07-14) + Round-1 divergence list (56 clusters R-001..R-056, gated, NOT locked — awaiting human additions; freshness F-tags rolling out) `[landed 2026-07-14, review pending]`
 - `round1-raw-agent-outputs.md` — verbatim outputs of the 3 ideation agents + session contributor, provenance for the Round-1 clusters `[stable]`
-- `north-stars.md` — Stage-1b north-star concepts N-001..N-007: problem-space reframes at CTO depth with ≤6-wk competition slices (Ravi directive 2026-07-14); red-team verdicts pending `[generating]`
+- `north-stars.md` — Stage-1b north-star concepts N-001..N-007: problem-space reframes at CTO depth with ≤6-wk competition slices (Ravi directive 2026-07-14); red-teamed + revised same day (N-007 parked, N-006 conditional on GC track ruling) `[landed 2026-07-14, human review pending]`
+- `north-stars-redteam.md` — verbatim verdicts of the 2 adversarial sonnet red-team agents + session adjudication (accepted/rejected attacks, standing rules) `[stable]`
 
 ## Later phases (created when opened)
 
