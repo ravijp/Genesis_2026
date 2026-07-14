@@ -102,6 +102,41 @@ Status: **skeleton** — populated in Phase 2. Do not add ideas here that haven'
 
 _Collated verbatim on 2026-07-14 by mechanical pass; no dedup or judgment applied. Total: 71 seeds (S-062..S-071 from agentic-ai-landscape.md added manually)._
 
+### Audit-recovered seeds (T4 redux, 2026-07-14)
+
+_A 7-agent per-brief completeness audit (one sonnet auditor per brief, diffing brief vs. seed list) recovered these. **Not yet in any Round-1 cluster** — fold into clustering before Round-1 lock. Audit also confirmed: retail-internal-ops, startup-landscape, and agentic-ai-landscape sections complete; two further candidates (x402/AP2 settlement reconciliation, non-human agent-identity auditing) dropped as already covered by R-024/R-025; S-055's insurance stretch re-confirmed (already parked)._
+
+From finance.md:
+
+- **S-072**: Automation-quality tripwire monitor • tracks a bank's own customer-facing AI assistant quality/escalation metrics (resolution quality on nuanced cases, complaint rate) and recommends dialing automation back per segment before a Klarna-style public reversal • demo moment: agent detects a synthetic quality drop on nuanced cases and auto-recommends scope reduction with evidence • Barclays/Capital One/Amex • evidence: finance.md Klarna reversal row ("rehiring humans after quality complaints on nuanced cases").
+
+From retail-agentic-commerce.md:
+
+- **S-073**: AI-referral SEO/GEO optimization agent • continuously monitors how AI shopping surfaces (ChatGPT, Perplexity, Gemini) represent a retailer's products and autonomously patches structured data/content • demo moment: agent detects a mis-surfaced product in an AI shopping answer, diagnoses the missing schema attribute, patches it live • Kohl's — monetizes §7's AI-referral numbers (traffic +670-758% YoY, +31% conversion lift).
+- **S-074**: Agentic checkout abandonment-diagnosis agent • reasons across the in-chat checkout funnel to diagnose why abandonment is high and recommend fixes • demo moment: replays a synthetic failed in-chat checkout and pinpoints the friction step • Kohl's/Visa — grounded in Walmart's 1.18% conversion / 77.45% abandonment vs. 2.5-3% benchmark (§1).
+- **S-075**: Agent-payments network onboarding & mandate-compliance assurance agent • validates a merchant/issuer's Agent Pay / Intelligent Commerce Connect integration pre-go-live: Agentic Token config, consent-binding, cross-protocol (ACP/AP2/UCP) policy mismatches • demo moment: agent onboards a synthetic merchant to two competing protocols simultaneously and catches a missing consent-binding field before a live transaction fails • Visa/Mastercard/Amex — pre-transaction complement to R-012's post-hoc dispute attribution • evidence: retail-agentic-commerce.md §5 + finance.md §1 ("hundreds of controlled real-world agent transactions" by Dec 2025). _(merged from independent finance + retail auditor findings)_
+- **S-076**: Cross-surface persistent-cart reconciliation agent • tracks one shopper's cart state across agent surfaces (Search, Gemini, retailer site) and resolves price/inventory conflicts before checkout • demo moment: reconciles a cart modified on two surfaces and resolves a price mismatch • Kohl's • evidence: §4 Google "Universal Cart" (I/O 2026).
+- **S-077**: Continuous agentic-readiness competitive benchmark • recurring re-scan and re-score of client vs. named competitors' PDPs/feeds (DC360×ReFiBuy quarterly benchmark pattern) • demo moment: agent detects a competitor's readiness-score change and re-ranks the client • Kohl's • _variant of S-028 (one-time audit → continuous monitoring product); low-confidence distinctness._
+
+From pharma.md:
+
+- **S-078**: Always-inspection-ready compliance agent • keeps a multi-system (EDMS/LIMS/QMS) inspection-readiness posture continuously current, flipping periodic prep to always-on — the flip side of FDA's Elsa 4.0/HALO "one-day inspections" framing • demo moment: live synthetic inspection-readiness dashboard an agent maintains • J&J manufacturing sites • evidence: pharma.md §2 (Elsa 4.0 + HALO, May 2026).
+- **S-079**: Routine-variation filing pre-validation agent • pre-validates high-volume Type IA variation submissions (17,000-19,000/yr in Germany alone) with a visible cascaded-prompting hallucination guard, mirroring regulator BfArM's own VerifAI pilot • demo moment: batch of synthetic variation filings pre-checked, likely admin-review failures flagged before submission • J&J as multi-market filer • evidence: pharma.md §1 regulatory affairs.
+- **S-080**: Synthetic-data forensic-detectability self-check (cross-cutting demo/governance layer) • agent runs a self-adversarial forensic pass on its own generated synthetic dataset and reports a detectability-confidence score • demo moment: shows the AI judge the team anticipated exactly the scrutiny a regulator would apply • any build — targets the AI-judge engineering-quality criteria • evidence: pharma.md §3 (fabricated-datasets arms-race; 69.3% expert detection of fake histology, barely above chance).
+
+From media-findings-digest.md:
+
+- **S-081**: Rights/royalty clearance & reconciliation agent • multi-step rights clearance and royalty reconciliation across licensors/platforms — explicitly flagged as white space with zero genuinely agentic entrant (Whip Media Helix pilot; Rightsline roadmap-only) • demo moment: traces a disputed royalty across a synthetic multi-platform rights chain with citation trail • Dow Jones content-licensing + pay-per-crawl (TollBit/Cloudflare) monetization tie-in.
+- **S-082**: Newsroom multi-agent verification/monitoring pipeline • open-source-verification workflow (BBC Eye Haystack LangGraph pattern, 10k posts; Mediahuis 6-agent pipeline) — distinct from S-058 corpus-mining and S-060 claims-extraction • demo moment: pipeline ingests synthetic social posts, triangulates sources, surfaces only confirmed leads with provenance • Dow Jones — design around the McClatchy union-backlash cautionary tale via HITL transparency.
+- **S-083**: ASKB-style multi-model routed agentic terminal front-end • agentic query/answer/action interface routing across models on a live enterprise data surface • demo moment: same query routed through different models with routing decision and confidence exposed to the judge • Dow Jones / Morgan Stanley • evidence: Bloomberg ASKB beta (2026-02-23, ~1/3 of 375k users).
+- **S-084**: Governed-autonomy propose-then-approve pattern (cross-cutting) • agent proposes multi-step actions with rationale, blocks itself pending approval when its own recommendation is unreliable • demo moment: a synthetic "coin-toss" case caught and held for human approval • ampliFI-adjacent offer/campaign spend • evidence: media digest ad-tech section (Google AI Max CPA +16%; Meta Advantage+ beats manual only 42%).
+
+From agentic-ai-landscape.md:
+
+- **S-085**: Eval-harness-as-a-service / agent-readiness certification agent • a meta-agent that runs the 8-point production-readiness checklist (offline evals, judge calibration, red-team probes, cost/latency gates, regression CI) against another agent and returns a pass/fail scorecard • demo moment: judge points the harness at a black-box agent, gets a scorecard with compounding-error math shown • any client evaluating vendor agent claims (e.g., Barclays build-vs-Agentforce) — distinct from S-061's governance-layer framing • evidence: §5 + AWS AgentCore Evaluations (13 built-in evaluators).
+
+_Audit pass 2026-07-14: 14 seeds recovered (S-072..S-085). New total: **85 seeds**._
+
 ## Round-1 ideas (divergence sprint)
 
 **Run 2026-07-14.** 3 independent sonnet agents (A=operator-pain, B=startup-thesis, C=demo-first; no shared context, anchoring quarantine held) + Claude session (D, gap-filling, non-independent). Raw outputs verbatim in `round1-raw-agent-outputs.md`. 99 agent one-liners + 8 session one-liners → deduped to **46 clusters** below. **Lens convergence** (how many independent lenses produced it) is a selection signal for Stage 3. **NOT LOCKED — awaiting Ravi/Ishant/Namit additions, then Round-1 lock, then (and only then) the igupta catalog cross-check.**
