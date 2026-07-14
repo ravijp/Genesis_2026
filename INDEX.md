@@ -28,10 +28,13 @@
 - `agentic-ai-landscape.md` — models, agent stacks, MCP/A2A, orchestration, evals/observability, enterprise platforms, security; commodity-vs-cutting-edge verdicts `[landed 2026-07-14, unreviewed]`
 - `startup-landscape.md` — ~$2.5B YTD agentic funding, YC RFS themes, 30-row funding table, white space (HOA bank-side ops, compliance-aware collections, loyalty ops, payroll exceptions), graveyard, 15 seeds `[landed 2026-07-14, unreviewed]`
 - `lessons-from-prior-work.md` — forensic scrutiny of igupta branch (verdict B−, bimodal): root causes, salvage list, do/don't rules, idea autopsy, fact-check audit `[landed 2026-07-14, unreviewed]`
-- `retail-agentic-commerce.md` — salvaged sub-brief: ACP/AP2/UCP protocols, Instant Checkout reversal, Amazon v. Perplexity, agent-readiness playbook, traffic/margin numbers `[partial — retailer-internal agents + Kohl's still open]`
-- `finance.md` — TOP-PRIORITY industry brief `[in-flight — agent not yet reported]`
-- `pharma.md` — clinical ops, PV, regulatory, MLR `[in-flight — agent not yet reported]`
-- `media.md` — Dow Jones, licensing economics, B2B-data agents `[in-flight — agent synthesizing; child briefs on Bloomberg/S&P/Moody's/LSEG/FactSet/newsrooms completed]`
+- `retail-agentic-commerce.md` — salvaged sub-brief: ACP/AP2/UCP protocols, Instant Checkout reversal, Amazon v. Perplexity, agent-readiness playbook, traffic/margin numbers `[partial — see actions-items.md P0]`
+- `pharma.md` — clinical ops, PV, regulatory, MLR `[landed 2026-07-14 — verify completeness, agent died right after writing]`
+- `media-findings-digest.md` — preserved essentials from ~12 completed media child briefs: agent-ready-data/MCP wave (S&P, Moody's, LSEG, FactSet, Bloomberg), compliance-vendor map, DJ R&C white space, newsroom agents, rights-tech `[stable]`
+- `finance.md` — TOP-PRIORITY industry brief `[MISSING — agent died before writing; re-run per actions-items.md P0]`
+
+## Root (tracking)
+- `actions-items.md` — resume point: prioritized remaining research (P0 finance, P0 retail), token-discipline rules for agents, deferred items, open questions for Ravi `[stable]`
 
 ## 02_ideas/ — ideation machinery
 - `METHOD.md` — evidence → 50+ ideas pipeline: pattern×value-chain matrix, multi-agent divergence, anti-slop gate, sizing model, synthetic-data playbook, anchoring rules `[stable]`
