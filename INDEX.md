@@ -38,6 +38,7 @@
 - `pharma.md` — clinical ops, PV, regulatory, MLR `[landed 2026-07-14 — verify completeness, agent died right after writing]`
 - `media-findings-digest.md` — preserved essentials from ~12 completed media child briefs: agent-ready-data/MCP wave (S&P, Moody's, LSEG, FactSet, Bloomberg), compliance-vendor map, DJ R&C white space, newsroom agents, rights-tech `[stable]`
 - `media.md` — full synthesis of the ~12 media child briefs the dead agent never wrote: DJ/News Corp AI specifics, newsroom agents (Mediahuis/McClatchy/Semafor Intelligence), 5-vertical rights/royalty negative sweep (Whip Media Helix strongest anchor), ad-tech governed-autonomy, media AI economics, commodity-vs-cutting-edge, unverified-claims log `[landed 2026-07-14, unreviewed]`
+- `T7-verification-pack.md` — consolidated, prioritized human-review checklist: every brief's open-verification items + cross-brief discrepancies + red-team evidence gaps, tiered by pitch-load-bearing-ness `[stable]`
 - `finance.md` — TOP-PRIORITY value-chain deep dive: collections (Mills Review published, FCA AI Live Testing), HOA bank-side ops (sized, Vantaca context), SMB virtual RM, disputes (agent-attribution wedge), wealth, loyalty; fact-checked ROI table with withdrawn-claims log `[enriched pass 2 + citation fact-check 2026-07-14, human review pending]`
 
 ## Root (tracking)

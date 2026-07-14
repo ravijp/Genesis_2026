@@ -47,6 +47,8 @@ Eval-first build in sprints aligned to competition checkpoints. Demo script incl
 - **2026-07-14** — Bias containment (Ravi): igupta-branch content quarantined from the workspace; enters only via `01_research/lessons-from-prior-work.md`. His idea catalog (34 ideas) is sanctioned ONLY as a post-Round-1-lock cross-check.
 - **2026-07-14** — Scrutiny verdict on prior attempt: B− overall, bimodal — research_IG largely sound (re-verify before quoting), ideation_IG weak (built before research, false-precision scoring). Key heuristics adopted into METHOD/RUBRIC: research-before-ideation, assurance-over-replacement idea shape, proprietary-domain-layer test, no decimal-theater scoring.
 - **2026-07-14** — Python env: uv-managed (3.13), pytest + ruff dev group.
+- **2026-07-14 (Ravi)** — Official checkpoint dates expected to postpone; **idea-freeze starts the build clock**. Plan against build-weeks-from-freeze, not calendar dates.
+- **2026-07-14 (Ravi, review session)** — Ideation corrections adopted: (a) ideas are **problem-space products**, clients are the lens — one-liners carry an applicability line (anchor + ≥2 transfers), single-client-only caps A1 at 3; (b) **freshness gate** added as METHOD Test 11 (F1/F2/F3 vs named closest incumbent) — 10 already-shipped-at-scale clusters parked with rework notes; (c) **north-star tier (Stage 1b)** added — 7 CTO-depth problem-space concepts authored (`02_ideas/north-stars.md`), adversarially red-teamed same day (N-007 parked, N-006 conditional on GC track ruling). Organizing thesis: second-order agentic (govern/attribute/certify/graduate agents) is the 2026-27 white space our evidence supports.
 
 ## Risks
 
@@ -68,4 +70,5 @@ Eval-first build in sprints aligned to competition checkpoints. Demo script incl
 ## Open questions for Ravi
 
 1. API budget / AWS account access details from GC?
-2. Status with GC: has our team's validation checkpoint been handled, or do we owe a problem statement immediately?
+2. Status with GC: has our team's validation checkpoint been handled, or do we owe a problem statement immediately? *(Ravi 2026-07-14: dates expected to shift — low urgency, still worth asking.)*
+3. GC ruling needed: is an agent-certification/eval product (north-star N-006) Track A or Track C? Written answer required before it can be carded.
