@@ -307,26 +307,37 @@ _R-047..R-056 carry tags inline; the 36 surviving original clusters are tagged h
 | R-045 | F2 | WSJ Orca (in-house, INMA award; no vendor product) | DJ → any data business |
 | R-046 | F2 | Semafor Intelligence (in-house pipeline; media.md §3) | DJ/MS → editorial + research orgs |
 
-### North-star tier (Stage 1b pointers — full text + red-team verdicts in `north-stars.md` / `north-stars-redteam.md`)
+### North-star tier (Stage 1b pointers — v2 roster 2026-07-15; full text, tiers, and verdicts in `north-stars.md`)
 
-- **N-001** Decision Assurance Stack — F1 — agent supervision for regulated finance (record→replay→conformance→attribute) — subsumes/elevates R-002, R-018, R-021, R-028, R-030, R-047 — anchor Barclays → every finance client
-  - *ELI5: An AI worker that records, replays, and checks every decision a bank's automated systems make, so the bank can prove to a regulator it followed the rules and catch the ones it got wrong.*
-- **N-002** Mandate Fabric — F1 — accountability for agent-initiated commerce (attribution, settlement integrity, conformance) — subsumes R-012, R-024, R-048 — anchor Visa → MC, Amex, CapOne, ampliFI, Kohl's
+_v2 (2026-07-15): tier re-generated via two-stage ideation (open-thinking generation decoupled from competition grounding), scored by an independent 3-persona judge panel (founder-CEO / chief architect / AI-engineering judge) and an adversarial kill-pass; originality independently collision-verified with dated sources. 10 active concepts below; rework requirements + demoted/parked reasoning live inline in `north-stars.md`._
+
+- **N-002** Mandate Fabric — **CORE** — F1 (independently confirmed 2026-07-15) — accountability for agent-initiated commerce — subsumes R-012, R-024, R-048 — anchor Visa → MC, Amex, CapOne, ampliFI
   - *ELI5: An AI worker that figures out who's on the hook when an automated shopping tool makes a mistaken purchase, and checks the payment settlement matches what was actually authorized.*
-- **N-003** Loyalty as a Financial System — F2 — authenticity + offer red-teaming + points-liability controls — subsumes R-015, R-016, R-017, R-026, R-027, R-029 — anchor ampliFI → issuers, retail — *red-team: most buildable slice*
-  - *ELI5: An AI worker that runs a company's loyalty program like a bank account: spotting fake reward claims, stress-testing new promotions for loopholes, and auditing the points balance.*
-- **N-004** Exception-Operations Platform — F2 + graduation demo mechanic — evidence-gated autonomy over regulated exception queues — subsumes R-004(slice), R-005, R-008, R-023, R-030 — anchor WAB → ADP, Visa, Invesco
-  - *ELI5: An AI worker that handles routine paperwork exceptions, like overdue dues or payroll errors, itself, earning more independence over time only as it proves it's getting them right.*
-- **N-005** Zero-Integration Autonomy — F2 — governed computer-use over legacy ops UIs — capability axis no R-cluster used — anchor Lendmark(demo)/WAB → mid-market legacy estates — *UiPath-class verification = T7 hard item*
-  - *ELI5: An AI worker that operates a company's old desktop screens directly, like a human employee would, to get tasks done without waiting for a costly systems overhaul.*
-- **N-006** Agent Underwriting Bureau — F2 — **CONDITIONAL: GC written Track-A confirmation required (eval frameworks listed under Track C)** — subsumes R-049 — anchor Barclays → any regulated agent buyer
-  - *ELI5: An AI worker that tests any company's automated system against tough scenarios and hands back an independent, reproducible report card so buyers can trust its claims.*
-- **N-007** Agent-Ready Enterprise — **PARKED for competition** (Zenon-asset concept; red-team REFUTED for Track A) — subsumed R-035's remediation half
-  - *ELI5: An AI worker that takes a company's raw data and rules and builds a secure, permission-controlled version other AI tools can safely query, then tries to break in to prove it's locked down.*
+- **N-009** Agent-to-Agent Servicing Desk — **CORE, new v2** — F1 — bank-side negotiator for inbound customer agents (absorbs the perimeter gateway) — subsumes the inbound gap + R-001/R-019 componentry — anchor Barclays → Lendmark, CapOne, Huntington
+  - *ELI5: An AI worker on the bank's side that negotiates a payment plan directly with a customer's own AI assistant, and refuses and calls a human if the assistant tries to overstep what the customer allowed.*
+- **N-001** Decision Assurance Stack — **CORE** — F2 (Norm AI watch item 2026-07-07; wins on conduct-vertical depth + closed loop with N-008) — subsumes R-002, R-018, R-021, R-028, R-030, R-047 (+R-009/R-010 as queues; conduct-regression gate + oversight-effectiveness folded in as modules) — anchor Barclays → every finance client
+  - *ELI5: An AI worker that records, replays, and checks every decision a bank's automated systems make, so the bank can prove to a regulator it followed the rules and catch the ones it got wrong.*
+- **N-008** Remediation & Redress Worker — **CORE, new v2** — F1 — post-defect population cleanup; pitches as N-001's closed loop (find → prove → repair) — completes R-047's detect→repair pair — anchor Barclays → Lendmark, CapOne, Amex
+  - *ELI5: An AI worker that, once a bank finds its automated system got a decision wrong, finds everyone affected, recomputes what they were owed, and prepares the refunds and the regulator's notice.*
+- **N-004** Exception-Operations Platform — **CORE** — F2 + graduation demo mechanic — subsumes R-004(slice), R-005, R-006, R-008, R-023, R-030 — anchor WAB → ADP, Visa, Invesco
+  - *ELI5: An AI worker that handles routine paperwork exceptions itself, earning more independence over time only as it proves it's getting them right — and losing it the moment it slips.*
+- **N-005** Zero-Integration Autonomy — **STRONG, spike-gated** (20-run pass^k ≥80% required before lock) — F2 — governed computer-use — anchor WAB/Huntington branch-ops → mid-market legacy estates — *UiPath-class verification = T7 hard item*
+  - *ELI5: An AI worker that operates a company's old desktop screens directly, like a human would, getting work done without waiting for a costly systems overhaul — and it stops and re-checks itself when a screen changes.*
+- **N-003** Loyalty as a Financial System — **CANDIDATE, demoted 2026-07-15** (kill objection: constrained-exploit theater + no loyalty-fraud $ figure; two promotion gates in `north-stars.md`) — F2 — subsumes R-015, R-016, R-017, R-026, R-027, R-029 — anchor ampliFI → issuers, retail
+  - *ELI5: An AI worker that runs a rewards program like a bank account — stress-testing new promotions for loopholes before launch and spotting automated abuse rings in real time.*
+- **N-012** Always-On Renewal Underwriting — **STRETCH, new v2** — F2 — continuous SMB telemetry watch + early deterioration detection (hard guardrail: NOT a memo-drafter) — anchor WAB/Huntington → CapOne, Lendmark
+  - *ELI5: An AI worker that constantly watches a small-business borrower's cash flow so the bank sees trouble coming weeks early and can pre-approve a renewal — instead of finding out at the next annual review.*
+- **N-011** Fleet-Risk Governance — **STRETCH, new v2** — F1 — correlated-failure + inter-agent conflict at fleet level — anchor Barclays → CapOne, WAB/Huntington
+  - *ELI5: An AI worker that watches all of a bank's AI agents at once and stops them when two are about to do contradictory things to the same customer — and finds the rogue ones nobody registered.*
+- **N-010** Continuous Vendor-Agent Watchdog — **GATED on the GC Track-A ruling (T8)** — F2 wedge surviving the certification collision — anchor Barclays → WAB/Huntington, Lendmark
+  - *ELI5: An AI worker that keeps secretly testing a bank's bought-in AI vendor with fake cases to catch the moment the vendor quietly changes it and starts breaking the rules the bank is on the hook for.*
+- **Parked:** N-006 Agent Underwriting Bureau (F3 collision 2026-07-15: AIUC-1 live + adopted, AWS AgentCore Evaluations GA, Patronus $50M; wedge lives in N-010) · N-007 Agent-Ready Enterprise (parked 2026-07-14) · adverse-action-faithfulness candidate (circular eval on synthetic data — research question, not a card).
 
 **Gate math (2026-07-14):** active scoring pool = 46 R-clusters (56 minus 10 F3-parked) + 6 scoreable N-concepts (N-007 parked; N-006 conditional) = **52 pre-human-additions — ≥50 gate holds**. Finance share of R-clusters: 29/46 ≈ 63% (≥50% gate holds; N-001/N-002/N-004 are finance-anchored on top).
 
 **Scope update (Ravi, 2026-07-15):** finance-first — T6 scoring proceeds on the 29 finance clusters + finance-anchored N-tier only. The 17 non-finance clusters are deferred (still count toward the ≥50 pool; revivable if finance selection thins).
+
+**Gate math v2 (2026-07-15):** N-tier = 10 active concepts (N-010 gated; N-006/N-007 parked). Pool: 46 active R + 9 scoreable N = 55 ≥ 50 — gate holds. T6 scores the N-concepts and genuine standalones; R-fragments subsumed by an N-concept are NOT scored separately (no triple-counting).
 
 ### Weakest claims & how to verify (gaps companion)
 

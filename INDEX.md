@@ -52,7 +52,7 @@
 - `RUBRIC.md` — scoring aligned to official judging weights + hard gates + degrees of freedom `[stable]`
 - `backlog.md` — the idea backlog: 85 seeds (all clustered) · 46 active clusters (10 F3 parked by freshness gate) with F-tier/incumbent/applicability retro-tags + ELI5 lines · team review notes folded 2026-07-15 · finance-first scope 2026-07-15 (Retail/Pharma/Media deferred, not killed) · N-tier pointers · gate math (52 pre-human, ≥50 holds) · NOT locked — lock decision pending `[updated 2026-07-15]`
 - `round1-raw-agent-outputs.md` — verbatim Round-1 divergence one-liners under the four ideation lenses (A operator-pain / B startup-thesis / C demo-first + D gap-fill); provenance for the Round-1 clusters `[stable]`
-- `north-stars.md` — Stage-1b north-star concepts N-001..N-007: problem-space reframes at CTO depth with ≤6-wk competition slices (Ravi directive 2026-07-14); red-teamed + revised same day (N-007 parked, N-006 conditional on GC track ruling); ELI5 lines added 2026-07-15; v2 expansion to ~10 concepts in progress 2026-07-15 `[updated 2026-07-15, human review pending]`
+- `north-stars.md` — **v2 (2026-07-15)**: 10 active north-star concepts (5 CORE / 1 STRONG spike-gated / 1 CANDIDATE / 2 STRETCH / 1 GATED) + parked appendix, each with full-potential VISION + ≤6-wk competition SLICE + ELI5 + judge-panel and kill-pass verdicts folded in; new v2 concepts N-008 (remediation), N-009 (agent-to-agent servicing desk), N-010..N-012; N-006 parked on F3 collision `[v2 2026-07-15, human review pending]`
 - `north-stars-redteam.md` — verbatim adversarial red-team verdicts (freshness + feasibility passes) + adjudication (accepted/rejected attacks, standing rules) `[stable]`
 
 ## Later phases (created when opened)
