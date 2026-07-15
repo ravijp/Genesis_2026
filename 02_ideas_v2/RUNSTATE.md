@@ -8,8 +8,8 @@ content, no igupta branch, no cross-agent raw files until the stage that calls f
 |---|---|---|---|
 | 0 | Bootstrap RUNSTATE | DONE | RUNSTATE.md |
 | 1 | Semantic-direction stratification (1 fable) | DONE | directions.md |
-| 2 | Independent generation (6 fable generators, ≤3 concurrent) | IN PROGRESS | ideas-raw-G1..G6.md |
-| 3 | Merge + semantic dedup + content-neutral anti-slop | PENDING | clusters.md |
+| 2 | Independent generation (6 fable generators, ≤3 concurrent) | DONE | ideas-raw-G1..G6.md |
+| 3 | Merge + semantic dedup + content-neutral anti-slop | IN PROGRESS | clusters.md |
 | 4 | Verification & freshness (1-2 sonnet + web) | PENDING | verification.md |
 | 5 | Grounding & client mapping (orchestrator) | PENDING | grounded additions in clusters.md → cards |
 | 6 | Judging w/ novelty protection (novelty-fable, buyer-fable, architect-opus) | PENDING | judging.md |
@@ -20,7 +20,8 @@ content, no igupta branch, no cross-agent raw files until the stage that calls f
 
 - 2026-07-15 Stage 0: RUNSTATE created; fresh run, no prior artifacts in folder besides PROTOCOL.md / RESEARCH-BASIS.md.
 - 2026-07-15 Stage 1: DONE. 12 directions D1-D12 in directions.md; orchestrator validated spread (no theme collapse; agent replaced 2 drafts in its own distance check). Accepted without send-back.
-- 2026-07-15 Stage 2: direction assignments — G1: D1+D5 · G2: D7+D8 · G3: D4+D6 · G4: D9+D11 · G5: D2+D10 · G6: D3+D12. Batch 1 (G1-G3) launched, batch 2 (G4-G6) after.
+- 2026-07-15 Stage 2: direction assignments — G1: D1+D5 · G2: D7+D8 · G3: D4+D6 · G4: D9+D11 · G5: D2+D10 · G6: D3+D12. DONE: all 6 generators returned 12 ideas each (72 raw). Independence held (rolling ≤3 concurrent; no cross-reads). G4 persona self-instantiated as 12-person electrical contractor. G4/G6 carry UNVERIFIED tags for Stage 4.
+- 2026-07-15 Stage 3: orchestrator merge/dedup begins — pool 72 ideas, cluster near-dupes (keep most specific member as seed), apply content-neutral anti-slop kills only (chatbot-wrapper, dashboard-only, no-artifact-of-record, single-prompt-suffices). No shape preference.
 
 ## Resume notes
 
