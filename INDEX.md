@@ -77,6 +77,7 @@
 ## 03_selection/ — selection phase (opened 2026-07-15)
 
 - `independent-review-2026-07-15.md` — independent competition-rubric judging of the 64 v2 cards (blind, official weights) + web collision spot-check: C05 refuted (SmartStream/Duco ship it), C47 moat narrowed (C&R+AperiData), C28/C63/C64 confirmed clear; recommended slate C28 primary / C63 fallback / C47 alternate; no-research-redo verdict `[2026-07-15, awaiting Ravi lock]`
+- `meeting-doc-2026-07-15.md` — plain-English alignment doc for the Ravi/Namit/Ishant 60-min call: all 64 ideas in one grouped master table (11 columns incl. full description, 6-week buildability, demo moment, verdict + reasoning, blind judge score, recommendation) + detail blocks tiered by decision status; anchored on the official rubric as five plain questions; ends with C28 primary / C63 fallback / C47 alternate recommendation `[2026-07-15]`
 
 ## Later phases (created when opened)
 
