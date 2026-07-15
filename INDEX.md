@@ -65,7 +65,14 @@
 
 - `PROTOCOL.md` — executable spec for the v2 ideation pipeline: quarantine rules, direction stratification, 6 ordinary-persona generators, verification, novelty-protected judging, coverage cross-check; kickoff prompt at the bottom `[stable]`
 - `RESEARCH-BASIS.md` — cited evidence behind every protocol rule (fixation, persona diversity, direction stratification, judge unreliability, novelty protection) `[stable]`
-- `ideas.md` — the v2 idea portfolio (single file, both horizons per card, 80/20) `[not yet created — Stage 8 deliverable]`
+- `RUNSTATE.md` — run manifest: all 8 stages DONE 2026-07-15; stage log + resume notes `[T16 in REVIEW]`
+- `directions.md` — Stage 1: 12 mutually-distant semantic directions D1-D12 `[stable]`
+- `ideas-raw-G1..G6.md` — Stage 2: verbatim generator outputs, 12 ideas each (G1 ops / G2 integration / G3 compliance / G4 SMB-owner closed-book / G5 fintech-PM / G6 contact-centre closed-book) `[stable — provenance, do not edit]`
+- `clusters.md` — Stage 3: 72 → 64 clusters, merge log, convergence flags, 0 anti-slop kills `[stable]`
+- `verification-V1.md` / `verification-V2.md` — Stage 4: claim verdicts + F1/F2/F3 freshness w/ named comparators; 0 refuted, 8 corrections, 4 F3 parks `[stable]`
+- `grounding.md` — Stage 5: tiers (50 PROD / 10 HORIZON / 4 PARKED), anchor+transfers, 3-week-fit, engagement arcs, MVP sizing `[stable]`
+- `judging-novelty.md` / `judging-buyer.md` / `judging-architect.md` — Stage 6: three independent judges, randomized orders; protected outliers C63/C64/C28 `[stable]`
+- **`ideas.md` — THE T16 DELIVERABLE: 64 cards (both horizons each), 15-idea shortlist (12 prod + 3 horizon, ⅓ domain cap), Stage-7 coverage report vs 02_ideas/ (igupta pending T12 lock), run-integrity notes** `[2026-07-15 — awaiting Ravi lock call]`
 
 ## Later phases (created when opened)
 
