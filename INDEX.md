@@ -74,8 +74,11 @@
 - `judging-novelty.md` / `judging-buyer.md` / `judging-architect.md` — Stage 6: three independent judges, randomized orders; protected outliers C63/C64/C28 `[stable]`
 - **`ideas.md` — THE T16 DELIVERABLE: 64 cards (both horizons each), 15-idea shortlist (12 prod + 3 horizon, ⅓ domain cap), Stage-7 coverage report vs 02_ideas/ (igupta pending T12 lock), run-integrity notes** `[2026-07-15 — awaiting Ravi lock call]`
 
+## 03_selection/ — selection phase (opened 2026-07-15)
+
+- `independent-review-2026-07-15.md` — independent competition-rubric judging of the 64 v2 cards (blind, official weights) + web collision spot-check: C05 refuted (SmartStream/Duco ship it), C47 moat narrowed (C&R+AperiData), C28/C63/C64 confirmed clear; recommended slate C28 primary / C63 fallback / C47 alternate; no-research-redo verdict `[2026-07-15, awaiting Ravi lock]`
+
 ## Later phases (created when opened)
 
-- `03_selection/` — scoring runs, top-10 diligence, top-3 memo
 - `04_architecture/` — competition build design
 - `05_build/` — MVP source
