@@ -55,7 +55,8 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `test_no_answer_key_leak.py` — **data guard**: nothing may receive a value that *encodes* a ground-truth field. The one that would have caught the leak we actually had `[stable]`
 - `test_memory.py` — ledger invariants: never-discard, accumulation, retro re-score, decay, determinism `[stable]`
 - `test_tools.py` — every agent tool, in-memory, no network `[stable]`
-- `test_agent.py` — decision schema, bounded loop, the cost cap holding, a crashing tool being contained `[stable]`
+- `test_agent.py` — decision schema, bounded loop, the cost cap holding under a rising cost curve (and the documented spike case where it cannot), a crashing tool being contained `[stable]`
+- `test_sweep.py` — the multi-seed harness: sign test vs hand computation, pairing on seed, denominators present and identical across arms, equal alert budget, determinism `[stable]`
 
 ## tools/jira/
 
@@ -74,7 +75,7 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `ops/working-agreements.md` — **read before changing anything.** Evaluation discipline, the two-level answer-key guards, demo honesty, keeping docs in step with code, test discipline, bulk-operation discipline, delegation `[stable]`
 - `ops/jira-conventions.md` — how the AT board is written and updated `[stable]`
 - `architecture/architecture.md` — the shape of the system: three layers, data flow, agent loop, runtime, what is measured `[stable]`
-- `architecture/build-plan.md` — **STALE.** Predates the agent layer and contradicts the code in several places. `architecture.md` + `README.md` are authoritative until it is rewritten `[stale — do not cite]`
+- `architecture/build-plan.md` — **v3.** What is left to build and what is still open: the agent layer, what is measured vs not, four open questions, the 08-24 scope, risks, and the deltas from the submitted brief `[stable]`
 - `gates/2026-08-10-sprint-1-checkin.md` — Sprint 1 check-in brief `[stable]`
 - `gates/committee-requirements-email.md` — tooling/access email, to send after the 2026-08-10 call `[stable]`
 - `impact/finance-brief.md` — finance value-chain research; feeds the Zenon-impact axis `[stable]`

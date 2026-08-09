@@ -10,9 +10,9 @@ Call** — a conversation signal layer that reads 100% of a bank's customer conv
 them into a standing per-customer ledger that re-scores as new conversations arrive.
 
 The finalized idea was submitted to the Genesis Committee on 2026-07-24 and is the contract:
-`sources/submission-ear-on-every-call.md`. `docs/architecture/architecture.md` is the authoritative description of
-the system. `docs/architecture/build-plan.md` is **stale** — it predates the agent layer and
-contradicts the code in several places; do not cite it until it is rewritten.
+`sources/submission-ear-on-every-call.md`. `docs/architecture/architecture.md` describes the system;
+`docs/architecture/build-plan.md` (v3) covers what is left to build, what is measured and what is not,
+and the deltas from the submitted brief.
 
 Sprint backlog: JIRA project **AT (Agentic Trio)** at `https://zenonai.atlassian.net`.
 
@@ -44,8 +44,8 @@ Frozen gates: **2026-08-10** 15-min check-in · **2026-08-24** combined Sprint 1
 3. **`docs/ops/working-agreements.md`** — the disciplines, each one bought with a real mistake.
 4. **`README.md`** — what the thing is, and the current numbers.
 
-Then `docs/architecture/architecture.md` for the shape of the system. **Do not read
-`docs/architecture/build-plan.md`** — it predates the agent layer and contradicts the code.
+Then `docs/architecture/architecture.md` for the shape of the system, and
+`docs/architecture/build-plan.md` for what is left to build and what is still open.
 
 Session history is in git, deliberately: commit messages carry the *why*. `git log --grep` answers
 "did we already try X?" better than any prose file, and it never needs curating.

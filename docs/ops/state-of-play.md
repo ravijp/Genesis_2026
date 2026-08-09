@@ -6,7 +6,7 @@ this file fits on one screen. If something will not fit, it belongs in `decision
 
 **If you are a fresh session, read in this order:** this file → `decisions.md` →
 `working-agreements.md` → `README.md` → `docs/architecture/architecture.md`. That is enough to work.
-Do not read `build-plan.md`; it is stale.
+Then `README.md` and `docs/architecture/architecture.md`.
 
 ---
 
@@ -39,7 +39,7 @@ distinguishable from any other.
 
 ## Next three things
 
-1. Rewrite `docs/architecture/build-plan.md` — it predates the agent layer and contradicts the code.
+1. Decide **AT-53**: does the memory layer ship alongside per-call detection, or not at all?
 2. Decide the open question in **AT-53**: memory alongside per-call detection, or drop it. The scoring
    mechanisms currently earn nothing over a plain count (AT-52).
 3. Ground the reader on real CFPB complaints (**AT-43**) — the strongest available answer to "your
