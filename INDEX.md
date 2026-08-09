@@ -61,6 +61,23 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `test_sweep.py` — the multi-seed harness: sign test vs hand computation, pairing on seed, denominators present and identical across arms, equal alert budget, determinism, counted-not-reconstructed integers, artifact reproducibility `[stable]`
 - `test_cli.py` — the commands, and the demo's internal consistency: its narration may not contradict the claim it selected on, and its denominator must count customers `[stable]`
 
+## benchmarks/cfpb/ — AT-43, the extractor on real complaint narratives
+
+Self-contained and replicable end to end: pre-registration, marking guide, one script per step, every
+API call and output hash logged. Run `steps/05_score.py` alone to reproduce the numbers offline.
+
+- `README.md` — how to replicate, in order; what is in the folder; data provenance and licence `[stable]`
+- `PROTOCOL.md` — **the pre-registration**, frozen before any narrative was read: frame, panels, wrapping rule, interpretation thresholds, freeze rules, and an amendment log `[stable]`
+- `MARKING-GUIDE.md` — how a narrative is marked, derived from the construct definitions and never from the extractor's cues `[stable]`
+- `RUNLOG.md` — append-only log of every run: command, date, counts, output SHA-256. Corrections are appended, never edited in `[generated]`
+- `steps/_common.py` — API client with logging, the frame constants, hashing, run log `[stable]`
+- `steps/01_frame.py` — frame counts via the search API; now an independent cross-check of the archive `[stable]`
+- `steps/02_download.py` — the bulk archive (~1.3 GB), verified by size and SHA-256, stored outside the repo `[stable]`
+- `steps/03_filter.py` — streams the archive into the 2025 retail-banking frame; fails if it disagrees with the API total `[stable]`
+- `steps/04_draw.py` — seeded, exactly uniform draw of Panel A and Panel B from the local frame `[stable]`
+- `steps/05_score.py` — the unmodified extractor against the gold marks; offline, no keys `[stable]`
+- `out/` — committed: frame counts, the drawn sample, the gold marks, the results `[generated]`
+
 ## tools/jira/
 
 - `adf.py` — renders a markdown subset into Atlassian Document Format so descriptions are readable `[stable]`

@@ -1,0 +1,313 @@
+{
+  "all_narratives_in_window": 1222052,
+  "cfpb_last_updated": "2026-08-09T12:00:00-05:00",
+  "cfpb_licence": "CC0",
+  "cfpb_total_record_count": 16996406,
+  "example_url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/?size=0&has_narrative=true&date_received_min=2025-01-01&date_received_max=2025-12-31&product=Checking+or+savings+account&product=Credit+card&product=Mortgage&product=Vehicle+loan+or+lease&product=Student+loan&product=Payday+loan%2C+title+loan%2C+personal+loan%2C+or+advance+loan&product=Prepaid+card",
+  "excluded_products": {
+    "Credit reporting or other personal consumer reports": {
+      "count": 912757,
+      "reason": "a dispute with a bureau, not a bank conversation"
+    },
+    "Debt collection": {
+      "count": 100609,
+      "reason": "usually a third-party collector, not the bank's own customer relationship"
+    },
+    "Debt or credit management": {
+      "count": 2645,
+      "reason": "debt-settlement firms"
+    },
+    "Money transfer, virtual currency, or money service": {
+      "count": 64861,
+      "reason": "payment apps and crypto, not a banking relationship"
+    }
+  },
+  "frame_products": {
+    "Checking or savings account": 51448,
+    "Credit card": 41517,
+    "Mortgage": 14029,
+    "Payday loan, title loan, personal loan, or advance loan": 7805,
+    "Prepaid card": 3822,
+    "Student loan": 10874,
+    "Vehicle loan or lease": 11685
+  },
+  "frame_share_of_all_narratives": 0.1155,
+  "frame_total": 141180,
+  "issue_buckets_in_frame": [
+    {
+      "count": 26503,
+      "issue": "Managing an account"
+    },
+    {
+      "count": 11102,
+      "issue": "Problem with a purchase shown on your statement"
+    },
+    {
+      "count": 9338,
+      "issue": "Problem caused by your funds being low"
+    },
+    {
+      "count": 7352,
+      "issue": "Trouble during payment process"
+    },
+    {
+      "count": 6425,
+      "issue": "Dealing with your lender or servicer"
+    },
+    {
+      "count": 6149,
+      "issue": "Closing an account"
+    },
+    {
+      "count": 5967,
+      "issue": "Problem with a lender or other company charging your account"
+    },
+    {
+      "count": 5130,
+      "issue": "Incorrect information on your report"
+    },
+    {
+      "count": 4924,
+      "issue": "Other features, terms, or problems"
+    },
+    {
+      "count": 4825,
+      "issue": "Fees or interest"
+    },
+    {
+      "count": 4804,
+      "issue": "Getting a credit card"
+    },
+    {
+      "count": 3555,
+      "issue": "Managing the loan or lease"
+    },
+    {
+      "count": 3543,
+      "issue": "Closing your account"
+    },
+    {
+      "count": 3352,
+      "issue": "Problem when making payments"
+    },
+    {
+      "count": 3267,
+      "issue": "Repossession"
+    },
+    {
+      "count": 3249,
+      "issue": "Opening an account"
+    },
+    {
+      "count": 3159,
+      "issue": "Struggling to pay mortgage"
+    },
+    {
+      "count": 3069,
+      "issue": "Problem with a company's investigation into an existing problem"
+    },
+    {
+      "count": 2287,
+      "issue": "Struggling to repay your loan"
+    },
+    {
+      "count": 2186,
+      "issue": "Charged fees or interest you didn't expect"
+    },
+    {
+      "count": 1988,
+      "issue": "Advertising and marketing, including promotional offers"
+    },
+    {
+      "count": 1875,
+      "issue": "Trouble using your card"
+    },
+    {
+      "count": 1614,
+      "issue": "Problems at the end of the loan or lease"
+    },
+    {
+      "count": 1531,
+      "issue": "Applying for a mortgage or refinancing an existing mortgage"
+    },
+    {
+      "count": 1509,
+      "issue": "Getting a loan or lease"
+    },
+    {
+      "count": 1499,
+      "issue": "Trouble using the card"
+    },
+    {
+      "count": 1392,
+      "issue": "Struggling to pay your loan"
+    },
+    {
+      "count": 1317,
+      "issue": "Improper use of your report"
+    },
+    {
+      "count": 1274,
+      "issue": "Closing on a mortgage"
+    },
+    {
+      "count": 1130,
+      "issue": "Problem with a purchase or transfer"
+    },
+    {
+      "count": 650,
+      "issue": "Problem with the payoff process at the end of the loan"
+    },
+    {
+      "count": 613,
+      "issue": "Getting the loan"
+    },
+    {
+      "count": 598,
+      "issue": "Problem getting a card or closing an account"
+    },
+    {
+      "count": 593,
+      "issue": "Struggling to pay your bill"
+    },
+    {
+      "count": 582,
+      "issue": "Problem with additional add-on products or services"
+    },
+    {
+      "count": 520,
+      "issue": "Unexpected or other fees"
+    },
+    {
+      "count": 295,
+      "issue": "Credit monitoring or identity theft protection services"
+    },
+    {
+      "count": 219,
+      "issue": "Getting a line of credit"
+    },
+    {
+      "count": 214,
+      "issue": "Getting a loan"
+    },
+    {
+      "count": 160,
+      "issue": "Problem with fraud alerts or security freezes"
+    },
+    {
+      "count": 156,
+      "issue": "Received a loan you didn't apply for"
+    },
+    {
+      "count": 145,
+      "issue": "Can't stop withdrawals from your bank account"
+    },
+    {
+      "count": 135,
+      "issue": "Can't contact lender or servicer"
+    },
+    {
+      "count": 105,
+      "issue": "Vehicle was repossessed or sold the vehicle"
+    },
+    {
+      "count": 97,
+      "issue": "Money was taken from your bank account on the wrong day or for the wrong amount"
+    },
+    {
+      "count": 92,
+      "issue": "Loan payment wasn't credited to your account"
+    },
+    {
+      "count": 79,
+      "issue": "Issues with repayment"
+    },
+    {
+      "count": 75,
+      "issue": "Was approved for a loan, but didn't receive the money"
+    },
+    {
+      "count": 74,
+      "issue": "Unable to get your credit report or credit score"
+    },
+    {
+      "count": 59,
+      "issue": "Advertising"
+    },
+    {
+      "count": 57,
+      "issue": "Issue with income share agreement"
+    },
+    {
+      "count": 52,
+      "issue": "Issue where my lender is my school"
+    },
+    {
+      "count": 48,
+      "issue": "Confusing or missing disclosures"
+    },
+    {
+      "count": 47,
+      "issue": "Confusing or misleading advertising or marketing"
+    },
+    {
+      "count": 46,
+      "issue": "Problems receiving the advance"
+    },
+    {
+      "count": 46,
+      "issue": "Unexpected fees"
+    },
+    {
+      "count": 28,
+      "issue": "Problem with cash advance"
+    },
+    {
+      "count": 22,
+      "issue": "Vehicle was damaged or destroyed the vehicle"
+    },
+    {
+      "count": 16,
+      "issue": "Problem with overdraft"
+    },
+    {
+      "count": 15,
+      "issue": "Was approved for a loan, but didn't receive money"
+    },
+    {
+      "count": 14,
+      "issue": "Credit limit changed"
+    },
+    {
+      "count": 9,
+      "issue": "Property was sold"
+    },
+    {
+      "count": 2,
+      "issue": "Lost or stolen refund"
+    },
+    {
+      "count": 2,
+      "issue": "Property was damaged or destroyed property"
+    }
+  ],
+  "panel_b_strata": {
+    "churn_intent": {
+      "n_drawn": 17,
+      "pool": 9692
+    },
+    "complaint_escalation": {
+      "n_drawn": 16,
+      "pool": 3069
+    },
+    "financial_distress": {
+      "n_drawn": 17,
+      "pool": 16176
+    }
+  },
+  "run_date": "2026-08-09",
+  "window": {
+    "date_received_max": "2025-12-31",
+    "date_received_min": "2025-01-01"
+  }
+}
