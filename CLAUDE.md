@@ -34,6 +34,16 @@ Frozen gates: **2026-08-10** 15-min check-in · **2026-08-24** combined Sprint 1
 - Add dependencies: `uv add <pkg>` (runtime) · `uv add --group dev <pkg>` (dev-only)
 - Never `pip install` into the venv directly. Always commit `pyproject.toml` + `uv.lock` together.
 
+## Read before changing anything
+
+**`docs/ops/working-agreements.md`** — the disciplines this project learned the hard way: evaluation
+(never publish from one dataset, always show denominators), the two-level answer-key guards, demo
+honesty, keeping documents and code in step, tests that assert properties rather than labels, and bulk
+-operation discipline. Every rule there was bought with a real mistake.
+
+**`docs/ops/jira-conventions.md`** — how the AT board is written and updated. Use `tools/jira/`
+rather than hand-building Atlassian Document Format.
+
 ## Architecture in one line
 
 **Code counts and remembers. The model reads and judges.** Accumulation, decay and thresholds are
