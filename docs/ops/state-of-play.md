@@ -32,25 +32,21 @@ never-discard adds over a cheap window is currently **unproven**. See D-015 thro
 
 ## In flight
 
-- **Rounds 4 and 5 each found more than rounds 1-3 combined**, and all of it is fixed. Round 4: the
-  import guard could be walked past with `from earshot import corpus`; a groundedness metric still
-  zero by construction after round 2 was recorded as fixing it; a stratum loss the code computed and
-  never printed. Round 5 found defects **inside those fixes** — the 30-seed figures came from a scratch
-  script on a seed base no command uses and one of them inverted a conclusion; the guard was still
-  walkable via `sys.modules`; a set-valued field broke artifact reproducibility; the ranking-resolution
-  claim named the wrong mechanism. **Round 6 found six published claims no command could produce — the defect D-017 was written to
-  close, committed in the round that wrote it — and then found the same shape inside round 5's
-  guards: the recall band pins only the extractor (a leak in `memory.py` moved the headline from
-  8-0-2 to 9-0-1 while the band did not move at all), the reproducibility test cannot observe the
-  failure it names, and the AST provenance guard misses 13 of 15 bypasses. Round 7 has not run.**
-
-**Open, carried into round 7:** a second behavioural guard covering the surface beyond `extract.py`,
-  and the band measured across `sweep`'s seed base rather than one dataset · the reproducibility
-  test made cross-process · `get_transactions` truncating mid-JSON at a schema-legal `max_rows`,
-  swallowed into `{}` · the offline engine's unreachable `false_alarm` and its constant
-  `what_would_change_my_mind` · `overdraft_limit` overstated 27.5% of the time and `savings_balance`
-  actually a 90-day outflow total · no committed manifest at 15,000 customers · two rates without
-  denominators · `elapsed_seconds` makes "bit-for-bit reproducible" literally false for artifacts.
+- **Adversarial review is FROZEN at six rounds.** Rounds 4-6 each found real defects, and each found
+  its worst ones *inside the previous round's fixes* — twice the fix reproduced the defect it was
+  fixing. The stopping rule was the problem: "run until a round finds nothing" never fires against a
+  competent reviewer on 7k lines. Everything found so far is fixed. What remains is triaged into
+  `known-issues.md` rather than chased. **Do not open an unbounded round 7.** If a further pass is
+  wanted, bound it: one reviewer, one lens (what a judge sees on 08-24), a severity bar of "changes a
+  published number or breaks on stage", against a pinned SHA.
+- **Open defects, deliberately unfixed, all recorded in `docs/ops/known-issues.md`:** the recall band
+  pins only `extract.py` (a leak planted in `memory.py` moved the headline 8-0-2 → 9-0-1 while the band
+  did not move at all); the artifact-reproducibility test cannot observe the failure it names; the AST
+  provenance guard misses 13 of 15 bypasses; `get_transactions` truncates mid-JSON at a schema-legal
+  `max_rows` and the parse failure is swallowed into `{}`; the offline engine's `false_alarm` is
+  unreachable; `overdraft_limit` is overstated 27.5% of the time and `savings_balance` is a 90-day
+  outflow total; no committed manifest at 15,000 customers; `elapsed_seconds` makes "bit-for-bit
+  reproducible" literally false for artifacts.
 - **Nothing is marked Done on the board, deliberately** — one author, no second reviewer. Namit and
   Ishant have not seen any of it.
 
@@ -60,31 +56,40 @@ never-discard adds over a cheap window is currently **unproven**. See D-015 thro
 - **AWS CodeCommit** — a named required deliverable, no repo provisioned. Requesting after the 08-10 call.
 - **Zenon model keys** — running on a personal OpenRouter account; rules say Zenon supplies them.
 
-## Next three things — in this order, set 2026-08-09
+## Next three things — in this order, reset 2026-08-09 after the review freeze
 
-**1. Run round 6, and keep going until a round comes back with nothing material.** Two rounds have now
-found their worst defects *inside the previous round's fixes*, so review the round-5 changes first:
-the recall band, the ranking-resolution block, the split decoy rates, the day-ordered long-context
-window, the demo's narration, and the `-dirty` SHA suffix. Hunt the standing shape — *looks rigorous,
-is rigged, unenforced, or unreproducible* — plus the two the last rounds added: **a guard never tested
-against its own attack**, and **a number quoted from anything other than the command's own output**.
-Hand the reviewer a pinned SHA and do not edit the tree while it runs. Do not start work 2 until this
-converges.
+**1. Ground the corpus on real public data — get the essence, not the text.** `AT-42`. CFPB gives
+3.8M real, public-domain complaint narratives. Extract the *distributional* essence — complaint
+length, how grievance escalates across a narrative, vocabulary and register, product/issue mix,
+how often a real narrative carries more than one signal — and drive `corpus.py` and
+`corpus_lexicon.py` from it instead of from fragments authored by hand. **The answer key still comes
+first**: deterministic code decides what is true, real language only shapes how it is written. D-010
+settles the boundary — do NOT stitch real complaints into invented customer histories; it produces
+incoherent people and destroys the measurement. Then `AT-43`: benchmark the extractor on real
+narratives against a hand-marked gold set. Together these answer "your reader only works on prose you
+wrote yourself", which is the single most likely technical objection on 09-07.
 
-**2. Does never-discard beat anything cheaper than itself?** The entry's central open question, and
-right now the answer on the evidence is *no*: `stateless-top2` beats the ledger on the pre-registered
-stratum at 30 seeds, and `window3-top2` — last three conversations, keep the best two — beats it too.
-The corpus cannot yet pose the question fairly: customers average 3.5 conversations, so top-2 discards
-almost nothing, and two of the four trajectories have only 4 authored fragments, so long diffuse arcs
-exhaust the pool and are forced to plant their loudest. Widen the fragment pools, lengthen histories,
-re-run, and add `window3-top2` as a shipped arm. If the ledger pulls ahead, that is the entry. If it
-does not, we need to know before 09-07 and the pitch becomes the agent, not the ledger. Fold
-**AT-42/AT-43** (CFPB grounding) in behind it.
+**2. The reviewer queue UI.** `AT-61/62/64`. Never started, and it is the whole presentation axis of a
+Track A *client-facing* entry — needed for the 2026-08-24 combined Sprint 1+2 demo. Ranked case list ·
+a case with its evidence chain and the retro re-score visible · approve / dismiss / route.
+Constraints, already settled: it reads run artifacts already on disk rather than re-running the
+pipeline · works with zero API keys and no network · **never becomes a second source of truth for a
+number** — it displays what `earshot sweep` and the run artifacts already produced. If it starts
+competing with the evaluation for attention, stop and ship the numbers.
 
-**3. A UI that makes it look like a product.** Reviewer queue (**AT-61/62/64**): ranked case list, a
-case with its evidence chain and retro re-score, approve / dismiss / route. It reads from run artifacts
-already on disk, works with zero keys and no network, and must never become a second source of truth
-for a number. If it starts competing with the evaluation for attention, stop and ship the numbers.
+**3. Write `known-issues.md` and close the review out.** Triage the open list above against one
+question: *would a technical judge's score change if this stayed broken?* Fix only those. Everything
+else is documented with what is wrong, how it was found, and what fixing it would cost. Say plainly
+that six adversarial rounds ran and the defect rate did not fall — that is a finding about the method,
+and a written known-issues list buys more engineering-quality credit than a clean bill of health.
+
+Still open underneath all three: **does never-discard buy anything over a cheap bounded window?**
+`window3-top2` beats the ledger on the pre-registered stratum and ties it on the other. The corpus
+cannot currently pose the question fairly (3.5 conversations per customer; two of four trajectories
+have only 4 authored fragments). Work 1 widens the fragment pools as a side effect — when it does,
+expose `conversations_per_customer` as a CLI flag and re-run at (2,5)/(4,9)/(8,20). If the ledger
+pulls ahead, that is the entry. If not, the honest pitch is the agent with the ledger as its cheapest
+trigger (D-005), and Ravi decides that, not a session.
 
 ## Known-weak, stated rather than hidden
 
