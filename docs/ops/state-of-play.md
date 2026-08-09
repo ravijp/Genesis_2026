@@ -41,14 +41,35 @@ invalid key set — a room without wifi cannot break it. **144 tests**, ruff cle
 - **AWS CodeCommit** — a named required deliverable, no repo provisioned. Requesting after the 08-10 call.
 - **Zenon model keys** — running on a personal OpenRouter account; rules say Zenon supplies them.
 
-## Next three things
+## Next three things — in this order, set 2026-08-09
 
-1. Decide **AT-53** — does the memory layer ship alongside per-call detection, or not at all? It wins
-   on thin evidence and ties elsewhere, and the naive combination was worse than either half.
-2. Resolve **AT-52** — decay, corroboration and channel weighting are indistinguishable from a plain
-   count. Justify them or remove them.
-3. Ground the reader on real CFPB complaints (**AT-43**) — the strongest available answer to "your
-   extractor only works on prose you wrote yourself".
+**1. Finish the adversarial review cycle.** Three rounds are done and every one found real defects;
+each round's fixes then created work for the next, so it has not converged. Run round 4 and keep going
+until a round comes back with nothing material. The recurring defect class is *something that looks
+rigorous but is rigged, unenforced, or unreproducible* — a threshold derived from the answer, a metric
+zero by construction, a harness no command can reach, a rate with no denominator. Hunt that shape
+specifically. Do not start work 2 until this converges.
+
+**2. Get real data into the system.** `AT-38` carries the full search in its comments: nothing public
+has repeat-contact-per-customer structure in financial services, so the synthetic corpus stays — but
+CFPB gives 3.8M real, public-domain complaint narratives. Two jobs: **AT-42** fit our generated
+distribution to the real one, and **AT-43** benchmark the extractor on real narratives with a
+hand-marked gold set. AT-43 is the long pole (~2 days) and the single strongest answer to "your reader
+only works on prose you wrote yourself". Do not stitch real complaints into invented customer
+histories — see `decisions.md` D-010 for why that is worse than either option.
+
+**3. A UI that makes it look like a product.** Today the demo is terminal output. Track A asks for
+something client-ready and presentation is how the rest is perceived. Build the reviewer queue
+(**AT-61/62/64**): a ranked case list, a case with its evidence chain and the retro re-score visible,
+and approve / dismiss / route.
+
+**Constraints on 3, because this is the work most likely to eat the remaining time:** it reads from
+run artifacts already on disk rather than re-running the pipeline; it works with zero API keys and no
+network; nothing in it may become a second source of truth for a number. If it starts competing with
+the evaluation for attention, stop and ship the numbers.
+
+Still open underneath all three: **AT-53** (does the memory layer ship alongside per-call detection, or
+not at all) and **AT-52** (the scoring mechanisms earn nothing over a plain count — justify or remove).
 
 ## Known-weak, stated rather than hidden
 
