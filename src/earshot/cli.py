@@ -36,8 +36,8 @@ from .schema import Outcome, Stratum
 # framing the eval uses, rather than a magic score.
 INVESTIGATION_BUDGET = 0.10
 
-# Ceiling on model spend for a single case. A live Sonnet 4.5 investigation measured $0.078,
-# so this is ~3x headroom and still stops a runaway loop from being expensive.
+# Ceiling on model spend for a single case. The two committed live Sonnet 4.5 investigations cost
+# $0.089 and $0.097, so this is ~2.6x headroom and still stops a runaway loop from being expensive.
 COST_CAP_PER_CASE_USD = 0.25
 
 # Anchored to the working directory, not to the package. A package-relative path resolves
@@ -160,11 +160,15 @@ def cmd_demo(run: RunConfig) -> int:
     arms = run_all_arms(signals, run.scoring)
     threshold = evaluate_arm(corpus, arms["full-ledger"], INVESTIGATION_BUDGET).threshold
     stateless_arm = arms["stateless-max"]
-    stateless_cut = evaluate_arm(corpus, stateless_arm, INVESTIGATION_BUDGET).threshold
+    stateless_result = evaluate_arm(corpus, stateless_arm, INVESTIGATION_BUDGET)
+    stateless_cut = stateless_result.threshold
 
-    def per_call_ever_fires(customer_id: str) -> bool:
-        timeline = stateless_arm.timelines.get(customer_id)
-        return bool(timeline) and any(s >= stateless_cut for _, s in timeline.points)
+    def per_call_catches(customer_id: str) -> bool:
+        """Membership in the baseline's actual alert queue -- the same set the published table
+        scores. Comparing against `score >= cut` instead would credit the baseline with the
+        whole tie cluster at the cut, making the demo's opponent stronger than the one in the
+        results table and the two numbers incomparable."""
+        return customer_id in stateless_result.flagged_ids
 
     # Customers the ledger catches that a per-call tool misses AND who went on to have a real
     # outcome. The outcome filter is what makes the count meaningful: without it, customers
@@ -179,7 +183,7 @@ def cmd_demo(run: RunConfig) -> int:
             points = ledger.timeline(customer_id, signal_type)
             if len(points) < 3 or points[-1].score < threshold:
                 continue
-            if per_call_ever_fires(customer_id):
+            if per_call_catches(customer_id):
                 continue
             accumulation_only.append(
                 (points[-1].score - points[0].score, customer_id, signal_type, points)
@@ -271,8 +275,13 @@ def cmd_demo(run: RunConfig) -> int:
     # what closes.
     print(f"\nChosen from {len(accumulation_only)} of {len(catchable)} thin-evidence customers who")
     print("went on to have a real outcome, where the ledger opens a case and per-call detection")
-    print("never does. That ratio is the claim; this is one instance of it. The population")
-    print("result is in the README, measured across ten datasets.")
+    print("does not. That ratio is the claim, and this is one instance of it.")
+    print("\nIt is a DIFFERENT quantity from the recall table: this counts customers the ledger")
+    print("catches and the baseline misses, on one dataset, while the table compares each arm's")
+    print("recall across ten. Both are in `earshot sweep`; neither is the other. Per-call")
+    print("detection here means the same top-ranked alert queue the table scores, at the same")
+    print("review budget — not a threshold comparison, which would credit the baseline with")
+    print("every customer tied at the cut.")
 
     if t.outcome is not Outcome.NONE and t.outcome_day is not None:
         opened = final.as_of_day
@@ -447,18 +456,14 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
 
     elapsed = time.time() - started
     total_cost = sum(r["trace"]["cost_usd"] for r in records)
-    unresolved = sum(
-        1
-        for r in records
-        for ref in r["decision"]["evidence"]
-        if not any(
-            c.conversation_id == ref["conversation_id"]
-            for c in corpus.conversations_for(r["decision"]["customer_id"])
-        )
-    )
+    # The FIRST-attempt failure rate, not the post-retry one. A decision whose citations do not
+    # resolve is rejected inside the loop and never reaches here, so counting unresolved refs on
+    # the returned decisions would report zero however badly the model behaved.
+    first_attempt_failures = sum(r["trace"]["evidence_repairs"] for r in records)
     print(f"\n{'-' * 78}")
     print(f"{len(records)} investigations in {elapsed:.1f}s   "
-          f"total ${total_cost:.4f}   unresolved evidence refs: {unresolved}")
+          f"total ${total_cost:.4f}   "
+          f"cases needing an evidence repair: {first_attempt_failures}/{len(records)}")
 
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     # Provider, cache mode and limit are all in the filename, so two runs that differ only in
@@ -511,49 +516,68 @@ def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
           f"review budget {INVESTIGATION_BUDGET:.0%}   git={_git_sha()}   ({elapsed:.0f}s)")
     print(f"seeds: {seeds[0]}..{seeds[-1]}\n")
 
-    diffuse_totals = {
-        name: (
-            sum(s.diffuse_hits for s in by_arm[name]),
-            sum(s.diffuse_outcomes for s in by_arm[name]),
-        )
-        for name in summaries
-    }
-
     print(f"{'arm':<18} {'recall':>8} {'stdev':>7} {'hits/outcomes':>16} "
-          f"{'diffuse':>9} {'diffuse hits/n':>16}")
-    print("-" * 86)
-    for name, s in sorted(summaries.items(), key=lambda kv: -kv[1].pooled_recall):
-        dh, dn = diffuse_totals[name]
+          f"{'diffuse':>9} {'diffuse hits/n':>15} {'conc':>7} {'conc hits/n':>15}")
+    print("-" * 110)
+    for name, s in sorted(summaries.items(), key=lambda kv: -kv[1].pooled_diffuse):
         print(f"{name:<18} {s.pooled_recall:>8.3f} {s.stdev:>7.3f} "
-              f"{str(s.total_hits) + '/' + str(s.total_outcomes):>16} "
-              f"{(dh / dn if dn else 0):>9.3f} {str(dh) + '/' + str(dn):>16}")
+              f"{f'{s.total_hits}/{s.total_outcomes}':>16} "
+              f"{s.pooled_diffuse:>9.3f} "
+              f"{f'{s.total_diffuse_hits}/{s.total_diffuse_outcomes}':>15} "
+              f"{s.pooled_concentrated:>7.3f} "
+              f"{f'{s.total_concentrated_hits}/{s.total_concentrated_outcomes}':>15}")
 
-    # The pre-registered headline goes FIRST, and it is a comparison on the diffuse stratum --
-    # not on overall recall. Everything after it is exploratory and is labelled as such.
-    print("\nPRE-REGISTERED HEADLINE — diffuse arcs (evidence spread thin), paired by seed")
-    for arm in ("full-ledger", "dumb-ledger", "long-context-3"):
-        if arm not in summaries:
-            continue
-        w, lost, tied = paired_record(by_arm, arm, "stateless-max", metric="diffuse_recall")
-        p = sign_test_p(w, lost)
-        mark = "  <-- significant" if p < 0.05 else ""
-        print(f"  {arm:<18} vs stateless-max     {w}-{lost}-{tied}  p={p:.3f}{mark}")
+    comparisons: list[dict[str, object]] = []
 
-    print("\nEXPLORATORY — overall recall, every pairing")
-    names = list(summaries)
-    n_tests = 0
-    for a in names:
-        for b in names:
-            if a >= b:
-                continue
-            n_tests += 1
-            w, lost, tied = paired_record(by_arm, a, b)
-            p = sign_test_p(w, lost)
-            mark = "  <-- p<0.05, but see the note" if p < 0.05 else ""
-            print(f"  {a:<18} vs {b:<18} {w}-{lost}-{tied}  p={p:.3f}{mark}")
+    def _matrix(title: str, metric: str, note: str) -> int:
+        """Every pairing on one metric. Printing a subset is how a published p-value ends up
+        with no command behind it, and how a multiplicity count ends up understated."""
+        print(f"\n{title}")
+        print(f"  {note}")
+        names = sorted(summaries)
+        count = 0
+        for i, a in enumerate(names):
+            for b in names[i + 1:]:
+                count += 1
+                w, lost, tied = paired_record(by_arm, a, b, metric=metric)
+                p = sign_test_p(w, lost)
+                mark = "  <-- p<0.05" if p < 0.05 else ""
+                print(f"  {a:<18} vs {b:<18} {w}-{lost}-{tied}  p={p:.3f}{mark}")
+                comparisons.append(
+                    {"metric": metric, "a": a, "b": b,
+                     "wins": w, "losses": lost, "ties": tied, "p": round(p, 4)}
+                )
+        return count
 
-    print(f"\nNOTE: {n_tests} pairwise tests below the headline, with no multiplicity")
-    print("correction. A single p just under 0.05 among them is a hint, not a result.")
+    # The pre-registered headline is full-ledger vs stateless-max on DIFFUSE. It is printed
+    # first and named, so that everything else reads as the exploratory space it is.
+    w, lost, tied = paired_record(
+        by_arm, "full-ledger", "stateless-max", metric="diffuse_recall"
+    )
+    print("\nPRE-REGISTERED HEADLINE — full-ledger vs stateless-max on diffuse arcs")
+    print(f"  {w}-{lost}-{tied}  p={sign_test_p(w, lost):.3f}   "
+          f"(declared before the run; everything below is exploratory)")
+
+    n_diffuse = _matrix(
+        "DIFFUSE ARCS — evidence spread thin, every pairing, paired by seed",
+        "diffuse_recall",
+        "the stratum the ledger is built for",
+    )
+    n_conc = _matrix(
+        "CONCENTRATED ARCS — one loud conversation, every pairing, paired by seed",
+        "concentrated_recall",
+        "the stratum a per-call maximum is built for, where the ledger LOSES",
+    )
+    n_overall = _matrix(
+        "OVERALL RECALL — every pairing, paired by seed",
+        "recall",
+        "whole portfolio",
+    )
+
+    n_tests = n_diffuse + n_conc + n_overall
+    print(f"\nNOTE: {n_tests} pairwise tests here, with no multiplicity correction. Only the")
+    print("headline above was declared in advance; a single p just under 0.05 among the rest")
+    print("is a hint, not a result. Every number published anywhere is in this output.")
 
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     out = ARTIFACTS / f"sweep-{n_seeds}x{run.corpus.n_customers}-{run.hash()}.json"
@@ -568,7 +592,18 @@ def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
                     "git_sha": _git_sha(),
                     "elapsed_seconds": round(elapsed, 2),
                 },
-                "arms": {k: asdict(v) for k, v in summaries.items()},
+                "arms": {
+                    k: {
+                        **asdict(v),
+                        # Pooled rates are what the console and the README quote; `mean_*` is a
+                        # mean of per-seed rates. Both are stored, named for which is which.
+                        "pooled_recall": round(v.pooled_recall, 4),
+                        "pooled_diffuse": round(v.pooled_diffuse, 4),
+                        "pooled_concentrated": round(v.pooled_concentrated, 4),
+                    }
+                    for k, v in summaries.items()
+                },
+                "comparisons": comparisons,
                 "samples": {k: [asdict(s) for s in v] for k, v in by_arm.items()},
             },
             indent=2,

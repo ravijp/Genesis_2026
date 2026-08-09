@@ -84,11 +84,81 @@ def swept():
     return sweep(SMALL, SEEDS, budget=0.10)
 
 
+EXPECTED_ARMS = {
+    "stateless-max",
+    "stateless-top2",
+    "dumb-ledger",
+    "long-context-3",
+    "full-ledger",
+    "hybrid",
+}
+
+
 def test_every_arm_runs_on_every_seed(swept) -> None:
     summaries, by_arm = swept
-    assert len(summaries) == 5, f"expected five arms, got {sorted(summaries)}"
+    assert set(summaries) == EXPECTED_ARMS, f"arm roster changed: {sorted(summaries)}"
     for arm, samples in by_arm.items():
         assert sorted(s.seed for s in samples) == SEEDS, f"{arm} dropped a seed"
+
+
+def test_published_integers_are_counted_not_recovered_from_a_rate() -> None:
+    """The integers beside every published rate must be the ones that PRODUCED it.
+
+    Recovering them as `round(rate * denominator)` yields something that looks like a count,
+    reads like a count, and silently stops being one as soon as the rate is rounded or the two
+    denominators drift apart. Here the counts are compared against a direct intersection of the
+    flagged set with the outcome set.
+    """
+    from earshot.arms import run_all_arms
+    from earshot.corpus import generate
+    from earshot.evals import evaluate_arm
+    from earshot.extract import OfflineLexiconExtractor, extract_all
+    from earshot.schema import Outcome, Stratum
+
+    run = replace(SMALL, seed=SEEDS[0])
+    corpus = generate(run)
+    signals = extract_all(OfflineLexiconExtractor(), corpus.conversations)
+    outcome_ids = {c.customer_id for c in corpus.customers if c.outcome is not Outcome.NONE}
+    diffuse_ids = {
+        c.customer_id
+        for c in corpus.customers
+        if c.outcome is not Outcome.NONE and c.stratum is Stratum.DIFFUSE
+    }
+    assert outcome_ids and diffuse_ids, "nothing to count against"
+
+    for arm in run_all_arms(signals, run.scoring).values():
+        result = evaluate_arm(corpus, arm, 0.10)
+        scores = {c.customer_id: 0.0 for c in corpus.customers}
+        scores.update(arm.scores())
+        k = max(1, round(0.10 * len(scores)))
+        ranked = sorted(scores.items(), key=lambda kv: (-kv[1], kv[0]))
+        flagged = {cid for cid, s in ranked[:k] if s > 0}
+
+        assert result.n_hits == len(flagged & outcome_ids), f"{arm.arm}: overall count"
+        assert result.n_outcomes == len(outcome_ids), f"{arm.arm}: overall denominator"
+        assert result.stratum_hits["diffuse"] == len(flagged & diffuse_ids), (
+            f"{arm.arm}: diffuse count"
+        )
+        assert result.stratum_outcomes["diffuse"] == len(diffuse_ids)
+
+
+def test_the_strongest_per_call_baseline_is_not_a_copy_of_the_weakest(swept) -> None:
+    """`stateless-top2` exists to be a hard opponent, so it must actually differ from `max`.
+
+    An arm that silently collapses into another arm turns a comparison into a tautology, which
+    is what happened to `long-context` when its window never bound.
+    """
+    _, by_arm = swept
+    max_scores = {(s.seed, s.arm): s for s in by_arm["stateless-max"]}
+    differing = sum(
+        1
+        for s in by_arm["stateless-top2"]
+        if s.diffuse_recall != max_scores[(s.seed, "stateless-max")].diffuse_recall
+    )
+    assert differing, (
+        "stateless-top2 scored identically to stateless-max on every seed — it has collapsed "
+        "into the arm it is supposed to be a stronger version of"
+    )
 
 
 def test_pooled_recall_is_over_customers_not_a_mean_of_rates(swept) -> None:

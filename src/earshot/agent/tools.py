@@ -480,8 +480,9 @@ def unresolved_evidence(ctx: ToolContext, refs: list[Any]) -> list[str]:
     """Which of these citations do NOT resolve against the corpus?
 
     Empty list means every reference points at a real turn and quotes it verbatim. This is the
-    groundedness check the architecture promises, and its failure rate is a published metric —
-    so it lives in code the eval can call, not inside the loop.
+    groundedness check the architecture promises. It lives in code the eval can call rather than
+    inside the loop, so a first-attempt failure rate can be measured; the loop itself rejects and
+    retries, so a decision that survives to the caller always resolves.
     """
     by_id = {c.conversation_id: c for c in ctx.conversations}
     problems: list[str] = []

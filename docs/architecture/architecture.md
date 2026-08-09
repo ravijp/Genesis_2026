@@ -183,7 +183,7 @@ rather than replacing them.
 | `src/earshot/llm/` | Provider abstraction: OpenRouter, offline, response cache, cost + latency capture |
 | `src/earshot/evals.py`, `sweep.py` | Metrics, and the multi-seed harness that produces anything quotable |
 | `prompts/investigator/v1/` | Prompts as versioned files, so a prompt change is a reviewable diff |
-| `artifacts/cache/` | Committed model responses — the demo replays with no keys and no network |
+| `artifacts/cache/` | Committed model responses — `earshot investigate --provider openrouter` replays them with no keys and no network |
 | `artifacts/runs/pinned/` | One committed run + manifest (seed, git SHA, config hash) |
 | `docs/` | This page, the build plan, gate briefs, deliverables |
 
@@ -193,7 +193,7 @@ rather than replacing them.
 
 | Question | Metric |
 |---|---|
-| Does the extractor find what was planted? | Span precision/recall vs seeded signals; **published miss rate** |
+| Does the extractor find what was planted? | Conversation-level recall vs seeded signals — matched on (conversation, signal type), not on character spans; **published miss rate** |
 | Does memory beat forgetting? | Five arms at **equal alert budget**, broken out per stratum |
 | Does each scoring mechanism earn its place? | Per-mechanism ablation |
 | Is the agent right? | Verdict and routing accuracy vs the seeded trajectory — **not yet computed** |
@@ -203,7 +203,9 @@ rather than replacing them.
 Comparison numbers come from `earshot sweep` and are written to a run manifest with their seed list.
 
 **Where the numbers stand.** Across ten datasets, the ledger catches 134 of 780 thin-evidence
-customers against 96 of 780 for score-each-call-and-forget (8 wins, 2 ties, no losses, `p=0.008`).
-Overall no arm is distinguishable from any other, and a plain unweighted count matches the full
-ledger. So the arms answer *which trigger feeds the investigator best*, not *what the product is*.
-Full table and method in the README.
+customers against 96 of 780 for score-each-call-and-forget (8 wins, 2 ties, no losses, `p=0.008`), and
+*loses* on concentrated arcs by a comparable margin (119 of 629 against 180 of 629, `p=0.039`). The
+result is a trade: the more conversations an arm may combine, the better it does on thin evidence and
+the worse on a single loud call. Overall no arm is distinguishable from any other; a plain unweighted
+count matches the full ledger, and so does summing the two loudest calls. So the arms answer *which
+trigger feeds the investigator best*, not *what the product is*. Full table and method in the README.

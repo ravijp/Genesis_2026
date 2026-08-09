@@ -2,10 +2,10 @@
   "manifest": {
     "seed": 20260809,
     "config_hash": "07db21651cfa",
-    "git_sha": "55c5d52",
+    "git_sha": "1906877",
     "provider": "offline-lexicon",
-    "elapsed_seconds": 0.68,
-    "conversations_per_second": 2022.9
+    "elapsed_seconds": 0.73,
+    "conversations_per_second": 1883.7
   },
   "corpus_diagnostics": {
     "n_customers": 400,
@@ -52,6 +52,49 @@
         "14": 0.037,
         "30": 0.0185,
         "60": 0.0
+      },
+      "n_hits": 2,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 1,
+        "diffuse": 1
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      }
+    },
+    {
+      "arm": "stateless-top2",
+      "budget": 0.01,
+      "threshold": 0.4467,
+      "n_flagged": 4,
+      "recall": 0.0185,
+      "precision": 0.25,
+      "median_lead_days": 42,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0417,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0185,
+        "7": 0.0185,
+        "14": 0.0185,
+        "30": 0.0185,
+        "60": 0.0
+      },
+      "n_hits": 1,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 1
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -75,6 +118,16 @@
         "14": 0.0,
         "30": 0.0,
         "60": 0.0
+      },
+      "n_hits": 0,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 0
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -98,6 +151,16 @@
         "14": 0.0,
         "30": 0.0,
         "60": 0.0
+      },
+      "n_hits": 0,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 0
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -121,6 +184,16 @@
         "14": 0.0,
         "30": 0.0,
         "60": 0.0
+      },
+      "n_hits": 0,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 0
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -144,6 +217,16 @@
         "14": 0.0,
         "30": 0.0,
         "60": 0.0
+      },
+      "n_hits": 0,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 0
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -167,6 +250,49 @@
         "14": 0.0741,
         "30": 0.0556,
         "60": 0.037
+      },
+      "n_hits": 4,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 3,
+        "diffuse": 1
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      }
+    },
+    {
+      "arm": "stateless-top2",
+      "budget": 0.02,
+      "threshold": 0.4467,
+      "n_flagged": 8,
+      "recall": 0.0185,
+      "precision": 0.125,
+      "median_lead_days": 42,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0417,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0185,
+        "7": 0.0185,
+        "14": 0.0185,
+        "30": 0.0185,
+        "60": 0.0
+      },
+      "n_hits": 1,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 1
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -190,6 +316,16 @@
         "14": 0.0,
         "30": 0.0,
         "60": 0.0
+      },
+      "n_hits": 0,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 0
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -213,6 +349,16 @@
         "14": 0.0185,
         "30": 0.0185,
         "60": 0.0185
+      },
+      "n_hits": 1,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 1,
+        "diffuse": 0
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -236,6 +382,16 @@
         "14": 0.0185,
         "30": 0.0185,
         "60": 0.0
+      },
+      "n_hits": 1,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 1
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -259,6 +415,16 @@
         "14": 0.0185,
         "30": 0.0185,
         "60": 0.0
+      },
+      "n_hits": 1,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 1
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -282,6 +448,49 @@
         "14": 0.1111,
         "30": 0.0741,
         "60": 0.0556
+      },
+      "n_hits": 6,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 4,
+        "diffuse": 2
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      }
+    },
+    {
+      "arm": "stateless-top2",
+      "budget": 0.05,
+      "threshold": 0.4467,
+      "n_flagged": 20,
+      "recall": 0.0926,
+      "precision": 0.25,
+      "median_lead_days": 41,
+      "recall_by_stratum": {
+        "concentrated": 0.0625,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.1667,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0926,
+        "7": 0.0926,
+        "14": 0.0926,
+        "30": 0.0556,
+        "60": 0.0
+      },
+      "n_hits": 5,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 1,
+        "diffuse": 4
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -305,6 +514,16 @@
         "14": 0.037,
         "30": 0.0185,
         "60": 0.0185
+      },
+      "n_hits": 2,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 1,
+        "diffuse": 1
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -328,6 +547,16 @@
         "14": 0.0741,
         "30": 0.0556,
         "60": 0.0185
+      },
+      "n_hits": 4,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 2,
+        "diffuse": 2
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -351,6 +580,16 @@
         "14": 0.0926,
         "30": 0.037,
         "60": 0.0
+      },
+      "n_hits": 5,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 1,
+        "diffuse": 4
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -374,6 +613,16 @@
         "14": 0.0926,
         "30": 0.0556,
         "60": 0.0185
+      },
+      "n_hits": 5,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 2,
+        "diffuse": 3
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -397,6 +646,49 @@
         "14": 0.2037,
         "30": 0.1481,
         "60": 0.0926
+      },
+      "n_hits": 11,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 7,
+        "diffuse": 4
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      }
+    },
+    {
+      "arm": "stateless-top2",
+      "budget": 0.1,
+      "threshold": 0.4108,
+      "n_flagged": 40,
+      "recall": 0.1481,
+      "precision": 0.2,
+      "median_lead_days": 41.5,
+      "recall_by_stratum": {
+        "concentrated": 0.125,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.25,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1481,
+        "7": 0.1481,
+        "14": 0.1481,
+        "30": 0.1111,
+        "60": 0.0185
+      },
+      "n_hits": 8,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 2,
+        "diffuse": 6
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -420,6 +712,16 @@
         "14": 0.1667,
         "30": 0.1296,
         "60": 0.0926
+      },
+      "n_hits": 9,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 3,
+        "diffuse": 6
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -443,6 +745,16 @@
         "14": 0.1296,
         "30": 0.1111,
         "60": 0.037
+      },
+      "n_hits": 8,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 5,
+        "diffuse": 3
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -466,6 +778,16 @@
         "14": 0.1481,
         "30": 0.0926,
         "60": 0.0185
+      },
+      "n_hits": 9,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 3,
+        "diffuse": 6
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -489,6 +811,16 @@
         "14": 0.2222,
         "30": 0.1296,
         "60": 0.0741
+      },
+      "n_hits": 12,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 6,
+        "diffuse": 6
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     }
   ],
@@ -514,6 +846,16 @@
         "14": 0.1481,
         "30": 0.0926,
         "60": 0.0185
+      },
+      "n_hits": 9,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 3,
+        "diffuse": 6
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -537,6 +879,16 @@
         "14": 0.1481,
         "30": 0.0926,
         "60": 0.0185
+      },
+      "n_hits": 9,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 3,
+        "diffuse": 6
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -560,6 +912,16 @@
         "14": 0.1481,
         "30": 0.0926,
         "60": 0.0185
+      },
+      "n_hits": 9,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 3,
+        "diffuse": 6
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -583,6 +945,16 @@
         "14": 0.1481,
         "30": 0.0926,
         "60": 0.0185
+      },
+      "n_hits": 9,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 3,
+        "diffuse": 6
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     },
     {
@@ -606,6 +978,16 @@
         "14": 0.1481,
         "30": 0.0926,
         "60": 0.0185
+      },
+      "n_hits": 9,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 3,
+        "diffuse": 6
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
       }
     }
   ]

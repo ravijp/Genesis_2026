@@ -20,12 +20,16 @@ from .config import RunConfig
 from .corpus import generate
 from .evals import evaluate_arm
 from .extract import OfflineLexiconExtractor, extract_all
-from .schema import Outcome, Stratum
 
 
 @dataclass
 class ArmSample:
-    """One arm's result on one seed, with the integers behind the rate."""
+    """One arm's result on one seed, with the integers behind the rate.
+
+    Both arc strata are carried, not just the headline one: the ledger wins on diffuse arcs and
+    loses on concentrated ones, and reporting only the stratum we win on would be picking the
+    result out of a comparison the code already computes in full.
+    """
 
     arm: str
     seed: int
@@ -36,10 +40,19 @@ class ArmSample:
     diffuse_recall: float
     diffuse_hits: int = 0
     diffuse_outcomes: int = 0
+    concentrated_recall: float = 0.0
+    concentrated_hits: int = 0
+    concentrated_outcomes: int = 0
 
 
 @dataclass
 class ArmSummary:
+    """Pooled and mean-of-rates statistics are BOTH carried, under names that say which is which.
+
+    They differ (seeds have different denominators), and publishing one while an artifact stores
+    the other under a shared name is how a reader checking the table finds a third number.
+    """
+
     arm: str
     n_seeds: int
     mean_recall: float
@@ -49,11 +62,28 @@ class ArmSummary:
     total_hits: int
     total_outcomes: int
     mean_diffuse: float
+    total_diffuse_hits: int = 0
+    total_diffuse_outcomes: int = 0
+    mean_concentrated: float = 0.0
+    total_concentrated_hits: int = 0
+    total_concentrated_outcomes: int = 0
+
+    @staticmethod
+    def _pooled(hits: int, outcomes: int) -> float:
+        return hits / outcomes if outcomes else 0.0
 
     @property
     def pooled_recall(self) -> float:
         """Recall over every outcome customer across every seed, not a mean of rates."""
-        return self.total_hits / self.total_outcomes if self.total_outcomes else 0.0
+        return self._pooled(self.total_hits, self.total_outcomes)
+
+    @property
+    def pooled_diffuse(self) -> float:
+        return self._pooled(self.total_diffuse_hits, self.total_diffuse_outcomes)
+
+    @property
+    def pooled_concentrated(self) -> float:
+        return self._pooled(self.total_concentrated_hits, self.total_concentrated_outcomes)
 
 
 def _one_seed(base: RunConfig, seed: int, budget: float) -> list[ArmSample]:
@@ -64,33 +94,25 @@ def _one_seed(base: RunConfig, seed: int, budget: float) -> list[ArmSample]:
     )
     signals = extract_all(extractor, corpus.conversations)
     arms = run_all_arms(signals, run.scoring)
-    n_outcomes = sum(1 for c in corpus.customers if c.outcome is not Outcome.NONE)
-
-    # Denominator for the diffuse stratum: outcome customers whose evidence was spread thin.
-    # Carried explicitly so the headline rate is never quoted without the integers behind it.
-    n_diffuse = sum(
-        1
-        for c in corpus.customers
-        if c.outcome is not Outcome.NONE and c.stratum is Stratum.DIFFUSE
-    )
-
     out: list[ArmSample] = []
     for name, arm in arms.items():
         r = evaluate_arm(corpus, arm, budget)
         # Indexed, not .get() -- a renamed stratum must fail loudly rather than silently
         # reporting the pre-registered headline as 0/780.
-        diffuse = r.recall_by_stratum["diffuse"]
         out.append(
             ArmSample(
                 arm=name,
                 seed=seed,
                 recall=r.recall,
-                hits=round(r.recall * n_outcomes),
-                outcomes=n_outcomes,
+                hits=r.n_hits,
+                outcomes=r.n_outcomes,
                 flagged=r.n_flagged,
-                diffuse_recall=diffuse,
-                diffuse_hits=round(diffuse * n_diffuse),
-                diffuse_outcomes=n_diffuse,
+                diffuse_recall=r.recall_by_stratum["diffuse"],
+                diffuse_hits=r.stratum_hits["diffuse"],
+                diffuse_outcomes=r.stratum_outcomes["diffuse"],
+                concentrated_recall=r.recall_by_stratum["concentrated"],
+                concentrated_hits=r.stratum_hits["concentrated"],
+                concentrated_outcomes=r.stratum_outcomes["concentrated"],
             )
         )
     return out
@@ -117,6 +139,11 @@ def sweep(
             total_hits=sum(s.hits for s in samples),
             total_outcomes=sum(s.outcomes for s in samples),
             mean_diffuse=statistics.mean([s.diffuse_recall for s in samples]),
+            total_diffuse_hits=sum(s.diffuse_hits for s in samples),
+            total_diffuse_outcomes=sum(s.diffuse_outcomes for s in samples),
+            mean_concentrated=statistics.mean([s.concentrated_recall for s in samples]),
+            total_concentrated_hits=sum(s.concentrated_hits for s in samples),
+            total_concentrated_outcomes=sum(s.concentrated_outcomes for s in samples),
         )
     return summaries, by_arm
 

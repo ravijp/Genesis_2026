@@ -145,6 +145,28 @@ def test_load_bearing_identifies_evidence_the_case_depends_on() -> None:
     # A threshold the customer never reaches: nothing is load-bearing.
     assert not any(e.is_load_bearing(0.999) for e in breakdown.entries)
 
+    # Both checks above are decided by "did the customer cross at all", so they would still
+    # pass if the removal clause were deleted. This one separates the entries: at a threshold
+    # placed BETWEEN two entries' contributions, the bigger contributor is what holds the case
+    # up and the smaller one is not.
+    contributions = sorted(e.contribution_now for e in breakdown.entries)
+    assert contributions[0] < contributions[-1], "entries contribute equally; nothing to separate"
+    margin = (contributions[0] + contributions[-1]) / 2
+    between = breakdown.score - margin
+
+    load_bearing = {
+        e.signal.day: e.is_load_bearing(between) for e in breakdown.entries
+    }
+    by_day = {e.signal.day: e.contribution_now for e in breakdown.entries}
+    for day, bearing in load_bearing.items():
+        assert bearing == (by_day[day] > margin), (
+            f"day {day} contributes {by_day[day]:.4f} against a margin of {margin:.4f} but "
+            f"is_load_bearing returned {bearing} — the removal clause is not being applied"
+        )
+    assert any(load_bearing.values()) and not all(load_bearing.values()), (
+        "the threshold failed to separate the entries, so this assertion proves nothing"
+    )
+
 
 def test_decay_reduces_the_weight_of_old_signals() -> None:
     """A job loss mentioned two years ago is not live risk."""

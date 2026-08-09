@@ -1,28 +1,36 @@
-"""The five comparison arms, and what each one is for.
+"""The six comparison arms, and what each one is for.
 
   1. stateless-max    -- each conversation scored alone; customer score = running max. The
                          incumbent shape: score it and archive it. Stated honestly, ANY
                          customer-level score implies an aggregator, so even this arm has a
                          trivial memory. There is no truly stateless customer-level baseline,
                          and claiming one would be a strawman.
-  2. dumb-ledger      -- unweighted count of signals. No decay, no corroboration, no channel
+  2. stateless-top2   -- the same per-conversation scores, summed over the two loudest calls
+                         instead of the single loudest. The STRONGEST fair per-call baseline:
+                         it needs two floats per customer, no ledger, no decay, no retro
+                         re-scoring. It exists because "max" alone is a weak opponent on arcs
+                         built to have no loud call, so beating it would show only that one
+                         number is worse than two. Whatever the ledger claims over this arm is
+                         what accumulation actually buys.
+  3. dumb-ledger      -- unweighted count of signals. No decay, no corroboration, no channel
                          weighting, no confidence weighting. The floor the full ledger has to
                          clear: if it ties the full ledger, every mechanism in memory.py is
                          decoration.
-  3. long-context-N   -- the last N conversations pooled and read together, with no
+  4. long-context-N   -- the last N conversations pooled and read together, with no
                          accumulation math. Approximates dropping N transcripts into one long
                          prompt, which is the obvious alternative to a ledger. It is an
                          APPROXIMATION: a real long-context run re-reads raw text, whereas
                          this pools the same extracted signals without decay or corroboration.
                          That flatters the ledger slightly less than a real long-context run
                          would on short histories, and slightly more on long ones.
-  4. full-ledger      -- decay + corroboration + cross-channel + escalation + retro re-scoring.
-  5. hybrid           -- stateless-max OR full-ledger, whichever fires first, combined on rank.
-                         The shippable shape: a memory added on top of the per-call detection a
-                         bank already runs, rather than a replacement for it.
+  5. full-ledger      -- decay + corroboration + cross-channel + escalation + retro re-scoring.
+  6. hybrid           -- stateless-max OR full-ledger, whichever fires first, combined on rank.
+                         A memory added on top of the per-call detection a bank already runs,
+                         rather than a replacement for it.
 
-Arms 1-4 run through the SAME SignalLedger code path with a different ScoringConfig, so the
-ablation is structurally fair rather than fair-by-assertion.
+Arms 1-5 run through the SAME SignalLedger code path with a different ScoringConfig, so the
+ablation is structurally fair rather than fair-by-assertion. Arms 1 and 2 differ only in how
+many per-conversation scores the customer-level number may see.
 """
 
 from __future__ import annotations
@@ -35,7 +43,9 @@ from .schema import ExtractedSignal, SignalType
 
 # Must be smaller than a typical customer's conversation count or the window never binds and
 # this arm silently collapses into the confidence-weighted dumb ledger, scoring identically to
-# it at every budget. Against `conversations_per_customer = (2, 5)`, 3 binds.
+# it at every budget. Against `conversations_per_customer = (2, 5)` it binds for roughly one
+# customer in six -- enough that the arm is not a copy of another, and a reason to widen the
+# corpus rather than to trust this arm as a long-context proxy.
 LONG_CONTEXT_WINDOW = 3
 
 
@@ -92,6 +102,7 @@ def _run(
     *,
     window: int | None = None,
     per_conversation: bool = False,
+    top_n: int | None = None,
 ) -> dict[str, ArmTimeline]:
     by_customer: dict[str, list[ExtractedSignal]] = {}
     for s in signals:
@@ -112,13 +123,20 @@ def _run(
             for signal_type in sorted(types, key=lambda t: t.value):
                 subset = [s for s in visible if s.signal_type is signal_type]
                 if per_conversation:
-                    # Score each conversation independently, then take the max -- the
-                    # "score it and archive it" behaviour we are ablating against.
+                    # Score each conversation independently -- the "score it and archive it"
+                    # behaviour we are ablating against. `top_n` chooses how many of those
+                    # independent scores the customer-level number is allowed to see: 1 is a
+                    # running max, 2 keeps the two loudest calls.
+                    per_conv: list[float] = []
                     for conversation_id in sorted({s.conversation_id for s in subset}):
                         one = [s for s in subset if s.conversation_id == conversation_id]
                         ledger = SignalLedger(cfg)
                         ledger.extend(one)
-                        best = max(best, ledger.score(customer_id, signal_type, one[0].day).score)
+                        per_conv.append(ledger.score(customer_id, signal_type, one[0].day).score)
+                    if top_n is None:
+                        best = max([best, *per_conv])
+                    else:
+                        best = max(best, sum(sorted(per_conv, reverse=True)[:top_n]))
                 else:
                     ledger = SignalLedger(cfg)
                     ledger.extend(subset)
@@ -188,6 +206,10 @@ def run_all_arms(
     full = _run(signals, base)
     return {
         "stateless-max": ArmResult("stateless-max", stateless),
+        "stateless-top2": ArmResult(
+            "stateless-top2",
+            _run(signals, _stateless_config(base), per_conversation=True, top_n=2),
+        ),
         "dumb-ledger": ArmResult("dumb-ledger", _run(signals, _dumb_config(base))),
         f"long-context-{LONG_CONTEXT_WINDOW}": ArmResult(
             f"long-context-{LONG_CONTEXT_WINDOW}",

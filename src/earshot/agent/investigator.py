@@ -150,8 +150,13 @@ def _extract_json(text: str) -> dict[str, Any] | None:
 def _validate(
     content: str, ctx: ToolContext
 ) -> tuple[InvestigationDecision | None, list[str], bool]:
-    """Returns (decision, problems, evidence_problem). Evidence failures are counted separately
-    because groundedness is a published metric, not just a retry reason."""
+    """Returns (decision, problems, evidence_problem).
+
+    Evidence failures are flagged separately from schema failures so the loop can count them:
+    a decision whose citations do not resolve never leaves this function, so the only honest
+    groundedness signal is how often the FIRST attempt failed, which `trace.evidence_repairs`
+    carries.
+    """
     payload = _extract_json(content)
     if payload is None:
         return None, ["reply was not a single JSON object"], False

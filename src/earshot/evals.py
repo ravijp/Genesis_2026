@@ -48,6 +48,18 @@ class BudgetResult:
     median_lead_days: float | None
     recall_by_stratum: dict[str, float] = field(default_factory=dict)
     lead_survival: dict[int, float] = field(default_factory=dict)
+    # The integers the rates were computed FROM. Carried rather than recovered downstream:
+    # multiplying a rounded rate back by its denominator looks like a count and is not one,
+    # and it goes silently wrong the moment the two denominators stop matching.
+    n_hits: int = 0
+    n_outcomes: int = 0
+    stratum_hits: dict[str, int] = field(default_factory=dict)
+    stratum_outcomes: dict[str, int] = field(default_factory=dict)
+    # Who this arm actually alerted on. Anything asking "would the baseline have caught them?"
+    # must ask THIS set, not `score >= threshold`: arms produce large tie clusters at the cut,
+    # and a threshold comparison silently answers for the whole cluster rather than for the K
+    # customers the budget really buys.
+    flagged_ids: frozenset[str] = frozenset()
 
 
 def _outcome_customers(corpus: Corpus) -> dict[str, int | None]:
@@ -99,6 +111,8 @@ def evaluate_arm(
     }
 
     by_stratum: dict[str, float] = {}
+    stratum_hits: dict[str, int] = {}
+    stratum_outcomes: dict[str, int] = {}
     for stratum in Stratum:
         members = [c.customer_id for c in corpus.customers if c.stratum is stratum]
         if not members:
@@ -111,9 +125,10 @@ def evaluate_arm(
                 [cid for cid in members if cid in flagged]
             ) / len(members)
         elif relevant:
-            by_stratum[stratum.value] = len(
-                [cid for cid in relevant if cid in flagged]
-            ) / len(relevant)
+            caught = len([cid for cid in relevant if cid in flagged])
+            by_stratum[stratum.value] = caught / len(relevant)
+            stratum_hits[stratum.value] = caught
+            stratum_outcomes[stratum.value] = len(relevant)
 
     return BudgetResult(
         arm=arm.arm,
@@ -125,6 +140,11 @@ def evaluate_arm(
         median_lead_days=round(statistics.median(leads), 1) if leads else None,
         recall_by_stratum={k: round(v, 4) for k, v in sorted(by_stratum.items())},
         lead_survival={d: round(v, 4) for d, v in survival.items()},
+        n_hits=len(hits),
+        n_outcomes=len(outcomes),
+        flagged_ids=frozenset(flagged),
+        stratum_hits=dict(sorted(stratum_hits.items())),
+        stratum_outcomes=dict(sorted(stratum_outcomes.items())),
     )
 
 

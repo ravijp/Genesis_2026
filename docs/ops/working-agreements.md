@@ -19,9 +19,23 @@ warning and exists for debugging.
 **Always show the denominator.** A rate without its integers hides its own sample size. Every table we
 publish carries `hits / outcomes`.
 
-**Pre-register the headline, then respect it.** We run 13 pairwise comparisons with no multiplicity
+**Pre-register the headline, then respect it.** We run 45 pairwise comparisons with no multiplicity
 correction. One landing just under `p=0.05` is a hint. The diffuse-stratum comparison is the declared
 headline; everything else is exploratory and gets labelled that way.
+
+**Print every comparison, not the ones that went well.** Two published p-values once existed that no
+command in the repo could produce, because the sweep printed a hand-picked subset of pairings — which
+also understated the multiplicity count it disclosed. The output prints the full pair matrix on every
+metric, and the rule is that anything quotable appears there.
+
+**Report both sides of a trade.** The ledger wins on diffuse arcs and loses on concentrated ones by a
+comparable margin. The code computed both from the beginning and only one was ever printed. If an
+evaluation produces a stratum breakdown, publish the whole breakdown.
+
+**Ask the same question the published table asks.** The demo scored its baseline with `score >=
+threshold` while the table scored the top *K* after tie-breaking, which quietly gave the demo a
+different — and stronger — opponent than the one in the results. Two numbers that sound comparable and
+are not is worse than one number.
 
 **Never tune until it wins.** If a mechanism does not earn its place in an ablation, remove it or
 justify it — do not search parameters until the number turns. Our decay, corroboration and channel
@@ -135,9 +149,22 @@ confidence.
 **Every fix gets a test that fails without it.** Reverting one token reopened the answer-key leak with
 87 of 87 tests green.
 
+**A test never writes to a committed artifact.** The default cache mode is `record`, so a replay test
+constructed without a path appended four junk completions to `artifacts/cache/`, the file the demo
+replays from and whose cost the README quotes. Tests take `tmp_path`; the committed cache has its own
+test asserting it contains only the two live Sonnet 4.5 investigations and nothing else.
+
 **Guards discover their surface, they do not list it.** A hand-maintained list of files to check is one
 forgotten line from a hole. Glob for them, and assert the discovery is non-empty so it cannot pass
 vacuously.
+
+**A guard is worth exactly what it catches, so test it against the bypass.** Our import guard rejected
+`import corpus` and `from .corpus import X` but not `from earshot import corpus` — the form a person
+would most naturally write — because the forbidden name arrived in a set the check did not look at. A
+reviewer used it to raise published extractor accuracy from 0.66 to 0.84 with every test green. Every
+known bypass is now a parametrized case written as source, so the guard is tested against attacks
+rather than only against the code that happens to exist today. Match on the path from the package root,
+never the bare filename: `agent/config.py` must not inherit the root `config.py` exemption.
 
 ---
 

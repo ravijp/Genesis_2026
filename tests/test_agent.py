@@ -223,6 +223,115 @@ def test_unresolvable_evidence_is_rejected_and_counted() -> None:
     assert decision.verdict == "insufficient_evidence"
 
 
+def test_unresolved_refs_on_a_returned_decision_are_zero_by_construction() -> None:
+    """Why groundedness is reported as first-attempt repairs and never as a post-hoc count.
+
+    The loop rejects any decision whose citations do not resolve, so counting unresolved refs on
+    what the loop RETURNS yields zero however badly the provider behaves. A reader sees that zero
+    as a measurement of honesty; it is a measurement of the rejection that already happened. The
+    signal that carries information is `evidence_repairs`.
+    """
+    from earshot.agent.tools import unresolved_evidence
+
+    invented = dict(
+        VALID_DECISION,
+        evidence=[{"conversation_id": "K0", "turn_index": 1, "quote": "I am closing my account"}],
+    )
+    ctx = _context()
+    provider = _Stub("always-fabricates", [_text_reply(json.dumps(invented))])
+    decision, trace = investigate(ctx, provider)
+
+    # The provider fabricated every citation it produced...
+    assert trace.evidence_repairs >= 1
+    # ...yet the returned decision resolves cleanly, so the post-hoc count reports perfection.
+    assert unresolved_evidence(ctx, decision.evidence) == []
+
+
+class _Exploding:
+    """A provider that fails the test if the loop reaches it. Replay must never call out."""
+
+    name = "must-not-be-called"
+
+    def complete(self, messages, tools, model_cfg):
+        raise AssertionError("replay mode reached the inner provider")
+
+
+def test_replay_never_reaches_the_inner_provider(tmp_path) -> None:
+    """The no-wifi guarantee for the demo: a cache hit must not touch the network at all.
+
+    The committed cache is what stands between a judging room with no wifi and a dead demo, so
+    "replay mode serves from disk" has to be mechanical rather than believed. The cache is
+    written under `tmp_path`: a test that records into the real cache file would append junk
+    completions to the artifact the demo replays from.
+    """
+    from earshot.llm.cache import CachingProvider, ResponseCache
+
+    cache = ResponseCache(path=tmp_path / "cache.jsonl", mode="record")
+    provider = CachingProvider(_Exploding(), prompt_sha="abc", cache=cache)
+    key = ResponseCache.key("m", "abc", [{"role": "user", "content": "hi"}], [])
+    cache.put(key, Completion(content="{}", model="m"))
+
+    cache.mode = "replay"
+    served = provider.complete([{"role": "user", "content": "hi"}], [], ModelConfig(model="m"))
+    assert served.content == "{}"
+    assert provider.hits == 1
+
+
+def test_replay_reports_a_miss_instead_of_falling_through_to_the_network(tmp_path) -> None:
+    """A cache miss in replay mode must fail loudly, not quietly go online with an invalid key."""
+    from earshot.llm.cache import CacheMiss, CachingProvider, ResponseCache
+
+    provider = CachingProvider(
+        _Exploding(),
+        prompt_sha="abc",
+        cache=ResponseCache(path=tmp_path / "cache.jsonl", mode="replay"),
+    )
+    with pytest.raises(CacheMiss):
+        provider.complete(
+            [{"role": "user", "content": "never recorded"}], [], ModelConfig(model="m")
+        )
+
+
+def test_the_committed_cache_is_exactly_the_two_live_investigations() -> None:
+    """The cache is committed evidence, so its contents are pinned rather than assumed.
+
+    Running `earshot investigate` in the default record mode appends to this file, so it is one
+    stray command away from carrying offline junk beside the two real Sonnet 4.5 runs whose cost
+    and latency the README quotes.
+    """
+    import json
+
+    from earshot.llm.cache import cache_path
+
+    entries = [
+        json.loads(line)
+        for line in cache_path().read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    models = {e.get("completion", e).get("model") for e in entries}
+    assert models == {"anthropic/claude-sonnet-4.5"}, (
+        f"the committed cache carries completions from {sorted(models)} — it must hold only the "
+        f"two live Sonnet 4.5 investigations the README quotes"
+    )
+    total = sum(e.get("completion", e).get("cost_usd", 0.0) for e in entries)
+    assert abs(total - 0.1855) < 0.001, f"committed cache cost drifted to ${total:.4f}"
+
+
+def test_the_committed_cache_covers_the_documented_replay_invocation() -> None:
+    """The README names one exact replay command; the cache has to actually cover it.
+
+    A cache that covers fewer investigations than the documented `--limit` puts a
+    `provider_error` on screen at the gate, which is what happened before this test existed.
+    """
+    from earshot.llm.cache import ResponseCache
+
+    cache = ResponseCache(mode="replay")
+    assert len(cache) >= 10, (
+        f"the committed cache holds {len(cache)} completions — the documented replay command "
+        f"(--customers 200 --limit 2) needs the responses for two full investigations"
+    )
+
+
 def test_a_repaired_answer_is_accepted_on_the_second_attempt() -> None:
     provider = _Stub(
         "self-correcting",

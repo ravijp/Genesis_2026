@@ -41,7 +41,7 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `corpus.py` — dataset generation. Strata labelled from generation parameters; outcomes drawn from latent risk `[stable]`
 - `extract.py` — stateless extraction + the offline lexicon provider `[stable]`
 - `memory.py` — **the heart**: append-only ledger + pure-code re-scorer. `score()` returns copies and never mutates the ledger `[stable]`
-- `arms.py` — five comparison arms through one code path + per-mechanism ablations `[stable]`
+- `arms.py` — six comparison arms through one code path + per-mechanism ablations. `stateless-top2` is the strongest fair per-call baseline and currently matches the ledger `[stable]`
 - `evals.py` — equal-alert-budget comparison by top-K ranking, per-stratum breakdown, extraction fidelity, corpus diagnostics `[stable]`
 - `sweep.py` — **multi-seed evaluation**: paired seed-by-seed comparison on any metric, exact sign test, and the integers behind every rate `[stable]`
 - `cli.py` — the four commands, run manifests, artifacts `[stable]`

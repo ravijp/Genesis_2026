@@ -11,6 +11,31 @@ for something listed under "rejected", read the reason first.
 
 ---
 
+### D-016 · 2026-08-09 · Both arc strata are published, always `ACCEPTED`
+The ledger wins on diffuse arcs (`p=0.008`) and loses on concentrated ones by a comparable margin
+(`p=0.039`; 1-27-2 at 30 seeds). `evals.py` computed both from the start and `sweep` printed only the
+win. The result is a **trade** — depth of aggregation buys thin evidence and costs loud single calls —
+and stated that way it is the argument for running memory alongside per-call detection rather than
+instead of it. **Rejected:** reporting the win and describing the loss as "out of scope"; it is the
+same size, from the same run, and a judge finds it by printing a dict the code already builds.
+
+### D-015 · 2026-08-09 · `stateless-top2` is the baseline of record, even though it beats us `ACCEPTED`
+Summing the two loudest calls — two floats, no ledger, no never-discard, no retro re-scoring — takes
+147/780 diffuse arcs against the full ledger's 134. Our published baseline was a running *max*, which
+loses to anything that adds a second call, so "memory beats detection" was really "several calls beat
+one call". The arm is now shipped and published. What this costs is the simple version of the claim;
+what it buys is the real question — whether never-discard pulls ahead as histories lengthen, which our
+corpus (3.5 conversations per customer) cannot currently answer. **Rejected:** keeping `stateless-max`
+as the only baseline and describing top-2 as "future work".
+
+### D-014 · 2026-08-09 · Adversarial review runs until a round is empty, not a fixed number of times `ACCEPTED`
+Four rounds, four sets of real defects, and round 4 found more than the previous three combined —
+including an import guard that could be walked past with `from earshot import corpus`, a groundedness
+metric still structurally pinned at zero after round 2 supposedly fixed it, and two published p-values
+no command could produce. Each round's fixes create the next round's surface. **Rejected:** declaring
+the code reviewed after three rounds; the defect rate had not fallen, which is the only signal that
+means anything.
+
 ### D-013 · 2026-08-09 · The board tracks what we build, not what we owe the committee `ACCEPTED`
 Tickets whose purpose was to chase access or explain ourselves were removed. Asking for API keys is a
 conversation, not a work item. **Rejected:** a "blockers" epic — it made the board read as written for
@@ -64,7 +89,8 @@ function is arithmetic. The investigator — tools, multi-step reasoning, struct
 mandatory evidence, human handoff — is what makes this Track A rather than analytics.
 
 ### D-004 · 2026-08-09 · The offline provider is first-class, not a stub `ACCEPTED`
-Everything runs with zero keys, and the demo replays committed model responses with no network. This
+Everything runs with zero keys, and `earshot investigate --provider openrouter` replays committed
+model responses with no network (`earshot demo` needs no provider at all). This
 was a hedge against unprovisioned keys; it is now the reason a judging room without wifi cannot break
 the demo. Consequence: offline numbers are always labelled and never headlined.
 

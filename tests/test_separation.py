@@ -44,12 +44,15 @@ _EVALUATION_SIDE = {
 }
 
 
-def _is_danger(path) -> bool:
+def _is_danger(rel: str) -> bool:
     """Everything that turns a conversation into a decision. Not the authors of truth, and
-    not the scorers of it."""
-    rel = path.relative_to(EAR).as_posix()
-    del rel  # the file name alone decides membership; the relative path is not consulted
-    return path.name not in _CORPUS_SIDE and path.name not in _EVALUATION_SIDE
+    not the scorers of it.
+
+    Membership is decided by the path relative to the package root, not by the bare filename:
+    the exemptions name specific top-level modules, so a future `agent/config.py` or
+    `llm/schema.py` is guarded rather than silently inheriting a root module's exemption.
+    """
+    return rel not in _CORPUS_SIDE and rel not in _EVALUATION_SIDE
 
 
 def test_evaluation_exemptions_stay_small() -> None:
@@ -66,9 +69,9 @@ def _danger_surface() -> list[str]:
     `__init__.py` is INCLUDED, because it can re-export anything.
     """
     return sorted(
-        path.relative_to(EAR).as_posix()
-        for path in EAR.rglob("*.py")
-        if _is_danger(path)
+        rel
+        for rel in (p.relative_to(EAR).as_posix() for p in EAR.rglob("*.py"))
+        if _is_danger(rel)
     )
 
 
@@ -83,17 +86,21 @@ def test_danger_surface_is_not_empty() -> None:
     )
 
 FORBIDDEN_MODULES = {"corpus", "corpus_lexicon"}
-# Two routes get past the import check on their own, so the identifier scan closes both: a
-# bare `from .. import corpus` leaves node.module empty, and importlib never appears as an
-# import at all unless the name itself is forbidden.
+# A forbidden module can arrive as the module OR as the imported name: `from earshot import
+# corpus` puts "earshot" in modules and "corpus" in names. Both sets are checked against
+# FORBIDDEN_MODULES for that reason -- see `test_guard_catches_every_known_bypass`, which
+# pins each bypass form that has to stay closed.
+#
+# The identifier scan below is a separate net, for reaches that are not imports at all: a lazy
+# `importlib.import_module`, or a hard-coded fragment table name.
 FORBIDDEN_IDENTIFIERS = ("corpus_lexicon", "PLANTS", "DECOYS_EXTRACTOR",
                         "DECOYS_ACCUMULATOR", "BY_TYPE", "Fragment", "import_module",
                         "__import__")
 FORBIDDEN_NAMES = {"SeededSignal", "CustomerTruth", "Corpus", "Stratum", "Outcome", "Fragment"}
 
 
-def _imports(path: Path) -> tuple[set[str], set[str]]:
-    tree = ast.parse(path.read_text(encoding="utf-8"))
+def _imports_from_source(source: str) -> tuple[set[str], set[str]]:
+    tree = ast.parse(source)
     modules: set[str] = set()
     names: set[str] = set()
     for node in ast.walk(tree):
@@ -108,10 +115,51 @@ def _imports(path: Path) -> tuple[set[str], set[str]]:
     return modules, names
 
 
+def _imports(path: Path) -> tuple[set[str], set[str]]:
+    return _imports_from_source(path.read_text(encoding="utf-8"))
+
+
+# Every import form that has reached the corpus side, written as source so the guard is tested
+# against them directly rather than only against whatever the package happens to contain today.
+_BYPASS_ATTEMPTS = {
+    "plain import": "import earshot.corpus\n",
+    "aliased plain import": "import earshot.corpus as c\n",
+    "from-package import": "from earshot import corpus\n",
+    "from-package import, aliased": "from earshot import corpus as c\n",
+    "from-package lexicon": "from earshot import corpus_lexicon\n",
+    "relative package import": "from . import corpus\n",
+    "relative module import": "from .corpus import generate\n",
+    "absolute module import": "from earshot.corpus import generate\n",
+    "relative lexicon import": "from ..corpus_lexicon import BY_TYPE\n",
+}
+
+
+@pytest.mark.parametrize("form", sorted(_BYPASS_ATTEMPTS))
+def test_guard_catches_every_known_bypass(form: str) -> None:
+    """The guard is only worth what it catches, so every known route is pinned here.
+
+    `from earshot import corpus` is the form a person would most naturally write, and it puts
+    the forbidden module in `names` rather than `modules` -- checking only one of the two sets
+    lets it straight through.
+    """
+    modules, names = _imports_from_source(_BYPASS_ATTEMPTS[form])
+    assert (modules | names) & FORBIDDEN_MODULES, (
+        f"{form!r} reaches the corpus side and the guard does not see it: "
+        f"modules={sorted(modules)} names={sorted(names)}"
+    )
+
+
+def test_guard_covers_files_in_subpackages() -> None:
+    """Exemptions name top-level modules; a same-named file in a subpackage is still guarded."""
+    assert _is_danger("agent/config.py"), "a subpackage config.py inherited the root exemption"
+    assert _is_danger("llm/schema.py"), "a subpackage schema.py inherited the root exemption"
+    assert not _is_danger("config.py"), "the root config.py should stay exempt"
+
+
 @pytest.mark.parametrize("module", EXTRACTOR_MODULES)
 def test_extractor_cannot_import_the_corpus_side(module: str) -> None:
-    modules, _ = _imports(EAR / module)
-    leaked = modules & FORBIDDEN_MODULES
+    modules, names = _imports(EAR / module)
+    leaked = (modules | names) & FORBIDDEN_MODULES
     assert not leaked, (
         f"{module} imports {leaked}. The extractor must not be able to see the corpus "
         f"generator or its fragment lexicon — that is the whole basis of the honesty claim."

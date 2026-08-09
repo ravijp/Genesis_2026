@@ -4,8 +4,8 @@ mechanical rather than aspirational.
 Two rules are enforced here and nowhere else:
 
 * **At least one evidence reference.** `min_length=1` on `evidence` means a decision with no
-  citation cannot be constructed at all — the failure happens at parse time, is counted, and is
-  published as a metric. This is the answer to hallucinated justification.
+  citation cannot be constructed at all — the failure happens at parse time and is counted as a
+  schema repair. This is the answer to hallucinated justification.
 * **No extra fields.** `extra="forbid"` stops a model inventing a `risk_score` or a
   `probability_of_churn` that then leaks into a report as though the system computed it.
 

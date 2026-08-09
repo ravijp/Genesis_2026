@@ -28,10 +28,19 @@ Measured over 10 seeds × 1,500 customers (1,945 outcome customers), equal revie
 seed by seed with an exact sign test. Full table in the README; reproduce with `earshot sweep`.
 
 - **The pre-registered headline holds.** On thin-evidence customers the ledger catches **134 of 780**
-  against **96 of 780** for score-each-call-and-forget: 8 wins, 2 ties, no losses, `p=0.008`.
+  against **96 of 780** for score-each-call-and-forget: 8 wins, 2 ties, no losses, `p=0.008`. At 30
+  seeds it strengthens to 27-2-1.
+- **And it loses on concentrated arcs by a comparable margin**: **119 of 629** against **180 of 629**,
+  `p=0.039` (1-27-2 at 30 seeds). Published alongside the win; the result is a trade, not a victory.
+- **The strongest fair per-call baseline matches us.** `stateless-top2` — sum the two loudest calls,
+  two floats, no ledger — takes **147 of 780** diffuse arcs against the ledger's 134 (`p=0.508`). The
+  honest claim is *aggregation beats no aggregation*, not *memory beats detection*.
 - **Overall, no arm is distinguishable from any other.** Memory neither beats nor loses to per-call
   detection across the whole portfolio.
-- **The scoring mechanisms earn nothing.** Full ledger vs a plain unweighted count: `p=1.000`.
+- **The scoring mechanisms earn nothing in recall.** Full ledger vs a plain unweighted count:
+  `p=1.000`. Confidence weighting does earn something other than recall — it gives the ledger ~808
+  distinct scores, so 0.7% of its alert queue is decided by an alphabetical tie-break against
+  `long-context-3`'s 69.5%.
 
 Two earlier conclusions — "memory loses overall" and "long-context beats us" — were artifacts of a
 single 39-positive dataset and an answer-key leak. Both retracted in writing in the README.
@@ -67,7 +76,8 @@ extraction fidelity against planted spans, with the miss rate published · multi
 significance · tokens, steps, latency and cost per investigation.
 
 **Not measured, and not pretended otherwise:** agent verdict and routing accuracy · first-attempt
-evidence groundedness (the number we currently print is zero by construction) · cost per 1,000
+evidence groundedness against a known answer (the loop rejects unresolvable citations before they can
+leave, so the honest signal is the repair rate `earshot investigate` now prints) · cost per 1,000
 conversations · p50/p95 latency · a second model through the same harness. Also not built: ROC/PR
 curves, dev-split probability calibration, and the four negative controls (time-shuffle,
 outcome-shuffle, volume confound, held-out generator config). v2 promised all of these; none exist, and
@@ -75,15 +85,22 @@ listing them as planned is more useful than listing them as design.
 
 ## 5. Open questions
 
-1. **AT-53 — does the memory layer ship alongside per-call detection, or not at all?** It wins on thin
-   evidence and ties elsewhere. The naive rank-combined hybrid was worse than either parent.
-2. **AT-52 — do decay, corroboration, cross-channel weighting and escalation survive?** Currently a
-   plain count matches them. Either justify or remove; carrying scoring that does nothing is complexity
-   we would have to defend.
-3. **AT-43 — does the extractor work on real customer language?** CFPB gives 3.8M real complaint
+1. **Does never-discard beat keep-the-best-two?** The central open question after round 4, and one the
+   current corpus cannot answer: customers average 3.5 conversations, so `stateless-top2` discards
+   almost nothing, and two of the four trajectories have only 4 authored fragments, so a long diffuse
+   arc exhausts its pool and is forced to plant its loudest fragment. Widen the pools, lengthen
+   histories, re-run. If the ledger pulls ahead this is the entry; if not, we need to know by 09-07.
+2. **AT-53 — does the memory layer ship alongside per-call detection, or not at all?** It wins on thin
+   evidence, loses on concentrated arcs, and ties overall. The naive rank-combined hybrid is worse than
+   either parent on *both* strata, so the combination question is open rather than answered.
+3. **AT-52 — do decay, corroboration, cross-channel weighting and escalation survive?** Currently a
+   plain count matches them on recall. Either justify or remove; carrying scoring that does nothing is
+   complexity we would have to defend. Confidence weighting has a defence that is not recall — it is
+   what stops the alert queue being ordered alphabetically.
+4. **AT-43 — does the extractor work on real customer language?** CFPB gives 3.8M real complaint
    narratives. This is the strongest available answer to "your reader only works on prose you wrote".
-4. **AT-57 — what is the real evidence-groundedness rate?** Needs the first-attempt failure rate, not
-   the post-retry number.
+5. **AT-57 — what is the real evidence-groundedness rate?** `earshot investigate` now prints the
+   first-attempt repair rate; the open part is measuring it against a known answer at volume.
 
 ## 6. To 2026-08-24
 

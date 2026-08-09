@@ -15,16 +15,16 @@ precision numbers · build and rehearse the three-conversation accumulation scen
 
 | # | Item | State |
 |---|---|---|
-| 1 | Synthetic multi-channel corpus (calls, chats, complaints) with ground truth authored **before** the prose | Built — 4 signal families, difficulty strata set by how the evidence is spread, two kinds of lookalike, outcomes drawn rather than assigned. 15,000 customers scored in ~20 seconds |
-| 2 | Signal-extraction pipeline, run at volume | Built — ~2,000 conversations/sec, no API keys required |
+| 1 | Synthetic multi-channel corpus (calls, chats, complaints) with ground truth authored **before** the prose | Built — 4 signal families, 5 difficulty strata set by how the evidence is spread, two kinds of lookalike, outcomes drawn rather than assigned |
+| 2 | Signal-extraction pipeline, run at volume | Built, no API keys required — 15,000 customers / 52,444 conversations end to end in ~115s. Throughput falls with corpus size (~1,500 conv/s at 400 customers, ~460/s at 15,000); we have not optimised it and would flag it as the first thing to fix before real volume |
 | 3 | First recall and precision numbers | Built, then rebuilt at proper scale — see §2 |
 | 4 | The accumulation scenario | Built and reproducible on demand |
 | 5 | *(Sprint 2)* Per-customer ledger and re-scoring logic as a pure, tested function | **Pulled forward** — the accumulation scenario cannot be rehearsed without it. Deterministic, no model calls |
 
 Also landed, beyond the commitment: **an investigator agent** that works each flagged customer using
 tools (transactions, account history, prior cases) and produces a case file with quoted evidence; a
-five-arm comparison harness with per-mechanism ablations; multi-dataset evaluation with proper
-significance testing; 130 tests; and one-command reproduction with a run manifest.
+six-arm comparison harness with per-mechanism ablations; multi-dataset evaluation with proper
+significance testing; 157 tests; and one-command reproduction with a run manifest.
 
 **A word on status.** Nothing above is marked Done on our board, and that is deliberate. All of it was
 written by one person over a weekend and none of it has been reviewed by a second — Namit and Ishant
@@ -43,22 +43,34 @@ a real outcome — at a review capacity of 10% of the portfolio:
 
 - On **thin-evidence cases**: memory catches **134 of 780**; scoring-each-call-and-forgetting catches
   **96 of 780**. Memory wins **8 of the 10 datasets, ties 2, loses none** (p=0.008). This is the claim
-  the entry is built on, and it holds.
+  the entry is built on, and it holds — at 30 datasets it strengthens to 27 wins, 2 losses, 1 tie.
+- **And it loses, by the same margin, on the cases it is not built for.** On concentrated cases — one
+  loud conversation — memory catches **119 of 629** against per-call detection's **180 of 629**, losing
+  8 of 10 datasets (p=0.039; at 30 datasets, 1-27-2). Both results come from the same run and we
+  publish both. The shape is a trade, not a win: depth of aggregation buys thin-evidence cases and
+  costs loud ones, which is the argument for running both together rather than replacing one.
 - **Across the whole portfolio, nothing separates the approaches.** Memory neither beats nor loses to
   per-call detection overall.
 - **A plain count of signals does as well as our weighted scoring.** Decay, corroboration and channel
   weighting have not paid for themselves yet — either we justify them in Sprint 2 or we take them out.
+- **A two-line baseline we built this week to attack ourselves matches the full ledger.** Summing the
+  two loudest calls per customer — no ledger, no memory — catches **147 of 780** thin-evidence cases,
+  slightly ahead of the ledger's 134. At the history lengths in our corpus (customers average 3.5
+  conversations) "never discard" and "keep the best two" are not yet distinguishable. Sprint 2 tests
+  whether the ledger pulls ahead as histories lengthen, which is the regime the product is actually for.
 
 *If asked how solid this is:* solid enough that we threw away our own first answer. Our first run used
 a single dataset with 39 relevant customers, where every difference we reported was one or two people —
 noise. We rebuilt the evaluation to run ten datasets and test the comparisons properly before putting
 any number in writing.
 
-## 3. We reviewed our own work adversarially, and it found six real problems
+## 3. We reviewed our own work adversarially, four times, and it keeps finding real problems
 
-This is the part we would most want a technical judge to hear. We ran independent reviews over the
-code and the evaluation with one instruction: assume it is wrong and prove it. They found six genuine
-defects, all in work we would otherwise have called finished:
+This is the part we would most want a technical judge to hear. We run independent reviews over the
+code and the evaluation with one instruction: assume it is wrong and prove it, by running it rather
+than reading it. Four rounds so far, and **every round has found genuine defects** — including round
+four, run the day before this call. The first six, all in work we would otherwise have called
+finished:
 
 | What was wrong | Why it mattered |
 |---|---|
@@ -69,11 +81,24 @@ defects, all in work we would otherwise have called finished:
 | A quality metric was printed as zero by construction | It was never measured |
 | Our headline number came from 39 customers | Every "finding" was a difference of one or two people |
 
-All six are fixed, and the fixes are why §2's numbers changed. Two conclusions we had already written
-down did not survive, and we retracted them in writing rather than quietly editing.
+Five of those six are fixed, and the fixes are why §2's numbers changed. Two conclusions we had
+already written down did not survive, and we retracted them in writing rather than quietly editing.
+The sixth — evidence groundedness — turned out **not** to be fixed, which round four caught: the
+number we print is still structurally incapable of being non-zero, and it is now reported as an
+honest first-attempt repair rate instead. It is tracked as AT-57.
+
+Round four, yesterday, found four more that matter:
+
+| What was wrong | Why it mattered |
+|---|---|
+| Our answer-key import guard could be walked straight past | The most natural way to write the import — `from earshot import corpus` — was not caught. A reviewer used it to raise our published extractor accuracy from 0.66 to 0.84 with the whole test suite green. This guard is our entire answer to "you wrote both the test and the marking scheme" |
+| We published a win on one stratum and were silent about an equal loss on the next | Our own working agreement says report where you lose. The code computed the loss all along; nothing printed it |
+| Our baseline was the weakest fair one, not the strongest | Summing two calls instead of one closes the whole gap. We had been comparing one call against many, and calling it detection against memory |
+| Two published p-values could not be produced by any command in the repo | Including the one behind "our own scoring machinery earns nothing" |
 
 The point for the committee: **we would rather find these now than have a judge find them in
-September.** The reviews are cheap and we are running them every sprint.
+September.** The reviews are cheap, each round has found something the last one missed, and we keep
+running them until a round comes back empty. None has yet.
 
 ## 4. One thing we found about our own novelty claim
 
@@ -111,7 +136,7 @@ we would rather resolve them now than in September.
 
 ## 6. Next, to the combined Sprint 1+2 demo on 2026-08-24
 
-Corpus at full volume with the four strata · the memory question in §2 resolved either way · reviewer
+Corpus at full volume with the five strata · the memory question in §2 resolved either way · reviewer
 queue with approve/dismiss/route · cost and latency next to accuracy · the accumulation moment plus a
 deliberate failure-recovery beat · **a recorded fallback taken on 2026-08-17**, so a live failure on the
 day cannot cost us the demo.
