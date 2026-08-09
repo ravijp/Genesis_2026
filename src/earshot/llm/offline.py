@@ -44,7 +44,14 @@ ACTION_BY_TEAM = {
     "collections": "Offer a pre-arrears affordability conversation; suppress automated chasing.",
     "complaints": "Escalate to a complaints handler with the full evidence chain attached.",
     "vulnerability": "Flag for a vulnerability-trained agent; apply support measures, not sales.",
-    "none": "No action. Leave the signals in the ledger to be re-scored next batch.",
+    # `none` is the team for `insufficient_evidence`, which means the engine could not decide --
+    # not that there is nothing to decide. Closing the case here would drop it silently, and the
+    # loop's own fallback for the same verdict routes it to a person; two paths for one verdict
+    # must not give opposite instructions when human review is the product.
+    "none": (
+        "Route to a human reviewer unassisted; the signals stay in the ledger and are re-scored "
+        "next batch either way."
+    ),
 }
 
 

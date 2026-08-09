@@ -16,7 +16,7 @@ precision numbers · build and rehearse the three-conversation accumulation scen
 | # | Item | State |
 |---|---|---|
 | 1 | Synthetic multi-channel corpus (calls, chats, complaints) with ground truth authored **before** the prose | Built — 4 signal families, 5 difficulty strata set by how the evidence is spread, two kinds of lookalike, outcomes drawn rather than assigned |
-| 2 | Signal-extraction pipeline, run at volume | Built, no API keys required — 15,000 customers / 52,444 conversations end to end in ~115s. Throughput falls with corpus size (~1,500 conv/s at 400 customers, ~460/s at 15,000); we have not optimised it and would flag it as the first thing to fix before real volume |
+| 2 | Signal-extraction pipeline, run at volume | Built, no API keys required — 15,000 customers / 52,444 conversations end to end in two to three minutes on a laptop. Throughput falls sharply with corpus size (roughly 7x between 400 and 15,000 customers); we have not optimised it and would flag it as the first thing to fix before real volume |
 | 3 | First recall and precision numbers | Built, then rebuilt at proper scale — see §2 |
 | 4 | The accumulation scenario | Built and reproducible on demand |
 | 5 | *(Sprint 2)* Per-customer ledger and re-scoring logic as a pure, tested function | **Pulled forward** — the accumulation scenario cannot be rehearsed without it. Deterministic, no model calls |
@@ -52,8 +52,10 @@ a real outcome — at a review capacity of 10% of the portfolio:
   costs loud ones, which is the argument for running both together rather than replacing one.
 - **Across the whole portfolio, nothing separates the approaches.** Memory neither beats nor loses to
   per-call detection overall.
-- **A plain count of signals does as well as our weighted scoring.** Decay, corroboration and channel
-  weighting have not paid for themselves yet — either we justify them in Sprint 2 or we take them out.
+- **A plain count of signals does as well as our weighted scoring on the stratum we pre-registered**,
+  and the comparison flips sign across dataset sets. On loud single calls the full ledger does beat the
+  plain count. Decay earns something that is not recall: it is what stops the alert queue being ordered
+  alphabetically. The other three mechanisms have no defence yet — Sprint 2 justifies them or removes them.
 - **A two-line baseline we built this week to attack ourselves beats the full ledger.** Summing the
   two loudest calls per customer — no ledger, no memory, two numbers — catches **147 of 780**
   thin-evidence cases against the ledger's 134. Over 10 datasets that gap is not significant; over 30

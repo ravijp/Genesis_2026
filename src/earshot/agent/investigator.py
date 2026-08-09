@@ -13,7 +13,8 @@ p50/p95 latency and the schema-rejection rate all come out of the same object th
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+import math
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from pydantic import ValidationError
@@ -33,6 +34,10 @@ from .tools import TOOLS_BY_NAME, ToolContext, ToolError, tool_specs, unresolved
 MAX_STEPS = 6
 MAX_SCHEMA_RETRIES = 2
 TOOL_RESULT_CHAR_CAP = 6000  # a runaway tool result must not blow the context window
+
+# The five tools are meant to be called a few at a time. Without this, "6 steps" bounds model
+# calls while tool executions and the prompt they feed are unbounded.
+MAX_TOOL_CALLS_PER_STEP = 8
 
 # Headroom multiplier for the cost pre-flight. Each step replays the previous tool results as
 # prompt tokens, so the next call is reliably dearer than the last and "the priciest call so
@@ -330,6 +335,27 @@ def investigate(
             trace.stopped_because = "internal_error"
             break
 
+        # A provider that returns the wrong TYPE is a provider failure, not a crash. Reading
+        # `.model` off whatever came back sat outside the guard above, so a provider returning
+        # None, a dict or a string raised AttributeError straight through a loop whose contract
+        # is that it always returns a decision.
+        if not isinstance(completion, Completion):
+            trace.steps.append(
+                StepRecord(
+                    index=step,
+                    kind="model",
+                    name="internal_error",
+                    detail=f"provider returned {type(completion).__name__}, not a Completion",
+                )
+            )
+            trace.stopped_because = "internal_error"
+            break
+
+        # NaN compares False against every bound, so an unusable cost would slip past the cap
+        # below AND land in the run manifest, where it is not valid JSON.
+        if not math.isfinite(completion.cost_usd):
+            completion = replace(completion, cost_usd=0.0)
+
         # Report the model that actually served, not the one we asked for -- OpenRouter can
         # route to a different snapshot, and the offline provider is not a model at all.
         trace.model = completion.model or model_cfg.model
@@ -353,13 +379,24 @@ def investigate(
         # Feeds the next iteration's pre-flight estimate.
         priciest_call = max(priciest_call, completion.cost_usd)
 
-        if cost_cap_usd is not None and trace.cost_usd >= cost_cap_usd:
+        # Checked only when another call is coming. Breaking here unconditionally discarded a
+        # completion that already carried a valid decision -- the money was spent either way, so
+        # throwing the answer away bought nothing. The pre-flight at the top of the loop is what
+        # bounds cumulative spend; this stops the NEXT call, not the answer we just paid for.
+        if (
+            cost_cap_usd is not None
+            and trace.cost_usd >= cost_cap_usd
+            and completion.tool_calls
+        ):
             trace.stopped_because = "cost_cap"
             break
 
         if completion.tool_calls:
             messages.append(assistant_message(completion))
-            for call in completion.tool_calls:
+            # The step cap bounds MODEL calls, not tool executions: one completion carrying 500
+            # tool calls runs 500 tools and appends all of their output to the prompt, so the
+            # documented bound was true of the wrong quantity.
+            for call in completion.tool_calls[:MAX_TOOL_CALLS_PER_STEP]:
                 payload, detail = _run_tool(ctx, call.name, call.arguments)
                 messages.append(
                     {

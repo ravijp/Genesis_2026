@@ -476,13 +476,31 @@ def _normalise(text: str) -> str:
     return " ".join(text.split()).casefold()
 
 
+# A citation has to carry enough of the turn to be checkable by a person reading the case. Below
+# this it is not evidence: `""` is a substring of every turn, and so is a single letter.
+MIN_QUOTE_WORDS = 4
+
+
 def unresolved_evidence(ctx: ToolContext, refs: list[Any]) -> list[str]:
     """Which of these citations do NOT resolve against the corpus?
 
-    Empty list means every reference points at a real turn and quotes it verbatim. This is the
-    groundedness check the architecture promises. It lives in code the eval can call rather than
-    inside the loop, so a first-attempt failure rate can be measured; the loop itself rejects and
-    retries, so a decision that survives to the caller always resolves.
+    Empty list means every reference points at a real turn and quotes a contiguous run of at
+    least `MIN_QUOTE_WORDS` of its words. This is the groundedness check the architecture
+    promises. It lives in code the eval can call rather than inside the loop, so a first-attempt
+    failure rate can be measured; the loop itself rejects and retries, so a decision that
+    survives to the caller always resolves.
+
+    Three things a plain substring test certifies that are not evidence, all closed here:
+
+    * **The empty string is a substring of every turn.** A whitespace-only quote passed, so a
+      decision could cite a real turn containing none of its words and be called verbatim.
+    * **So is a single character.** A quote has to carry enough of the turn that a reviewer can
+      check it, which is a floor in WORDS, not characters.
+    * **A substring can invert the sentence it came from.** "I don't use half of what I'm paying
+      for" contains "use half of what I'm paying for", which says the opposite. Requiring word
+      boundaries does not fix meaning-inversion in general, but it stops the mid-word splicing
+      that makes it trivial, and the floor makes a dropped leading negation visible in the case
+      file because the surrounding words come with it.
     """
     by_id = {c.conversation_id: c for c in ctx.conversations}
     problems: list[str] = []
@@ -498,7 +516,20 @@ def unresolved_evidence(ctx: ToolContext, refs: list[Any]) -> list[str]:
                 f"(valid 0-{len(conversation.turns) - 1})"
             )
             continue
-        if _normalise(ref.quote) not in _normalise(turn.text):
+        quote_words = _normalise(ref.quote).split()
+        if len(quote_words) < MIN_QUOTE_WORDS:
+            problems.append(
+                f"{ref.conversation_id} turn {ref.turn_index}: quote is {len(quote_words)} "
+                f"word(s); cite at least {MIN_QUOTE_WORDS} consecutive words of the turn"
+            )
+            continue
+        turn_words = _normalise(turn.text).split()
+        # Word-sequence containment, not substring: a substring test matches mid-word and lets a
+        # citation start or end inside a token.
+        if not any(
+            turn_words[i : i + len(quote_words)] == quote_words
+            for i in range(len(turn_words) - len(quote_words) + 1)
+        ):
             problems.append(
                 f"{ref.conversation_id} turn {ref.turn_index}: quote is not verbatim from "
                 f"that turn"

@@ -81,6 +81,36 @@ def test_demo_denominator_is_customers_not_customer_signal_pairs(cli, capsys) ->
     assert numerator <= denominator, f"demo printed {numerator} of {denominator}: {line}"
 
 
+def test_demo_does_not_unsay_its_own_disclaimer_when_the_beat_fails(cli, capsys) -> None:
+    """On a dataset with no instance of the claim, the demo warned honestly and then closed with
+    "this is one instance of it" — and the closing line is the one an audience keeps.
+
+    Seed 20260812 at 200 customers is a dataset where the count is genuinely zero.
+    """
+    assert cli.cmd_demo(replace(SMALL, seed=20260812, corpus=replace(SMALL.corpus, n_customers=200))) == 0
+    out = capsys.readouterr().out
+
+    if "NOT an instance of the claim" in out:
+        assert "this is one instance of it" not in out, (
+            "the demo warned that it has no instance of the claim and then asserted it had one"
+        )
+
+
+def test_demo_never_calls_the_baseline_flagged_below_its_own_threshold(cli, capsys) -> None:
+    """A "would flag" printed beside a score under the threshold on the line above hands the
+    audience the counter-argument. Queue membership alone is not enough to print it."""
+    assert cli.cmd_demo(replace(SMALL, seed=20260812, corpus=replace(SMALL.corpus, n_customers=200))) == 0
+    out = capsys.readouterr().out
+
+    cut = float(next(li for li in out.splitlines() if "per-call threshold" in li).split()[-1])
+    for line in out.splitlines():
+        if line.strip().startswith("per-call ") and "would flag" in line:
+            score = float(line.split()[1])
+            assert score >= cut, (
+                f"demo printed 'would flag' at {score} against its own threshold of {cut}: {line}"
+            )
+
+
 def test_run_warns_that_a_single_dataset_is_not_publishable(cli, capsys) -> None:
     """`run` exists for debugging and has to say so itself — the rule cannot live only in prose."""
     assert cli.cmd_run(SMALL) == 0

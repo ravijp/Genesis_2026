@@ -87,6 +87,8 @@ def swept():
 EXPECTED_ARMS = {
     "stateless-max",
     "stateless-top2",
+    "stateless-top3",
+    "window3-top2",
     "dumb-ledger",
     "long-context-3",
     "full-ledger",

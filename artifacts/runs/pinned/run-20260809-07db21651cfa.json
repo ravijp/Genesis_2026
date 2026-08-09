@@ -2,10 +2,10 @@
   "manifest": {
     "seed": 20260809,
     "config_hash": "07db21651cfa",
-    "git_sha": "09e6991",
+    "git_sha": "2159919-dirty",
     "provider": "offline-lexicon",
-    "elapsed_seconds": 0.87,
-    "conversations_per_second": 1561.8
+    "elapsed_seconds": 0.93,
+    "conversations_per_second": 1463.0
   },
   "corpus_diagnostics": {
     "n_customers": 400,
@@ -111,6 +111,88 @@
       "flagged_ids": [
         "CUST-0028",
         "CUST-0044",
+        "CUST-0107",
+        "CUST-0207"
+      ],
+      "n_distinct_scores": 50,
+      "n_tie_decided": 1
+    },
+    {
+      "arm": "stateless-top3",
+      "budget": 0.01,
+      "threshold": 0.5477,
+      "n_flagged": 4,
+      "recall": 0.0,
+      "precision": 0.0,
+      "median_lead_days": null,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0,
+        "7": 0.0,
+        "14": 0.0,
+        "30": 0.0,
+        "60": 0.0
+      },
+      "n_hits": 0,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 0
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      },
+      "flagged_ids": [
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0207"
+      ],
+      "n_distinct_scores": 75,
+      "n_tie_decided": 1
+    },
+    {
+      "arm": "window3-top2",
+      "budget": 0.01,
+      "threshold": 0.4467,
+      "n_flagged": 4,
+      "recall": 0.0185,
+      "precision": 0.25,
+      "median_lead_days": 42,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0417,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0185,
+        "7": 0.0185,
+        "14": 0.0185,
+        "30": 0.0185,
+        "60": 0.0
+      },
+      "n_hits": 1,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 1
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      },
+      "flagged_ids": [
+        "CUST-0044",
+        "CUST-0055",
         "CUST-0107",
         "CUST-0207"
       ],
@@ -366,6 +448,96 @@
         "CUST-0062",
         "CUST-0107",
         "CUST-0125",
+        "CUST-0207"
+      ],
+      "n_distinct_scores": 50,
+      "n_tie_decided": 5
+    },
+    {
+      "arm": "stateless-top3",
+      "budget": 0.02,
+      "threshold": 0.5477,
+      "n_flagged": 8,
+      "recall": 0.0185,
+      "precision": 0.125,
+      "median_lead_days": 66,
+      "recall_by_stratum": {
+        "concentrated": 0.0625,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0185,
+        "7": 0.0185,
+        "14": 0.0185,
+        "30": 0.0185,
+        "60": 0.0185
+      },
+      "n_hits": 1,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 1,
+        "diffuse": 0
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      },
+      "flagged_ids": [
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0102",
+        "CUST-0133",
+        "CUST-0207"
+      ],
+      "n_distinct_scores": 75,
+      "n_tie_decided": 5
+    },
+    {
+      "arm": "window3-top2",
+      "budget": 0.02,
+      "threshold": 0.4467,
+      "n_flagged": 8,
+      "recall": 0.037,
+      "precision": 0.25,
+      "median_lead_days": 50.0,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0833,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.037,
+        "7": 0.037,
+        "14": 0.037,
+        "30": 0.037,
+        "60": 0.0
+      },
+      "n_hits": 2,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 0,
+        "diffuse": 2
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      },
+      "flagged_ids": [
+        "CUST-0044",
+        "CUST-0055",
+        "CUST-0062",
+        "CUST-0107",
+        "CUST-0125",
+        "CUST-0134",
+        "CUST-0147",
         "CUST-0207"
       ],
       "n_distinct_scores": 50,
@@ -664,6 +836,120 @@
       ],
       "n_distinct_scores": 50,
       "n_tie_decided": 17
+    },
+    {
+      "arm": "stateless-top3",
+      "budget": 0.05,
+      "threshold": 0.5464,
+      "n_flagged": 20,
+      "recall": 0.0556,
+      "precision": 0.15,
+      "median_lead_days": 58,
+      "recall_by_stratum": {
+        "concentrated": 0.0625,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0833,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0556,
+        "7": 0.0556,
+        "14": 0.0556,
+        "30": 0.0556,
+        "60": 0.0185
+      },
+      "n_hits": 3,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 1,
+        "diffuse": 2
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      },
+      "flagged_ids": [
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0102",
+        "CUST-0133",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0177",
+        "CUST-0207",
+        "CUST-0217",
+        "CUST-0223",
+        "CUST-0243",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 75,
+      "n_tie_decided": 4
+    },
+    {
+      "arm": "window3-top2",
+      "budget": 0.05,
+      "threshold": 0.4324,
+      "n_flagged": 20,
+      "recall": 0.0926,
+      "precision": 0.25,
+      "median_lead_days": 42,
+      "recall_by_stratum": {
+        "concentrated": 0.0625,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.1667,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0926,
+        "7": 0.0926,
+        "14": 0.0926,
+        "30": 0.0741,
+        "60": 0.0
+      },
+      "n_hits": 5,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 1,
+        "diffuse": 4
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      },
+      "flagged_ids": [
+        "CUST-0009",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0058",
+        "CUST-0062",
+        "CUST-0077",
+        "CUST-0107",
+        "CUST-0125",
+        "CUST-0134",
+        "CUST-0147",
+        "CUST-0168",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0237",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0351",
+        "CUST-0354"
+      ],
+      "n_distinct_scores": 50,
+      "n_tie_decided": 4
     },
     {
       "arm": "dumb-ledger",
@@ -1043,6 +1329,160 @@
         "CUST-0354",
         "CUST-0380",
         "CUST-0384"
+      ],
+      "n_distinct_scores": 50,
+      "n_tie_decided": 1
+    },
+    {
+      "arm": "stateless-top3",
+      "budget": 0.1,
+      "threshold": 0.4723,
+      "n_flagged": 40,
+      "recall": 0.1481,
+      "precision": 0.2,
+      "median_lead_days": 36.0,
+      "recall_by_stratum": {
+        "concentrated": 0.25,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.1667,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1481,
+        "7": 0.1481,
+        "14": 0.1296,
+        "30": 0.0926,
+        "60": 0.037
+      },
+      "n_hits": 8,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 4,
+        "diffuse": 4
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      },
+      "flagged_ids": [
+        "CUST-0028",
+        "CUST-0036",
+        "CUST-0044",
+        "CUST-0048",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0098",
+        "CUST-0102",
+        "CUST-0109",
+        "CUST-0133",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0167",
+        "CUST-0168",
+        "CUST-0172",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0217",
+        "CUST-0223",
+        "CUST-0233",
+        "CUST-0237",
+        "CUST-0239",
+        "CUST-0243",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0307",
+        "CUST-0350",
+        "CUST-0351",
+        "CUST-0354",
+        "CUST-0357",
+        "CUST-0380",
+        "CUST-0384"
+      ],
+      "n_distinct_scores": 75,
+      "n_tie_decided": 2
+    },
+    {
+      "arm": "window3-top2",
+      "budget": 0.1,
+      "threshold": 0.3957,
+      "n_flagged": 40,
+      "recall": 0.1481,
+      "precision": 0.2,
+      "median_lead_days": 41.5,
+      "recall_by_stratum": {
+        "concentrated": 0.125,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.25,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1481,
+        "7": 0.1481,
+        "14": 0.1481,
+        "30": 0.1296,
+        "60": 0.0185
+      },
+      "n_hits": 8,
+      "n_outcomes": 54,
+      "stratum_hits": {
+        "concentrated": 2,
+        "diffuse": 6
+      },
+      "stratum_outcomes": {
+        "concentrated": 16,
+        "diffuse": 24
+      },
+      "flagged_ids": [
+        "CUST-0009",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0058",
+        "CUST-0062",
+        "CUST-0069",
+        "CUST-0077",
+        "CUST-0083",
+        "CUST-0096",
+        "CUST-0102",
+        "CUST-0107",
+        "CUST-0125",
+        "CUST-0131",
+        "CUST-0133",
+        "CUST-0134",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0168",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0199",
+        "CUST-0207",
+        "CUST-0212",
+        "CUST-0215",
+        "CUST-0217",
+        "CUST-0223",
+        "CUST-0237",
+        "CUST-0243",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0288",
+        "CUST-0293",
+        "CUST-0298",
+        "CUST-0351",
+        "CUST-0354",
+        "CUST-0380",
+        "CUST-0384",
+        "CUST-0395"
       ],
       "n_distinct_scores": 50,
       "n_tie_decided": 1

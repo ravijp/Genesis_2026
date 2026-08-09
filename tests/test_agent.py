@@ -223,6 +223,60 @@ def test_unresolvable_evidence_is_rejected_and_counted() -> None:
     assert decision.verdict == "insufficient_evidence"
 
 
+@pytest.mark.parametrize(
+    ("label", "quote"),
+    [
+        ("whitespace only", "   \t\n  "),
+        ("empty", ""),
+        ("single space", " "),
+        ("non-breaking space", "\xa0"),
+        ("single character", "M"),
+        ("one word", "Money"),
+        ("three words", "Money has been"),
+        ("mid-word fragment", "oney has been really"),
+        ("ends mid-word", "Money has been rea"),
+    ],
+)
+def test_a_citation_that_is_not_evidence_does_not_resolve(label: str, quote: str) -> None:
+    """The substring test certified all of these as "verbatim".
+
+    `""` is a substring of every turn, and so is any single letter — so a decision could cite a
+    real turn while quoting none of its words and pass the groundedness check. A citation has to
+    carry enough consecutive words for a reviewer to check it against the transcript.
+    """
+    from earshot.agent.tools import unresolved_evidence
+
+    ctx = _context()
+    ref = EvidenceRef(conversation_id="K0", turn_index=1, quote=quote or " ")
+    assert unresolved_evidence(ctx, [ref]), (
+        f"{label!r} was accepted as a verbatim citation of "
+        f"{QUOTES['K0']!r} — that is not evidence"
+    )
+
+
+def test_a_real_multi_word_quote_still_resolves() -> None:
+    """The floor must not reject honest citations: a genuine span of the turn still passes."""
+    from earshot.agent.tools import unresolved_evidence
+
+    ctx = _context()
+    assert (
+        unresolved_evidence(
+            ctx,
+            [EvidenceRef(conversation_id="K0", turn_index=1, quote="tight since the hours were")],
+        )
+        == []
+    )
+    # Case and internal whitespace are still forgiven — a model retyping a quote should not fail
+    # on capitalisation.
+    assert (
+        unresolved_evidence(
+            ctx,
+            [EvidenceRef(conversation_id="K0", turn_index=1, quote="TIGHT   since the HOURS were")],
+        )
+        == []
+    )
+
+
 def test_unresolved_refs_on_a_returned_decision_are_zero_by_construction() -> None:
     """Why groundedness is reported as first-attempt repairs and never as a post-hoc count.
 
@@ -335,6 +389,78 @@ def test_the_committed_cache_covers_the_documented_replay_invocation() -> None:
     assert len(cache) >= 10, (
         f"the committed cache holds {len(cache)} completions — the documented replay command "
         f"(--customers 200 --limit 2) needs the responses for two full investigations"
+    )
+
+
+@pytest.mark.parametrize("junk", [None, {"content": "{}"}, "a bare string", 42])
+def test_a_provider_returning_the_wrong_type_degrades_instead_of_raising(junk) -> None:
+    """"The loop always returns a decision" has to hold for a broken provider too.
+
+    Reading `.model` off the reply sat outside the exception guard, so a provider returning None,
+    a dict or a string raised AttributeError straight past a loop whose entire contract is that
+    it never does.
+    """
+
+    class _WrongType:
+        name = "wrong-type"
+
+        def complete(self, messages, tools, model_cfg):
+            return junk
+
+    decision, trace = investigate(_context(), _WrongType())
+    assert decision.verdict == "insufficient_evidence"
+    assert trace.stopped_because == "internal_error"
+
+
+def test_a_non_finite_cost_cannot_slip_past_the_cap_or_into_the_manifest() -> None:
+    """NaN compares False against every bound, so it defeats the cap and breaks the artifact.
+
+    `nan > cap` is False, so the pre-flight waves it through; `json.dumps(nan)` then produces
+    output that is not valid JSON, which is how a run manifest stops being loadable.
+    """
+    import json
+    import math
+
+    provider = _Stub(
+        "nan-cost",
+        [_text_reply(json.dumps(VALID_DECISION), cost_usd=float("nan"))],
+    )
+    decision, trace = investigate(_context(), provider, cost_cap_usd=0.25)
+
+    assert math.isfinite(trace.cost_usd), "a non-finite cost reached the trace"
+    json.dumps(trace.to_dict())  # would raise ValueError on NaN
+    assert decision.verdict == "genuine"
+
+
+def test_a_valid_decision_is_kept_even_if_that_call_crossed_the_cap() -> None:
+    """The cap stops the NEXT call. Discarding an answer already paid for buys nothing."""
+    expensive = _Stub(
+        "valid-but-expensive",
+        [_text_reply(json.dumps(VALID_DECISION), cost_usd=99.0)],
+    )
+    decision, trace = investigate(_context(), expensive, cost_cap_usd=0.25)
+
+    assert decision.verdict == "genuine", (
+        f"the loop paid ${trace.cost_usd} for a valid decision and then threw it away "
+        f"(stopped_because={trace.stopped_because})"
+    )
+
+
+def test_tool_calls_are_bounded_per_step_not_just_model_calls() -> None:
+    """"Six steps" bounded model calls while tool executions and prompt growth were unbounded."""
+    from earshot.agent.investigator import MAX_TOOL_CALLS_PER_STEP
+
+    fan_out = Completion(
+        tool_calls=tuple(
+            ToolCall(id=f"c{i}", name="get_ledger_summary", arguments={}) for i in range(500)
+        ),
+        model="stub",
+    )
+    _, trace = investigate(_context(), _Stub("fan-out", [fan_out]))
+
+    assert trace.tool_calls <= MAX_STEPS * MAX_TOOL_CALLS_PER_STEP, (
+        f"{trace.tool_calls} tools ran from {trace.model_calls} model calls — the step cap does "
+        f"not bound tool execution"
     )
 
 

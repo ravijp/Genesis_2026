@@ -17,7 +17,7 @@ Sprint-1 check-in is **2026-08-10 10:30** (15 minutes, progress only — brief a
 Sprint 1+2 demo, **2026-09-07** Sprint 3.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-an investigator agent that calls tools and produces case files with cited evidence. **170 tests**,
+an investigator agent that calls tools and produces case files with cited evidence. **189 tests**,
 ruff clean, `earshot sweep` produces every published number and now prints every comparison behind them.
 
 **The headline holds and strengthened.** On thin-evidence customers the ledger catches 134/780 against
@@ -38,7 +38,7 @@ never-discard adds over a cheap window is currently **unproven**. See D-015 thro
   never printed. Round 5 found defects **inside those fixes** — the 30-seed figures came from a scratch
   script on a seed base no command uses and one of them inverted a conclusion; the guard was still
   walkable via `sys.modules`; a set-valued field broke artifact reproducibility; the ranking-resolution
-  claim named the wrong mechanism. **Round 6 has not run, and the rate is not falling.**
+  claim named the wrong mechanism. **Round 6 found six published claims that no command could produce — the same defect D-017 was written to close, committed in the round that wrote it. Round 7 has not run.**
 - **Nothing is marked Done on the board, deliberately** — one author, no second reviewer. Namit and
   Ishant have not seen any of it.
 
@@ -77,19 +77,20 @@ for a number. If it starts competing with the evaluation for attention, stop and
 ## Known-weak, stated rather than hidden
 
 - No scoring mechanism earns anything in recall, and the full-ledger vs plain-count comparison flips
-  sign across seed sets. **Decay** earns something that is not recall: it gives the ledger 675 distinct
+  sign across seed sets. **Decay** earns something that is not recall: it gives the ledger 673 distinct
   scores against the plain count's 6, so 0.7% of its alert queue is decided alphabetically against
   70.3%. Confidence weighting, corroboration, cross-channel and escalation have no defence yet.
 - Ranking resolution cuts against our own claims, not someone else's: the headline's opponent
   (`stateless-max`) is 40.8% alphabetical and the `dumb-ledger` ablation is 70.3%. `earshot sweep`
   prints the table.
-- **A two-float baseline beats us on the pre-registered stratum at 30 seeds** (`stateless-top2`,
-  `p=0.013`), and so does a bounded three-conversation window (`window3-top2`, `p=0.013`). Exploratory,
-  but pointed at the mechanic the entry rests on.
-- The effect is scoped to short histories — it weakens at (3,7) conversations and is gone by (6,14).
+- **Two cheaper arms beat us on the pre-registered stratum at 30 seeds**: `stateless-top2` and
+  `window3-top2`, both `7-21-2`, `p=0.013`. `window3-top2` also holds us to a tie on concentrated arcs
+  (`16-8-6`, `p=0.152`), so it is not even a trade. Both are shipped arms — `earshot sweep` prints
+  this. What never-discard buys over a three-conversation window is currently unproven.
 - Agent verdict/routing accuracy, cost per 1,000 conversations and p50/p95 latency are not measured.
   Evidence groundedness is now reported as a first-attempt repair rate (AT-57).
 - Extraction is matched at conversation level, not character spans.
-- Throughput falls with corpus size: ~1,500 conv/s at 400 customers, ~460/s at 15,000. Not optimised.
+- Throughput falls sharply with corpus size — roughly 7x between 400 and 15,000 customers on one
+  laptop. Not optimised, and not pinned by a committed manifest at the larger size.
 - The cost cap bounds cumulative spend, not a single anomalous call. Documented, with a test.
 - No reviewer queue exists yet — the demo shows case files, not a working queue.

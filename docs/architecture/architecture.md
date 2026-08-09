@@ -128,8 +128,12 @@ call is bounded separately by `max_tokens` and a cap on how much tool output can
 Budget exhaustion returns `insufficient_evidence` rather than raising.
 
 **Evidence is mandatory.** A decision must cite at least one `EvidenceRef` — conversation id, turn
-index and verbatim quote — that resolves against the corpus. A decision citing an unresolvable
-reference fails validation and is retried.
+index and quote — where the quote is a run of **at least four consecutive words** of that turn,
+matched on word boundaries. A decision citing an unresolvable reference fails validation and is
+retried. The floor is the point: a plain substring test accepts the empty string and a single
+letter, both of which appear in every turn, so it certifies citations that are not evidence. Case and
+whitespace are still forgiven. This bounds *splicing*, not meaning — a quote can still drop a leading
+negation, which is why the case file prints the citation for a human to read.
 
 ---
 
@@ -207,5 +211,7 @@ customers against 96 of 780 for score-each-call-and-forget (8 wins, 2 ties, no l
 *loses* on concentrated arcs by a comparable margin (119 of 629 against 180 of 629, `p=0.039`). The
 result is a trade: the more conversations an arm may combine, the better it does on thin evidence and
 the worse on a single loud call. Overall no arm is distinguishable from any other; a plain unweighted
-count matches the full ledger, and so does summing the two loudest calls. So the arms answer *which
-trigger feeds the investigator best*, not *what the product is*. Full table and method in the README.
+count matches the full ledger, and summing the two loudest calls **beats** it on thin evidence. So the
+arms answer *which trigger feeds the investigator best*, not *what the product is*, and what
+never-discard buys over a cheap bounded window is currently unproven. Full table and method in the
+README.

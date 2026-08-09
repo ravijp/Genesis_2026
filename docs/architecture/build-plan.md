@@ -88,10 +88,10 @@ listing them as planned is more useful than listing them as design.
 ## 5. Open questions
 
 1. **Does never-discard beat anything cheaper?** The central open question, and the current corpus
-   cannot answer it. At 30 seeds `stateless-top2` beats the full ledger on the pre-registered stratum
-   (`7-21-2`, `p=0.013`), and a bounded `window3-top2` — last three conversations, keep the best two,
-   strictly less state than a ledger — beats it too (`21-7-2`, `p=0.013`). Both are exploratory. The
-   reason is structural: customers average 3.5 conversations, so `stateless-top2` discards
+   cannot answer it. At 30 seeds both `stateless-top2` and `window3-top2` beat the full ledger on the
+   pre-registered stratum (`7-21-2`, `p=0.013` each), and `window3-top2` — last three conversations,
+   keep the best two, strictly less state than a ledger — also ties us on concentrated arcs
+   (`16-8-6`). Both are shipped arms, so `earshot sweep` prints it. The reason is structural: customers average 3.5 conversations, so `stateless-top2` discards
    almost nothing, and two of the four trajectories have only 4 authored fragments, so a long diffuse
    arc exhausts its pool and is forced to plant its loudest fragment. Widen the pools, lengthen
    histories, re-run. If the ledger pulls ahead this is the entry; if not, we need to know by 09-07.

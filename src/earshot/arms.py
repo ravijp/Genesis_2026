@@ -215,6 +215,23 @@ def run_all_arms(
             "stateless-top2",
             _run(signals, _stateless_config(base), per_conversation=True, top_n=2),
         ),
+        "stateless-top3": ArmResult(
+            "stateless-top3",
+            _run(signals, _stateless_config(base), per_conversation=True, top_n=3),
+        ),
+        # Bounded memory: only the last three conversations exist, and only the two loudest of
+        # those count. Strictly less state than a ledger, and the hardest opponent the ledger
+        # has -- which is why it is shipped rather than described.
+        f"window{LONG_CONTEXT_WINDOW}-top2": ArmResult(
+            f"window{LONG_CONTEXT_WINDOW}-top2",
+            _run(
+                signals,
+                _stateless_config(base),
+                per_conversation=True,
+                top_n=2,
+                window=LONG_CONTEXT_WINDOW,
+            ),
+        ),
         "dumb-ledger": ArmResult("dumb-ledger", _run(signals, _dumb_config(base))),
         f"long-context-{LONG_CONTEXT_WINDOW}": ArmResult(
             f"long-context-{LONG_CONTEXT_WINDOW}",

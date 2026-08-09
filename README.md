@@ -67,9 +67,11 @@ the answer out of a comparison the code computes in full:
 
 | Arm | Recall | Hits / outcomes | **Diffuse arcs** | hits / n | **Concentrated arcs** | hits / n |
 |---|---|---|---|---|---|---|
-| stateless-top2 *(sum the two loudest calls)* | 0.132 | 256 / 1945 | **0.188** | **147 / 780** | 0.173 | 109 / 629 |
+| window3-top2 *(last 3 conversations, keep the best 2)* | 0.134 | 261 / 1945 | **0.195** | **152 / 780** | 0.173 | 109 / 629 |
+| stateless-top2 *(sum the two loudest calls)* | 0.132 | 256 / 1945 | 0.188 | 147 / 780 | 0.173 | 109 / 629 |
 | dumb-ledger *(unweighted count)* | 0.129 | 250 / 1945 | 0.177 | 138 / 780 | 0.175 | 110 / 629 |
 | full-ledger *(decay, corroboration, channel, escalation)* | 0.131 | 254 / 1945 | 0.172 | 134 / 780 | 0.189 | 119 / 629 |
+| stateless-top3 *(sum the three loudest calls)* | 0.136 | 265 / 1945 | 0.149 | 116 / 780 | 0.235 | 148 / 629 |
 | long-context-3 *(last 3 conversations pooled)* | 0.135 | 262 / 1945 | 0.144 | 112 / 780 | 0.237 | 149 / 629 |
 | hybrid *(rank-combined)* | 0.140 | 272 / 1945 | 0.126 | 98 / 780 | 0.277 | 174 / 629 |
 | stateless-max *(score each call, forget)* | 0.142 | 276 / 1945 | 0.123 | 96 / 780 | **0.286** | **180 / 629** |
@@ -78,11 +80,11 @@ Read the two stratum columns together and the shape is a **trade, not a winner**
 across conversations do better on thin evidence and worse on a single loud call, and `stateless-max` —
 which aggregates nothing — is the extreme of both.
 
-That is as far as the ordering goes. It is *not* monotone in how many conversations an arm may combine:
-a `stateless-top3` we built to check is significantly **worse** than `top2` at this budget, and the row
-order inverts at a 20% budget. The stable claim is "aggregating anything beats aggregating nothing on
-diffuse arcs, and the reverse on concentrated ones"; the exact row order below is a 10%-budget
-artifact.
+That is as far as the ordering goes. It is *not* monotone in how many conversations an arm may
+combine: `stateless-top3` is significantly **worse** than `stateless-top2` on diffuse arcs
+(`10–0–0`, `p=0.002`) despite seeing strictly more of them. The stable claim is "aggregating a few
+conversations beats aggregating one on diffuse arcs, and the reverse on concentrated ones"; the exact
+row order below is specific to the 10% budget, which is the only operating point we evaluate.
 
 What survives a paired test:
 
@@ -96,20 +98,32 @@ What survives a paired test:
   single decisive signal. We publish this because it is the same size as the win and comes from the
   same run — and because it is the actual argument for running a memory *alongside* per-call detection
   rather than instead of it.
-- **The cheapest possible aggregator beats the whole ledger where it matters most, and loses where the
-  ledger is weakest.** `stateless-top2` sums the two loudest calls — two floats per customer, no
-  ledger, no never-discard, no retro re-scoring — and takes **147 of 780** diffuse arcs against the
-  full ledger's 134. At 10 seeds that gap is not significant (`3–6–1`, `p=0.508`); **at 30 seeds it
-  is: the ledger loses `7–21–2`, `p=0.013`.** On concentrated arcs the ledger wins the same
-  comparison (`17–5–8`, `p=0.017`). Both are exploratory — 45 uncorrected tests — but we are not
-  going to soften them.
+- **Two much cheaper arms beat the whole ledger on the stratum the entry is built on.** This is the
+  most important thing on this page and it goes against us.
 
-  So the honest reading of the pre-registered headline is **aggregation beats no aggregation**, not
-  memory beats detection: `stateless-top2` also beats `stateless-max` outright. Our diffuse customers
-  average 2.55 extracted signals, so "keep everything" discards almost nothing more than "keep the
-  best two" — and on the evidence so far the cheaper rule is *better* on thin evidence, not merely
-  equal. Whether never-discard pulls ahead as histories lengthen is the question the ledger has to
-  answer, and the corpus cannot currently pose it (see the fragment-pool limit in the build plan).
+  `stateless-top2` sums the two loudest calls — two floats per customer, no ledger, no never-discard,
+  no retro re-scoring. `window3-top2` keeps only the last three conversations and only the best two of
+  those — strictly *less* state than a ledger. At 30 seeds, on diffuse arcs:
+
+  | comparison (diffuse, 30 seeds) | record | p |
+  |---|---|---|
+  | full-ledger vs `stateless-top2` | **7–21–2** (ledger loses) | **0.013** |
+  | full-ledger vs `window3-top2` | **7–21–2** (ledger loses) | **0.013** |
+  | full-ledger vs `stateless-max` *(pre-registered)* | 27–0–3 (ledger wins) | 0.000 |
+
+  On concentrated arcs the ledger beats `stateless-top2` (`17–5–8`, `p=0.017`) but **not**
+  `window3-top2` (`16–8–6`, `p=0.152`). So `window3-top2` is not a trade against us — it matches the
+  ledger where the ledger is strong and beats it where the ledger is supposed to be strongest. All of
+  these are exploratory among 84 uncorrected tests; only the `stateless-max` row was declared in
+  advance. We are not going to soften them.
+
+  So the honest reading of the pre-registered headline is **aggregating a few conversations beats
+  aggregating one**, not *memory beats detection*. Our diffuse customers average about 2.5 extracted
+  signals, so "keep everything" discards almost nothing more than "keep the best two out of the last
+  three" — and on the evidence so far the cheap bounded rule is *better*, not merely equal. **What
+  never-discard buys over a three-conversation window is, right now, unproven.** Whether it pulls ahead
+  as histories lengthen is the question the ledger has to answer, and the corpus cannot currently pose
+  it (see the fragment-pool limit in the build plan).
 - **Overall, memory neither beats nor loses to per-call detection.** Every pairing involving the full
   ledger is non-significant on whole-portfolio recall.
 - **Our scoring machinery still earns nothing.** Full ledger vs a dumb unweighted count on diffuse
@@ -119,7 +133,7 @@ What survives a paired test:
   count on concentrated arcs (`17–5–8`, `p=0.017`). So "decoration" is too strong in one direction and
   too generous in the other. The honest statement: the mechanisms are not distinguishable on the
   stratum we pre-registered, and nothing we have earns a claim either way elsewhere.
-- **Multiplicity.** `earshot sweep` runs **45 pairwise tests** (15 pairings × 3 metrics) with no
+- **Multiplicity.** `earshot sweep` runs **84 pairwise tests** (28 pairings × 3 metrics) with no
   correction, and prints every one. Only the headline above was declared in advance; any other single
   `p` under 0.05 is a hint, not a result. Every number quoted in this README appears in that output.
 
@@ -130,6 +144,8 @@ What survives a paired test:
 > | arm | distinct scores | share of queue decided alphabetically |
 > |---|---|---|
 > | full-ledger | 673 | **0.7%** |
+> | stateless-top3 | 106 | 3.5% |
+> | window3-top2 | 61 | 6.6% |
 > | hybrid | 522 | 8.3% |
 > | long-context-3 | 74 | 9.4% |
 > | stateless-top2 | 60 | 30.6% |
@@ -140,11 +156,9 @@ What survives a paired test:
 > 40.8%) and the ablation behind "our machinery earns nothing" (`dumb-ledger`, 70.3%). So this caveat
 > cuts against our own claims, not against a comparison we lose.
 >
-> Under 25 randomised tie-breaks the direction is robust — the ledger loses in **0 of 25** draws at 10
-> seeds and **0 of 25** at 30 — but the significance is not: `p<0.05` in 18 of 25 draws at 10 seeds
-> (25 of 25 at 30 seeds). The published `96 / 780` is also the *favourable* end of the range for the
-> baseline, not the middle: randomising gives a mean of 89, range 78–100. The true gap is if anything
-> slightly wider than we publish, and the same effect understates `stateless-top2`'s lead over us.
+> Ties are broken by `customer_id`, deterministically. **We have not measured how much the headline
+> depends on that** — there is no randomised-tie-break harness in this repo, so treat `96 / 780` as
+> carrying an unquantified tie-break component rather than as a precise integer.
 >
 > What buys the ledger its resolution is **decay**, not confidence weighting — switching confidence
 > weighting off alone leaves the queue at 0.7% and 598 distinct scores, while switching decay off
