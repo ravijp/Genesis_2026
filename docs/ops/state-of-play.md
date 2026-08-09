@@ -58,24 +58,28 @@ never-discard adds over a cheap window is currently **unproven**. See D-015 thro
 
 ## Next three things — in this order, reset 2026-08-09 after the review freeze
 
-**1. Ground the corpus on real public data — get the essence, not the text.** `AT-42`. CFPB gives
-3.8M real, public-domain complaint narratives. Extract the *distributional* essence — complaint
-length, how grievance escalates across a narrative, vocabulary and register, product/issue mix,
-how often a real narrative carries more than one signal — and drive `corpus.py` and
-`corpus_lexicon.py` from it instead of from fragments authored by hand. **The answer key still comes
-first**: deterministic code decides what is true, real language only shapes how it is written. D-010
-settles the boundary — do NOT stitch real complaints into invented customer histories; it produces
-incoherent people and destroys the measurement. Then `AT-43`: benchmark the extractor on real
-narratives against a hand-marked gold set. Together these answer "your reader only works on prose you
-wrote yourself", which is the single most likely technical objection on 09-07.
-
-**2. The reviewer queue UI.** `AT-61/62/64`. Never started, and it is the whole presentation axis of a
+**1. The reviewer queue UI.** `AT-61/62/64`. Never started, and it is the whole presentation axis of a
 Track A *client-facing* entry — needed for the 2026-08-24 combined Sprint 1+2 demo. Ranked case list ·
-a case with its evidence chain and the retro re-score visible · approve / dismiss / route.
-Constraints, already settled: it reads run artifacts already on disk rather than re-running the
-pipeline · works with zero API keys and no network · **never becomes a second source of truth for a
-number** — it displays what `earshot sweep` and the run artifacts already produced. If it starts
-competing with the evaluation for attention, stop and ship the numbers.
+a case with its evidence chain and the retro re-score visible · approve / dismiss / route. The queue
+*is* the human-in-the-loop claim made visible, so it feeds Zenon impact and feasibility, not only the
+presentation score. Constraints, already settled: it reads run artifacts already on disk rather than
+re-running the pipeline · works with zero API keys and no network · **never becomes a second source of
+truth for a number** — it displays what `earshot sweep` and the run artifacts already produced. Build
+it *functional*, then stop: working-agreements §9 warns that UI **polish** scores close to nothing,
+and it is right. If it starts competing with the evaluation for attention, stop and ship the numbers.
+
+**2. Benchmark the extractor on real public narratives — the evidence half of the CFPB work.**
+`AT-43`. Run the *existing* extractor over CFPB's real, public-domain complaint narratives against a
+hand-marked gold set of ~100-150, and publish the number with its denominator. This answers "your
+reader only works on prose you wrote yourself", which is the most likely technical objection on 09-07,
+and it touches nothing upstream of a published figure.
+
+**Deliberately NOT doing `AT-42` (fitting the generated distribution to CFPB) before 08-24.** Two
+settled reasons: working-agreements §9 lists corpus realism as work that feels productive and scores
+close to nothing, and D-010 settles that synthetic data is a *requirement of the measurement* — the
+answer key has to be authored before the text, which no real corpus can supply. Regenerating
+`corpus.py` is also upstream of every published number, so it means re-running and re-validating all
+of them two weeks before the gate. Revisit after 08-24 if there is time.
 
 **3. Write `known-issues.md` and close the review out.** Triage the open list above against one
 question: *would a technical judge's score change if this stayed broken?* Fix only those. Everything
