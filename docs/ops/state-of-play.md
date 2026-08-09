@@ -35,13 +35,15 @@ never-discard adds over a cheap window is currently **unproven**. See D-015 thro
 - **Adversarial review is FROZEN at six rounds.** Rounds 4-6 each found real defects, and each found
   its worst ones *inside the previous round's fixes* — twice the fix reproduced the defect it was
   fixing. The stopping rule was the problem: "run until a round finds nothing" never fires against a
-  competent reviewer on 7k lines. Everything found so far is fixed. What remains is triaged into
-  `known-issues.md` rather than chased. **Do not open an unbounded round 7.** If a further pass is
-  wanted, bound it: one reviewer, one lens (what a judge sees on 08-24), a severity bar of "changes a
-  published number or breaks on stage", against a pinned SHA.
-- **Open defects, deliberately unfixed, all recorded in `docs/ops/known-issues.md`:** the recall band
-  pins only `extract.py` (a leak planted in `memory.py` moved the headline 8-0-2 → 9-0-1 while the band
-  did not move at all); the artifact-reproducibility test cannot observe the failure it names; the AST
+  competent reviewer on 7k lines. Everything found so far is fixed. What remains is
+  listed below and is deliberately not being chased; writing it up as `docs/ops/known-issues.md` —
+  what is wrong, how it was found, what a fix would cost — is a half-day job nobody has done yet.
+  **Do not open an unbounded round 7.** If a further pass is wanted, bound it: one reviewer, one
+  lens (what a judge sees on 08-24), a severity bar of "changes a published number or breaks on
+  stage", against a pinned SHA.
+- **Open defects, deliberately unfixed and not yet written up:** the recall band pins only
+  `extract.py` (a leak planted in `memory.py` moved the headline 8-0-2 → 9-0-1 while the band did
+  not move at all); the artifact-reproducibility test cannot observe the failure it names; the AST
   provenance guard misses 13 of 15 bypasses; `get_transactions` truncates mid-JSON at a schema-legal
   `max_rows` and the parse failure is swallowed into `{}`; the offline engine's `false_alarm` is
   unreachable; `overdraft_limit` is overstated 27.5% of the time and `savings_balance` is a 90-day
@@ -92,17 +94,13 @@ the answer key the measurement depends on). CFPB has no persistent customer iden
 contacts and no outcome label, so the repeat-contact structure this entry measures cannot come from
 it; that is why the generator stays synthetic.
 
-**3. Write `known-issues.md` and close the review out.** Triage the open list above against one
-question: *would a technical judge's score change if this stayed broken?* Fix only those. Everything
-else is documented with what is wrong, how it was found, and what fixing it would cost. Say plainly
-that six adversarial rounds ran and the defect rate did not fall — that is a finding about the method,
-and a written known-issues list buys more engineering-quality credit than a clean bill of health.
-
 Still open underneath all three: **does never-discard buy anything over a cheap bounded window?**
 `window3-top2` beats the ledger on the pre-registered stratum and ties it on the other. The corpus
 cannot currently pose the question fairly (3.5 conversations per customer; two of four trajectories
-have only 4 authored fragments). Work 1 widens the fragment pools as a side effect — when it does,
-expose `conversations_per_customer` as a CLI flag and re-run at (2,5)/(4,9)/(8,20). If the ledger
+have only 4 authored fragments). **Work 3 is what makes this answerable** — regrounding the lexicon
+widens the fragment pools, so when it runs, expose `conversations_per_customer` as a CLI flag and
+re-run at (2,5)/(4,9)/(8,20). If work 3 does not run, this question stays open and must be stated as
+open on 09-07 rather than answered. If the ledger
 pulls ahead, that is the entry. If not, the honest pitch is the agent with the ledger as its cheapest
 trigger (D-005), and Ravi decides that, not a session.
 

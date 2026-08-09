@@ -184,6 +184,13 @@ the same work, for hours.
 
 **Verify the end state, not the intent.** Count what is there afterwards and print the counts.
 
+**Reordering a list breaks the sentences that point into it.** Two scripted edits reordered
+`state-of-play.md`'s priorities and left a duplicate item 3, a forward reference to a file that did
+not exist, and a sentence saying "work 1 widens the fragment pools" after work 1 had become something
+that touches no fragments. None of it was a mangling — each edit applied exactly as written. Re-read
+the whole section after any renumber, and grep for references to files and to item numbers before
+committing.
+
 **Prefer updating to creating** where deletion needs a permission you do not have. On this project
 neither the token nor the account can delete a Jira issue.
 
