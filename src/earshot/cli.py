@@ -77,7 +77,11 @@ def cmd_run(run: RunConfig) -> int:
 
     print(f"\n{'=' * 78}\nEAR ON EVERY CALL — eval run\n{'=' * 78}")
     print(f"provider={extractor.name}   seed={run.seed}   config={run.hash()}   git={_git_sha()}")
-    print("NOTE: offline provider. These are plumbing-and-memory numbers, not headline accuracy.\n")
+    n_outcomes = sum(1 for c in corpus.customers if c.outcome is not Outcome.NONE)
+    print("NOTE: offline provider. These are plumbing-and-memory numbers, not headline accuracy.")
+    print(f"NOTE: ONE dataset, {n_outcomes} outcome customers. Every recall below is an integer")
+    print(f"      over {n_outcomes}, so arms one or two customers apart are indistinguishable.")
+    print("      Nothing here should be published. Use `earshot sweep` for anything quotable.\n")
 
     print("CORPUS")
     for k, v in diagnostics.items():
@@ -254,19 +258,17 @@ def cmd_demo(run: RunConfig) -> int:
     print("     concave. What moves is the conclusion the evidence supports, and whether the")
     print("     case would collapse without it.)")
 
-    crossed = final.score >= threshold
-    ever_alone = any(s >= stateless_cut for s in stateless_points.values())
-    if crossed and not ever_alone:
-        print("\nThe per-call arm scored every one of these conversations on its own and never")
-        print("crossed its threshold. The ledger did. That is the whole claim, measured rather")
-        print("than asserted.")
-    elif crossed and ever_alone:
-        print("\nHonest note: the per-call arm also crosses on this customer, so this one is not")
-        print("a clean example of the accumulation-only case.")
-    else:
-        print("\nHonest note: the ledger does not cross the review-budget threshold for this")
-        print("customer, so no case would open. Shown because it is the clearest accumulation")
-        print("arc in the corpus, not because it wins.")
+    # No triumphant closing line here. The selection above already filtered to customers where
+    # the per-call arm never fires, so "look, the per-call arm never fired" would be a
+    # tautology dressed as a result -- and both of the old "honest note" branches were
+    # unreachable from this path for the same reason. The population count is the honest
+    # version of the same claim, so it is what closes.
+    total_diffuse = sum(
+        1 for c in corpus.customers if c.stratum is Stratum.DIFFUSE
+    )
+    print(f"\nThis customer was chosen from the {len(accumulation_only)} in this dataset where the")
+    print(f"ledger opens a case and per-call detection never fires -- out of {total_diffuse}")
+    print("thin-evidence customers in total. That ratio is the claim; this is one instance of it.")
 
     if t.outcome is not Outcome.NONE and t.outcome_day is not None:
         opened = final.as_of_day
@@ -461,6 +463,74 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
     return 0
 
 
+def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
+    """Many seeds, paired comparison, and the integers behind every rate.
+
+    This exists because `run` reports one draw. On a single 400-customer corpus there are ~54
+    outcome customers, so every arm's recall is an integer over 54 and the arms sit one or two
+    customers apart -- differences that are pure noise but read as findings. Nothing published
+    should come from `run` alone.
+    """
+    from .sweep import paired_record, sign_test_p, sweep
+
+    seeds = [run.seed + i for i in range(n_seeds)]
+    started = time.time()
+    summaries, by_arm = sweep(run, seeds, budget=INVESTIGATION_BUDGET)
+    elapsed = time.time() - started
+
+    print(f"\n{'=' * 86}\nEAR ON EVERY CALL — multi-seed evaluation\n{'=' * 86}")
+    print(f"{n_seeds} seeds x {run.corpus.n_customers} customers   "
+          f"review budget {INVESTIGATION_BUDGET:.0%}   git={_git_sha()}   ({elapsed:.0f}s)")
+    print(f"seeds: {seeds[0]}..{seeds[-1]}\n")
+
+    print(f"{'arm':<18} {'recall':>8} {'stdev':>7} {'min':>7} {'max':>7} "
+          f"{'hits/outcomes':>16} {'diffuse':>9}")
+    print("-" * 86)
+    for name, s in sorted(summaries.items(), key=lambda kv: -kv[1].pooled_recall):
+        print(f"{name:<18} {s.pooled_recall:>8.3f} {s.stdev:>7.3f} {s.lo:>7.3f} {s.hi:>7.3f} "
+              f"{str(s.total_hits) + '/' + str(s.total_outcomes):>16} {s.mean_diffuse:>9.3f}")
+
+    print("\nPAIRED, seed by seed — win-loss-tie and a two-sided sign test")
+    print("Overall:")
+    names = list(summaries)
+    for a in names:
+        for b in names:
+            if a >= b:
+                continue
+            w, lost, tied = paired_record(by_arm, a, b)
+            p = sign_test_p(w, lost)
+            mark = "  <-- significant" if p < 0.05 else ""
+            print(f"  {a:<18} vs {b:<18} {w}-{lost}-{tied}  p={p:.3f}{mark}")
+
+    print("\nNOTE: 14 pairwise tests with no multiplicity correction. Treat a single p just")
+    print("under 0.05 as a hint, not a result. The diffuse-stratum comparison is the")
+    print("pre-registered headline; everything else is exploratory.")
+
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    out = ARTIFACTS / f"sweep-{n_seeds}x{run.corpus.n_customers}-{run.hash()}.json"
+    out.write_text(
+        json.dumps(
+            {
+                "manifest": {
+                    "seeds": seeds,
+                    "n_customers": run.corpus.n_customers,
+                    "budget": INVESTIGATION_BUDGET,
+                    "config_hash": run.hash(),
+                    "git_sha": _git_sha(),
+                    "elapsed_seconds": round(elapsed, 2),
+                },
+                "arms": {k: asdict(v) for k, v in summaries.items()},
+                "samples": {k: [asdict(s) for s in v] for k, v in by_arm.items()},
+            },
+            indent=2,
+            default=str,
+        ),
+        encoding="utf-8",
+    )
+    print(f"\nresults -> {out}")
+    return 0
+
+
 def main() -> int:
     # Windows pipes stdout as cp1252, so redirecting output to a file crashed on the "Δ" in
     # the ablation table and on the £ and curly quotes in model-authored rationales. Capturing
@@ -470,7 +540,14 @@ def main() -> int:
         sys.stdout.reconfigure(errors="replace")  # type: ignore[union-attr]
 
     parser = argparse.ArgumentParser(prog="earshot", description="Ear on Every Call")
-    parser.add_argument("command", choices=["run", "demo", "investigate"])
+    parser.add_argument("command", choices=["run", "demo", "investigate", "sweep"])
+    parser.add_argument(
+        "--seeds",
+        type=int,
+        default=10,
+        help="sweep only: how many independent datasets to run. Nothing should be published "
+        "from a single seed.",
+    )
     parser.add_argument("--seed", type=int, default=DEFAULT.seed)
     parser.add_argument("--customers", type=int, default=None)
     parser.add_argument(
@@ -495,6 +572,8 @@ def main() -> int:
         return cmd_run(run)
     if args.command == "demo":
         return cmd_demo(run)
+    if args.command == "sweep":
+        return cmd_sweep(run, args.seeds)
     return cmd_investigate(run, args.provider, args.limit)
 
 

@@ -236,13 +236,43 @@ def test_a_repaired_answer_is_accepted_on_the_second_attempt() -> None:
     assert decision.verdict == "genuine"
 
 
-def test_cost_cap_stops_the_loop() -> None:
+def test_cost_cap_is_a_cap_not_a_report() -> None:
+    """A cap that notices the overspend afterwards is not a cap.
+
+    This test previously asserted `trace.cost_usd > 0.25` against a $0.25 cap — it locked in
+    the breach as correct behaviour. The check ran after each call was booked, so a
+    $0.30-per-call model spent $0.30 and then announced "cost_cap". Now the loop refuses a call
+    it already knows it cannot afford.
+    """
     expensive = _tool_reply(cost_usd=0.20, usage=Usage(prompt_tokens=1000, completion_tokens=50))
     decision, trace = investigate(_context(), _Stub("pricey", [expensive]), cost_cap_usd=0.25)
 
     assert trace.stopped_because == "cost_cap"
-    assert trace.cost_usd > 0.25
+    assert trace.cost_usd <= 0.25, f"spent {trace.cost_usd} against a 0.25 cap"
     assert decision.verdict == "insufficient_evidence"
+
+
+def test_a_tool_that_crashes_does_not_take_the_run_down() -> None:
+    """`_run_tool` caught only ToolError/ValidationError, so a plain KeyError inside a tool
+    escaped `investigate()` as a traceback — in front of whoever was watching the demo."""
+    import earshot.agent.investigator as inv
+
+    class Exploding:
+        name = "get_ledger_summary"
+
+        def run(self, ctx, arguments):  # noqa: ANN001, ARG002
+            raise KeyError("internal")
+
+    original = dict(inv.TOOLS_BY_NAME)
+    inv.TOOLS_BY_NAME["get_ledger_summary"] = Exploding()
+    try:
+        payload, detail = inv._run_tool(_context(), "get_ledger_summary", {})
+    finally:
+        inv.TOOLS_BY_NAME.clear()
+        inv.TOOLS_BY_NAME.update(original)
+
+    assert "KeyError" in payload
+    assert "crashed" in detail
 
 
 def test_a_provider_failure_degrades_instead_of_raising() -> None:

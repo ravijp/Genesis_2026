@@ -273,8 +273,21 @@ def investigate(
     decision: InvestigationDecision | None = None
     step = 0
 
+    priciest_call = 0.0
     while step < max_steps:
         step += 1
+
+        # PRE-FLIGHT. Checking spend only after a call is not a cap, it is a report: with a
+        # $0.25 cap and $0.30-per-call model, the old check happily booked $0.30 and then
+        # announced "cost_cap". Refuse a call we already know we cannot afford, using the
+        # priciest call seen so far as the estimate.
+        #
+        # Honest limit: the very first call cannot be estimated, so a cap below the cost of a
+        # single call cannot be enforced. Everything after that is genuinely bounded.
+        if cost_cap_usd is not None and trace.cost_usd + priciest_call > cost_cap_usd:
+            trace.stopped_because = "cost_cap"
+            break
+
         try:
             completion: Completion = provider.complete(messages, specs, model_cfg)
         except ProviderError as exc:
@@ -319,7 +332,11 @@ def investigate(
             )
         )
 
-        if cost_cap_usd is not None and trace.cost_usd > cost_cap_usd:
+        # Track the most expensive call so far so the pre-flight check below can refuse a call
+        # that would breach the cap, rather than noticing afterwards.
+        priciest_call = max(priciest_call, completion.cost_usd)
+
+        if cost_cap_usd is not None and trace.cost_usd >= cost_cap_usd:
             trace.stopped_because = "cost_cap"
             break
 
@@ -380,6 +397,14 @@ def _run_tool(ctx: ToolContext, name: str, arguments: dict[str, Any]) -> tuple[s
             json.dumps({"error": "invalid arguments", "detail": exc.errors(include_url=False)},
                        default=str),
             "invalid arguments",
+        )
+    except Exception as exc:  # noqa: BLE001 - a broken tool must not take the run down
+        # Catching only ToolError/ValidationError meant a plain KeyError inside a tool escaped
+        # `investigate()` as a traceback, in front of whoever was watching -- the same promise
+        # the model-call path already had to have widened.
+        return (
+            json.dumps({"error": f"{type(exc).__name__}: {exc}"}),
+            f"tool crashed: {type(exc).__name__}"[:120],
         )
     payload = json.dumps(result, default=str)
     return payload, f"{len(payload)} chars"

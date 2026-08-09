@@ -21,15 +21,21 @@ Requires [uv](https://docs.astral.sh/uv/) and Python 3.13 (uv installs it for yo
 
 ```bash
 git clone <repo-url> && cd Genesis_2026
-uv sync                                        # installs deps + the `ear` package
-uv run pytest                                  # the whole suite
-uv run earshot run --customers 400                 # full eval: five arms, per-stratum, ablations
-uv run earshot demo --customers 200                # the accumulation moment, narrated
-uv run earshot investigate --customers 200 --limit 3   # the agent working three cases
+uv sync                                                 # installs deps + the `earshot` package
+uv run pytest                                           # the whole suite
+uv run earshot sweep --seeds 10 --customers 1500        # the numbers below (~30s)
+uv run earshot demo --customers 400                     # the accumulation moment, narrated
+uv run earshot investigate --customers 200 --limit 3    # the agent working three cases
+uv run earshot run --customers 400                      # one dataset, for debugging only
 ```
 
-**Every command above runs with no API keys and no network.** The offline provider is a first-class
-implementation, not a stub. To use real models instead, see [Model access](#model-access).
+**Every command above runs with no API keys and no network.** The offline provider is rule-based and
+deliberately weaker than a model; its miss rate is measured and published. To use real models instead,
+see [Model access](#model-access).
+
+> `sweep` is the command that produces anything quotable. `run` executes a **single** dataset, where
+> every recall is an integer over ~50 outcome customers and arms one or two customers apart look
+> different but are not. It prints that warning itself.
 
 ---
 
@@ -52,7 +58,7 @@ Full picture, with diagrams: **[docs/architecture/architecture.md](docs/architec
 ## The honest state of the numbers
 
 The harness was built to *test* the claim, not illustrate it. Figures below are from **10 seeds ×
-1,500 customers — 1,651 outcome customers in total** — with every arm paired seed by seed and compared
+1,500 customers — 1,945 outcome customers in total** — with every arm paired seed by seed and compared
 with a two-sided sign test.
 
 Recall at a **10% review budget**, since a review team's capacity is the real constraint:
@@ -71,8 +77,10 @@ What survives a paired test:
   thin, nothing alarming in any single conversation — the full ledger scores **0.174 against 0.126**
   for scoring-and-forgetting, winning **8 seeds of 10 with 2 ties and zero losses** (`p=0.008`). This
   is the entry's central claim and it holds.
-- **Overall, no arm is distinguishable from any other** (all pairings `p≥0.29`). Memory does not beat
-  per-call detection across the whole portfolio, and does not lose to it either.
+- **Overall, memory neither beats nor loses to per-call detection.** Every pairing involving the full
+  ledger is non-significant (`p≥0.29`). One unrelated pairing does reach `p=0.039` (hybrid vs
+  dumb-ledger) — with 14 pairwise tests and no multiplicity correction, that is a hint, not a result,
+  and we are not going to report it as one.
 - **Our scoring machinery still earns nothing.** Full ledger vs a dumb unweighted count on diffuse
   arcs: **3–4–3, `p=1.000`**. Decay, corroboration, cross-channel weighting and escalation are
   decoration until shown otherwise — a plain count of retained signals does the same work.
@@ -86,8 +94,9 @@ What survives a paired test:
 > are fixed; the numbers above are post-fix, and the earlier claim that "memory loses overall" and that
 > "long-context beats us" did not survive either correction.
 
-Supporting figures: the offline extractor's measured recall is **0.632** — it misses 37% of planted
-signals and is deliberately the weaker arm; it fires on 20% of decoys. Portfolio outcome rate 9.75%.
+Supporting figures, all from the same sweep: the offline extractor's measured recall is **0.681** —
+it misses 32% of planted signals and is deliberately the weaker arm; it fires on 22% of the lookalikes
+that were planted to fool it. Portfolio outcome rate 13.5%.
 Throughput ~1,770 conversations/sec. A live investigation on Claude Sonnet 4.5 costs **$0.078** and
 takes 33s.
 
@@ -111,11 +120,13 @@ Keys are never committed and never logged. See `.env.example`.
 
 | Path | What |
 |---|---|
-| `src/earshot/core/` | Deterministic core — corpus, ledger, re-score math. No LLM import allowed |
+| `src/earshot/corpus.py`, `memory.py` | The deterministic core: dataset generation, the signal ledger, the re-scoring maths |
+| `src/earshot/arms.py`, `evals.py`, `sweep.py` | The five comparison arms, the metrics, and the multi-seed harness |
+| `src/earshot/core/` | Synthetic account and transaction state behind the agent's tools |
 | `src/earshot/agent/` | The investigator: loop, tools, decision schemas, prompts |
 | `src/earshot/llm/` | Provider abstraction, response cache, cost + latency capture |
 | `prompts/` | Prompts as versioned files, so a prompt change is a reviewable diff |
-| `tests/` | Including `test_separation.py` — proves the extractor cannot see the answer key |
+| `tests/` | Including `test_separation.py` (no module on the decision path can *import* the answer key) and `test_no_answer_key_leak.py` (nor recover it statistically from what the tools return) |
 | `docs/architecture/` | [architecture.md](docs/architecture/architecture.md) · [build-plan.md](docs/architecture/build-plan.md) |
 | `docs/gates/` | Sprint gate briefs for the Genesis Committee |
 | `sources/` | The submitted brief and committee correspondence — `[source]`, do not edit |
