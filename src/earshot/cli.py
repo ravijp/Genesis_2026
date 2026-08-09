@@ -25,7 +25,7 @@ from .agent import InvestigationDecision, InvestigationTrace, ToolContext, inves
 from .agent.prompts import investigator_prompts
 from .arms import demo_ledger, mechanism_ablations, run_all_arms
 from .config import DEFAULT, RunConfig
-from .corpus import generate
+from .corpus import generate, smallest_fragment_pool
 from .evals import corpus_diagnostics, evaluate_all, evaluate_arm, extraction_fidelity
 from .extract import OfflineLexiconExtractor, extract_all
 from .llm import CachingProvider, OfflineProvider, ProviderError, cache_mode
@@ -706,6 +706,17 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=DEFAULT.seed)
     parser.add_argument("--customers", type=int, default=None)
     parser.add_argument(
+        "--conversations-per-customer",
+        type=str,
+        default=None,
+        metavar="MIN,MAX",
+        help="inclusive range of conversations each customer has, e.g. '8,20'. Exists so the "
+        "history-length question can be asked: whether never-discard pulls ahead of a bounded "
+        "window as arcs lengthen. Fragments are planted WITHOUT replacement, so a range whose "
+        "MAX exceeds the smallest fragment pool leaves later conversations empty and the "
+        "comparison stops being fair -- the command refuses rather than quietly doing that.",
+    )
+    parser.add_argument(
         "--provider",
         choices=["offline", "openrouter"],
         default="offline",
@@ -717,10 +728,31 @@ def main() -> int:
     args = parser.parse_args()
 
     run = DEFAULT
-    if args.seed != DEFAULT.seed or args.customers:
+    conv_range: tuple[int, int] | None = None
+    if args.conversations_per_customer:
+        try:
+            lo, hi = (int(x) for x in args.conversations_per_customer.split(","))
+        except ValueError:
+            parser.error("--conversations-per-customer takes MIN,MAX, e.g. '8,20'")
+        if lo < 1 or hi < lo:
+            parser.error(f"--conversations-per-customer needs 1 <= MIN <= MAX, got {lo},{hi}")
+        scarcest_type, pool_size = smallest_fragment_pool()
+        if hi > pool_size:
+            parser.error(
+                f"--conversations-per-customer MAX={hi} exceeds the smallest fragment pool "
+                f"({scarcest_type.value}, {pool_size} fragments). Fragments are planted without "
+                f"replacement, so arcs longer than the pool are padded with empty conversations "
+                f"and a longer-history comparison would measure the padding. Widen the pools in "
+                f"corpus_lexicon.py first."
+            )
+        conv_range = (lo, hi)
+
+    if args.seed != DEFAULT.seed or args.customers or conv_range:
         corpus_cfg = run.corpus
         if args.customers:
             corpus_cfg = replace(corpus_cfg, n_customers=args.customers)
+        if conv_range:
+            corpus_cfg = replace(corpus_cfg, conversations_per_customer=conv_range)
         run = replace(run, seed=args.seed, corpus=corpus_cfg)
 
     if args.command == "run":

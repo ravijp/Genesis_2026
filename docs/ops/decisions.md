@@ -11,20 +11,40 @@ for something listed under "rejected", read the reason first.
 
 ---
 
-### D-019 · 2026-08-09 · The extractor is regrounded in real phrasing, and a pre-registered threshold decided it `ACCEPTED`
-AT-43 measured the existing extractor on 150 hand-marked real CFPB narratives: **0.0357 strict recall
-(4 / 112)** against **0.681 (496 / 728)** on our own prose, with `financial_distress`,
-`complaint_escalation` and `life_event` at exactly zero and 24 of 26 cues never firing. The protocol
-(`benchmarks/cfpb/PROTOCOL.md` §6) fixed the consequences in advance — below 0.30 sends the corpus/cue
-regrounding ahead of the reviewer queue — so the ordering was decided before the number existed and is
-not a post-hoc preference. The cheap experiment did its job: it gated the expensive one, and it
-answered the objection it was built for by conceding it.
-**Rejected:** treating the result as genre mismatch and moving on. That was pre-registered as a live
-alternative explanation, and the per-cue table refutes it — a reader that finds none of 67 escalations
-written as *"the ninth time I have been told the same thing"* is not failing because the channel is
-written rather than spoken. **Also rejected:** patching the specific cues that missed these 150
-documents, which would tune the reader to the test set and reproduce, one level up, the exact
-objection AT-43 exists to close.
+### D-020 · 2026-08-10 · The history-length experiment goes first, overriding AT-43's pre-registered consequence `ACCEPTED`
+**This overrides a pre-registration, so it is written down as an override rather than absorbed.**
+`benchmarks/cfpb/PROTOCOL.md` §6 said a score below 0.30 sends *"work 3 (regrounding the corpus
+lexicon in CFPB phrasing)"* ahead of the reviewer queue. It scored 0.0357. We are not doing that next.
+
+Two things came out after the number that the pre-registration could not have known:
+
+1. **It named the wrong file.** §6 assumed the only fix for "the reader fails on real language" was to
+   make the *corpus* more real. AT-43's own per-cue table says otherwise: 24 of 26 cues in
+   `extract_lexicon.py` never fired, so the defect is in the **reader's cue coverage**, not in the
+   realism of the planted prose. D-019 quietly retargeted the work to the extractor without flagging
+   the substitution; that substitution is correct on the evidence but it was a judgement call, and
+   calling it "the pre-registered consequence" in a commit message was wrong.
+2. **The blocking experiment does not need real language at all, only more of it.** Fragments are
+   planted *without replacement* (`corpus.py`, `used` set), so the scarcest pool — 4 fragments — caps
+   how many signals any arc can carry. That, not realism, is why the corpus cannot pose the question
+   `window3-top2` raises. Widening pools with newly authored fragments unblocks it; regrounding them
+   in CFPB phrasing is a separate and much more expensive project, and working-agreements §9 says
+   corpus realism scores close to nothing.
+
+So the order is: **history-length experiment → reviewer queue → cost/latency**, with cue regrounding
+bounded and deferred. The justification is that `stateless-top2` and `window3-top2` beating the ledger
+on its own pre-registered stratum is a larger threat to the entry than the reader's vocabulary, it
+carries depth (25) and originality (15), and the result publishes either way.
+**Rejected:** following §6 literally. A pre-registration binds you against choosing a *result* after
+seeing the data; it does not oblige you to do work its own evidence has since shown to be aimed at the
+wrong file. **Also rejected:** doing this silently — the override is the kind of thing that looks like
+integrity drift later, so it is dated, reasoned and attributable here.
+
+### D-019 · 2026-08-09 · The extractor is regrounded in real phrasing `SUPERSEDED BY D-020`
+The measurement stands and is the reason any of this is known — 0.0357 strict recall (4 / 112) on real
+CFPB narratives against 0.681 (496 / 728) on ours, written up in `benchmarks/cfpb/`. What D-020 overturns
+is only its scheduling conclusion, and its claim that the ordering followed automatically from the
+pre-registration.
 
 ### D-018 · 2026-08-09 · A static guard is the first net; the behavioural band is a partial backstop `ACCEPTED`
 **Amended after round 6, which showed the original wording overclaimed.** The band pins the

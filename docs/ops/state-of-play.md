@@ -65,37 +65,44 @@ never-discard adds over a cheap window is currently **unproven**. See D-015 thro
 - **AWS CodeCommit** — a named required deliverable, no repo provisioned. Requesting after the 08-10 call.
 - **Zenon model keys** — running on a personal OpenRouter account; rules say Zenon supplies them.
 
-## Next three things — in this order, reset 2026-08-09 after AT-43 landed
+## Next three things — in this order, set 2026-08-10 by D-020
 
-**AT-43 chose this order, not a preference.** `benchmarks/cfpb/PROTOCOL.md` §6 pre-registered that a
-score below 0.30 sends the regrounding ahead of the queue UI. It scored 0.0357.
+**D-020 overrides AT-43's pre-registered consequence, deliberately and in writing.** §6 of the
+protocol promoted the corpus regrounding; the evidence turned out to implicate the *extractor's* cues
+instead, and the experiment that is actually blocking the entry needs only *more* fragments, not
+*real* ones. Read D-020 before re-arguing this.
 
-**1. Reground the extractor's cue vocabulary in real phrasing.** The failure is specific and therefore
-fixable: 26 literal regexes do not generalise off the prose they were written against.
-`benchmarks/cfpb/out/results.json` names the 24 cues that never fired and `out/gold.jsonl` is a
-ready-made development set with a verbatim span behind every positive. **Re-run AT-43 after; it is now
-a regression test with a number.** Cautions: the two lexicons stay mechanically separated or the
-honesty claim dies with them; every published figure moves, so this needs a full re-run plus both
-answer-key guards re-validated, and must not be in flight when a gate lands; and `RECALL_BAND` in
-`tests/test_separation.py` will trip by design — move it deliberately, never widen it to pass.
+**1. Does never-discard buy anything over a cheap bounded window? (~2 days.)** The entry's central
+claim is currently *beaten* by two cheaper arms on its own pre-registered stratum (`stateless-top2`
+and `window3-top2`, both `7-21-2`, `p=0.013`). The corpus cannot pose the question because fragments
+are planted **without replacement** and the scarcest pool holds 4, so an arc can never carry more than
+4 signals however long it gets. Done: `--conversations-per-customer MIN,MAX` is exposed on every
+command and *refuses* a range whose MAX exceeds the smallest pool rather than quietly padding arcs
+with empty conversations. Left: widen all four pools to 20 (authored blind, see below), then sweep 30
+seeds at (2,5) / (4,9) / (8,20) and publish the curve. **It publishes either way** — if the ledger
+pulls ahead as arcs lengthen that is the entry; if it does not, the honest pitch is the agent with the
+ledger as its cheapest trigger (D-005), and that is Ravi's call, not a session's.
 
-**2. The reviewer queue UI.** `AT-61/62/64`. Still never started, still the whole presentation axis of
-a Track A *client-facing* entry, still needed for 2026-08-24. Recon found it is blocked on one line
-rather than on design: `cli.py:494` builds each case record and discards `ctx.score`, `ctx.signal_type`
-and the conversations, and the retro re-score fields (`score_at_write` / `score_now` / `retro_delta`,
-`memory.py:161-173`) are computed and printed by `cmd_demo` but never written to any artifact. So none
-of the three demo beats — ranked list, evidence chain, retro re-score — can be rendered from disk
-today. Persist those fields first, then build. **The dangerous shortcut is regenerating the corpus from
-`manifest.seed` to recover transcripts**, because that hands a client-facing screen an object where the
-evidence chain and `stratum` / `outcome` / `latent_risk` sit on the same dataclass.
+*Authoring constraint, load-bearing:* new corpus fragments must be written by someone who has **not**
+seen `extract_lexicon.py`, or the overlap between the two lexicons stops being accidental and every
+published extraction number becomes meaningless (working-agreements §2). Widening the pools moves
+every published number, so this needs a full re-run, both answer-key guards re-validated, and the
+`RECALL_BAND` in `tests/test_separation.py` moved **deliberately after re-measuring** — never widened
+to pass.
 
-**3. Write `known-issues.md` and close the review out.** Triage the eight open defects against one
-question: *would a technical judge's score change if this stayed broken?* Fix only those; document the
-rest with what is wrong, how it was found, and what a fix would cost. Say plainly that six adversarial
-rounds ran and the defect rate did not fall. One item needs resolving first: **"the AST provenance
-guard misses 13 of 15 bypasses" has no command behind it** — nothing in the repo enumerates 15
-candidates (there are 9 pinned bypass forms, all caught, plus 4 named unclosable techniques). Verify
-or retract it before it is published; D-017 exists for exactly this.
+**2. The reviewer queue UI.** `AT-61/62/64`. Never started, and the whole client-facing axis of a
+Track A entry — needed for 2026-08-24. It is blocked on persistence, not design: `cli.py:494` builds
+each case record and discards `ctx.score` and `ctx.signal_type`, and the retro re-score fields
+(`memory.py:161-173`) are computed and printed by `cmd_demo` but written to no artifact. So none of the
+three beats — ranked list, evidence chain, retro re-score — can be rendered from disk today. Persist
+those fields first, then build it *functional* and stop (§9: polish scores nothing). **The dangerous
+shortcut is regenerating the corpus from `manifest.seed` to recover transcripts** — that puts the
+evidence chain and `stratum`/`outcome`/`latent_risk` on one object behind a client-facing screen.
+
+**3. Cost per 1,000 conversations and p50/p95 latency.** A *named* required deliverable still marked
+"not measured", and the answer to the feasibility question a judge is most likely to ask. Note an
+unpriced risk surfaced 2026-08-10: if a bank does not already transcribe, **ASR dominates our cost
+story**, and our cost narrative currently ignores it entirely.
 
 **Still off the table before 09-07**, settled: fitting the generative distribution to CFPB
 (working-agreements §9), and stitching real complaints into invented histories (D-010). AT-43 added a
@@ -103,13 +110,9 @@ third reason — uniformly drawn CFPB narratives carry escalation in **50 of 100
 who complain to a regulator have usually complained to the firm first. That is the complaint channel,
 not bank conversations.
 
-Still open underneath all three: **does never-discard buy anything over a cheap bounded window?**
-`window3-top2` beats the ledger on the pre-registered stratum and ties it on the other. The corpus
-cannot currently pose the question fairly (3.5 conversations per customer; two of four trajectories
-have only 4 authored fragments). **Work 1 is what makes this answerable** — regrounding widens the
-fragment pools, so when it runs, expose `conversations_per_customer` as a CLI flag and re-run at
-(2,5)/(4,9)/(8,20). If the ledger pulls ahead, that is the entry. If not, the honest pitch is the agent
-with the ledger as its cheapest trigger (D-005), and Ravi decides that, not a session.
+**Unverified and worth checking before 09-07:** a claim that NICE ships an *Enlighten AI for
+Vulnerable Customers* product. If true it is a second novelty collision of the D-006 kind and the
+wedge needs narrowing again in the same honest way. Nobody has confirmed it.
 
 ## Known-weak, stated rather than hidden
 

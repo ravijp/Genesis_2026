@@ -276,3 +276,16 @@ def generate(run: RunConfig | None = None) -> Corpus:
         seed=run.seed,
         config_hash=run.hash(),
     )
+
+
+def smallest_fragment_pool() -> tuple[SignalType, int]:
+    """The scarcest trajectory pool, and its size.
+
+    Fragments are planted WITHOUT replacement within a customer's arc, so this number is the
+    hard ceiling on how many signals any single arc can carry. A conversations-per-customer
+    range whose maximum exceeds it produces arcs padded with empty conversations, which makes
+    a longer-history comparison measure padding rather than accumulation. `cli.py` refuses such
+    a range rather than running it, because the failure is invisible in the output.
+    """
+    signal_type, pool = min(BY_TYPE.items(), key=lambda kv: len(kv[1]))
+    return signal_type, len(pool)
