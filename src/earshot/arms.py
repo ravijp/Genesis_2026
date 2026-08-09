@@ -33,7 +33,11 @@ from .config import ScoringConfig
 from .memory import SignalLedger
 from .schema import ExtractedSignal, SignalType
 
-LONG_CONTEXT_WINDOW = 10
+# Must be smaller than a typical customer's conversation count or this arm is a no-op. At 10
+# against `conversations_per_customer = (2, 5)` the window never bound, so "long-context"
+# silently collapsed into the confidence-weighted dumb ledger and scored identically to it at
+# every budget — while the build plan called it "the arm a judge will actually ask about".
+LONG_CONTEXT_WINDOW = 3
 
 
 @dataclass

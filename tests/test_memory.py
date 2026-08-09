@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from ear.config import ScoringConfig
-from ear.memory import SignalLedger
-from ear.schema import Channel, ExtractedSignal, SignalType
+from earshot.config import ScoringConfig
+from earshot.memory import SignalLedger
+from earshot.schema import Channel, ExtractedSignal, SignalType
 
 
 def sig(

@@ -1,40 +1,106 @@
-# Genesis 2026 — Track A: Client-Facing Agentic AI
+# Ear on Every Call
 
-**Mission:** win Zenon's Genesis 2026 GenAI competition with a client-facing agentic AI system that is real enough to walk into a named client as a POC the week after finals.
+**A conversation signal layer that remembers every customer, across every conversation.**
 
-## The competition (from the official kickoff deck — details in [00_sources/kickoff-notes.md](00_sources/kickoff-notes.md))
+Zenon Genesis 2026 · Track A (client-facing agentic AI) · Team **Agentic Trio** · synthetic data only
 
-- **Track A "Client Facing Solutions"** — agentic AI workflows that solve real client problems, shipped client-ready
-- 12-week program: June 17 → **Sept 7, 2026 finals** (New Delhi); teams of 2–3
-- **Judging:** Zenon impact 25% · technical depth & innovation 25% · feasibility & production readiness 25% · originality 15% · presentation + social 10% — 3 human judges + an **AI judge scoring engineering quality**
-- Rules: synthetic/anonymized data only, Anthropic/OpenAI APIs allowed (Zenon keys), AWS CodeCommit + JIRA discipline, reproducible setup required
+Banks run millions of customer conversations a year, and a customer tells you something is wrong long
+before they leave. Today that signal is scored inside one call and archived. A customer can show
+frustration in a chat in March, raise a complaint in May, and call to threaten leaving in July, and the
+bank treats all three as separate events.
 
-## Repo map
+This system keeps a **standing per-customer signal ledger** that never discards a weak signal and
+re-scores it as new conversations arrive — and when it crosses a threshold, an **agent investigates**
+and hands a decision-ready case to a human. It never contacts a customer.
 
-| Path | What lives here |
+---
+
+## Quick start — fresh machine
+
+Requires [uv](https://docs.astral.sh/uv/) and Python 3.13 (uv installs it for you).
+
+```bash
+git clone <repo-url> && cd Genesis_2026
+uv sync                                        # installs deps + the `ear` package
+uv run pytest                                  # the whole suite
+uv run earshot run --customers 400                 # full eval: five arms, per-stratum, ablations
+uv run earshot demo --customers 200                # the accumulation moment, narrated
+uv run earshot investigate --customers 200 --limit 3   # the agent working three cases
+```
+
+**Every command above runs with no API keys and no network.** The offline provider is a first-class
+implementation, not a stub. To use real models instead, see [Model access](#model-access).
+
+---
+
+## What it does
+
+```
+conversations ──▶ extract signals ──▶ per-customer ledger ──▶ threshold? ──▶ agent investigates ──▶ human decides
+   (call/chat/     (with evidence      (append-only,             (re-scored     (tools: transactions,   (approve /
+    complaint)      spans)              never discards)           each batch)    accounts, cases)        dismiss / route)
+```
+
+One design rule runs through all of it: **code counts and remembers, the model reads and judges.**
+Accumulation, decay and thresholds are plain deterministic Python, unit-tested and reproducible
+bit-for-bit. Weighing ambiguous evidence is the model's job. A test enforces the boundary.
+
+Full picture, with diagrams: **[docs/architecture/architecture.md](docs/architecture/architecture.md)**
+
+---
+
+## The honest state of the numbers
+
+We built the eval harness to *test* our claim rather than illustrate it, and as of 2026-08-09 it does
+not fully hold:
+
+| Question | Answer today |
 |---|---|
-| `INDEX.md` | Machine-readable file map — the first thing an LLM session should read |
-| `PLAN.md` | Master plan: phases, gates, operating model, decision log, risks |
-| `CLAUDE.md` | Session instructions: uv env, conventions, bias-containment rules |
-| `00_sources/` | Primary inputs: kickoff deck + notes, LinkedIn corpus, client context |
-| `01_research/` | July-2026 research briefs: agentic AI landscape, finance, pharma, media, retail, startups, lessons from prior attempt |
-| `02_ideas/` | Ideation machinery: METHOD (how we get to 50+ non-slop ideas), RUBRIC (how we judge), backlog |
-| `03_selection/` | Scoring runs, top-10 diligence, top-3 decision memo *(created when phase opens)* |
-| `04_architecture/` | Competition build design *(created when phase opens)* |
-| `05_build/` | MVP source *(created when phase opens)* |
+| Does memory beat per-call detection on the arcs it exists for? | **Yes** — 0.191 vs 0.143 recall on diffuse arcs, at equal alert budget |
+| Does it beat per-call detection overall? | **No** — 0.128 vs 0.154. Accumulation dilutes a single decisive conversation |
+| Do the scoring mechanisms earn their place? | **Not yet** — a dumb unweighted sum currently matches the full ledger exactly |
+| How good is the offline extractor? | Measured recall **0.63** — published, not hidden. It is deliberately the *weaker* arm |
 
-## How we work
+Numbers are regenerated by one command into `artifacts/runs/` with a manifest (seed, git SHA, config
+hash). Nothing here is typed by hand.
 
-- **Trunk-based:** `main` is the single source of truth; every working session commits progress here
-- **INDEX.md discipline:** any commit that adds/moves/removes files updates INDEX.md in the same commit
-- **Evidence or it didn't happen:** every research claim carries a dated source; every idea traces back to evidence
-- **Anti-slop:** ideas must pass the gate in [02_ideas/METHOD.md](02_ideas/METHOD.md) before they earn a rubric score
-- **Bias containment:** the prior attempt (igupta branch) enters this workspace only through the scrutinizer's lessons file; its idea list is consulted only *after* our own divergent round locks
+---
 
-## Python
+## Model access
 
-Managed with uv: `uv sync`, then `uv run python <script>`. Conventions in [CLAUDE.md](CLAUDE.md).
+Runs three ways:
 
-## Status (2026-07-14)
+| Provider | How | Use |
+|---|---|---|
+| `offline` (default) | nothing needed | CI, tests, and a demo in a room with no wifi |
+| `openrouter` | `EARSHOT_OPENROUTER_API_KEY`, or `EARSHOT_OPENROUTER_API_KEY_FILE=<path>` | Real models. Default `anthropic/claude-sonnet-4.5` |
+| replay | `EARSHOT_CACHE_MODE=replay` | Replays committed responses from `artifacts/cache/` — real model output, zero network |
 
-**Status (2026-07-15):** Phase 2 (Ideation) in flight — research briefs landed in `01_research/`; Round-1 clusters + north-star tier gated in `02_ideas/` (finance-first scope), lock pending. Next: north-star v2 + T6 scoring round.
+Keys are never committed and never logged. See `.env.example`.
+
+---
+
+## Repository
+
+| Path | What |
+|---|---|
+| `src/earshot/core/` | Deterministic core — corpus, ledger, re-score math. No LLM import allowed |
+| `src/earshot/agent/` | The investigator: loop, tools, decision schemas, prompts |
+| `src/earshot/llm/` | Provider abstraction, response cache, cost + latency capture |
+| `prompts/` | Prompts as versioned files, so a prompt change is a reviewable diff |
+| `tests/` | Including `test_separation.py` — proves the extractor cannot see the answer key |
+| `docs/architecture/` | [architecture.md](docs/architecture/architecture.md) · [build-plan.md](docs/architecture/build-plan.md) |
+| `docs/gates/` | Sprint gate briefs for the Genesis Committee |
+| `sources/` | The submitted brief and committee correspondence — `[source]`, do not edit |
+| `artifacts/` | Run manifests and the committed response cache |
+
+---
+
+## Competition context
+
+Judging: Zenon impact 25 · technical depth 25 · feasibility & production readiness 25 · originality 15 ·
+presentation 10, plus an AI judge scoring engineering quality. Gates: **2026-08-10** check-in ·
+**2026-08-24** combined Sprint 1+2 demo · **2026-09-07** Sprint 3.
+
+All data is synthetic, generated with ground truth authored *before* the text, per competition rules.
+No client data of any kind is used anywhere in this repository.

@@ -10,23 +10,35 @@ Call** — a conversation signal layer that reads 100% of a bank's customer conv
 them into a standing per-customer ledger that re-scores as new conversations arrive.
 
 The finalized idea was submitted to the Genesis Committee on 2026-07-24 and is the contract:
-`00_sources/submission-ear-on-every-call.md`. **The plan of record is
-`04_architecture/BUILD-PLAN.md`** — read it before proposing any design change, and log any divergence
-from the submission in its §10.
+`sources/submission-ear-on-every-call.md`. Start with `docs/architecture/architecture.md` for the shape
+of the system; `docs/architecture/build-plan.md` is the plan of record — log any divergence from the
+submission in its §10.
+
+Sprint backlog: JIRA project **AT (Agentic Trio)** at `https://zenonai.atlassian.net`.
 
 Official judging: Zenon impact 25 / technical depth 25 / feasibility & production readiness 25 /
 originality 15 / presentation 10, plus an AI judge scoring engineering quality (evals, reproducibility,
 accuracy/cost/latency evidence).
 
 Frozen gates: **2026-08-10** 15-min check-in · **2026-08-24** combined Sprint 1+2 demo ·
-**2026-09-07** Sprint 3 demo. Details in `00_sources/genesis-committee-comms.md`.
+**2026-09-07** Sprint 3 demo. Details in `sources/genesis-committee-comms.md`.
 
 ## Python environment (uv)
 
 - Managed by **uv** (Python 3.13, pinned in `.python-version`). First-time setup: `uv sync`
-- Run anything: `uv run python <script>` · `uv run pytest` · `uv run ruff check .`
+- The package lives at `src/earshot/` and is installed **editable**, so there is no `PYTHONPATH` hack and
+  tests import the installed package. That is what makes the fresh-machine claim true rather than
+  asserted — do not reintroduce path manipulation.
+- Commands: `uv run pytest` · `uv run ruff check src tests` · `uv run earshot run` · `uv run earshot demo` ·
+  `uv run earshot investigate`
 - Add dependencies: `uv add <pkg>` (runtime) · `uv add --group dev <pkg>` (dev-only)
 - Never `pip install` into the venv directly. Always commit `pyproject.toml` + `uv.lock` together.
+
+## Architecture in one line
+
+**Code counts and remembers. The model reads and judges.** Accumulation, decay and thresholds are
+deterministic Python in `src/earshot/core/` and `memory.py`; weighing ambiguous evidence is the agent's job
+in `src/earshot/agent/`. See `docs/architecture/architecture.md`.
 
 ## Build rules (from BUILD-PLAN §4 — these are load-bearing, not style preferences)
 

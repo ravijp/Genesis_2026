@@ -5,12 +5,12 @@ reviews (eval integrity · originality collision · build feasibility) — all t
 document is the repair.
 
 **Anchored to:** the finalized Track A submission sent to the Genesis Committee 2026-07-24
-([`00_sources/submission-ear-on-every-call.md`](../00_sources/submission-ear-on-every-call.md)). That
+([`sources/submission-ear-on-every-call.md`](../../sources/submission-ear-on-every-call.md)). That
 document is the contract; the covering email reserved room for refinement. Deltas are logged in §10.
 
 **Scope of this pass:** *what* gets built and in *what order*. Task-level dates are absent by design;
 gate shape is present because the demo dates are frozen
-([`00_sources/genesis-committee-comms.md`](../00_sources/genesis-committee-comms.md)).
+([`sources/genesis-committee-comms.md`](../../sources/genesis-committee-comms.md)).
 
 ---
 
@@ -346,8 +346,8 @@ for a 25%-weighted axis scored on *Zenon's* business. The first-dollar path is t
 collections engagement — measured on roll-rate, revenue-share model, and the buyer-lens judging in the
 ideation phase scored this idea highest there. Western Alliance and the HOA bank-side surface are the
 named transfers; grounding evidence is retained in
-[`01_research/finance.md`](../01_research/finance.md) and
-[`01_research/client-ai-state-map.md`](../01_research/client-ai-state-map.md).
+[`docs/impact/finance-brief.md`](../../docs/impact/finance-brief.md) and
+[`01_research/client-ai-state-map.md`](../../01_research/client-ai-state-map.md).
 
 **Task (S7):** name the first engagement and the specific number it moves, without narrowing the
 capability claim to one client.

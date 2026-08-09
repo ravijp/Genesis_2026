@@ -64,18 +64,24 @@ no one ships is a ledger that **never discards a sub-threshold signal** and **re
 conversations in light of later ones**. That retro re-score is now on screen in the demo rather than
 asserted in prose.
 
-## 4. Roadblock — the one thing we need from the committee
+## 4. Access — our miss, now unblocked, with three things still open
 
-**Model API access has not been provisioned.** Requirements were requested by 2026-07-24 and chased on
-2026-07-29; as of 2026-08-09 there are no keys — 16 days elapsed, no ETA.
+**Owning it first:** the committee asked for tooling requirements by 2026-07-24 and chased on
+2026-07-29. We never replied. That is on us, not on the committee, and it is why we spent two weeks
+without model access. The requirements list goes over immediately after this call.
 
-We de-risked it: the entire pipeline, evals and demo run with **zero API keys** on a deterministic
-offline extractor, so nothing is blocked today. But the overview promises Claude doing the reading with
-a comparison model through the same harness, and that cannot be delivered without access.
+**We unblocked ourselves rather than wait.** The pipeline runs end to end with **zero API keys** on a
+deterministic offline provider, and model access has been bridged on a personal OpenRouter account so
+the agent layer could be built. So there is no blocked work to report — but three things are still open:
 
-**The ask:** a date-certain. **Keys by 2026-08-17**, or the 2026-08-24 demo ships offline-only and real
-models move to Sprint 3. Also please confirm whether access is direct Anthropic/OpenAI API or via AWS
-Bedrock, since the rest of the stack is AWS.
+| # | Open item | Why it matters |
+|---|---|---|
+| 1 | **Zenon-provided model keys** (Claude + a comparison model, with the budget limit) | Rule 2 says Zenon provides keys with budget limits and rule 1 says the IP is Zenon's. The final submission should not be running on a team member's personal account. Also please confirm direct API vs AWS Bedrock |
+| 2 | **AWS CodeCommit repository URL + credentials** | *"Functional prototype: code in AWS CodeCommit"* is a named required deliverable, and commits/PRs are scored in the operating model. We have no repo URL, so we cannot comply even in principle. Our full commit history is intact and will be pushed as history, not squashed |
+| 3 | **JIRA project key / board confirmation for Agentic Trio** | The backlog and sprint tracking are scored. We have board access; we want to confirm we are filing under the right project before we load it |
+
+None of these blocks this week's build. Items 2 and 3 do block the *evidence* the rubric asks for, so
+we would rather resolve them now than in September.
 
 ## 5. Next, to the combined Sprint 1+2 demo on 2026-08-24
 

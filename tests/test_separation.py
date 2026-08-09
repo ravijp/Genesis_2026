@@ -19,10 +19,42 @@ from pathlib import Path
 
 import pytest
 
-EAR = Path(__file__).resolve().parent.parent / "ear"
+import earshot
 
-# Modules that make up the extraction path. None of them may see the corpus side.
-EXTRACTOR_MODULES = ("extract.py", "extract_lexicon.py")
+# Resolved from the INSTALLED package, not from a path walk — survives any repo layout change.
+EAR = Path(earshot.__file__).resolve().parent
+
+# Every module on the path from raw conversation to a decision. None of them may see the
+# corpus side.
+#
+# The agent's tools are the dangerous new members of this list. A tool that derives a
+# customer's transactions or account state from `CustomerTruth.outcome` would be handing the
+# agent the answer key through the back door, and the whole experiment dies with it. Tools
+# must derive from `latent_risk` and the seed only. Add every new tool module here.
+# DISCOVERED, not listed. A hand-maintained list is one forgotten line away from a hole, and
+# the hole is invisible until a judge finds it. Anything matching these globs is covered the
+# moment it exists.
+_DANGER_GLOBS = ("extract*.py", "agent/*.py", "core/*.py", "llm/*.py")
+
+
+def _danger_surface() -> list[str]:
+    found: set[str] = set()
+    for glob in _DANGER_GLOBS:
+        for path in EAR.glob(glob):
+            if path.name != "__init__.py":
+                found.add(path.relative_to(EAR).as_posix())
+    return sorted(found)
+
+
+EXTRACTOR_MODULES = _danger_surface()
+
+
+def test_danger_surface_is_not_empty() -> None:
+    """If the globs stop matching, every test below passes vacuously and the guard is gone."""
+    assert len(EXTRACTOR_MODULES) >= 2, (
+        f"discovery found only {EXTRACTOR_MODULES} — the separation guard has silently "
+        f"stopped covering anything"
+    )
 
 FORBIDDEN_MODULES = {"corpus", "corpus_lexicon"}
 FORBIDDEN_NAMES = {"SeededSignal", "CustomerTruth", "Corpus", "Stratum", "Outcome", "Fragment"}
@@ -112,10 +144,10 @@ def test_extractor_code_never_reaches_for_the_answer_key(module: str) -> None:
 def test_offline_extractor_is_measurably_imperfect() -> None:
     """If the extractor were perfect, the corpus would be tuned to it and the eval would be
     self-referential. It must genuinely miss things."""
-    from ear.config import RunConfig
-    from ear.corpus import generate
-    from ear.evals import extraction_fidelity
-    from ear.extract import OfflineLexiconExtractor, extract_all
+    from earshot.config import RunConfig
+    from earshot.corpus import generate
+    from earshot.evals import extraction_fidelity
+    from earshot.extract import OfflineLexiconExtractor, extract_all
 
     run = RunConfig()
     corpus = generate(run)

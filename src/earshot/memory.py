@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import math
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from .config import ScoringConfig
 from .schema import Case, ExtractedSignal, LedgerEntry, SignalType
@@ -119,8 +119,15 @@ class SignalLedger:
     def score(
         self, customer_id: str, signal_type: SignalType, as_of_day: int
     ) -> ScoreBreakdown:
+        # COPIES, never the stored entries. `score()` writes contribution/score fields onto the
+        # entries it returns, and those used to be the same objects held in `self._entries` —
+        # so `timeline()`, which materialises every day's breakdown before anyone reads it,
+        # left every earlier breakdown carrying the FINAL day's numbers. `open_case()` is built
+        # on `timeline()`, which meant `Case.evidence` — the auditable chain a compliance
+        # officer inspects, and the input to `is_load_bearing()` — reported the wrong as-of-day
+        # contributions. Scoring must not mutate the ledger.
         live = [
-            e
+            replace(e)
             for e in self._entries.get(customer_id, [])
             if e.signal.signal_type is signal_type and e.signal.day <= as_of_day
         ]
