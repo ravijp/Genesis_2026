@@ -1,211 +1,327 @@
 # BUILD PLAN — Ear on Every Call
 
-**Status:** first pass, opened 2026-08-09 on branch `build/ear-on-every-call`.
-**Anchored to:** the finalized Track A submission *"Ear on Every Call"* sent to the Genesis Committee 2026-07-24 (`Ear-on-Every-Call-Idea-Overview.docx`). That document is the contract with the committee; where this plan and that document differ, the difference is recorded in §10 and must be a deliberate, stated refinement — the submission explicitly reserved the right to refine ("some details may differ a little").
+**Status:** v2, 2026-08-09, branch `build/ear-on-every-call`. v1 revised after three adversarial
+reviews (eval integrity · originality collision · build feasibility) — all three landed hits, and this
+document is the repair.
 
-**Scope of this pass:** *what* gets built and in *what order*. Task-level dates are deliberately absent; sequencing and gate-shape are here because the three demo dates are externally frozen and drive scope, not because tasks have been scheduled yet.
+**Anchored to:** the finalized Track A submission sent to the Genesis Committee 2026-07-24
+([`00_sources/submission-ear-on-every-call.md`](../00_sources/submission-ear-on-every-call.md)). That
+document is the contract; the covering email reserved room for refinement. Deltas are logged in §10.
 
----
-
-## 1. The locked use case, stated precisely
-
-A **conversation signal layer**: batch-reads 100% of customer conversations (calls-as-text, chats, complaints), extracts signals with evidence, accumulates them into a **standing per-customer memory that re-scores as new conversations arrive**, and serves one ranked, queryable feed that several teams read at once. A human decides every action; the system never contacts a customer.
-
-**The wedge, said honestly.** Reading a single call and tagging sentiment/intent/compliance risk is commodity — Observe.AI, CallMiner, NICE, Verint, Cresta all ship it. We do not claim that part. What none of them keep is a **customer-level memory that accumulates and re-scores across conversations, channels, and time**. They score the call and archive it; we remember the customer. Everything in this build plan exists to make that one claim measurable.
-
-**Why this framing matters and must not drift.** This repo's own blind rubric judging scored the earlier version of this idea (C61) as top-of-pool on buyer value but a *trap on originality* — "demos like a call-analytics vendor pitch, and that category is saturated" ([03_selection/meeting-doc-2026-07-15.md](../03_selection/meeting-doc-2026-07-15.md)). The submitted version repairs that by moving the wedge from detection to memory. If the build drifts back toward "we detect distress in calls," the entry reverts to the version that was already judged a loser. **Every demo beat and every headline number must be about accumulation, not detection.**
+**Scope of this pass:** *what* gets built and in *what order*. Task-level dates are absent by design;
+gate shape is present because the demo dates are frozen
+([`00_sources/genesis-committee-comms.md`](../00_sources/genesis-committee-comms.md)).
 
 ---
 
-## 2. What we are actually measured on
+## 1. The use case, and the wedge as it must now be worded
 
-Official weights: Zenon impact 25 · technical depth 25 · feasibility & production readiness 25 · originality 15 · presentation 10 — plus an AI judge scoring engineering quality (evals, reproducibility, accuracy/cost/latency evidence).
+A **conversation signal layer**: batch-reads 100% of customer conversations (calls-as-text, chats,
+complaints), extracts signals with evidence, accumulates them into a **standing per-customer ledger
+that re-scores as new conversations arrive**, and serves one ranked feed that several teams read. A
+human decides every action; the system never contacts a customer.
 
-| Axis | The artifact that earns it | Where it's built |
+### 1.1 The submitted wording is refuted and must change
+
+The submission says: *"What none of them keep is a customer-level memory that accumulates and re-scores
+signals across every conversation over time."* As literally worded, that is **false as of 2026-05-06**:
+
+- **Twilio Conversation Memory** went GA 2026-05-06, marketed as a persistent, identity-resolved,
+  cross-channel per-customer profile — *"persistent, contextual and continuous across every channel."*
+  It owns our vocabulary.
+- **MorganAsh MARS** ships a standing per-customer vulnerability rating ("like a credit score, but for
+  vulnerability") that combines multiple weak indicators and is monitored over a product lifetime — so
+  accumulate-and-re-score is prior art in UK financial services.
+- **Segment computed traits** already keep user-level traits current and fire an audience when one
+  crosses a threshold.
+- **Aveni's own marketing** contains our pitch nearly verbatim: *"A customer showing increasing
+  financial pressure across multiple interactions triggers proactive support even if no single
+  conversation contains explicit vulnerability statements."* Their product page does not evidence it —
+  but a judge reading their site will not know that.
+
+A judge finds all of this in one search. Left as written, we lose originality points to homework we
+didn't do.
+
+### 1.2 The claim that survives
+
+> Extracting sentiment, intent and compliance risk from a call is commodity — several vendors do it
+> well, and we use it as **input**, not as our contribution. Persisting customer memory is also
+> shipped: Twilio's Conversation Memory (GA 2026-05-06) keeps a cross-channel per-customer profile.
+> But it **reconciles to current truth** — new observations supersede old ones. That is right for
+> personalization and structurally wrong for risk, because three faint distress signals must *sum*,
+> not overwrite. And standing vulnerability scores exist (MorganAsh MARS) but are fed by
+> human-administered questionnaires, not conversations. What no one ships is the intersection: a
+> **risk-weighted signal ledger that never discards a sub-threshold signal, and re-scores earlier
+> conversations in light of later ones**, so three individually-unalarming calls weeks apart jointly
+> cross a threshold none of them crosses alone.
+
+**Two mechanics now carry the entry, and both are buildable:**
+
+1. **Never-discard.** Sub-threshold signals are retained and remain summable. This is the design
+   inversion against Twilio's supersede-and-reconcile, and it is the most defensible sentence we own.
+2. **Retro re-scoring.** Conversation #3 changes the *interpretation* of conversations #1 and #2 — a
+   signal correctly scored "no action" in March is re-read in July. No vendor evidence was found for
+   this. **It must be visible on screen in the demo**, not asserted in prose.
+
+**Standing rule.** This repo's own blind rubric judging killed the earlier framing of this idea as a
+competition entry — "demos like a call-analytics vendor pitch, and that category is saturated." If the
+build drifts back toward *detection*, we revert to the version already judged a loser. Every demo beat
+and every headline number is about **accumulation and retro re-scoring**, never detection.
+
+---
+
+## 2. What we are measured on
+
+Zenon impact 25 · technical depth 25 · feasibility & production readiness 25 · originality 15 ·
+presentation 10 — plus an AI judge scoring engineering quality (evals, reproducibility, accuracy/cost/
+latency evidence).
+
+| Axis | The artifact that earns it | Stage |
 |---|---|---|
-| Technical depth 25 | Per-stratum recall breakdown, calibration, memory ablation, sensitivity analysis | Stage 4, 5 |
-| Feasibility & production readiness 25 | HITL everywhere, thin integration surface, cost/latency table, PII+retention story, failure-recovery moment, recorded fallback | Stage 3, 6, 7 |
-| Zenon impact 25 | Named first-dollar path on a live engagement, not just the horizontal story (§9) | Stage 7 (narrative), evidenced by Stage 5 numbers |
-| Originality 15 | The memory-vs-baseline experiment, and only that | Stage 1, 5 |
-| Presentation 10 | The three-conversation accumulation moment, rehearsed and recorded | Stage 1, 7 |
-| AI judge (engineering) | One-command reproducibility, seeded determinism, pinned prompt/model versions, real cost accounting | Stage 0, 5 |
+| Technical depth 25 | Four-arm ablation, negative controls, uncertainty quantification | 1.5, 4 |
+| Feasibility & prod-readiness 25 | HITL, cost/latency, thin integration surface, recorded fallback | 5, 6, 7 |
+| Zenon impact 25 | Named first-dollar path on a live engagement (§9) | 7 |
+| Originality 15 | Retro re-scoring visible on screen + the never-discard argument (§1.2) | 1, 6 |
+| Presentation 10 | The three-conversation accumulation moment, rehearsed | 1, 7 |
+| AI judge (engineering) | One-command repro, run manifest, seeds, published miss rates | 0, 1.5 |
 
-**Reading of the table:** originality is the smallest official weight but the largest *risk*, because it is the axis on which this idea has already been killed once. It is bought entirely by one experiment. That experiment is therefore the highest-priority engineering object in the build, ahead of any UI.
-
----
-
-## 3. The one experiment that carries the entry
-
-> **Memory vs. Forgetting.** The identical extractor, on the identical corpus, with the identical thresholds — run twice. Once with the per-customer ledger and re-scorer in the loop. Once with each conversation scored alone and then archived. Report the difference.
-
-Three engineering rules follow, and they are non-negotiable because each one is a way this experiment can be dishonest:
-
-**Rule 1 — the baseline must be strong and fair.** Same model, same prompt, same signal taxonomy, same thresholds. The *only* ablated variable is cross-conversation state. A strawman baseline (weaker model, worse prompt, keyword matching) invalidates the entire entry, and it is the first thing a technical judge will probe.
-
-**Rule 2 — the corpus must not rig the result.** If every seeded arc is written so that no single conversation is diagnostic, memory wins by construction and the number means nothing. The corpus carries **difficulty strata** (§5, C1) and every headline metric is reported **per stratum**. Memory must be shown to *also* win or tie on the strata where the baseline should do well — otherwise we have not built a better system, we have built a differently-biased one.
-
-**Rule 3 — the win must survive parameter changes.** Decay half-lives, corroboration bonuses, and thresholds are config, not magic numbers, and a sensitivity sweep shows the memory advantage is not an artifact of one lucky tuning. Expect the question.
+Originality is the smallest weight and the largest risk — it is where this idea has already been killed
+once, and where a live vendor collision exists. It is bought by one experiment and one demo beat.
 
 ---
 
-## 4. Design rules that apply everywhere
+## 3. The experiment that carries the entry
 
-1. **Ground truth is authored before the text, never inferred from it.** Deterministic Python builds the plan (who, which trajectory, which conversation carries which planted utterance, on what date); generation only writes prose around that plan. The answer key never comes from a model.
-2. **The re-scoring math is plain code, not the model.** The submission promises this explicitly. It is what makes the core logic testable, deterministic, and reproducible — and it is a direct answer to the AI judge's engineering-quality axis.
-3. **Every stage is independently demoable.** No stage may leave the system in a state where there is nothing to show. This is forced by having one builder on top of full client utilization, and by an Aug 24 gate that carries two sprints.
-4. **Runs with zero API keys.** A deterministic offline extractor ships as a first-class provider, not a stub. Model access is currently unavailable (§8, R1); the pipeline, the evals, and the demo must not be hostage to it.
-5. **One command reproduces every number in the README.** Seeded, cached, pinned.
-6. **A human is in front of every action, and the system never contacts a customer.** Stated in the submission; enforced in code by there being no outbound surface at all.
+**v1 designed a two-arm test that the eval review judged fundamentally circular.** Three separate
+circularities, all now fixed:
+
+| Circularity found | Fix adopted |
+|---|---|
+| Difficulty strata were defined *by reference to the baseline's decision function*, and the "rigging-validation pass" regenerated any arc where the baseline succeeded — selection on the dependent variable, dressed as a control | Strata are now **generative**: total arc evidence mass is split across k conversations by a Dirichlet draw, and strata are labelled from the **generation parameters**. The share of arcs that turn out single-call-detectable becomes a **reported corpus statistic**, not an enforced invariant. The rigging pass is demoted from gate to diagnostic |
+| The re-scorer's mechanics are a near-inverse of the generator's trajectory model, written by the same author — the scorer is fit to the data-generating process by construction | **Negative controls** (§3.3) plus a **held-out generator config**: scorer parameters frozen before seeing a corpus generated under different arc dynamics, channel mix, and prose style |
+| "Identical thresholds" across an accumulating sum and a per-conversation max is not identical — it is a scale gift | **Equal alert budget** replaces shared thresholds (§3.2) |
+
+### 3.1 Four arms, not two
+
+The v1 baseline was the weakest possible ablation. The ladder is now:
+
+1. **Stateless-max** — each conversation scored alone; customer score = max. *(Note honestly: any
+   customer-level score already implies an aggregator, so even this arm has a trivial memory. Say so.)*
+2. **Dumb ledger** — unweighted sum of signals per customer. No decay, no corroboration, no channel
+   weighting. **If this ties the full ledger, every mechanism in C3 is decoration and technical depth
+   is unearned.** This is the arm that keeps us honest.
+3. **Long-context** — last N conversations concatenated into one prompt, no ledger, no scoring math.
+   *This is the arm a judge will actually ask about.*
+4. **Full ledger** — decay + corroboration + cross-channel + escalation + retro re-scoring.
+
+Plus a **per-mechanism ablation** of arm 4: each mechanism off one at a time, and cumulative.
+
+### 3.2 Equalising the arms
+
+- Never report a single operating point. Sweep thresholds; report **ROC and PR with AUC for every arm**.
+- Headline at **equal alert budget** — the same flagged-customers-per-1,000-per-month, because a review
+  team's capacity is the real constraint. Report at 1 / 2 / 5 / 10%.
+- Calibrate each arm's score to P(outcome) on a **dev split**, then threshold both at the same
+  probability on a **locked test split**. That is the only defensible reading of "identical thresholds."
+- Add **accumulator-targeted decoys**: customers who accrue several weak corroborating signals across
+  channels and months and never experience the outcome. v1's decoys only tried to fool the extractor.
+
+### 3.3 Negative controls (all four are cheap and all are required)
+
+- **Time-shuffle** — permute conversation order within a customer. If the memory advantage survives,
+  decay and escalation do nothing and "memory" is just "more text."
+- **Outcome-shuffle** — permute outcomes across customers. Recall and lead-time must collapse to chance.
+- **Volume confound** — report score vs. conversation-count correlation, and recall on high-volume nulls.
+- **Held-out generator config** — as above.
+
+### 3.4 Primary metric
+
+Move the headline off "did we detect the seeded signal" (authored, therefore circular) and onto
+**outcome prediction**, where the outcome is drawn stochastically from latent state so neither arm is
+handed the answer:
+
+- **AUC-PR on outcome prediction**, per arm.
+- **Detection-lead survival curve** — fraction of outcome customers detected ≥ D days before the
+  outcome, D swept, never-detected censored, over *all* outcome customers in both arms. Reported in
+  conversations-before-outcome as well as days, because days are an authored artifact.
+- Prevalence-invariant reporting: FPR/recall plus a **PPV-vs-prevalence curve** anchored at a realistic
+  portfolio base rate.
+- **Uncertainty is not optional**: ≥10 corpus seeds end to end, bootstrap **clustered by customer**,
+  paired McNemar on detection and paired Wilcoxon on lead-time. A point estimate from one generator draw
+  is not a result. Pre-register the headline metric and operating point before running.
+
+### 3.5 The killer question, and our answer
+
+> *"Your baseline is a single conversation. The real alternative isn't statelessness — it's putting the
+> customer's last twenty conversations in one long-context prompt. Did you run that arm, and if the
+> ledger doesn't beat it on accuracy, what's left of your originality claim?"*
+
+**Answer:** We ran it. On accuracy it's close — long-context matches at small histories and degrades
+past roughly ten to twenty conversations and across channels. **We do not claim an accuracy win over
+it.** The ledger wins on three axes we measured: **cost and latency**, because an incremental O(1)
+ledger update re-scores the whole portfolio nightly without re-reading every history through a model —
+the difference between viable and non-viable unit economics at 100% coverage; **auditability**, because
+the score decomposes into a dated evidence chain a compliance officer can inspect and a reviewer can
+write back to; and **determinism**, because the math is plain code and reproduces bit-for-bit. If
+accuracy ties, the claim is that the ledger is the only *deployable* way to get that accuracy.
+
+*Note: extraction cost is identical across arms — we do not claim a cost win there. The comparison is
+ledger-update cost vs. long-context re-read cost per customer per night.*
 
 ---
 
-## 5. System components
+## 4. Design rules
+
+1. **Ground truth is authored before the text.** Deterministic Python builds the plan; generation only
+   writes prose around it. The answer key never comes from a model.
+2. **The re-scoring math is plain code.** Promised in the submission; it is what makes the core logic
+   testable, deterministic, and reproducible.
+3. **Never discard a sub-threshold signal.** The design inversion against supersede-and-reconcile.
+4. **Retro re-scoring must be observable**, not asserted — the ledger records what a prior conversation
+   scored *then* and scores *now*.
+5. **Provider and corpus are mechanically separated.** The offline extractor gets its own lexicon file,
+   authored in a separate pass with different vocabulary from the corpus generator's fragments, and
+   **cannot import the ground-truth plan — enforced by a test that fails if the answer key is
+   importable from provider code.** It carries a deliberate, *measured and published* miss rate.
+6. **Every stage is independently demoable.** Forced by one part-time builder and a doubled Aug-24 gate.
+7. **Runs with zero API keys**, and offline numbers are always labelled `provider=offline-lexicon` and
+   never presented as a headline.
+8. **One command reproduces every number**, with a run manifest: seed, git SHA, config hash, timestamp.
+9. **No outbound surface exists in the system.** HITL is enforced by there being nothing to enforce.
+
+---
+
+## 5. Components
 
 ### C1 · Synthetic corpus generator
-Multi-channel conversation corpus with seeded ground truth. Synthetic-only, per competition rules.
-
-- **Entity model:** customers (tenure, products held, segment), accounts, transactions, conversations (channel = call transcript · chat · complaint), agents.
-- **Trajectory model:** each customer is assigned a latent arc — `churn_intent`, `financial_distress`, `complaint_escalation`, `life_event`, or `none` — that unfolds across N conversations spanning weeks or months.
-- **Difficulty strata** — the anti-rigging device:
-  - **S1 · SINGLE** — one conversation carries a decisive signal ("I'm closing the account next week"). The per-call baseline *should* catch these. Memory must not lose them.
-  - **S2 · CUMULATIVE** — no single conversation crosses threshold; only the accumulation does. This is where memory wins, and the utterances must be *honestly* weak, not artificially mute.
-  - **S3 · DECOY** — remarks that look like signals but aren't (venting that resolves, a customer describing someone else's situation, rhetorical frustration). Drives false-positive rate.
-  - **S4 · NULL** — clean customers with no trajectory. Drives specificity.
-- **Ground-truth record per seeded signal:** customer id · conversation id · signal type · intended strength · exact span of the planted utterance · date the signal became actionable · realised outcome (churned / went delinquent / resolved / none). Outcomes are what make lead-time measurable.
-- **Realism budget:** disfluency, ASR-style transcription error, agent turns and hold/IVR noise, compliance boilerplate, and a majority of conversations that are genuinely about nothing. Without noise the extraction task is trivial and every downstream number is worthless.
-- **Rigging-validation pass:** an automated check that S2 arcs really are sub-threshold conversation-by-conversation under the baseline, and that S1 arcs really are catchable alone. A corpus that fails this check is a bug, not a result.
+- **Entities:** customers (tenure, products, segment), accounts, transactions, conversations (call ·
+  chat · complaint), agents.
+- **Latent trajectories** — `churn_intent`, `financial_distress`, `complaint_escalation`, `life_event`,
+  `none` — unfolding across conversations over weeks or months.
+- **Generative strata (revised):** total arc evidence mass split across k conversations by a Dirichlet
+  draw; strata labelled from generation parameters, never from what the baseline can do. Concentrated
+  draws produce single-call-detectable arcs; diffuse draws produce cumulative-only arcs. **Observed
+  detectability is measured and reported, not enforced.**
+- **Decoys, two kinds:** extractor-targeted (remarks that look like signals — venting that resolves,
+  describing someone else's situation) and **accumulator-targeted** (genuine weak signals that
+  corroborate across channels and months but never lead to an outcome).
+- **Outcomes drawn stochastically from latent state**, with dates — so outcome prediction is a real
+  prediction task, not a lookup.
+- **Realism budget:** disfluency, ASR-style error, agent turns, hold/IVR noise, compliance boilerplate,
+  and a majority of conversations genuinely about nothing. Built as a **template + slot-filler grammar**
+  (weighted fragments across strength tiers, deterministic assembly, seeded) — hand-authoring is
+  reserved for the three arcs that appear in the demo. Obvious templating in filler is acceptable.
+- **Contamination check:** null customers whose filler prose accidentally contains distress language
+  corrupt specificity silently. Test for it.
 
 ### C2 · Extraction
-Conversation in → structured signals out, one conversation at a time, stateless by construction.
+Conversation in → signals out, stateless by construction. Schema: `signal_type`, `confidence`,
+`evidence_quote`, char span, turn index, timestamp. Evidence mandatory — an unquotable signal is
+discarded. Strict JSON, bounded retry, response cache keyed on `(conversation_hash, model,
+prompt_version)`. Provider abstraction: offline-lexicon (ships first, constrained per Rule 5), Claude,
+comparison model.
 
-- Output schema: `signal_type`, `confidence`, `evidence_quote`, character span, turn index, timestamp. Evidence is mandatory — an unquotable signal is discarded.
-- Strict JSON, schema-validated, bounded retry on invalid output.
-- Response cache keyed on `(conversation_hash, model, prompt_version)` so re-runs are near-free and results are reproducible.
-- **Provider abstraction** with three implementations: offline deterministic (ships first), Claude, comparison model. Identical interface, identical prompt contract, so the model comparison is apples-to-apples.
+### C3 · Ledger + re-scorer — *the heart, pure code*
+Append-only per-customer ledger. `score(customer, as_of_date) -> {per-category score, dated evidence
+chain, per-signal then-vs-now contribution}`.
 
-### C3 · Memory ledger + re-scorer — *the heart, pure code*
-- Append-only per-customer signal ledger.
-- `score(customer, as_of_date) -> {per-category score, contributing evidence chain}`.
-- Mechanics that make the accumulation defensible rather than "we added the numbers up":
-  - **Time decay** — signals fade on a per-type half-life; a job loss mentioned two years ago is not live risk.
-  - **Corroboration** — independent signals of the same type in *different* conversations reinforce super-additively; repetition inside one conversation does not.
-  - **Cross-channel weighting** — the same theme in a call, a chat, and a complaint is stronger evidence than three mentions in one channel.
-  - **Escalation detection** — the same unresolved issue recurring is its own signal ("third time I've called about this fee").
-  - **Confidence weighting** — low-confidence extractions contribute proportionally less.
-  - **Threshold crossing** emits a **case** carrying the full evidence chain and the date it crossed.
-- Deterministic, no model calls, exhaustively unit-tested. Parameters live in config.
+Mechanisms, each independently ablatable: **time decay** (per-type half-life) · **corroboration**
+(independent signals in *different* conversations reinforce super-additively; repetition within one
+conversation does not) · **cross-channel weighting** · **escalation on recurrence** · **confidence
+weighting** · **retro re-scoring** (the then-vs-now contribution, surfaced). All parameters in config,
+no magic numbers, exhaustively unit-tested, deterministic, no model calls.
 
-### C4 · Baseline — the ablation
-Same extractor, same corpus, same thresholds, no ledger. Each conversation scored alone; a case opens only if a single conversation crosses threshold on its own. Deliberately built to be as strong as it fairly can be (Rule 1).
+### C4 · The four arms
+Stateless-max · dumb ledger · long-context-N · full ledger. Identical extractor, prompt, corpus, splits.
+Built as arms of one harness, not as separate programs.
 
 ### C5 · Eval harness
-- **Signal recall** at customer level, memory vs baseline, **broken out per stratum**.
-- **Precision / false-positive rate** on S3 decoys and S4 nulls.
-- **Lead time** — days between the system flagging and the realised outcome date. This is arguably the stronger headline than recall, because it is the business claim in the submission: help was ready *before* the first missed payment.
-- **Calibration** — are the confidence scores meaningful, since the accumulator weights by them.
-- **Cost** — real token accounting → cost per 1,000 conversations, per model. Reading 100% of conversations is exactly where a judge attacks the economics.
-- **Latency / throughput** — batch conversations-per-minute and projected wall-clock for a realistic nightly volume.
-- **Model comparison** — Claude vs comparison model through the identical harness.
-- **Sensitivity sweep** — does the memory advantage survive parameter perturbation.
-- Emits machine-readable results plus a generated Markdown scorecard. One command.
+Everything in §3.2–§3.4, plus: extraction span precision/recall against planted spans and the
+adjudicated rate of *unplanted* extractions; cost per 1,000 conversations from real token accounting
+(and a defensible projection formula — tokens/conversation × published per-token price — so the cost
+table exists before keys do); throughput and projected nightly wall-clock. Emits machine-readable
+results, a generated Markdown scorecard, and a run manifest. One command.
 
-### C6 · Serve + team views
-One feed, three lenses over the *same* case objects — Retention (lead), Risk & Compliance, Commercial. Each lens is a filter and a ranking, not a separate pipeline: that identity **is** the horizontal proof, and it must be visibly true.
-Reviewer actions: approve · dismiss · route. Dismissals write back to the ledger and suppress recurrence — that write-back is both the HITL evidence and the feedback loop.
-Starts as a generated report; upgrades to a minimal web view only if the numbers are already solid. A judge cares more that the numbers are real than that the screen is pretty.
+**Confidence calibration is cut from the Aug-24 scope.** A deterministic extractor's "confidence" is a
+constant we chose; a reliability diagram over it is theater a technical judge spots instantly. Replaced
+by an **ablation on confidence weighting** (does weighting beat uniform on the same corpus) — same
+engineering signal, honest offline, and it survives into the real-model stage.
+
+### C6 · Serve
+One ranked case feed with full evidence chains and the retro re-score visible. Reviewer actions:
+approve · dismiss · route. **The three team views reduce to one feed plus a table showing the same case
+object surfaced under three different rankings** — same horizontal claim, ~10% of the effort. No web
+view for Aug 24.
 
 ### C7 · Demo
-- **The accumulation moment.** One customer, three ordinary conversations weeks apart, none alarming alone; the running score crosses into high risk only after the third — shown side by side with the baseline staying silent through all three.
-- **The failure-recovery moment.** *Missing from the submitted plan; adding it.* [PLAN.md](../PLAN.md) names a deliberate failure-recovery beat as the single best anti-slop demo device, and the feasibility axis rewards it. Concretely: a planted decoy that the extractor initially scores as genuine distress, which the accumulator then declines to escalate because corroboration never arrives — and/or a reviewer dismissal propagating back and suppressing a case. The system visibly catches a planted problem and corrects.
-- Recorded fallback maintained from the first demo onward, not from Sprint 3.
+- **The accumulation moment** — one customer, three ordinary conversations weeks apart; the ledger
+  crosses at #3 while the stateless arm stays silent through all three, **with the retro re-score of
+  conversations #1 and #2 visible on screen**. Per the collision review, this is the one thing no
+  incumbent can reproduce.
+- **The failure-recovery beat** — an accumulator-targeted decoy that the extractor scores as genuine
+  distress and the ledger declines to escalate; and/or a reviewer dismissal propagating back.
+- Recorded fallback from **2026-08-17**, not Sprint 3. A bad recording beats a live failure.
 
-### C8 · Reproducibility, ops, and the compliance story
-- Single-command run; pinned seeds, prompt versions, model ids; committed cache for offline replay.
-- README carrying the numbers table, regenerated by the harness rather than typed.
-- **PII / retention note** — the submission names the Chief Compliance Officer as co-signer, so the coverage-and-privacy answer ships with the build: synthetic-only data, redaction hook on ingest, an explicit ledger retention and right-to-erasure path, evidence quotes stored as spans into source rather than duplicated text, and no outbound contact surface anywhere in the system.
-- Mirror to AWS CodeCommit (the official competition repo) alongside this one.
-
----
-
-## 6. Build stages
-
-Ordered by dependency and by "what is demoable if everything after this stops."
-
-### Stage 0 · Skeleton
-- [ ] Package layout, config system, seeded RNG discipline
-- [ ] Provider abstraction + offline deterministic extractor registered as a real provider
-- [ ] Data schemas (customer, conversation, signal, ledger entry, case) as typed, validated objects
-- [ ] One command runs the whole empty pipeline end to end
-- [ ] Test scaffold + lint wired to the existing uv env
-
-### Stage 1 · Thin vertical slice — *the first thing worth showing*
-- [ ] ~10 customers, ~30 conversations, hand-shaped arcs across S1/S2/S3
-- [ ] One signal family end to end (churn intent)
-- [ ] Offline extractor producing real structured signals with evidence spans
-- [ ] Ledger + re-scorer with decay and corroboration, unit-tested
-- [ ] Baseline path implemented as the ablation
-- [ ] Recall printed for both arms, per stratum
-- [ ] **The three-conversation accumulation moment reproducible on demand**
-
-### Stage 2 · Corpus for real
-- [ ] All four strata, at volume
-- [ ] Four to five signal families (churn intent · financial distress · complaint escalation · life event · vulnerability)
-- [ ] Realism budget applied (noise, disfluency, ASR error, boilerplate, mostly-boring conversations)
-- [ ] Outcomes and outcome dates for lead-time measurement
-- [ ] Corpus statistics report
-- [ ] **Rigging-validation pass** green
-
-### Stage 3 · Real extraction
-- [ ] Claude provider live behind the same interface
-- [ ] Prompt versioning + strict schema validation + retry
-- [ ] Response caching
-- [ ] Comparison model through the identical harness
-- [ ] Confidence calibration measured
-- [ ] Extraction quality measured against seeded spans (did it find the planted utterance, and quote it correctly)
-
-### Stage 4 · Memory depth
-- [ ] Decay, corroboration, cross-channel, escalation fully implemented and parameterised
-- [ ] All parameters in config; no magic numbers in code
-- [ ] Exhaustive unit tests on the scoring function
-- [ ] Sensitivity sweep showing the memory advantage is not a tuning artifact
-
-### Stage 5 · Evals complete
-- [ ] Per-stratum recall, precision, FP rate
-- [ ] Lead-time distribution, memory vs baseline
-- [ ] Cost per 1,000 conversations, per model, from real token accounting
-- [ ] Latency / throughput and projected nightly wall-clock
-- [ ] Model comparison table
-- [ ] Generated scorecard; README numbers auto-populated
-
-### Stage 6 · Serve and the horizontal proof
-- [ ] Case objects with full evidence chains
-- [ ] Three team views as filters/rankings over one feed
-- [ ] Reviewer actions: approve · dismiss · route
-- [ ] Dismissal write-back suppressing recurrence
-- [ ] Minimal web view *only if* Stage 5 is already solid
-
-### Stage 7 · Demo hardening and the pitch
-- [ ] Failure-recovery beat built and rehearsed
-- [ ] Demo script written to the minute
-- [ ] Recording as fallback
-- [ ] Two dry runs
-- [ ] Path-to-production spec
-- [ ] Client one-pager + Zenon-impact narrative (§9)
-- [ ] PII/retention note finalised
+### C8 · Reproducibility and compliance
+Single command; pinned seeds, prompt versions, model ids; committed cache; per-run results artifact +
+manifest; README numbers generated, never typed. PII/retention note (synthetic-only, redaction hook,
+retention + erasure path, evidence stored as spans not duplicated text, no outbound surface). CodeCommit
+mirror.
 
 ---
 
-## 7. Gate shape
+## 6. Build stages (re-cut)
 
-The three demo dates are frozen (Genesis Committee, 2026-07-29 and 2026-08-07). Sprint 1's demo was downgraded to a check-in and folded into a **combined Sprint 1+2 demo on 2026-08-24**; Sprint 3 is 2026-09-07.
+The feasibility review moved three things, each for a reason worth keeping:
+
+1. **S0 · Skeleton (halved).** Schemas, config, seeded RNG, one command. *Provider abstraction moves to
+   S1 — designing three interfaces with zero implementations is speculative work.*
+2. **S1 · Thin slice.** ~10 customers, one signal family, offline extractor, ledger + re-scorer,
+   stateless arm, the accumulation moment reproducible on demand.
+3. **S1.5 · Eval harness skeleton — moved LEFT (was S5).** Recall/precision/lead-time on 30
+   conversations, one command. *On the critical path: without it there is no feedback loop for corpus
+   work, and the corpus diagnostics are a precondition for corpus authoring, not a final checkbox.*
+4. **S2 · Corpus at volume** — now gated by a harness that returns a number the same minute.
+5. **S4 · Memory depth + ablations + sensitivity — moved BEFORE extraction.** Pure code, no keys, fully
+   in our control, and it is what buys originality. *Do it while blocked.*
+6. **S6 · Serve as a generated report** — always a report, never a web view for Aug 24.
+7. **S3 · Real extraction — deferred, key-gated, strictly additive.** Runs whenever keys arrive. **The
+   demo must be complete without it.**
+8. **S7 · Demo hardening** — with the recorded fallback starting 2026-08-17.
+
+**Fix-loop budget.** The sensitivity sweep and corpus diagnostics exist *in order to* come back red.
+Each firing means re-authoring arcs or re-parameterising the scorer, then re-running. Run both against
+the 30-conversation S1 corpus by **2026-08-14**, when a failure costs hours instead of a weekend. Sweep
+scope: 3 parameters × 3 values, not a grid.
+
+---
+
+## 7. Gate shape, and the Aug-24 cut
 
 | Gate | What must be true |
 |---|---|
-| Sprint 1 check-in (2026-08-10, 15 min) | Plan locked; Stage 1 running with real numbers on screen; roadblocks named (§8) |
-| Combined Sprint 1+2 demo (2026-08-24) | Stages 0–5 landed, Stage 6 usable. The accumulation moment, the memory-vs-baseline table, and cost/latency all real |
-| Sprint 3 demo (2026-09-07) | Stage 6 complete, Stage 7 done, recorded fallback, path-to-production |
+| Check-in **2026-08-10** (15 min) | Plan locked; S1 running with real numbers; roadblocks named, with a date-certain ask on keys |
+| Combined S1+S2 demo **2026-08-24** | The minimum demo below, entirely on the offline provider |
+| S3 demo **2026-09-07** | Real-model numbers if keys arrived; serve + demo hardening complete |
 
-**Consequence of the combined gate, and the reason for the stage ordering above:** the submitted sprint plan is a waterfall — corpus and extraction in Sprint 1, memory and reviewer screen in Sprint 2 — which leaves nothing end-to-end demoable if the first sprint slips, and it already has. It is also internally inconsistent: it asks for the three-conversation accumulation scenario to be rehearsed in Sprint 1 while placing the re-scorer that makes accumulation possible in Sprint 2. This plan resolves both by pulling the ledger and re-scorer forward into the thin slice — they are cheap deterministic code — and pushing the reviewer UI right.
+**Minimum viable Aug-24 demo** — scores on all five axes without a single API call:
+
+- One command regenerates everything from seed → **the three-conversation accumulation moment with the
+  retro re-score visible**, stateless arm silent beside it *(presentation, originality)*
+- Four-arm comparison + per-stratum breakdown, ~40 customers / ~150 conversations, 2 signal families,
+  with the **detection-lead survival curve** as headline *(technical depth)*
+- Cost-and-latency table projected from measured throughput and published per-token pricing, clearly
+  labelled projected *(feasibility)*
+- One slide naming Barclays collections and the roll-rate number it moves *(Zenon impact)*
+- Auto-generated README scorecard, pinned seeds, run manifest, committed cache *(AI judge)*
+
+**Cut for Aug 24:** web view · comparison model · confidence calibration · dismissal write-back ·
+PII/retention note · path-to-production · client one-pager · CodeCommit mirroring · signal families 3–5.
+**Deferred:** all of S3. **Keep decay + corroboration**; cross-channel and escalation only if the
+ablation shows they earn their place.
+
+**Rule, written now to avoid a late scramble:** if keys arrive after **2026-08-20**, they are Sprint 3
+scope only.
 
 ---
 
@@ -213,28 +329,49 @@ The three demo dates are frozen (Genesis Committee, 2026-07-29 and 2026-08-07). 
 
 | # | Risk | Mitigation |
 |---|---|---|
-| R1 | **No model API access yet.** Requirements were requested by the committee on 2026-07-24; keys are not available on the build machine as of 2026-08-09 | Offline deterministic provider ships as a first-class implementation so every stage, eval, and demo runs with zero keys. Named as the roadblock at the check-in, with the specific ask: Claude API, comparison-model API, and confirmation of whether Bedrock is the intended route given the AWS stack |
-| R2 | **Corpus rigs the result** — memory wins by construction | Difficulty strata, per-stratum reporting, automated rigging-validation pass |
-| R3 | **Strawman baseline** invalidates the originality claim | Same model, same prompt, same thresholds; only cross-conversation state is ablated; documented as an ablation, not a competitor |
-| R4 | **Originality attack** — "this is CallMiner with a database" | The per-stratum S2 numbers and the side-by-side silent baseline *are* the rebuttal. Rehearsed as a demo beat, not left to Q&A |
-| R5 | **Solo capacity** on top of full client utilization | Thin-slice-first ordering; every stage independently demoable; UI deferred behind numbers |
-| R6 | **Economics attack** — reading 100% of conversations is expensive | Real token accounting from Stage 3; batch-not-realtime is a deliberate design choice and is argued as one; cost per 1,000 conversations reported next to accuracy |
-| R7 | **Demo depends on a live API call** | Cached responses committed; recorded fallback maintained from the first demo |
+| R1 | **No model API access.** Requested 2026-07-24, chased 2026-07-29, still unprovisioned at 2026-08-09 — 16 days elapsed, no ETA | Offline provider ships first-class. **Escalate at the 2026-08-10 check-in with a date-certain ask** ("keys by 2026-08-17 or the entry ships offline-only") — converts a silent risk into a committee-owned one, and costs 30 seconds of a 15-minute slot |
+| R2 | **"So the S2 conversations are sub-threshold for your own matcher, which you also wrote?"** — the most likely way this collapses on stage | Mechanical provider/corpus separation (Rule 5) + generative strata + a *published* miss rate. The answer becomes: "it's a lexicon extractor, it misses N% of planted signals, it's the **weaker** arm — and the memory delta holds anyway. Swap in Claude and both arms improve." Turns the biggest liability into the strongest answer |
+| R3 | **Vendor collision on originality** (§1.1) — Twilio Conversation Memory GA 2026-05-06, Aveni's marketing carries our pitch | Reworded claim (§1.2) + retro re-scoring on screen. Defend on the demo, not the sentence |
+| R4 | **Dumb-ledger arm ties the full ledger** — all the scoring machinery is decoration | Better to find this in week one than on stage. If it ties, cut the mechanisms and re-pitch on auditability + cost + retro re-scoring, which survive regardless |
+| R5 | **Corpus authoring is 3–5× underestimated** and is the largest hidden cost — it is a writing problem, not a code problem | Template + slot-filler grammar; cap cumulative arcs; hand-author only the demo arcs |
+| R6 | **Economics attack** — reading 100% of conversations | Projection formula built before keys; batch-not-realtime argued as a deliberate choice; ledger-update vs long-context re-read cost is the honest comparison |
+| R7 | **Solo capacity** on top of full client utilization | Thin-slice-first; every stage demoable; the cut list in §7 already applied |
 
 ---
 
 ## 9. Zenon impact — the gap to close
 
-The submission is written horizontally (banks, card issuers, lenders, credit unions, insurers, wealth). That is right for the capability story and wrong, alone, for a 25%-weighted axis scored on *Zenon's* business. This repo already holds the first-dollar path: the Barclays collections engagement is live, is measured on roll-rate, carries a revenue-share model, and the buyer-lens judge scored this idea 5/5 there ([02_ideas_v2/judging-buyer.md](../02_ideas_v2/judging-buyer.md)). Western Alliance and the HOA bank-side surface are the named transfers.
+The submission is written horizontally, which is right for the capability story and insufficient alone
+for a 25%-weighted axis scored on *Zenon's* business. The first-dollar path is the live Barclays
+collections engagement — measured on roll-rate, revenue-share model, and the buyer-lens judging in the
+ideation phase scored this idea highest there. Western Alliance and the HOA bank-side surface are the
+named transfers; grounding evidence is retained in
+[`01_research/finance.md`](../01_research/finance.md) and
+[`01_research/client-ai-state-map.md`](../01_research/client-ai-state-map.md).
 
-**Task, deferred to Stage 7 narrative work:** name the first engagement and the specific number it moves, without narrowing the capability claim to one client. Horizontal in what it is, specific in where the first dollar comes from.
+**Task (S7):** name the first engagement and the specific number it moves, without narrowing the
+capability claim to one client.
 
 ---
 
-## 10. Open decisions
+## 10. Open decisions and deltas from the submission
 
-1. **Deltas from the submitted document.** Two so far, both refinements the covering email reserved room for: (a) the re-scorer moves into Sprint 1 rather than Sprint 2 (§7); (b) a failure-recovery beat is added to the demo (§5, C7). Neither changes what was promised. Log further deltas here.
-2. **Comparison model identity** — pending API access (R1).
-3. **Web view or generated report** for the three team views — decided at the Stage 5/6 boundary on the evidence of whether the numbers are solid.
-4. **CodeCommit mirroring** — when, and whether this repo or a fresh one is the source of truth for competition submission.
-5. **Team split** — single-threaded until discussed; the stage boundaries in §6 are already cut to be parallelisable (corpus · extraction+evals · memory+views) if that changes.
+**Deltas** — all within the refinement latitude the covering email reserved:
+
+1. The re-scorer moves into Sprint 1 (the submitted plan asks for the accumulation scenario to be
+   rehearsed in Sprint 1 while placing the re-scorer that makes accumulation possible in Sprint 2).
+2. A failure-recovery beat is added to the demo.
+3. **The novelty sentence is reworded** (§1.2) — the submitted wording is refuted by Twilio
+   Conversation Memory. Capability unchanged; claim made accurate.
+4. **The headline metric moves** from seeded-signal recall to outcome prediction + detection lead, and
+   the two-arm test becomes four arms. The submitted metric was circular.
+5. Sprint-1 "run at full volume" is descoped to a thin slice first; volume arrives at S2.
+6. Confidence calibration is replaced by a confidence-weighting ablation until real models are available.
+
+**Open:**
+
+- Comparison model identity — pending keys.
+- Whether cross-channel weighting and escalation survive their ablations.
+- CodeCommit mirroring: when, and which repo is the submission source of truth.
+- Team split — single-threaded for now; stage boundaries are cut to parallelise (corpus · evals ·
+  memory) if that changes.
