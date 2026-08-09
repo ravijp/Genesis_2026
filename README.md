@@ -186,6 +186,19 @@ opposite thing in each: **extractor decoys** are lookalikes and firing on one is
 firing is *correct* (**42.7%, 53 / 124**) and what is under test is whether the ledger goes on to
 over-accumulate them — it does not, their flag rate at the 10% budget is 0.000.
 
+**The extractor barely works on language it did not write, and we measured it rather than waiting to
+be asked.** Against 150 hand-marked real CFPB complaint narratives (public domain, CC0) the same
+unmodified extractor scores **0.0357 strict recall — 4 / 112** — versus **0.681** above on our own
+prose. `financial_distress`, `complaint_escalation` and `life_event` each scored **exactly zero**, and
+24 of its 26 cues never fired on any of the 150 documents. The sampling frame, the marking guide, the
+gold set and the interpretation thresholds were all committed **before** any narrative was read, and
+two failures of our own — a contaminated inter-marker comparison and a defect in the marking guide —
+are disclosed in the write-up rather than smoothed over. Everything is in
+**[benchmarks/cfpb/](benchmarks/cfpb/)**; `uv run python benchmarks/cfpb/steps/05_score.py`
+reproduces every figure offline with no network. This is the reason the cue vocabulary is being
+regrounded (D-019). It measures the **reader**, not the ledger, and it left the numbers above
+untouched.
+
 **Not yet measured:** verdict and routing accuracy for the agent, cost per 1,000 conversations, and
 p50/p95 latency. Evidence groundedness is reported as a first-attempt repair rate by `earshot
 investigate`, but is structurally zero on the offline provider (it copies quotes out of the ledger),

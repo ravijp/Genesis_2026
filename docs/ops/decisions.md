@@ -11,6 +11,21 @@ for something listed under "rejected", read the reason first.
 
 ---
 
+### D-019 · 2026-08-09 · The extractor is regrounded in real phrasing, and a pre-registered threshold decided it `ACCEPTED`
+AT-43 measured the existing extractor on 150 hand-marked real CFPB narratives: **0.0357 strict recall
+(4 / 112)** against **0.681 (496 / 728)** on our own prose, with `financial_distress`,
+`complaint_escalation` and `life_event` at exactly zero and 24 of 26 cues never firing. The protocol
+(`benchmarks/cfpb/PROTOCOL.md` §6) fixed the consequences in advance — below 0.30 sends the corpus/cue
+regrounding ahead of the reviewer queue — so the ordering was decided before the number existed and is
+not a post-hoc preference. The cheap experiment did its job: it gated the expensive one, and it
+answered the objection it was built for by conceding it.
+**Rejected:** treating the result as genre mismatch and moving on. That was pre-registered as a live
+alternative explanation, and the per-cue table refutes it — a reader that finds none of 67 escalations
+written as *"the ninth time I have been told the same thing"* is not failing because the channel is
+written rather than spoken. **Also rejected:** patching the specific cues that missed these 150
+documents, which would tune the reader to the test set and reproduce, one level up, the exact
+objection AT-43 exists to close.
+
 ### D-018 · 2026-08-09 · A static guard is the first net; the behavioural band is a partial backstop `ACCEPTED`
 **Amended after round 6, which showed the original wording overclaimed.** The band pins the
 EXTRACTOR's recall, not the system's honesty. A reviewer put a leak into `memory.py` that substituted
