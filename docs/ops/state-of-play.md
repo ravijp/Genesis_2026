@@ -129,6 +129,11 @@ wedge needs narrowing again in the same honest way. Nobody has confirmed it.
   this. What never-discard buys over a three-conversation window is currently unproven.
 - Agent verdict/routing accuracy, cost per 1,000 conversations and p50/p95 latency are not measured.
   Evidence groundedness is now reported as a first-attempt repair rate (AT-57).
+- **Two of four trajectories can never carry more than 4 signals, and this bounds every published
+  number.** Fragments are planted without replacement and the `complaint_escalation` and `life_event`
+  pools hold 4, while arcs run to 5 conversations — so on those trajectories the later conversations
+  are empty by construction. Found 2026-08-10 when the new pool guard rejected the *default* range.
+  Every command now prints this. It is the reason work 1 starts with widening the pools.
 - **The extractor barely works on language it did not write.** 0.0357 strict recall (4 / 112) on real
   CFPB narratives against 0.681 (496 / 728) on ours; three of four signal types at exactly zero. This
   is measured, published in `benchmarks/cfpb/`, and is now work 1.

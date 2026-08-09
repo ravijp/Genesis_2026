@@ -741,11 +741,25 @@ def main() -> int:
             parser.error(
                 f"--conversations-per-customer MAX={hi} exceeds the smallest fragment pool "
                 f"({scarcest_type.value}, {pool_size} fragments). Fragments are planted without "
-                f"replacement, so arcs longer than the pool are padded with empty conversations "
-                f"and a longer-history comparison would measure the padding. Widen the pools in "
-                f"corpus_lexicon.py first."
+                f"replacement, so no arc can carry more than {pool_size} signals however long it "
+                f"gets, and a longer-history comparison would measure padding rather than "
+                f"accumulation. Widen the pools in corpus_lexicon.py first."
             )
         conv_range = (lo, hi)
+
+    # The same ceiling binds the DEFAULT range, and did so for every number published to date.
+    # Warned rather than refused: it is a pre-existing property of the corpus, not something the
+    # caller chose, and refusing here would break reproduction of the published figures.
+    _scarce_type, _pool = smallest_fragment_pool()
+    _default_max = DEFAULT.corpus.conversations_per_customer[1]
+    if conv_range is None and _default_max > _pool:
+        print(
+            f"NOTE: arcs run to {_default_max} conversations but the scarcest fragment pool "
+            f"({_scarce_type.value}) holds {_pool}, and fragments are planted without replacement. "
+            f"Arcs on that trajectory carry at most {_pool} signals, so their later conversations "
+            f"are empty by construction. This bounds what any history-length claim can show.",
+            file=sys.stderr,
+        )
 
     if args.seed != DEFAULT.seed or args.customers or conv_range:
         corpus_cfg = run.corpus
