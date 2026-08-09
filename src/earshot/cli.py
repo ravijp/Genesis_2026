@@ -452,7 +452,14 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(prog="ear", description="Ear on Every Call")
+    # Windows pipes stdout as cp1252, so redirecting output to a file crashed on the "Δ" in
+    # the ablation table and on the £ and curly quotes in model-authored rationales. Capturing
+    # a run to a file is exactly what someone does when recording evidence, and a demo must
+    # never die on an encoding error.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="replace")  # type: ignore[union-attr]
+
+    parser = argparse.ArgumentParser(prog="earshot", description="Ear on Every Call")
     parser.add_argument("command", choices=["run", "demo", "investigate"])
     parser.add_argument("--seed", type=int, default=DEFAULT.seed)
     parser.add_argument("--customers", type=int, default=None)

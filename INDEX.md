@@ -39,18 +39,20 @@
 - `arms.py` — five comparison arms through one code path + per-mechanism ablations `[stable]`
 - `evals.py` — true equal-alert-budget comparison, per-stratum breakdown, extraction fidelity, corpus diagnostics `[stable]`
 - `cli.py` — `ear run` · `ear demo` · `ear investigate`; run manifests into `artifacts/runs/` `[stable]`
-- `core/` — deterministic account state and transaction history. **No LLM import allowed** `[generating]`
-- `agent/` — investigator loop, tools, decision schemas, prompt loading `[generating]`
-- `llm/` — provider abstraction (OpenRouter, offline), response cache, cost + latency capture `[generating]`
+- `core/accounts.py` — synthetic account state + 90-day transactions, derived from `(customer_id, latent_risk, seed, as_of_day)` only. Deliberately noisy: informative about risk without being a readout of it. **No LLM import allowed** `[stable]`
+- `agent/` — `schemas.py` (strict decision contract, ≥1 evidence ref) · `tools.py` (five pure tools, OpenAI schemas derived from pydantic) · `investigator.py` (bounded loop: 6 steps, 2 retries, cost cap) · `prompts.py` (versioned prompt loading + sha) `[stable]`
+- `llm/` — `base.py` (provider protocol, cost/latency/token capture) · `openrouter.py` (the only network call) · `offline.py` (rule-based, keyless, deliberately worse) · `cache.py` (content-addressed jsonl; record · replay · off) `[stable]`
 
 ## tests/
 
 - `test_separation.py` — **the honesty guard.** AST-level proof that nothing on the path from conversation to decision can import the answer key. Its danger surface is DISCOVERED by glob, so new agent tools are covered the moment they exist. Do not relax `[stable]`
 - `test_memory.py` — ledger invariants: never-discard, accumulation, retro re-score, decay, determinism, super-additivity vs concavity `[stable]`
+- `test_tools.py` — every tool in memory, zero network. Includes the two honesty properties: no tool result mentions an outcome, and latent risk shifts the account without determining it `[stable]`
+- `test_agent.py` — decision contract (no evidence → rejected), loop termination (step cap, retry cap, cost cap, provider failure all still emit a decision), offline path end-to-end, cache record→replay `[stable]`
 
 ## prompts/
 
-- `investigator/v1/` — prompts as versioned files so a prompt change is a reviewable diff `[generating]`
+- `investigator/v1/` — `system.md` (role, decision policy, evidence rule, routing) + `task.md` (slot template). Versioned files so a prompt change is a reviewable diff; the sha of both goes into the cache key and the run manifest `[stable]`
 
 ## docs/
 

@@ -1,0 +1,612 @@
+{
+  "manifest": {
+    "seed": 20260809,
+    "config_hash": "07db21651cfa",
+    "git_sha": "6754ad7",
+    "provider": "offline-lexicon",
+    "elapsed_seconds": 0.79,
+    "conversations_per_second": 1773.4
+  },
+  "corpus_diagnostics": {
+    "n_customers": 400,
+    "n_conversations": 1393,
+    "n_seeded_signals": 1061,
+    "stratum_counts": {
+      "concentrated": 100,
+      "decoy_accumulator": 31,
+      "decoy_extractor": 62,
+      "diffuse": 132,
+      "null": 75
+    },
+    "outcome_rate": 0.0975,
+    "mean_conversations_per_customer": 3.48,
+    "score_vs_volume_correlation": 0.2518
+  },
+  "extraction_fidelity": {
+    "planted_genuine": 808,
+    "extraction_recall": 0.6324,
+    "measured_miss_rate": 0.3676,
+    "unplanted_extractions": 82,
+    "decoys_planted": 253,
+    "decoy_fire_rate": 0.2016
+  },
+  "arm_results": [
+    {
+      "arm": "stateless-max",
+      "budget": 0.01,
+      "threshold": 0.2753,
+      "n_flagged": 4,
+      "recall": 0.0,
+      "precision": 0.0,
+      "median_lead_days": null,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0,
+        "7": 0.0,
+        "14": 0.0,
+        "30": 0.0,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "dumb-ledger",
+      "budget": 0.01,
+      "threshold": 0.8262,
+      "n_flagged": 4,
+      "recall": 0.0,
+      "precision": 0.0,
+      "median_lead_days": null,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0,
+        "7": 0.0,
+        "14": 0.0,
+        "30": 0.0,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "long-context-3",
+      "budget": 0.01,
+      "threshold": 0.458,
+      "n_flagged": 4,
+      "recall": 0.0,
+      "precision": 0.0,
+      "median_lead_days": null,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0,
+        "7": 0.0,
+        "14": 0.0,
+        "30": 0.0,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "full-ledger",
+      "budget": 0.01,
+      "threshold": 0.9446,
+      "n_flagged": 4,
+      "recall": 0.0,
+      "precision": 0.0,
+      "median_lead_days": null,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0,
+        "7": 0.0,
+        "14": 0.0,
+        "30": 0.0,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "hybrid",
+      "budget": 0.01,
+      "threshold": 0.9857,
+      "n_flagged": 4,
+      "recall": 0.0,
+      "precision": 0.0,
+      "median_lead_days": null,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0,
+        "7": 0.0,
+        "14": 0.0,
+        "30": 0.0,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "stateless-max",
+      "budget": 0.02,
+      "threshold": 0.2702,
+      "n_flagged": 8,
+      "recall": 0.0256,
+      "precision": 0.125,
+      "median_lead_days": 51,
+      "recall_by_stratum": {
+        "concentrated": 0.0714,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0256,
+        "7": 0.0256,
+        "14": 0.0256,
+        "30": 0.0256,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "dumb-ledger",
+      "budget": 0.02,
+      "threshold": 0.8262,
+      "n_flagged": 8,
+      "recall": 0.0,
+      "precision": 0.0,
+      "median_lead_days": null,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0,
+        "7": 0.0,
+        "14": 0.0,
+        "30": 0.0,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "long-context-3",
+      "budget": 0.02,
+      "threshold": 0.458,
+      "n_flagged": 8,
+      "recall": 0.0,
+      "precision": 0.0,
+      "median_lead_days": null,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0,
+        "7": 0.0,
+        "14": 0.0,
+        "30": 0.0,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "full-ledger",
+      "budget": 0.02,
+      "threshold": 0.9162,
+      "n_flagged": 8,
+      "recall": 0.0,
+      "precision": 0.0,
+      "median_lead_days": null,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0,
+        "7": 0.0,
+        "14": 0.0,
+        "30": 0.0,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "hybrid",
+      "budget": 0.02,
+      "threshold": 0.9785,
+      "n_flagged": 8,
+      "recall": 0.0,
+      "precision": 0.0,
+      "median_lead_days": null,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0,
+        "7": 0.0,
+        "14": 0.0,
+        "30": 0.0,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "stateless-max",
+      "budget": 0.05,
+      "threshold": 0.2651,
+      "n_flagged": 20,
+      "recall": 0.0513,
+      "precision": 0.1,
+      "median_lead_days": 52.0,
+      "recall_by_stratum": {
+        "concentrated": 0.1429,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0513,
+        "7": 0.0513,
+        "14": 0.0513,
+        "30": 0.0513,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "dumb-ledger",
+      "budget": 0.05,
+      "threshold": 0.7534,
+      "n_flagged": 20,
+      "recall": 0.0256,
+      "precision": 0.05,
+      "median_lead_days": 58,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0476,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0256,
+        "7": 0.0256,
+        "14": 0.0256,
+        "30": 0.0256,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "long-context-3",
+      "budget": 0.05,
+      "threshold": 0.458,
+      "n_flagged": 20,
+      "recall": 0.0,
+      "precision": 0.0,
+      "median_lead_days": null,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0,
+        "7": 0.0,
+        "14": 0.0,
+        "30": 0.0,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "full-ledger",
+      "budget": 0.05,
+      "threshold": 0.8387,
+      "n_flagged": 20,
+      "recall": 0.0256,
+      "precision": 0.05,
+      "median_lead_days": 33,
+      "recall_by_stratum": {
+        "concentrated": 0.0,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0476,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0256,
+        "7": 0.0256,
+        "14": 0.0256,
+        "30": 0.0256,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "hybrid",
+      "budget": 0.05,
+      "threshold": 0.9498,
+      "n_flagged": 20,
+      "recall": 0.0513,
+      "precision": 0.1,
+      "median_lead_days": 42.0,
+      "recall_by_stratum": {
+        "concentrated": 0.0714,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0476,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0513,
+        "7": 0.0513,
+        "14": 0.0513,
+        "30": 0.0513,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "stateless-max",
+      "budget": 0.1,
+      "threshold": 0.2573,
+      "n_flagged": 40,
+      "recall": 0.1538,
+      "precision": 0.15,
+      "median_lead_days": 51.5,
+      "recall_by_stratum": {
+        "concentrated": 0.2143,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.1429,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1538,
+        "7": 0.1538,
+        "14": 0.1538,
+        "30": 0.1538,
+        "60": 0.0256
+      }
+    },
+    {
+      "arm": "dumb-ledger",
+      "budget": 0.1,
+      "threshold": 0.7534,
+      "n_flagged": 40,
+      "recall": 0.1538,
+      "precision": 0.15,
+      "median_lead_days": 37.5,
+      "recall_by_stratum": {
+        "concentrated": 0.1429,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.1905,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1538,
+        "7": 0.1538,
+        "14": 0.1282,
+        "30": 0.1282,
+        "60": 0.0
+      }
+    },
+    {
+      "arm": "long-context-3",
+      "budget": 0.1,
+      "threshold": 0.398,
+      "n_flagged": 40,
+      "recall": 0.1538,
+      "precision": 0.15,
+      "median_lead_days": 37.0,
+      "recall_by_stratum": {
+        "concentrated": 0.0714,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.2381,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1538,
+        "7": 0.1538,
+        "14": 0.1282,
+        "30": 0.1026,
+        "60": 0.0513
+      }
+    },
+    {
+      "arm": "full-ledger",
+      "budget": 0.1,
+      "threshold": 0.7341,
+      "n_flagged": 40,
+      "recall": 0.1282,
+      "precision": 0.125,
+      "median_lead_days": 33,
+      "recall_by_stratum": {
+        "concentrated": 0.0714,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.1905,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1282,
+        "7": 0.1282,
+        "14": 0.1026,
+        "30": 0.1026,
+        "60": 0.0256
+      }
+    },
+    {
+      "arm": "hybrid",
+      "budget": 0.1,
+      "threshold": 0.9211,
+      "n_flagged": 40,
+      "recall": 0.0769,
+      "precision": 0.075,
+      "median_lead_days": 51,
+      "recall_by_stratum": {
+        "concentrated": 0.1429,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.0476,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.0769,
+        "7": 0.0769,
+        "14": 0.0769,
+        "30": 0.0769,
+        "60": 0.0
+      }
+    }
+  ],
+  "mechanism_ablations": [
+    {
+      "arm": "no-decay",
+      "budget": 0.1,
+      "threshold": 0.7784,
+      "n_flagged": 40,
+      "recall": 0.1538,
+      "precision": 0.15,
+      "median_lead_days": 42.5,
+      "recall_by_stratum": {
+        "concentrated": 0.0714,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.2381,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1538,
+        "7": 0.1538,
+        "14": 0.1538,
+        "30": 0.1538,
+        "60": 0.0256
+      }
+    },
+    {
+      "arm": "no-corroboration",
+      "budget": 0.1,
+      "threshold": 0.4821,
+      "n_flagged": 40,
+      "recall": 0.1282,
+      "precision": 0.125,
+      "median_lead_days": 41,
+      "recall_by_stratum": {
+        "concentrated": 0.0714,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.1905,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1282,
+        "7": 0.1282,
+        "14": 0.1026,
+        "30": 0.1026,
+        "60": 0.0256
+      }
+    },
+    {
+      "arm": "no-cross-channel",
+      "budget": 0.1,
+      "threshold": 0.6321,
+      "n_flagged": 40,
+      "recall": 0.1282,
+      "precision": 0.125,
+      "median_lead_days": 41,
+      "recall_by_stratum": {
+        "concentrated": 0.1429,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.1429,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1282,
+        "7": 0.1282,
+        "14": 0.1282,
+        "30": 0.1282,
+        "60": 0.0256
+      }
+    },
+    {
+      "arm": "no-escalation",
+      "budget": 0.1,
+      "threshold": 0.6601,
+      "n_flagged": 40,
+      "recall": 0.1538,
+      "precision": 0.15,
+      "median_lead_days": 31.5,
+      "recall_by_stratum": {
+        "concentrated": 0.1429,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.1905,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1538,
+        "7": 0.1538,
+        "14": 0.1026,
+        "30": 0.1026,
+        "60": 0.0256
+      }
+    },
+    {
+      "arm": "no-confidence-weighting",
+      "budget": 0.1,
+      "threshold": 0.9429,
+      "n_flagged": 40,
+      "recall": 0.1282,
+      "precision": 0.125,
+      "median_lead_days": 33,
+      "recall_by_stratum": {
+        "concentrated": 0.1429,
+        "decoy_accumulator (flag rate)": 0.0,
+        "decoy_extractor (flag rate)": 0.0,
+        "diffuse": 0.1429,
+        "null (flag rate)": 0.0
+      },
+      "lead_survival": {
+        "0": 0.1282,
+        "7": 0.1282,
+        "14": 0.1026,
+        "30": 0.1026,
+        "60": 0.0256
+      }
+    }
+  ]
+}
