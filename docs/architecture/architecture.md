@@ -32,7 +32,7 @@ flowchart TB
     end
 
     subgraph L2["Layer 2 · Agentic"]
-        EXTRACT["Extractor<br/>conversation → signals<br/>+ evidence spans"]
+        EXTRACT["Extractor<br/>conversation → signals<br/>+ the quote behind each"]
         AGENT["Investigator agent<br/>plan → call tools → decide"]
         TOOLS[/"Tools<br/>ledger · conversations<br/>transactions · accounts · prior cases"/]
         AGENT <--> TOOLS
@@ -56,11 +56,10 @@ flowchart TB
     style L3 fill:#e8f8ec,stroke:#34a853
 ```
 
-**Why the split matters commercially.** Layer 1 is what no vendor ships — incumbents reconcile customer
-memory to *current truth*, so new observations supersede old ones. Correct for personalization, wrong
-for risk, because three faint signals must **sum**, not overwrite. Layer 2 is why this is a product
-rather than a dashboard: something has to decide whether a threshold crossing is real, and that is
-judgment, not arithmetic.
+**Why the split matters.** Incumbent customer memory reconciles to *current truth*: new observations
+supersede old ones. That is right for personalization and wrong for risk, because three faint signals
+must **sum** rather than overwrite. Layer 2 exists because something has to decide whether a threshold
+crossing is real, and that is judgement rather than arithmetic.
 
 ---
 
@@ -76,7 +75,7 @@ sequenceDiagram
     participant H as Human reviewer
 
     C->>X: Mar · "moving back in with family"
-    X->>L: life_event, conf 0.30, quoted + spanned
+    X->>L: life_event, conf 0.30, with the quote
     L-->>L: score 0.10 — no action, RETAINED
 
     C->>X: Apr · "on statutory pay just now"
@@ -123,13 +122,14 @@ flowchart LR
     style VALID fill:#fde8e8
 ```
 
-Bounded by design: **max 6 steps, max 2 retries, cost cap per investigation.** An agent that can loop
-forever is not production-ready, and "feasibility & production readiness" is 25% of the score.
+Bounded by design: **max 6 steps, max 2 retries, and a per-investigation cost cap** checked before
+each call rather than after it. The cap holds cumulative spend for any realistic cost curve; a single
+call is bounded separately by `max_tokens` and a cap on how much tool output can re-enter the prompt.
+Budget exhaustion returns `insufficient_evidence` rather than raising.
 
-**Evidence is mandatory.** A decision must cite at least one `EvidenceRef` whose conversation id and
-character span resolve against the corpus. An unquotable claim is rejected by the schema, not by
-good intentions — that is our answer to hallucinated justification, and the rejection rate is a
-published metric rather than an exception swallowed at the edge.
+**Evidence is mandatory.** A decision must cite at least one `EvidenceRef` — conversation id, turn
+index and verbatim quote — that resolves against the corpus. A decision citing an unresolvable
+reference fails validation and is retried.
 
 ---
 
@@ -139,7 +139,7 @@ published metric rather than an exception swallowed at the edge.
 flowchart LR
     subgraph NIGHT["Nightly batch — no always-on infrastructure"]
         FEED["Existing conversation feeds<br/>(the bank already records these)"]
-        PIPE["ear pipeline"]
+        PIPE["earshot pipeline"]
         STORE[("Signal ledger")]
         FEED --> PIPE --> STORE
         PIPE --> CASES[("Cases")]
@@ -162,8 +162,10 @@ flowchart LR
 ```
 
 Batch, not real-time — a deliberate choice, and the one that makes the economics work. The cost that
-matters is **per conversation**, not latency on a live call, and an incremental ledger update is O(1)
-per arriving conversation instead of re-reading a customer's whole history through a model every night.
+matters is **per conversation**, not latency on a live call. Updating a ledger costs no model call at
+all, where re-reading a customer's whole history through a model every night costs one per customer
+per night. *(The ledger re-scores a customer from scratch today rather than incrementally — the saving
+is the absent model call, not an O(1) update. An incremental path is not built.)*
 
 **Integration surface is thin on purpose:** read the conversation feeds a bank already produces, write
 cases into a queue each team already works. It adds a memory on top of the tools banks already run
@@ -175,10 +177,11 @@ rather than replacing them.
 
 | Path | What lives there |
 |---|---|
-| `src/earshot/core/` | Layer 1. Corpus, ledger, re-score math, synthetic account/transaction state. **No LLM import allowed** |
+| `src/earshot/corpus.py`, `memory.py` | Layer 1. Dataset generation, the ledger, the re-score maths. No LLM import |
+| `src/earshot/core/` | Synthetic account and transaction state behind the agent's tools |
 | `src/earshot/agent/` | Layer 2. Investigator loop, tools, decision schemas, prompt loading |
 | `src/earshot/llm/` | Provider abstraction: OpenRouter, offline, response cache, cost + latency capture |
-| `src/earshot/evals/` | Accuracy, cost, latency, and agent-decision quality |
+| `src/earshot/evals.py`, `sweep.py` | Metrics, and the multi-seed harness that produces anything quotable |
 | `prompts/investigator/v1/` | Prompts as versioned files, so a prompt change is a reviewable diff |
 | `artifacts/cache/` | Committed model responses — the demo replays with no keys and no network |
 | `artifacts/runs/pinned/` | One committed run + manifest (seed, git SHA, config hash) |
@@ -193,12 +196,11 @@ rather than replacing them.
 | Does the extractor find what was planted? | Span precision/recall vs seeded signals; **published miss rate** |
 | Does memory beat forgetting? | Five arms at **equal alert budget**, broken out per stratum |
 | Does each scoring mechanism earn its place? | Per-mechanism ablation |
-| Is the agent right? | Verdict accuracy, routing accuracy vs seeded trajectory |
-| Is the agent honest? | Evidence-groundedness: share of decisions whose refs all resolve |
-| Can a bank afford it? | Cost per 1,000 conversations, tokens + steps per investigation, p50/p95 latency |
+| Is the agent right? | Verdict and routing accuracy vs the seeded trajectory — **not yet computed** |
+| Is the agent honest? | Share of decisions whose evidence resolves on the FIRST attempt (not after retries) — **not yet computed** |
+| Can a bank afford it? | Tokens, steps and cost per investigation are captured; cost per 1,000 conversations and p50/p95 are **not yet computed** |
 
-Numbers are regenerated by one command and written to a run manifest. Nothing published is typed by
-hand.
+Comparison numbers come from `earshot sweep` and are written to a run manifest with their seed list.
 
 **The honest state, as of 2026-08-09:** the ledger wins the stratum it exists for — arcs where evidence
 is spread thin — but loses overall to per-call detection, and a dumb unweighted sum currently matches

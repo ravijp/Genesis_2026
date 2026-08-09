@@ -10,9 +10,9 @@ Call** — a conversation signal layer that reads 100% of a bank's customer conv
 them into a standing per-customer ledger that re-scores as new conversations arrive.
 
 The finalized idea was submitted to the Genesis Committee on 2026-07-24 and is the contract:
-`sources/submission-ear-on-every-call.md`. Start with `docs/architecture/architecture.md` for the shape
-of the system; `docs/architecture/build-plan.md` is the plan of record — log any divergence from the
-submission in its §10.
+`sources/submission-ear-on-every-call.md`. `docs/architecture/architecture.md` is the authoritative description of
+the system. `docs/architecture/build-plan.md` is **stale** — it predates the agent layer and
+contradicts the code in several places; do not cite it until it is rewritten.
 
 Sprint backlog: JIRA project **AT (Agentic Trio)** at `https://zenonai.atlassian.net`.
 
@@ -29,8 +29,9 @@ Frozen gates: **2026-08-10** 15-min check-in · **2026-08-24** combined Sprint 1
 - The package lives at `src/earshot/` and is installed **editable**, so there is no `PYTHONPATH` hack and
   tests import the installed package. That is what makes the fresh-machine claim true rather than
   asserted — do not reintroduce path manipulation.
-- Commands: `uv run pytest` · `uv run ruff check src tests` · `uv run earshot run` · `uv run earshot demo` ·
-  `uv run earshot investigate`
+- Commands: `uv run pytest` · `uv run ruff check src tests tools` · **`uv run earshot sweep`** (the only
+  source of quotable numbers) · `uv run earshot demo` · `uv run earshot investigate` ·
+  `uv run earshot run` (one dataset, debugging only)
 - Add dependencies: `uv add <pkg>` (runtime) · `uv add --group dev <pkg>` (dev-only)
 - Never `pip install` into the venv directly. Always commit `pyproject.toml` + `uv.lock` together.
 
@@ -47,10 +48,10 @@ rather than hand-building Atlassian Document Format.
 ## Architecture in one line
 
 **Code counts and remembers. The model reads and judges.** Accumulation, decay and thresholds are
-deterministic Python in `src/earshot/core/` and `memory.py`; weighing ambiguous evidence is the agent's job
-in `src/earshot/agent/`. See `docs/architecture/architecture.md`.
+deterministic Python in `corpus.py` and `memory.py`; weighing ambiguous evidence is the agent's job in
+`src/earshot/agent/`. See `docs/architecture/architecture.md`.
 
-## Build rules (from BUILD-PLAN §4 — these are load-bearing, not style preferences)
+## Build rules — load-bearing, not style preferences
 
 - **Ground truth is authored before the text.** Deterministic code builds the plan; generation only
   writes prose around it. The answer key never comes from a model.
@@ -61,10 +62,10 @@ in `src/earshot/agent/`. See `docs/architecture/architecture.md`.
   scored *then* and scores *now*.
 - **Provider and corpus stay mechanically separated.** The offline extractor has its own lexicon and
   **must not be able to import the ground-truth plan** — there is a test asserting this. Never weaken it.
-- **Everything runs with zero API keys.** Offline numbers are always labelled `provider=offline-lexicon`
-  and never presented as a headline.
-- **One command reproduces every published number**, with a run manifest (seed, git SHA, config hash,
-  timestamp). The AI judge scores exactly this.
+- **Everything runs with zero API keys.** Offline numbers are always labelled with their provider and
+  never presented as a headline.
+- **Nothing is published from a single dataset.** `earshot sweep` produces quotable numbers; `earshot
+  run` is for debugging and says so itself. Every rate is quoted with its denominator.
 - **No outbound contact surface exists anywhere in the system.** HITL is enforced by absence.
 - **Don't drift toward detection.** Single-call signal detection is commodity and this idea was already
   judged a loser in that framing. Every demo beat and headline number is about accumulation and retro

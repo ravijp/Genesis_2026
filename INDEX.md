@@ -4,82 +4,95 @@
 > same commit. One line per file: what it is + status.
 > Status legend: `[stable]` authored & reviewed · `[skeleton]` structure awaiting content ·
 > `[source]` external input, do not edit · `[generated]` produced by a command, never hand-edited.
+>
+> *Broken by three commits on 2026-08-09, including the one that added the conventions documents.
+> Run `git show --stat` against this file before committing.*
 
-**This branch is scoped to the build.** The research and ideation phases (`02_ideas/`, `02_ideas_v2/`,
-`03_selection/`, most of `01_research/`, `PLAN.md`, `worklogs.md`, `actions-items.md`) were pruned
-2026-08-09 and the build was promoted to a `src/` layout 2026-08-09. Nothing is lost — all of it is on
-`main`: `git checkout main -- <path>`.
+**This branch is scoped to the build.** The research and ideation phases were pruned 2026-08-09 and the
+build promoted to a `src/` layout. Nothing is lost — all of it is on `main`:
+`git checkout main -- <path>`.
 
 ## Reading order for a fresh session
 
 1. `README.md` — what this is, and the fresh-machine quick start
-2. `CLAUDE.md` — session rules and the build rules that must not be weakened
-3. `docs/architecture/architecture.md` — the shape of the system, with diagrams
-4. `sources/submission-ear-on-every-call.md` — **the contract with the committee**
-5. `docs/architecture/build-plan.md` — the plan of record
+2. `CLAUDE.md` — session rules
+3. `docs/ops/working-agreements.md` — **the disciplines this project learned the hard way**
+4. `docs/architecture/architecture.md` — the shape of the system, with diagrams
+5. `sources/submission-ear-on-every-call.md` — the contract with the committee
 
 ## Root
 
-- `README.md` — front door: quick start, what it does, the honest state of the numbers, model access, repo map `[stable]`
-- `CLAUDE.md` — LLM session instructions + the load-bearing build rules `[stable]`
+- `README.md` — front door: quick start, the numbers with their denominators, model access, repo map `[stable]`
+- `CLAUDE.md` — LLM session instructions and the load-bearing build rules `[stable]`
 - `INDEX.md` — this map `[stable]`
-- `pyproject.toml` / `uv.lock` / `.python-version` — uv-managed Python 3.13, hatchling build, `ear` installed editable, console script `ear` `[stable]`
+- `pyproject.toml` / `uv.lock` / `.python-version` — uv-managed Python 3.13, hatchling build, `earshot` installed editable, console script `earshot` `[stable]`
+- `.env.example` — every `EARSHOT_*` variable with dummy values; the real `.env` is gitignored `[stable]`
 - `.gitignore` — ignores regenerable output and secrets; deliberately KEEPS `artifacts/cache/` and `artifacts/runs/pinned/` tracked so a judge can replay without keys `[stable]`
 - `.markdownlint.json` `[stable]`
 
 ## src/earshot/ — the product
 
-- `schema.py` — core types. `SeededSignal` (answer key) and `ExtractedSignal` (belief) are separate types on purpose. `LedgerEntry` carries retro-re-score fields and `is_load_bearing()` `[stable]`
-- `config.py` — every tunable parameter; records the finding that saturation cannot affect equal-budget rankings `[stable]`
+Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo` · `earshot investigate` · `earshot run` (single dataset, debugging only)
+
+- `schema.py` — core types. `SeededSignal` (answer key) and `ExtractedSignal` (belief) are separate types on purpose. `CustomerTruth` keeps `latent_risk` and `financial_state` apart `[stable]`
+- `config.py` — every tunable parameter; records that saturation cannot affect equal-budget rankings `[stable]`
 - `corpus_lexicon.py` — **authoring pass A**: the utterance fragments that get planted `[stable]`
 - `extract_lexicon.py` — **authoring pass B**: extractor cues, authored without reference to pass A. The partial overlap is the source of the honest miss rate — do not "fix" it `[stable]`
-- `corpus.py` — generator. Strata labelled from Dirichlet generation parameters, never from what a baseline can detect; outcomes drawn stochastically from latent risk `[stable]`
+- `corpus.py` — dataset generation. Strata labelled from generation parameters; outcomes drawn from latent risk `[stable]`
 - `extract.py` — stateless extraction + the offline lexicon provider `[stable]`
-- `memory.py` — **the heart**: append-only ledger + pure-code re-scorer (decay, corroboration, cross-channel, escalation, retro re-scoring) `[stable]`
+- `memory.py` — **the heart**: append-only ledger + pure-code re-scorer. `score()` returns copies and never mutates the ledger `[stable]`
 - `arms.py` — five comparison arms through one code path + per-mechanism ablations `[stable]`
-- `evals.py` — true equal-alert-budget comparison, per-stratum breakdown, extraction fidelity, corpus diagnostics `[stable]`
-- `cli.py` — `ear run` · `ear demo` · `ear investigate`; run manifests into `artifacts/runs/` `[stable]`
-- `core/accounts.py` — synthetic account state + 90-day transactions, derived from `(customer_id, latent_risk, seed, as_of_day)` only. Deliberately noisy: informative about risk without being a readout of it. **No LLM import allowed** `[stable]`
-- `agent/` — `schemas.py` (strict decision contract, ≥1 evidence ref) · `tools.py` (five pure tools, OpenAI schemas derived from pydantic) · `investigator.py` (bounded loop: 6 steps, 2 retries, cost cap) · `prompts.py` (versioned prompt loading + sha) `[stable]`
-- `llm/` — `base.py` (provider protocol, cost/latency/token capture) · `openrouter.py` (the only network call) · `offline.py` (rule-based, keyless, deliberately worse) · `cache.py` (content-addressed jsonl; record · replay · off) `[stable]`
+- `evals.py` — equal-alert-budget comparison by top-K ranking, per-stratum breakdown, extraction fidelity, corpus diagnostics `[stable]`
+- `sweep.py` — **multi-seed evaluation**: paired seed-by-seed comparison on any metric, exact sign test, and the integers behind every rate `[stable]`
+- `cli.py` — the four commands, run manifests, artifacts `[stable]`
+- `core/accounts.py` — synthetic account state and transactions behind the agent's tools. Derives from `(customer_id, financial_state, seed, as_of_day)` and **never** from a truth object `[stable]`
+- `agent/schemas.py` · `tools.py` · `investigator.py` · `prompts.py` — the investigator: strict decision schema with mandatory evidence, five pure tools, a bounded loop, versioned prompt loading `[stable]`
+- `llm/base.py` · `openrouter.py` · `offline.py` · `cache.py` — provider abstraction, cost and latency capture, content-addressed response cache with record/replay `[stable]`
 
 ## tests/
 
-- `test_separation.py` — **the honesty guard.** AST-level proof that nothing on the path from conversation to decision can import the answer key. Its danger surface is DISCOVERED by glob, so new agent tools are covered the moment they exist. Do not relax `[stable]`
-- `test_memory.py` — ledger invariants: never-discard, accumulation, retro re-score, decay, determinism, super-additivity vs concavity `[stable]`
-- `test_tools.py` — every tool in memory, zero network. Includes the two honesty properties: no tool result mentions an outcome, and latent risk shifts the account without determining it `[stable]`
-- `test_agent.py` — decision contract (no evidence → rejected), loop termination (step cap, retry cap, cost cap, provider failure all still emit a decision), offline path end-to-end, cache record→replay `[stable]`
+- `test_separation.py` — **import guard**: nothing on the decision path may import the generator, its lexicon, or a ground-truth type. Discovers its own surface by glob `[stable]`
+- `test_no_answer_key_leak.py` — **data guard**: nothing may receive a value that *encodes* a ground-truth field. The one that would have caught the leak we actually had `[stable]`
+- `test_memory.py` — ledger invariants: never-discard, accumulation, retro re-score, decay, determinism `[stable]`
+- `test_tools.py` — every agent tool, in-memory, no network `[stable]`
+- `test_agent.py` — decision schema, bounded loop, the cost cap holding, a crashing tool being contained `[stable]`
+
+## tools/jira/
+
+- `adf.py` — renders a markdown subset into Atlassian Document Format so descriptions are readable `[stable]`
+- `client.py` — minimal Jira client that records and reports every failure `[stable]`
+- `apply_standards.py` — board content for every issue, in one reviewable place `[stable]`
 
 ## prompts/
 
-- `investigator/v1/` — `system.md` (role, decision policy, evidence rule, routing) + `task.md` (slot template). Versioned files so a prompt change is a reviewable diff; the sha of both goes into the cache key and the run manifest `[stable]`
+- `investigator/v1/system.md` · `task.md` — prompts as versioned files, so a change is a reviewable diff `[stable]`
 
 ## docs/
 
-- `architecture/architecture.md` — the shape of the system: three layers, data flow, agent loop, runtime, what is measured. Mermaid diagrams `[stable]`
-- `architecture/build-plan.md` — plan of record: the wedge, the experiment, components, stages, cut list, risks, deltas-from-submission log `[stable]`
-- `gates/2026-08-10-sprint-1-checkin.md` — Sprint 1 check-in brief: committed-vs-completed, the week-one finding, the Twilio collision, access status `[stable]`
-- `gates/committee-requirements-email.md` — draft tooling/access email, to send right after the 2026-08-10 call `[stable]`
+- `ops/working-agreements.md` — **read before changing anything.** Evaluation discipline, the two-level answer-key guards, demo honesty, keeping docs in step with code, test discipline, bulk-operation discipline, delegation `[stable]`
+- `ops/jira-conventions.md` — how the AT board is written and updated `[stable]`
+- `architecture/architecture.md` — the shape of the system: three layers, data flow, agent loop, runtime, what is measured `[stable]`
+- `architecture/build-plan.md` — **STALE.** Predates the agent layer and contradicts the code in several places. `architecture.md` + `README.md` are authoritative until it is rewritten `[stale — do not cite]`
+- `gates/2026-08-10-sprint-1-checkin.md` — Sprint 1 check-in brief `[stable]`
+- `gates/committee-requirements-email.md` — tooling/access email, to send after the 2026-08-10 call `[stable]`
+- `impact/finance-brief.md` — finance value-chain research; feeds the Zenon-impact axis `[stable]`
 
 ## artifacts/
 
-- `runs/` — per-run JSON with manifest (seed, git SHA, config hash). Ignored except `runs/pinned/` `[generated]`
-- `cache/` — committed model responses so the demo replays with no keys and no network `[generated]`
+- `runs/pinned/` — one committed run + manifest `[generated]`
+- `cache/investigator-demo.jsonl` — committed model responses so the demo replays with no keys `[generated]`
+- `runs/` (unpinned) — per-run output, gitignored `[generated]`
 
 ## sources/ — primary inputs, do not edit
 
-- `submission-ear-on-every-call.md` — verbatim finalized Track A idea sent to the committee 2026-07-24. The contract `[source]`
-- `genesis-committee-comms.md` — frozen gate dates, the Sprint-1 downgrade, what the check-in expects, tooling status `[source]`
-- `kickoff-notes.md` — distilled competition facts: tracks, deliverables, rules, judging rubric `[stable]`
+- `submission-ear-on-every-call.md` — verbatim finalized Track A idea sent to the committee 2026-07-24 `[source]`
+- `genesis-committee-comms.md` — frozen gate dates, the Sprint-1 downgrade, tooling status `[source]`
+- `kickoff-notes.md` — competition facts: tracks, deliverables, rules, judging rubric `[stable]`
 - `zenon-client-context.md` — client roster; input to the Zenon-impact narrative `[stable]`
 - `2026 Zenon Agentic AI Competition Kickoff.pdf` — official kickoff deck `[source]`
 
-## 01_research/ — retained grounding only
-
-- `finance.md` — finance value-chain deep dive; feeds the Zenon-impact axis `[stable]`
-- `client-ai-state-map.md` — per-client AI-adoption states with dated evidence `[stable]`
-
 ## Tracked elsewhere
 
-Sprint backlog lives in JIRA project **AT (Agentic Trio)**, `https://zenonai.atlassian.net` — 5 epics,
-32 tasks. AWS CodeCommit is not yet provisioned; to be requested after the 2026-08-10 call.
+Sprint backlog: JIRA project **AT (Agentic Trio)**, `https://zenonai.atlassian.net` — 8 epics, 37 live
+tasks. Issues prefixed `[DELETE ME]` are dead and await a project admin. AWS CodeCommit is not yet
+provisioned.

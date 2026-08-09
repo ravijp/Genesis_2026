@@ -252,6 +252,57 @@ def test_cost_cap_is_a_cap_not_a_report() -> None:
     assert decision.verdict == "insufficient_evidence"
 
 
+def test_cost_cap_holds_when_each_call_costs_more_than_the_last() -> None:
+    """The realistic shape: tool results accumulate into the prompt, so cost climbs.
+
+    A constant-cost stub is the one shape a naive estimator gets right, so testing only that
+    proved nothing. This ramps 1.5x per call, which broke the previous implementation.
+    """
+
+    class Ramp:
+        name = "ramp"
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def complete(self, *args, **kwargs):  # noqa: ANN002, ANN003
+            self.calls += 1
+            return _tool_reply(
+                cost_usd=0.02 * (1.5**self.calls),
+                usage=Usage(prompt_tokens=100, completion_tokens=10),
+            )
+
+    _, trace = investigate(_context(), Ramp(), cost_cap_usd=0.25)
+    assert trace.cost_usd <= 0.25, f"spent {trace.cost_usd:.4f} against a 0.25 cap"
+
+
+def test_a_single_unbounded_call_can_still_breach_the_cap() -> None:
+    """Documents the honest limit rather than pretending it does not exist.
+
+    Two cheap calls followed by one enormously expensive one defeats any pre-flight estimate.
+    A single call is bounded by max_tokens and TOOL_RESULT_CHAR_CAP, not by the cost cap. If
+    someone later claims the cap is absolute, this test is the counter-example.
+    """
+
+    class Spike:
+        name = "spike"
+
+        def __init__(self) -> None:
+            self.costs = [0.001, 0.001, 5.00]
+            self.calls = 0
+
+        def complete(self, *args, **kwargs):  # noqa: ANN002, ANN003
+            cost = self.costs[min(self.calls, len(self.costs) - 1)]
+            self.calls += 1
+            return _tool_reply(
+                cost_usd=cost, usage=Usage(prompt_tokens=100, completion_tokens=10)
+            )
+
+    _, trace = investigate(_context(), Spike(), cost_cap_usd=0.25)
+    assert trace.cost_usd > 0.25
+    assert trace.stopped_because == "cost_cap"
+
+
 def test_a_tool_that_crashes_does_not_take_the_run_down() -> None:
     """`_run_tool` caught only ToolError/ValidationError, so a plain KeyError inside a tool
     escaped `investigate()` as a traceback — in front of whoever was watching the demo."""

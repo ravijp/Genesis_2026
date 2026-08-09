@@ -339,8 +339,32 @@ def _provider(name: str, prompt_sha: str):
 
     from .llm import OpenRouterProvider
 
+    # In replay mode the network is never touched, so a key must not be required to get here.
+    # Building the provider first meant replay either raised MissingAPIKey with no key, or --
+    # worse, with a key present -- degraded to a clean-looking empty case file. Either way the
+    # "runs in a room with no wifi" claim was false. Defer construction behind a lambda so the
+    # cache serves first and the live client is only built if something actually misses.
+    if cache_mode() == "replay":
+        return CachingProvider(_LazyOpenRouter(), prompt_sha)
+
     inner = OpenRouterProvider()
     return inner if cache_mode() == "off" else CachingProvider(inner, prompt_sha)
+
+
+class _LazyOpenRouter:
+    """Constructs the real client on first use, so replay never needs a key."""
+
+    name = "openrouter"
+
+    def __init__(self) -> None:
+        self._inner = None
+
+    def complete(self, *args, **kwargs):
+        if self._inner is None:
+            from .llm import OpenRouterProvider
+
+            self._inner = OpenRouterProvider()
+        return self._inner.complete(*args, **kwargs)
 
 
 def _print_case(

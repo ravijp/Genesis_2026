@@ -34,16 +34,55 @@ EAR = Path(earshot.__file__).resolve().parent
 # DISCOVERED, not listed. A hand-maintained list is one forgotten line away from a hole, and
 # the hole is invisible until a judge finds it. Anything matching these globs is covered the
 # moment it exists.
-_DANGER_GLOBS = ("extract*.py", "agent/*.py", "core/*.py", "llm/*.py")
+# Recursive, and it covers the whole decision path -- not just the obvious modules. A review
+# found memory.py, arms.py, evals.py, cli.py and sweep.py all outside the old globs while
+# sitting squarely between a conversation and a decision. Anything under the package that is
+# not the corpus side belongs here.
+# The corpus side AUTHORS the answer key.
+_CORPUS_SIDE = {"corpus.py", "corpus_lexicon.py", "config.py", "schema.py"}
+
+# The evaluation side is allowed to READ the answer key, because scoring is exactly what it
+# does — you cannot measure recall without knowing what was planted. It is deliberately a
+# short, named list rather than a pattern, and `test_evaluation_exemptions_stay_small`
+# fails if it grows: every module added here is one more place a leak could hide.
+_EVALUATION_SIDE = {
+    "evals.py",   # computes recall/precision against seeded truth
+    "sweep.py",   # runs evals across seeds
+    "cli.py",     # orchestrates; builds ToolContext from truth (guarded separately, see
+                  # tests/test_no_answer_key_leak.py, which checks it passes financial_state)
+}
+
+
+def _is_danger(path) -> bool:
+    """Everything that turns a conversation into a decision. Not the authors of truth, and
+    not the scorers of it."""
+    rel = path.relative_to(EAR).as_posix()
+    return (
+        path.name not in _CORPUS_SIDE
+        and path.name not in _EVALUATION_SIDE
+        and not rel.startswith("__")
+    )
+
+
+def test_evaluation_exemptions_stay_small() -> None:
+    """The exemption list is the guard's weakest point. Keep it short and deliberate."""
+    assert len(_EVALUATION_SIDE) <= 3, (
+        f"the evaluation exemption list has grown to {sorted(_EVALUATION_SIDE)} — every entry "
+        f"is a module allowed to see the answer key, so each one needs a reason"
+    )
 
 
 def _danger_surface() -> list[str]:
-    found: set[str] = set()
-    for glob in _DANGER_GLOBS:
-        for path in EAR.glob(glob):
-            if path.name != "__init__.py":
-                found.add(path.relative_to(EAR).as_posix())
-    return sorted(found)
+    """Every module on the path from a conversation to a decision, discovered recursively.
+
+    `__init__.py` is INCLUDED: it can re-export anything, and excluding it was an open
+    evasion route.
+    """
+    return sorted(
+        path.relative_to(EAR).as_posix()
+        for path in EAR.rglob("*.py")
+        if _is_danger(path)
+    )
 
 
 EXTRACTOR_MODULES = _danger_surface()
@@ -57,6 +96,12 @@ def test_danger_surface_is_not_empty() -> None:
     )
 
 FORBIDDEN_MODULES = {"corpus", "corpus_lexicon"}
+# Lowercase module names and dynamic import were both open evasion routes: a bare
+# `from .. import corpus` leaves node.module empty, and importlib bypasses the AST check
+# entirely unless the name itself is forbidden.
+FORBIDDEN_IDENTIFIERS = ("corpus_lexicon", "PLANTS", "DECOYS_EXTRACTOR",
+                        "DECOYS_ACCUMULATOR", "BY_TYPE", "Fragment", "import_module",
+                        "__import__")
 FORBIDDEN_NAMES = {"SeededSignal", "CustomerTruth", "Corpus", "Stratum", "Outcome", "Fragment"}
 
 
@@ -135,7 +180,7 @@ def _code_identifiers(path: Path) -> set[str]:
 def test_extractor_code_never_reaches_for_the_answer_key(module: str) -> None:
     """Belt and braces: catch a lazy `importlib` or a hard-coded fragment table name."""
     identifiers = _code_identifiers(EAR / module)
-    for forbidden in ("corpus_lexicon", "PLANTS", "DECOYS_EXTRACTOR", "DECOYS_ACCUMULATOR"):
+    for forbidden in FORBIDDEN_IDENTIFIERS:
         assert not any(forbidden in i for i in identifiers), (
             f"{module} has executable code referencing {forbidden!r}"
         )

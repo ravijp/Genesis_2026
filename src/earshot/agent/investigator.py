@@ -34,6 +34,18 @@ MAX_STEPS = 6
 MAX_SCHEMA_RETRIES = 2
 TOOL_RESULT_CHAR_CAP = 6000  # a runaway tool result must not blow the context window
 
+# Headroom multiplier for the cost pre-flight. Each step replays the previous tool results as
+# prompt tokens, so the next call is reliably dearer than the last; estimating without this
+# let the cap be breached while still reporting "cost_cap".
+#
+# WHAT THE CAP ACTUALLY ENFORCES, stated precisely because the previous version claimed more
+# than it delivered. Spend is bounded before each call using the priciest call so far times
+# this factor. That holds cumulative spend under the cap for any realistic cost curve, where
+# each call costs somewhat more than the last. It CANNOT bound a call that costs wildly more
+# than every prior call — no estimate can. A single call is bounded instead by `max_tokens`
+# on the request and `TOOL_RESULT_CHAR_CAP` on what can be fed back into the prompt.
+COST_GROWTH_FACTOR = 4.0
+
 
 @dataclass
 class StepRecord:
@@ -273,6 +285,8 @@ def investigate(
     decision: InvestigationDecision | None = None
     step = 0
 
+    # How much more the next call may cost than the priciest so far. Tool results accumulate
+    # into the prompt, so cost climbs; measured ramps sat well inside 4x.
     priciest_call = 0.0
     while step < max_steps:
         step += 1
@@ -284,7 +298,13 @@ def investigate(
         #
         # Honest limit: the very first call cannot be estimated, so a cap below the cost of a
         # single call cannot be enforced. Everything after that is genuinely bounded.
-        if cost_cap_usd is not None and trace.cost_usd + priciest_call > cost_cap_usd:
+        # Reserve headroom, because cost GROWS: every tool result is replayed as prompt tokens
+        # on the next call, so "the priciest call so far" systematically under-estimates the
+        # next one. Estimating with no growth factor let a $0.25 cap spend $0.26 on a gentle
+        # 1.5x ramp and $5.00 on a spike -- while still reporting "cost_cap", which is the
+        # exact shape of bug working-agreements.md §5 exists to prevent.
+        estimate = priciest_call * COST_GROWTH_FACTOR
+        if cost_cap_usd is not None and trace.cost_usd + estimate > cost_cap_usd:
             trace.stopped_because = "cost_cap"
             break
 

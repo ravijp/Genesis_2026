@@ -43,8 +43,8 @@ see [Model access](#model-access).
 
 ```
 conversations ──▶ extract signals ──▶ per-customer ledger ──▶ threshold? ──▶ agent investigates ──▶ human decides
-   (call/chat/     (with evidence      (append-only,             (re-scored     (tools: transactions,   (approve /
-    complaint)      spans)              never discards)           each batch)    accounts, cases)        dismiss / route)
+   (call/chat/     (with the quote     (append-only,             (re-scored     (tools: transactions,   (approve /
+    complaint)      behind each)        never discards)           each batch)    accounts, cases)        dismiss / route)
 ```
 
 One design rule runs through all of it: **code counts and remembers, the model reads and judges.**
@@ -94,11 +94,14 @@ What survives a paired test:
 > are fixed; the numbers above are post-fix, and the earlier claim that "memory loses overall" and that
 > "long-context beats us" did not survive either correction.
 
-Supporting figures, all from the same sweep: the offline extractor's measured recall is **0.681** —
-it misses 32% of planted signals and is deliberately the weaker arm; it fires on 22% of the lookalikes
-that were planted to fool it. Portfolio outcome rate 13.5%.
-Throughput ~1,770 conversations/sec. A live investigation on Claude Sonnet 4.5 costs **$0.078** and
-takes 33s.
+**Diagnostics, from one 1,500-customer dataset** — these describe the data and the extractor rather
+than comparing arms, so a single dataset is appropriate; they are not comparison results and should not
+be quoted as such. Extractor recall **0.681** (it misses 32% of planted signals and is deliberately the
+weaker option); it fires on 22% of the lookalikes planted to fool it; portfolio outcome rate 13.5%.
+
+**Not yet measured:** verdict and routing accuracy for the agent, first-attempt evidence-groundedness,
+cost per 1,000 conversations, and p50/p95 latency. One live investigation on Claude Sonnet 4.5 cost
+$0.078 and took 33s, measured once and not yet committed as an artifact.
 
 ---
 

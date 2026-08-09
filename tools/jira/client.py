@@ -97,18 +97,27 @@ class Jira:
     def comment(self, key: str, doc: dict) -> None:
         self._call("POST", f"/rest/api/3/issue/{key}/comment", {"body": doc}, f"comment {key}")
 
-    def link(self, inward: str, outward: str, kind: str = "Blocks") -> None:
-        """`inward` blocks `outward` (for kind='Blocks')."""
+    def link(self, blocker: str, blocked: str, kind: str = "Blocks") -> None:
+        """`blocker` blocks `blocked`.
+
+        Jira's naming is the trap here: for the "Blocks" type the OUTWARD issue is the one
+        that *is blocked*, and the INWARD issue is the blocker. Getting this backwards produced
+        six links that all pointed the wrong way — a write-up blocking the experiment that
+        produced it, and a demo recording blocking the demo. Verify direction after creating.
+        """
         self._call(
             "POST",
             "/rest/api/3/issueLink",
             {
                 "type": {"name": kind},
-                "inwardIssue": {"key": outward},
-                "outwardIssue": {"key": inward},
+                "inwardIssue": {"key": blocker},
+                "outwardIssue": {"key": blocked},
             },
-            f"link {inward}->{outward}",
+            f"link {blocker} blocks {blocked}",
         )
+
+    def delete_link(self, link_id: str) -> None:
+        self._call("DELETE", f"/rest/api/3/issueLink/{link_id}", label=f"unlink {link_id}")
 
     # -- reporting --------------------------------------------------------------
     def report(self) -> None:

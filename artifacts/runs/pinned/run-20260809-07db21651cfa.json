@@ -2,33 +2,33 @@
   "manifest": {
     "seed": 20260809,
     "config_hash": "07db21651cfa",
-    "git_sha": "6754ad7",
+    "git_sha": "55c5d52",
     "provider": "offline-lexicon",
-    "elapsed_seconds": 0.79,
-    "conversations_per_second": 1773.4
+    "elapsed_seconds": 0.68,
+    "conversations_per_second": 2022.9
   },
   "corpus_diagnostics": {
     "n_customers": 400,
-    "n_conversations": 1393,
-    "n_seeded_signals": 1061,
+    "n_conversations": 1366,
+    "n_seeded_signals": 992,
     "stratum_counts": {
-      "concentrated": 100,
-      "decoy_accumulator": 31,
-      "decoy_extractor": 62,
-      "diffuse": 132,
-      "null": 75
+      "concentrated": 106,
+      "decoy_accumulator": 38,
+      "decoy_extractor": 67,
+      "diffuse": 107,
+      "null": 82
     },
-    "outcome_rate": 0.0975,
-    "mean_conversations_per_customer": 3.48,
-    "score_vs_volume_correlation": 0.2518
+    "outcome_rate": 0.135,
+    "mean_conversations_per_customer": 3.42,
+    "score_vs_volume_correlation": 0.2745
   },
   "extraction_fidelity": {
-    "planted_genuine": 808,
-    "extraction_recall": 0.6324,
-    "measured_miss_rate": 0.3676,
-    "unplanted_extractions": 82,
-    "decoys_planted": 253,
-    "decoy_fire_rate": 0.2016
+    "planted_genuine": 728,
+    "extraction_recall": 0.6813,
+    "measured_miss_rate": 0.3187,
+    "unplanted_extractions": 84,
+    "decoys_planted": 264,
+    "decoy_fire_rate": 0.2159
   },
   "arm_results": [
     {
@@ -36,21 +36,21 @@
       "budget": 0.01,
       "threshold": 0.2753,
       "n_flagged": 4,
-      "recall": 0.0,
-      "precision": 0.0,
-      "median_lead_days": null,
+      "recall": 0.037,
+      "precision": 0.5,
+      "median_lead_days": 34.5,
       "recall_by_stratum": {
-        "concentrated": 0.0,
+        "concentrated": 0.0625,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.0,
+        "diffuse": 0.0417,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.0,
-        "7": 0.0,
-        "14": 0.0,
-        "30": 0.0,
+        "0": 0.037,
+        "7": 0.037,
+        "14": 0.037,
+        "30": 0.0185,
         "60": 0.0
       }
     },
@@ -103,7 +103,7 @@
     {
       "arm": "full-ledger",
       "budget": 0.01,
-      "threshold": 0.9446,
+      "threshold": 0.9077,
       "n_flagged": 4,
       "recall": 0.0,
       "precision": 0.0,
@@ -126,7 +126,7 @@
     {
       "arm": "hybrid",
       "budget": 0.01,
-      "threshold": 0.9857,
+      "threshold": 0.9853,
       "n_flagged": 4,
       "recall": 0.0,
       "precision": 0.0,
@@ -149,24 +149,24 @@
     {
       "arm": "stateless-max",
       "budget": 0.02,
-      "threshold": 0.2702,
+      "threshold": 0.2753,
       "n_flagged": 8,
-      "recall": 0.0256,
-      "precision": 0.125,
-      "median_lead_days": 51,
+      "recall": 0.0741,
+      "precision": 0.5,
+      "median_lead_days": 66.5,
       "recall_by_stratum": {
-        "concentrated": 0.0714,
+        "concentrated": 0.1875,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.0,
+        "diffuse": 0.0417,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.0256,
-        "7": 0.0256,
-        "14": 0.0256,
-        "30": 0.0256,
-        "60": 0.0
+        "0": 0.0741,
+        "7": 0.0741,
+        "14": 0.0741,
+        "30": 0.0556,
+        "60": 0.037
       }
     },
     {
@@ -197,91 +197,91 @@
       "budget": 0.02,
       "threshold": 0.458,
       "n_flagged": 8,
-      "recall": 0.0,
-      "precision": 0.0,
-      "median_lead_days": null,
+      "recall": 0.0185,
+      "precision": 0.125,
+      "median_lead_days": 66,
       "recall_by_stratum": {
-        "concentrated": 0.0,
+        "concentrated": 0.0625,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
         "diffuse": 0.0,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.0,
-        "7": 0.0,
-        "14": 0.0,
-        "30": 0.0,
-        "60": 0.0
+        "0": 0.0185,
+        "7": 0.0185,
+        "14": 0.0185,
+        "30": 0.0185,
+        "60": 0.0185
       }
     },
     {
       "arm": "full-ledger",
       "budget": 0.02,
-      "threshold": 0.9162,
+      "threshold": 0.8815,
       "n_flagged": 8,
-      "recall": 0.0,
-      "precision": 0.0,
-      "median_lead_days": null,
+      "recall": 0.0185,
+      "precision": 0.125,
+      "median_lead_days": 31,
       "recall_by_stratum": {
         "concentrated": 0.0,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.0,
+        "diffuse": 0.0417,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.0,
-        "7": 0.0,
-        "14": 0.0,
-        "30": 0.0,
+        "0": 0.0185,
+        "7": 0.0185,
+        "14": 0.0185,
+        "30": 0.0185,
         "60": 0.0
       }
     },
     {
       "arm": "hybrid",
       "budget": 0.02,
-      "threshold": 0.9785,
+      "threshold": 0.9707,
       "n_flagged": 8,
-      "recall": 0.0,
-      "precision": 0.0,
-      "median_lead_days": null,
+      "recall": 0.0185,
+      "precision": 0.125,
+      "median_lead_days": 31,
       "recall_by_stratum": {
         "concentrated": 0.0,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.0,
+        "diffuse": 0.0417,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.0,
-        "7": 0.0,
-        "14": 0.0,
-        "30": 0.0,
+        "0": 0.0185,
+        "7": 0.0185,
+        "14": 0.0185,
+        "30": 0.0185,
         "60": 0.0
       }
     },
     {
       "arm": "stateless-max",
       "budget": 0.05,
-      "threshold": 0.2651,
+      "threshold": 0.2702,
       "n_flagged": 20,
-      "recall": 0.0513,
-      "precision": 0.1,
-      "median_lead_days": 52.0,
+      "recall": 0.1111,
+      "precision": 0.3,
+      "median_lead_days": 62.5,
       "recall_by_stratum": {
-        "concentrated": 0.1429,
+        "concentrated": 0.25,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.0,
+        "diffuse": 0.0833,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.0513,
-        "7": 0.0513,
-        "14": 0.0513,
-        "30": 0.0513,
-        "60": 0.0
+        "0": 0.1111,
+        "7": 0.1111,
+        "14": 0.1111,
+        "30": 0.0741,
+        "60": 0.0556
       }
     },
     {
@@ -289,22 +289,22 @@
       "budget": 0.05,
       "threshold": 0.7534,
       "n_flagged": 20,
-      "recall": 0.0256,
-      "precision": 0.05,
-      "median_lead_days": 58,
+      "recall": 0.037,
+      "precision": 0.1,
+      "median_lead_days": 44.5,
       "recall_by_stratum": {
-        "concentrated": 0.0,
+        "concentrated": 0.0625,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.0476,
+        "diffuse": 0.0417,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.0256,
-        "7": 0.0256,
-        "14": 0.0256,
-        "30": 0.0256,
-        "60": 0.0
+        "0": 0.037,
+        "7": 0.037,
+        "14": 0.037,
+        "30": 0.0185,
+        "60": 0.0185
       }
     },
     {
@@ -312,68 +312,68 @@
       "budget": 0.05,
       "threshold": 0.458,
       "n_flagged": 20,
-      "recall": 0.0,
-      "precision": 0.0,
-      "median_lead_days": null,
+      "recall": 0.0741,
+      "precision": 0.2,
+      "median_lead_days": 49.5,
       "recall_by_stratum": {
-        "concentrated": 0.0,
+        "concentrated": 0.125,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.0,
+        "diffuse": 0.0833,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.0,
-        "7": 0.0,
-        "14": 0.0,
-        "30": 0.0,
-        "60": 0.0
+        "0": 0.0741,
+        "7": 0.0741,
+        "14": 0.0741,
+        "30": 0.0556,
+        "60": 0.0185
       }
     },
     {
       "arm": "full-ledger",
       "budget": 0.05,
-      "threshold": 0.8387,
+      "threshold": 0.8394,
       "n_flagged": 20,
-      "recall": 0.0256,
-      "precision": 0.05,
-      "median_lead_days": 33,
+      "recall": 0.0926,
+      "precision": 0.25,
+      "median_lead_days": 26,
       "recall_by_stratum": {
-        "concentrated": 0.0,
+        "concentrated": 0.0625,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.0476,
+        "diffuse": 0.1667,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.0256,
-        "7": 0.0256,
-        "14": 0.0256,
-        "30": 0.0256,
+        "0": 0.0926,
+        "7": 0.0926,
+        "14": 0.0926,
+        "30": 0.037,
         "60": 0.0
       }
     },
     {
       "arm": "hybrid",
       "budget": 0.05,
-      "threshold": 0.9498,
+      "threshold": 0.9487,
       "n_flagged": 20,
-      "recall": 0.0513,
-      "precision": 0.1,
-      "median_lead_days": 42.0,
+      "recall": 0.0926,
+      "precision": 0.25,
+      "median_lead_days": 31,
       "recall_by_stratum": {
-        "concentrated": 0.0714,
+        "concentrated": 0.125,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.0476,
+        "diffuse": 0.125,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.0513,
-        "7": 0.0513,
-        "14": 0.0513,
-        "30": 0.0513,
-        "60": 0.0
+        "0": 0.0926,
+        "7": 0.0926,
+        "14": 0.0926,
+        "30": 0.0556,
+        "60": 0.0185
       }
     },
     {
@@ -381,114 +381,114 @@
       "budget": 0.1,
       "threshold": 0.2573,
       "n_flagged": 40,
-      "recall": 0.1538,
-      "precision": 0.15,
-      "median_lead_days": 51.5,
+      "recall": 0.2037,
+      "precision": 0.275,
+      "median_lead_days": 59,
       "recall_by_stratum": {
-        "concentrated": 0.2143,
+        "concentrated": 0.4375,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.1429,
+        "diffuse": 0.1667,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.1538,
-        "7": 0.1538,
-        "14": 0.1538,
-        "30": 0.1538,
-        "60": 0.0256
+        "0": 0.2037,
+        "7": 0.2037,
+        "14": 0.2037,
+        "30": 0.1481,
+        "60": 0.0926
       }
     },
     {
       "arm": "dumb-ledger",
       "budget": 0.1,
-      "threshold": 0.7534,
+      "threshold": 0.6501,
       "n_flagged": 40,
-      "recall": 0.1538,
-      "precision": 0.15,
-      "median_lead_days": 37.5,
+      "recall": 0.1667,
+      "precision": 0.225,
+      "median_lead_days": 60,
       "recall_by_stratum": {
-        "concentrated": 0.1429,
-        "decoy_accumulator (flag rate)": 0.0,
+        "concentrated": 0.1875,
+        "decoy_accumulator (flag rate)": 0.0263,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.1905,
+        "diffuse": 0.25,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.1538,
-        "7": 0.1538,
-        "14": 0.1282,
-        "30": 0.1282,
-        "60": 0.0
+        "0": 0.1667,
+        "7": 0.1667,
+        "14": 0.1667,
+        "30": 0.1296,
+        "60": 0.0926
       }
     },
     {
       "arm": "long-context-3",
       "budget": 0.1,
-      "threshold": 0.398,
+      "threshold": 0.4084,
       "n_flagged": 40,
-      "recall": 0.1538,
-      "precision": 0.15,
-      "median_lead_days": 37.0,
+      "recall": 0.1481,
+      "precision": 0.2,
+      "median_lead_days": 39.5,
       "recall_by_stratum": {
-        "concentrated": 0.0714,
+        "concentrated": 0.3125,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.2381,
+        "diffuse": 0.125,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.1538,
-        "7": 0.1538,
-        "14": 0.1282,
-        "30": 0.1026,
-        "60": 0.0513
+        "0": 0.1481,
+        "7": 0.1481,
+        "14": 0.1296,
+        "30": 0.1111,
+        "60": 0.037
       }
     },
     {
       "arm": "full-ledger",
       "budget": 0.1,
-      "threshold": 0.7341,
+      "threshold": 0.7508,
       "n_flagged": 40,
-      "recall": 0.1282,
-      "precision": 0.125,
-      "median_lead_days": 33,
+      "recall": 0.1667,
+      "precision": 0.225,
+      "median_lead_days": 31,
       "recall_by_stratum": {
-        "concentrated": 0.0714,
+        "concentrated": 0.1875,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.1905,
+        "diffuse": 0.25,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.1282,
-        "7": 0.1282,
-        "14": 0.1026,
-        "30": 0.1026,
-        "60": 0.0256
+        "0": 0.1667,
+        "7": 0.1667,
+        "14": 0.1481,
+        "30": 0.0926,
+        "60": 0.0185
       }
     },
     {
       "arm": "hybrid",
       "budget": 0.1,
-      "threshold": 0.9211,
+      "threshold": 0.9121,
       "n_flagged": 40,
-      "recall": 0.0769,
-      "precision": 0.075,
-      "median_lead_days": 51,
+      "recall": 0.2222,
+      "precision": 0.3,
+      "median_lead_days": 39.0,
       "recall_by_stratum": {
-        "concentrated": 0.1429,
+        "concentrated": 0.375,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.0476,
+        "diffuse": 0.25,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.0769,
-        "7": 0.0769,
-        "14": 0.0769,
-        "30": 0.0769,
-        "60": 0.0
+        "0": 0.2222,
+        "7": 0.2222,
+        "14": 0.2222,
+        "30": 0.1296,
+        "60": 0.0741
       }
     }
   ],
@@ -496,116 +496,116 @@
     {
       "arm": "no-decay",
       "budget": 0.1,
-      "threshold": 0.7784,
+      "threshold": 0.7903,
       "n_flagged": 40,
-      "recall": 0.1538,
-      "precision": 0.15,
-      "median_lead_days": 42.5,
+      "recall": 0.1667,
+      "precision": 0.225,
+      "median_lead_days": 31,
       "recall_by_stratum": {
-        "concentrated": 0.0714,
+        "concentrated": 0.1875,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.2381,
+        "diffuse": 0.25,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.1538,
-        "7": 0.1538,
-        "14": 0.1538,
-        "30": 0.1538,
-        "60": 0.0256
+        "0": 0.1667,
+        "7": 0.1667,
+        "14": 0.1481,
+        "30": 0.0926,
+        "60": 0.0185
       }
     },
     {
       "arm": "no-corroboration",
       "budget": 0.1,
-      "threshold": 0.4821,
+      "threshold": 0.5262,
       "n_flagged": 40,
-      "recall": 0.1282,
-      "precision": 0.125,
-      "median_lead_days": 41,
+      "recall": 0.1667,
+      "precision": 0.225,
+      "median_lead_days": 31,
       "recall_by_stratum": {
-        "concentrated": 0.0714,
+        "concentrated": 0.1875,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.1905,
+        "diffuse": 0.25,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.1282,
-        "7": 0.1282,
-        "14": 0.1026,
-        "30": 0.1026,
-        "60": 0.0256
+        "0": 0.1667,
+        "7": 0.1667,
+        "14": 0.1481,
+        "30": 0.0926,
+        "60": 0.0185
       }
     },
     {
       "arm": "no-cross-channel",
       "budget": 0.1,
-      "threshold": 0.6321,
+      "threshold": 0.666,
       "n_flagged": 40,
-      "recall": 0.1282,
-      "precision": 0.125,
-      "median_lead_days": 41,
+      "recall": 0.1667,
+      "precision": 0.225,
+      "median_lead_days": 31,
       "recall_by_stratum": {
-        "concentrated": 0.1429,
+        "concentrated": 0.1875,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.1429,
+        "diffuse": 0.25,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.1282,
-        "7": 0.1282,
-        "14": 0.1282,
-        "30": 0.1282,
-        "60": 0.0256
+        "0": 0.1667,
+        "7": 0.1667,
+        "14": 0.1481,
+        "30": 0.0926,
+        "60": 0.0185
       }
     },
     {
       "arm": "no-escalation",
       "budget": 0.1,
-      "threshold": 0.6601,
+      "threshold": 0.6961,
       "n_flagged": 40,
-      "recall": 0.1538,
-      "precision": 0.15,
-      "median_lead_days": 31.5,
+      "recall": 0.1667,
+      "precision": 0.225,
+      "median_lead_days": 31,
       "recall_by_stratum": {
-        "concentrated": 0.1429,
+        "concentrated": 0.1875,
         "decoy_accumulator (flag rate)": 0.0,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.1905,
+        "diffuse": 0.25,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.1538,
-        "7": 0.1538,
-        "14": 0.1026,
-        "30": 0.1026,
-        "60": 0.0256
+        "0": 0.1667,
+        "7": 0.1667,
+        "14": 0.1481,
+        "30": 0.0926,
+        "60": 0.0185
       }
     },
     {
       "arm": "no-confidence-weighting",
       "budget": 0.1,
-      "threshold": 0.9429,
+      "threshold": 0.9375,
       "n_flagged": 40,
-      "recall": 0.1282,
-      "precision": 0.125,
-      "median_lead_days": 33,
+      "recall": 0.1667,
+      "precision": 0.225,
+      "median_lead_days": 31,
       "recall_by_stratum": {
-        "concentrated": 0.1429,
-        "decoy_accumulator (flag rate)": 0.0,
+        "concentrated": 0.1875,
+        "decoy_accumulator (flag rate)": 0.0263,
         "decoy_extractor (flag rate)": 0.0,
-        "diffuse": 0.1429,
+        "diffuse": 0.25,
         "null (flag rate)": 0.0
       },
       "lead_survival": {
-        "0": 0.1282,
-        "7": 0.1282,
-        "14": 0.1026,
-        "30": 0.1026,
-        "60": 0.0256
+        "0": 0.1667,
+        "7": 0.1667,
+        "14": 0.1481,
+        "30": 0.0926,
+        "60": 0.0185
       }
     }
   ]

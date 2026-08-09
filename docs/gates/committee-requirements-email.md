@@ -30,7 +30,7 @@ To be transparent about where we are: rather than stay blocked, we bridged model
 OpenRouter account** so the agent layer could be built this week. That is fine for development, but
 competition rule 1 says the IP is Zenon's and rule 2 says Zenon provides the keys — so we'd like the
 final submission running on Zenon-provided credentials. Our provider layer is model-agnostic, so
-switching is a one-line config change whenever the keys arrive.
+switching is a new provider class behind the same interface — an afternoon, not a migration.
 
 ## 2. AWS services
 
@@ -52,10 +52,10 @@ so the "meaningful commits" evidence survives the move.
 
 ## 3. JIRA — resolved, no action needed
 
-We have board access and have loaded the backlog under project **AT (Agentic Trio)**: 5 epics and 32
-tasks covering the deterministic core, the agentic layer, evaluation, demo deliverables, and
-engineering practice, with completed work already resolved. Please flag if you'd rather we filed
-somewhere else.
+We have board access and have loaded the backlog under project **AT (Agentic Trio)**: 8 epics and 37
+tasks covering the dataset, the reading step, the customer memory, the investigator, the review queue,
+measurement, the demo, and engineering practice. Nothing is marked resolved yet — none of it has been
+reviewed by a second person. Please flag if you'd rather we filed somewhere else.
 
 ## 4. Where we are
 
