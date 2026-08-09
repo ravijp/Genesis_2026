@@ -1,4 +1,4 @@
-"""Evaluation harness (BUILD-PLAN §3.2-3.4, C5).
+"""Evaluation harness.
 
 Two things here are deliberate corrections to v1 and should not be "simplified" away:
 
@@ -142,7 +142,7 @@ def evaluate_all(
 def extraction_fidelity(
     seeded: tuple[SeededSignal, ...], extracted: list[ExtractedSignal]
 ) -> dict[str, float | int]:
-    """How good is the extractor, really? Published, never hidden (BUILD-PLAN R2).
+    """How good is the extractor, really? Published, never hidden.
 
     'It misses N% of planted signals, it is the WEAKER arm, and the memory delta holds anyway'
     is a stronger position than a matcher that scores itself perfectly.
@@ -178,7 +178,7 @@ def corpus_diagnostics(corpus: Corpus, arms: dict[str, ArmResult]) -> dict[str, 
         len(corpus.conversations_for(c.customer_id)) for c in corpus.customers
     ]
 
-    # Volume confound check (BUILD-PLAN §3.3): does the full ledger just reward talkative
+    # Volume confound check: does the full ledger just reward talkative
     # customers? If score tracks conversation count, the "memory" is only "more text".
     full = arms.get("full-ledger")
     volume_correlation = None

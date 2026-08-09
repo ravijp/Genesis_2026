@@ -1,4 +1,4 @@
-"""One command reproduces every number (BUILD-PLAN Rule 8).
+"""One command reproduces every number .
 
     uv run python -m earshot.cli run          # full pipeline + scorecard + results/ artifacts
     uv run python -m earshot.cli demo         # the accumulation moment, narrated
@@ -169,12 +169,14 @@ def cmd_demo(run: RunConfig) -> int:
         timeline = stateless_arm.timelines.get(customer_id)
         return bool(timeline) and any(s >= stateless_cut for _, s in timeline.points)
 
-    # Every customer the ledger catches that a per-call tool misses. Counting them turns
-    # "here is a nice example" into a population statistic a judge can check.
+    # Customers the ledger catches that a per-call tool misses AND who went on to have a real
+    # outcome. The outcome filter is the point: without it the count included customers who
+    # were never at risk, so "4 caught by the ledger" was four true-positives-that-weren't, and
+    # the ratio underneath divided by a population that mostly had nothing to catch.
     accumulation_only: list[tuple[float, str, object, list]] = []
     for customer_id in ledger.customers():
         t = truth.get(customer_id)
-        if t is None or t.stratum is not Stratum.DIFFUSE:
+        if t is None or t.stratum is not Stratum.DIFFUSE or t.outcome is Outcome.NONE:
             continue
         for signal_type in {s.signal_type for s in ledger.signals(customer_id)}:
             points = ledger.timeline(customer_id, signal_type)
@@ -185,6 +187,12 @@ def cmd_demo(run: RunConfig) -> int:
             accumulation_only.append(
                 (points[-1].score - points[0].score, customer_id, signal_type, points)
             )
+
+    # The honest denominator: thin-evidence customers who actually had an outcome to catch.
+    catchable = [
+        c for c in corpus.customers
+        if c.stratum is Stratum.DIFFUSE and c.outcome is not Outcome.NONE
+    ]
 
     # Prefer an arc that actually ended in an outcome, then a longer arc, then a bigger climb.
     # A real outcome lets the demo close on lead time instead of trailing off.
@@ -230,8 +238,14 @@ def cmd_demo(run: RunConfig) -> int:
 
     print(f"review budget {INVESTIGATION_BUDGET:.0%} of the portfolio  ->  "
           f"ledger threshold {threshold:.3f} · per-call threshold {stateless_cut:.3f}")
-    print(f"{len(accumulation_only)} customer(s) in this corpus cross on accumulation alone "
-          f"— caught by the ledger, missed by a per-call tool. Showing one.\n")
+    clean = len(accumulation_only)
+    print(f"{clean} of {len(catchable)} thin-evidence customers with a real outcome are caught by")
+    print("the ledger while per-call detection NEVER fires for them, at any point.")
+    if clean == 0:
+        print("\n*** No such customer exists in this dataset. What follows is the clearest")
+        print("*** accumulation arc available and is NOT an instance of the claim. Try a")
+        print("*** larger --customers, and see the README for the population result.")
+    print()
 
     for i, breakdown in enumerate(points, start=1):
         newest = max(breakdown.entries, key=lambda e: e.signal.day)
@@ -263,12 +277,10 @@ def cmd_demo(run: RunConfig) -> int:
     # tautology dressed as a result -- and both of the old "honest note" branches were
     # unreachable from this path for the same reason. The population count is the honest
     # version of the same claim, so it is what closes.
-    total_diffuse = sum(
-        1 for c in corpus.customers if c.stratum is Stratum.DIFFUSE
-    )
-    print(f"\nThis customer was chosen from the {len(accumulation_only)} in this dataset where the")
-    print(f"ledger opens a case and per-call detection never fires -- out of {total_diffuse}")
-    print("thin-evidence customers in total. That ratio is the claim; this is one instance of it.")
+    print(f"\nChosen from {len(accumulation_only)} of {len(catchable)} thin-evidence customers who")
+    print("went on to have a real outcome, where the ledger opens a case and per-call detection")
+    print("never does. That ratio is the claim; this is one instance of it. The population")
+    print("result is in the README, measured across ten datasets.")
 
     if t.outcome is not Outcome.NONE and t.outcome_day is not None:
         opened = final.as_of_day
@@ -459,7 +471,10 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
           f"total ${total_cost:.4f}   unresolved evidence refs: {unresolved}")
 
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
-    out = ARTIFACTS / f"investigate-{run.seed}-{run.hash()}.json"
+    # Provider, cache mode and limit in the filename: an offline run and a replay run
+    # previously wrote the SAME file, so comparing two providers silently destroyed the first.
+    slug = f"{provider_name}-{cache_mode()}-{limit}"
+    out = ARTIFACTS / f"investigate-{run.seed}-{run.hash()}-{slug}.json"
     out.write_text(
         json.dumps(
             {

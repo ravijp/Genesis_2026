@@ -202,8 +202,8 @@ rather than replacing them.
 
 Comparison numbers come from `earshot sweep` and are written to a run manifest with their seed list.
 
-**The honest state, as of 2026-08-09:** the ledger wins the stratum it exists for — arcs where evidence
-is spread thin — but loses overall to per-call detection, and a dumb unweighted sum currently matches
-the full ledger. That is a real finding from a harness built to test the claim rather than illustrate
-it, and it reframes the arms as *"which trigger feeds the investigator best"* rather than as the product
-itself.
+**Where the numbers stand.** Across ten datasets, the ledger catches 134 of 780 thin-evidence
+customers against 96 of 780 for score-each-call-and-forget (8 wins, 2 ties, no losses, `p=0.008`).
+Overall no arm is distinguishable from any other, and a plain unweighted count matches the full
+ledger. So the arms answer *which trigger feeds the investigator best*, not *what the product is*.
+Full table and method in the README.

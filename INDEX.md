@@ -45,6 +45,7 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `evals.py` — equal-alert-budget comparison by top-K ranking, per-stratum breakdown, extraction fidelity, corpus diagnostics `[stable]`
 - `sweep.py` — **multi-seed evaluation**: paired seed-by-seed comparison on any metric, exact sign test, and the integers behind every rate `[stable]`
 - `cli.py` — the four commands, run manifests, artifacts `[stable]`
+- `__init__.py` (package root, and in `agent/`, `core/`, `llm/`) — package markers; all are covered by the separation guard `[stable]`
 - `core/accounts.py` — synthetic account state and transactions behind the agent's tools. Derives from `(customer_id, financial_state, seed, as_of_day)` and **never** from a truth object `[stable]`
 - `agent/schemas.py` · `tools.py` · `investigator.py` · `prompts.py` — the investigator: strict decision schema with mandatory evidence, five pure tools, a bounded loop, versioned prompt loading `[stable]`
 - `llm/base.py` · `openrouter.py` · `offline.py` · `cache.py` — provider abstraction, cost and latency capture, content-addressed response cache with record/replay `[stable]`
@@ -55,6 +56,7 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `test_no_answer_key_leak.py` — **data guard**: nothing may receive a value that *encodes* a ground-truth field. The one that would have caught the leak we actually had `[stable]`
 - `test_memory.py` — ledger invariants: never-discard, accumulation, retro re-score, decay, determinism `[stable]`
 - `test_tools.py` — every agent tool, in-memory, no network `[stable]`
+- `test_no_answer_key_leak.py` — also discovers `AccountSnapshot`'s numeric fields rather than listing them; a hand-written list named a field that did not exist and silently skipped `[stable]`
 - `test_agent.py` — decision schema, bounded loop, the cost cap holding under a rising cost curve (and the documented spike case where it cannot), a crashing tool being contained `[stable]`
 - `test_sweep.py` — the multi-seed harness: sign test vs hand computation, pairing on seed, denominators present and identical across arms, equal alert budget, determinism `[stable]`
 

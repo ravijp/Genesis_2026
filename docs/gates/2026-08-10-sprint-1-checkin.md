@@ -16,7 +16,7 @@ precision numbers · build and rehearse the three-conversation accumulation scen
 | # | Item | State |
 |---|---|---|
 | 1 | Synthetic multi-channel corpus (calls, chats, complaints) with ground truth authored **before** the prose | Built — 4 signal families, difficulty strata set by how the evidence is spread, two kinds of lookalike, outcomes drawn rather than assigned. 15,000 customers scored in ~20 seconds |
-| 2 | Signal-extraction pipeline, run at volume | Built — ~1,770 conversations/sec, no API keys required |
+| 2 | Signal-extraction pipeline, run at volume | Built — ~2,000 conversations/sec, no API keys required |
 | 3 | First recall and precision numbers | Built, then rebuilt at proper scale — see §2 |
 | 4 | The accumulation scenario | Built and reproducible on demand |
 | 5 | *(Sprint 2)* Per-customer ledger and re-scoring logic as a pure, tested function | **Pulled forward** — the accumulation scenario cannot be rehearsed without it. Deterministic, no model calls |
@@ -24,7 +24,7 @@ precision numbers · build and rehearse the three-conversation accumulation scen
 Also landed, beyond the commitment: **an investigator agent** that works each flagged customer using
 tools (transactions, account history, prior cases) and produces a case file with quoted evidence; a
 five-arm comparison harness with per-mechanism ablations; multi-dataset evaluation with proper
-significance testing; 94 tests; and one-command reproduction with a run manifest.
+significance testing; 130 tests; and one-command reproduction with a run manifest.
 
 **A word on status.** Nothing above is marked Done on our board, and that is deliberate. All of it was
 written by one person over a weekend and none of it has been reviewed by a second — Namit and Ishant

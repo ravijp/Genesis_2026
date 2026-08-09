@@ -1,4 +1,4 @@
-"""All tunable parameters live here. No magic numbers in logic modules (BUILD-PLAN C3).
+"""All tunable parameters live here. No magic numbers in logic modules.
 
 Every value in ScoringConfig is ablatable and sweepable. The sensitivity sweep exists to
 discover that the memory advantage is a tuning artifact, so these must be data, not literals
@@ -85,7 +85,7 @@ class RunConfig:
     seed: int = 20260809
     corpus: CorpusConfig = field(default_factory=CorpusConfig)
     scoring: ScoringConfig = field(default_factory=ScoringConfig)
-    # Extractor honesty knobs (BUILD-PLAN Rule 5 / R2): the offline provider is deliberately
+    # Extractor honesty knobs: the offline provider is deliberately
     # imperfect and its miss rate is measured and published, never hidden.
     offline_miss_rate: float = 0.22
     offline_false_fire_rate: float = 0.08

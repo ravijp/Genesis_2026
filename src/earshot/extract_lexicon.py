@@ -10,7 +10,7 @@ enforces it. The consequence is real and intended:
   * some cues fire on decoys and on innocent filler                 -> honest false positives
 
 That is what makes the offline provider the *weaker* arm, and it is why the memory delta
-means something when it holds anyway. See BUILD-PLAN R2.
+means something when it holds anyway.
 """
 
 from __future__ import annotations

@@ -2,7 +2,7 @@
 
 This module is what gets *planted* into synthetic conversations.
 
-SEPARATION RULE (BUILD-PLAN Rule 5 / R2). The extractor's cue vocabulary lives in
+SEPARATION RULE. The extractor's cue vocabulary lives in
 `extract_lexicon.py` and was authored as a separate pass, as if by someone who had never seen
 this file. The overlap is deliberately partial: some fragments here are phrased in ways the
 extractor's cues do not cover, which is where its honest miss rate comes from. Do not "fix"

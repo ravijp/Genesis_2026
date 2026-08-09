@@ -1,6 +1,6 @@
 """Core data types for the conversation signal layer.
 
-Design note (BUILD-PLAN Rule 1): ground truth is authored *before* the prose. `SeededSignal`
+Design note: ground truth is authored *before* the prose. `SeededSignal`
 is the answer key and is produced by the corpus planner; `ExtractedSignal` is what an
 extractor believes it found. They are deliberately separate types so nothing downstream can
 confuse one for the other, and so the eval can only ever compare them explicitly.
@@ -28,7 +28,7 @@ class SignalType(str, Enum):
 class Stratum(str, Enum):
     """Labelled from *generation parameters*, never from what a baseline can detect.
 
-    BUILD-PLAN §3: v1 defined these by reference to the baseline's decision function, which
+    An earlier version defined these by reference to the baseline's decision function, which
     made the headline result circular. Concentrated evidence mass -> CONCENTRATED; diffuse
     mass -> DIFFUSE. Whether an arm can actually detect them is measured, not assumed.
     """
@@ -132,7 +132,7 @@ class Corpus:
 class LedgerEntry:
     """One extracted signal, retained forever.
 
-    BUILD-PLAN Rule 3 (never-discard): sub-threshold signals are *retained and stay summable*.
+    Never-discard: sub-threshold signals are *retained and stay summable*.
     This is the design inversion against reconcile-to-current-truth. Nothing in this codebase
     may delete or supersede a ledger entry.
 

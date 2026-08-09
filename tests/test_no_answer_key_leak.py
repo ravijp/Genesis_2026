@@ -89,7 +89,27 @@ def test_tool_context_is_not_constructed_from_latent_risk() -> None:
     assert "truth.latent_risk" not in source, "latent_risk is being passed into ToolContext"
 
 
-@pytest.mark.parametrize("field", ["balance_trend", "days_in_overdraft", "returned_payments"])
+def _snapshot_fields() -> list[str]:
+    """Discovered, not listed. A hand-written list named `returned_payments`, which is not a
+    field on AccountSnapshot — so `getattr(..., 0.0)` returned a constant, the test skipped as
+    "near-constant", and the most distress-correlated value the agent reads went unguarded."""
+    import dataclasses
+
+    from earshot.core.accounts import AccountSnapshot
+
+    return sorted(
+        f.name for f in dataclasses.fields(AccountSnapshot)
+        if f.type in ("float", "int", float, int)
+    )
+
+
+def test_snapshot_field_discovery_is_not_empty() -> None:
+    assert len(_snapshot_fields()) >= 3, (
+        f"discovery found {_snapshot_fields()} — the per-field leak check covers nothing"
+    )
+
+
+@pytest.mark.parametrize("field", _snapshot_fields())
 def test_account_features_do_not_separate_the_populations(field: str) -> None:
     """The individual signals the agent reads must overlap between the two populations.
 
@@ -102,7 +122,9 @@ def test_account_features_do_not_separate_the_populations(field: str) -> None:
         snap = account_snapshot(
             customer.customer_id, customer.financial_state, CORPUS.seed, as_of_day=180
         )
-        return float(getattr(snap, field, 0.0) or 0.0)
+        # No default: a missing field must raise, not silently become a constant that then
+        # gets skipped as "near-constant".
+        return float(getattr(snap, field) or 0.0)
 
     sample = CORPUS.customers[:400]
     arc = [value(c) for c in sample if c.stratum in ARC_STRATA]

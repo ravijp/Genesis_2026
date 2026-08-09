@@ -78,8 +78,8 @@ What survives a paired test:
   **96 of 780** for scoring-and-forgetting, winning **8 seeds of 10 with 2 ties and zero losses**
   (`p=0.008`). This is the entry's pre-registered headline, and `earshot sweep` prints it first.
 - **Overall, memory neither beats nor loses to per-call detection.** Every pairing involving the full
-  ledger is non-significant (`p≥0.29`). One unrelated pairing does reach `p=0.039` (hybrid vs
-  dumb-ledger) — with 14 pairwise tests and no multiplicity correction, that is a hint, not a result,
+  ledger is non-significant (smallest `p=0.289`). One unrelated pairing does reach `p=0.039` (hybrid vs
+  dumb-ledger) — with 13 pairwise tests and no multiplicity correction, that is a hint, not a result,
   and we are not going to report it as one.
 - **Our scoring machinery still earns nothing.** Full ledger vs a dumb unweighted count on diffuse
   arcs: **3–4–3, `p=1.000`**. Decay, corroboration, cross-channel weighting and escalation are
@@ -94,14 +94,15 @@ What survives a paired test:
 > are fixed; the numbers above are post-fix, and the earlier claim that "memory loses overall" and that
 > "long-context beats us" did not survive either correction.
 
-**Diagnostics, from one 1,500-customer dataset** — these describe the data and the extractor rather
+**Diagnostics, from the committed 400-customer run** in `artifacts/runs/pinned/` — these describe the data and the extractor rather
 than comparing arms, so a single dataset is appropriate; they are not comparison results and should not
 be quoted as such. Extractor recall **0.681** (it misses 32% of planted signals and is deliberately the
 weaker option); it fires on 22% of the lookalikes planted to fool it; portfolio outcome rate 13.5%.
 
 **Not yet measured:** verdict and routing accuracy for the agent, first-attempt evidence-groundedness,
-cost per 1,000 conversations, and p50/p95 latency. One live investigation on Claude Sonnet 4.5 cost
-$0.078 and took 33s, measured once and not yet committed as an artifact.
+cost per 1,000 conversations, and p50/p95 latency. The two live Claude Sonnet 4.5 investigations in
+`artifacts/cache/` cost **$0.089 and $0.097** and took 30.3s and 33.4s. They are committed, and
+`EARSHOT_CACHE_MODE=replay` replays them with no network and an invalid key.
 
 ---
 

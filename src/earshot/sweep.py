@@ -79,7 +79,9 @@ def _one_seed(base: RunConfig, seed: int, budget: float) -> list[ArmSample]:
     out: list[ArmSample] = []
     for name, arm in arms.items():
         r = evaluate_arm(corpus, arm, budget)
-        diffuse = r.recall_by_stratum.get("diffuse", 0.0)
+        # Indexed, not .get() -- a renamed stratum must fail loudly rather than silently
+        # reporting the pre-registered headline as 0/780.
+        diffuse = r.recall_by_stratum["diffuse"]
         out.append(
             ArmSample(
                 arm=name,

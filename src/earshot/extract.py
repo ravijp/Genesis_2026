@@ -1,12 +1,12 @@
 """Extraction: conversation in, signals out. Stateless by construction.
 
-Provider contract (BUILD-PLAN C2). Every provider sees one conversation and nothing else --
+Provider contract. Every provider sees one conversation and nothing else --
 no customer history, no ledger, no ground truth. That statelessness is what makes the memory
 ablation meaningful: all four arms share the identical extraction stream, so the only thing
 that varies between them is what happens *after* extraction.
 
 `OfflineLexiconExtractor` is the provider that ships first. It is deliberately the weaker
-arm (BUILD-PLAN R2): it misses fragments whose phrasing its cues don't cover, and it fires on
+arm: it misses fragments whose phrasing its cues don't cover, and it fires on
 decoys its dampeners don't catch. Its measured miss rate is published rather than hidden --
 "it misses N% of planted signals and the memory delta holds anyway" is a stronger position
 than a matcher that scores itself perfectly.

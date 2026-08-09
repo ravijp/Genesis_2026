@@ -1,6 +1,6 @@
 """Model access: one provider contract, three implementations, zero required keys.
 
-`OfflineProvider` is what ships by default. OpenRouter is strictly additive (BUILD-PLAN S3), and
+`OfflineProvider` is what ships by default. OpenRouter is strictly additive, and
 `CachingProvider` turns a recorded run into a replayable one.
 """
 

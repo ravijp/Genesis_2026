@@ -1,6 +1,6 @@
 """The per-customer signal ledger and the re-scorer. Pure code, no model calls.
 
-This is the heart of the entry (BUILD-PLAN C3) and the two mechanics it exists to implement
+This is the heart of the entry, and the two mechanics it exists to implement
 are the two the market does not ship:
 
 **Never-discard (Rule 3).** Nothing here deletes or supersedes an entry. Incumbent customer

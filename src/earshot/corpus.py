@@ -1,6 +1,6 @@
 """Synthetic corpus generation: plan first, prose second.
 
-BUILD-PLAN §3 / C1. Two properties matter more than realism here:
+Two properties matter more than realism here:
 
 1. **Strata are generative.** A customer's stratum is decided by the Dirichlet concentration
    used to split their arc's evidence mass, NOT by asking whether some baseline can detect

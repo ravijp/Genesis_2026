@@ -11,7 +11,7 @@ recognise. Its confidence is capped at 0.75 for that reason, it reports zero tok
 cost because no model ran, and its verdicts are reported in the eval as the offline arm — never
 folded in with real-model numbers.
 
-Constrained deliberately (BUILD-PLAN R2): the honest baseline is the one that makes the
+Constrained deliberately: the honest baseline is the one that makes the
 model's contribution measurable.
 """
 

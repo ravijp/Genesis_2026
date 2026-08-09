@@ -1,4 +1,4 @@
-"""The four arms of the experiment (BUILD-PLAN §3.1).
+"""The five comparison arms.
 
 v1 compared two arms and the eval review judged it circular and unfair. The ladder is now:
 
@@ -36,7 +36,7 @@ from .schema import ExtractedSignal, SignalType
 # Must be smaller than a typical customer's conversation count or this arm is a no-op. At 10
 # against `conversations_per_customer = (2, 5)` the window never bound, so "long-context"
 # silently collapsed into the confidence-weighted dumb ledger and scored identically to it at
-# every budget — while the build plan called it "the arm a judge will actually ask about".
+# every budget -- while being the alternative a judge is most likely to raise.
 LONG_CONTEXT_WINDOW = 3
 
 
@@ -145,7 +145,7 @@ def _hybrid(
     uniformly above the stateless arm's, so the max was never the stateless one. The two arms
     are not on a common scale — the same incommensurability that makes a shared threshold
     unfair. Mapping each arm's score to its percentile *within that arm* fixes it, and is the
-    cheap stand-in for the dev-split probability calibration in BUILD-PLAN §3.2.
+    cheap stand-in for dev-split probability calibration, which is not built.
     """
 
     def percentiler(timelines: dict[str, ArmTimeline]):
@@ -206,7 +206,7 @@ def mechanism_ablations(
 ) -> dict[str, ArmResult]:
     """Each mechanism switched off one at a time, against the full ledger.
 
-    Answers "which of these actually earns its place" -- and BUILD-PLAN §7 says cross-channel
+    Answers "which of these actually earns its place". Cross-channel
     and escalation only survive to the demo if this says they do.
     """
     base = cfg or ScoringConfig()

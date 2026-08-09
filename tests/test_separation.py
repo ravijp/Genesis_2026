@@ -1,4 +1,4 @@
-"""The guard that keeps the entry honest (BUILD-PLAN Rule 5 / R2).
+"""The guard that keeps the entry honest (the build planule 5 / R2).
 
 The most likely way this build embarrasses us on stage is a judge asking:
 
@@ -57,11 +57,8 @@ def _is_danger(path) -> bool:
     """Everything that turns a conversation into a decision. Not the authors of truth, and
     not the scorers of it."""
     rel = path.relative_to(EAR).as_posix()
-    return (
-        path.name not in _CORPUS_SIDE
-        and path.name not in _EVALUATION_SIDE
-        and not rel.startswith("__")
-    )
+    del rel  # membership is the only criterion; see below
+    return path.name not in _CORPUS_SIDE and path.name not in _EVALUATION_SIDE
 
 
 def test_evaluation_exemptions_stay_small() -> None:
