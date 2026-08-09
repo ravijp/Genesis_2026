@@ -50,14 +50,17 @@ _ABBREV = ("Mr", "Mrs", "Ms", "Dr", "Inc", "Co", "Corp", "Ltd", "Jr", "Sr", "St"
 _DOT = "@@DOT@@"
 
 _ABBREV_RE = re.compile(r"\b(" + "|".join(_ABBREV) + r")\.", re.IGNORECASE)
-_INITIALS_RE = re.compile(r"\b([A-Z])\.(?=\s*[A-Z]\.)")
+# Whole initialisms -- U.S., U.S.A., F.B.I. Matching the run and protecting every stop inside it
+# is what keeps the TRAILING stop from being read as a sentence end; a lookahead form protects
+# every stop except the last one, which splits "the U.S. branch" in two.
+_INITIALS_RE = re.compile(r"\b(?:[A-Z]\.){2,}")
 _SENT_RE = re.compile(r"(?<=[.!?])\s+")
 
 
 def split_sentences(text: str) -> list[str]:
     """Plain, uniform sentence split. Applied identically to every document."""
     protected = _ABBREV_RE.sub(lambda m: m.group(1) + _DOT, text)
-    protected = _INITIALS_RE.sub(lambda m: m.group(1) + _DOT, protected)
+    protected = _INITIALS_RE.sub(lambda m: m.group(0).replace(".", _DOT), protected)
     parts: list[str] = []
     for line in protected.replace("\r\n", "\n").split("\n"):
         parts.extend(_SENT_RE.split(line))

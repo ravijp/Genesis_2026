@@ -76,6 +76,7 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 - `steps/03_filter.py` — streams the archive into the 2025 retail-banking frame; fails if it disagrees with the API total `[stable]`
 - `steps/04_draw.py` — seeded, exactly uniform draw of Panel A and Panel B from the local frame `[stable]`
 - `steps/05_score.py` — the unmodified extractor against the gold marks; offline, no keys `[stable]`
+- `steps/mark.py` — the marking tool: shows documents with panel/stratum withheld, validates a mark set (every positive mark's span must appear verbatim in its narrative), picks the second-marker subset from the seed, and reports Cohen's kappa `[stable]`
 - `out/` — committed: frame counts, the drawn sample, the gold marks, the results `[generated]`
 
 ## tools/jira/
