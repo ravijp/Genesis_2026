@@ -1,0 +1,206 @@
+"""Evaluation harness (BUILD-PLAN §3.2-3.4, C5).
+
+Two things here are deliberate corrections to v1 and should not be "simplified" away:
+
+**Equal alert budget, not a shared threshold.** An accumulating sum and a per-conversation max
+do not live on the same scale, so cutting both at the same number is a gift to the accumulator.
+Instead each arm is cut at *its own* threshold chosen so that all arms flag the same number of
+customers -- which is also the real operating constraint, since a review team has fixed capacity.
+
+**Detectability is measured, never enforced.** `corpus_diagnostics` reports what share of each
+stratum each arm actually catches. v1 had a "rigging-validation pass" that regenerated any arc
+the baseline managed to detect; that is selection on the dependent variable, so it is reported
+here as a diagnostic and has no power to change the corpus.
+"""
+
+from __future__ import annotations
+
+import statistics
+from dataclasses import dataclass, field
+
+from .arms import ArmResult
+from .schema import Corpus, ExtractedSignal, Outcome, SeededSignal, Stratum
+
+DEFAULT_BUDGETS = (0.01, 0.02, 0.05, 0.10)
+LEAD_HORIZONS = (0, 7, 14, 30, 60)
+
+
+def quantile(values: list[float], q: float) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    if q <= 0:
+        return ordered[0]
+    if q >= 1:
+        return ordered[-1]
+    idx = min(len(ordered) - 1, max(0, int(round(q * (len(ordered) - 1)))))
+    return ordered[idx]
+
+
+@dataclass
+class BudgetResult:
+    arm: str
+    budget: float
+    threshold: float
+    n_flagged: int
+    recall: float
+    precision: float
+    median_lead_days: float | None
+    recall_by_stratum: dict[str, float] = field(default_factory=dict)
+    lead_survival: dict[int, float] = field(default_factory=dict)
+
+
+def _outcome_customers(corpus: Corpus) -> dict[str, int | None]:
+    return {
+        c.customer_id: c.outcome_day
+        for c in corpus.customers
+        if c.outcome is not Outcome.NONE
+    }
+
+
+def evaluate_arm(
+    corpus: Corpus, arm: ArmResult, budget: float
+) -> BudgetResult:
+    # Every customer gets a score, including those the extractor found nothing for -- omitting
+    # them would quietly inflate precision.
+    scores = {c.customer_id: 0.0 for c in corpus.customers}
+    scores.update(arm.scores())
+
+    # TRUE equal alert budget: rank and take the top K, rather than thresholding on a
+    # quantile. Thresholding looks equivalent and is not — arms produce heavily tied scores
+    # (every customer whose only evidence is one cue of the same weight scores identically),
+    # so a `>=` cut sweeps in the whole tie cluster. On the first 200-customer run that made
+    # stateless-max flag 47 customers at a nominal 10% budget while full-ledger flagged 21,
+    # which is not a comparison at all. Ties are broken deterministically by customer_id.
+    k = max(1, round(budget * len(scores)))
+    ranked = sorted(scores.items(), key=lambda kv: (-kv[1], kv[0]))
+    flagged = {cid for cid, s in ranked[:k] if s > 0}
+    threshold = min((scores[cid] for cid in flagged), default=1.0)
+    outcomes = _outcome_customers(corpus)
+    truth_by_id = {c.customer_id: c for c in corpus.customers}
+
+    hits = flagged & set(outcomes)
+    recall = len(hits) / len(outcomes) if outcomes else 0.0
+    precision = len(hits) / len(flagged) if flagged else 0.0
+
+    leads: list[int] = []
+    for cid in hits:
+        outcome_day = outcomes[cid]
+        timeline = arm.timelines.get(cid)
+        if outcome_day is None or timeline is None:
+            continue
+        crossed = timeline.first_crossing(threshold)
+        if crossed is not None:
+            leads.append(outcome_day - crossed)
+
+    survival = {
+        d: (sum(1 for lead in leads if lead >= d) / len(outcomes) if outcomes else 0.0)
+        for d in LEAD_HORIZONS
+    }
+
+    by_stratum: dict[str, float] = {}
+    for stratum in Stratum:
+        members = [c.customer_id for c in corpus.customers if c.stratum is stratum]
+        if not members:
+            continue
+        # For decoy and null strata, "recall" would be meaningless -- report the FLAG RATE
+        # instead, which is the false-positive rate we actually care about there.
+        relevant = [cid for cid in members if truth_by_id[cid].outcome is not Outcome.NONE]
+        if stratum in (Stratum.DECOY_EXTRACTOR, Stratum.DECOY_ACCUMULATOR, Stratum.NULL):
+            by_stratum[f"{stratum.value} (flag rate)"] = len(
+                [cid for cid in members if cid in flagged]
+            ) / len(members)
+        elif relevant:
+            by_stratum[stratum.value] = len(
+                [cid for cid in relevant if cid in flagged]
+            ) / len(relevant)
+
+    return BudgetResult(
+        arm=arm.arm,
+        budget=budget,
+        threshold=round(threshold, 4),
+        n_flagged=len(flagged),
+        recall=round(recall, 4),
+        precision=round(precision, 4),
+        median_lead_days=round(statistics.median(leads), 1) if leads else None,
+        recall_by_stratum={k: round(v, 4) for k, v in sorted(by_stratum.items())},
+        lead_survival={d: round(v, 4) for d, v in survival.items()},
+    )
+
+
+def evaluate_all(
+    corpus: Corpus, arms: dict[str, ArmResult], budgets: tuple[float, ...] = DEFAULT_BUDGETS
+) -> list[BudgetResult]:
+    return [
+        evaluate_arm(corpus, arm, budget) for budget in budgets for arm in arms.values()
+    ]
+
+
+# --- honesty diagnostics ---------------------------------------------------------
+
+
+def extraction_fidelity(
+    seeded: tuple[SeededSignal, ...], extracted: list[ExtractedSignal]
+) -> dict[str, float | int]:
+    """How good is the extractor, really? Published, never hidden (BUILD-PLAN R2).
+
+    'It misses N% of planted signals, it is the WEAKER arm, and the memory delta holds anyway'
+    is a stronger position than a matcher that scores itself perfectly.
+    """
+    found = {(s.conversation_id, s.signal_type) for s in extracted}
+    genuine = [s for s in seeded if not s.is_decoy]
+    caught = [s for s in genuine if (s.conversation_id, s.signal_type) in found]
+
+    planted_keys = {(s.conversation_id, s.signal_type) for s in seeded}
+    unplanted = [s for s in extracted if (s.conversation_id, s.signal_type) not in planted_keys]
+
+    decoys = [s for s in seeded if s.is_decoy]
+    decoys_fired = [s for s in decoys if (s.conversation_id, s.signal_type) in found]
+
+    return {
+        "planted_genuine": len(genuine),
+        "extraction_recall": round(len(caught) / len(genuine), 4) if genuine else 0.0,
+        "measured_miss_rate": round(1 - len(caught) / len(genuine), 4) if genuine else 0.0,
+        "unplanted_extractions": len(unplanted),
+        "decoys_planted": len(decoys),
+        "decoy_fire_rate": round(len(decoys_fired) / len(decoys), 4) if decoys else 0.0,
+    }
+
+
+def corpus_diagnostics(corpus: Corpus, arms: dict[str, ArmResult]) -> dict[str, object]:
+    """Reported, never enforced. Shows how the generated strata actually behaved."""
+    counts: dict[str, int] = {}
+    for c in corpus.customers:
+        counts[c.stratum.value] = counts.get(c.stratum.value, 0) + 1
+
+    outcomes = sum(1 for c in corpus.customers if c.outcome is not Outcome.NONE)
+    conv_per_customer = [
+        len(corpus.conversations_for(c.customer_id)) for c in corpus.customers
+    ]
+
+    # Volume confound check (BUILD-PLAN §3.3): does the full ledger just reward talkative
+    # customers? If score tracks conversation count, the "memory" is only "more text".
+    full = arms.get("full-ledger")
+    volume_correlation = None
+    if full:
+        scores = full.scores()
+        pairs = [
+            (len(corpus.conversations_for(c.customer_id)), scores.get(c.customer_id, 0.0))
+            for c in corpus.customers
+        ]
+        xs = [p[0] for p in pairs]
+        ys = [p[1] for p in pairs]
+        if len(set(xs)) > 1 and len(set(ys)) > 1:
+            volume_correlation = round(statistics.correlation(xs, ys), 4)
+
+    return {
+        "n_customers": len(corpus.customers),
+        "n_conversations": len(corpus.conversations),
+        "n_seeded_signals": len(corpus.seeded),
+        "stratum_counts": dict(sorted(counts.items())),
+        "outcome_rate": round(outcomes / len(corpus.customers), 4) if corpus.customers else 0.0,
+        "mean_conversations_per_customer": round(statistics.mean(conv_per_customer), 2)
+        if conv_per_customer
+        else 0.0,
+        "score_vs_volume_correlation": volume_correlation,
+    }

@@ -12,6 +12,11 @@ dev = [
     "ruff>=0.8",
 ]
 
+[tool.pytest.ini_options]
+pythonpath = ["05_build"]
+testpaths = ["05_build/tests"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+exclude = [".venv"]

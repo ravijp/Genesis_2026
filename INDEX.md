@@ -58,6 +58,38 @@ is on `main`.
   minimum demo and cut list · risk table · Zenon-impact gap · deltas-from-submission log
   `[v2 2026-08-09, stable]`
 
+- `SPRINT-1-CHECKIN.md` — brief for the 2026-08-10 committee check-in: committed-vs-completed table,
+  the week-one finding (the thesis does not yet hold at portfolio level — ledger wins the diffuse
+  stratum 0.191 vs 0.143 but loses overall 0.128 vs 0.154, and a dumb sum matches the full ledger),
+  the Twilio novelty collision and the narrower claim, the API-access roadblock with a date-certain
+  ask, and the path to 2026-08-24 `[2026-08-09]`
+
 ## 05_build/ — MVP source
 
-`[skeleton — being created]`
+Runs with **zero API keys**. `uv run pytest` · `$env:PYTHONPATH="05_build"; uv run python -m ear.cli run`
+· `... ear.cli demo`
+
+- `ear/schema.py` — core types. `SeededSignal` (answer key) and `ExtractedSignal` (belief) are
+  deliberately separate types so nothing can confuse one for the other. `LedgerEntry` carries the
+  retro-re-score fields and `is_load_bearing()` `[stable]`
+- `ear/config.py` — every tunable parameter; nothing magic in logic modules. Carries the recorded
+  finding that saturation cannot affect equal-budget rankings `[stable]`
+- `ear/corpus_lexicon.py` — **authoring pass A**: the utterance fragments that get planted `[stable]`
+- `ear/extract_lexicon.py` — **authoring pass B**: extractor cues, written without reference to pass A.
+  The partial overlap is the source of the honest miss rate — do not "fix" it `[stable]`
+- `ear/corpus.py` — generator. Strata are labelled from Dirichlet generation parameters, never from
+  what a baseline can detect; outcomes drawn stochastically from latent risk `[stable]`
+- `ear/extract.py` — stateless extraction + the offline lexicon provider. Cannot import the corpus
+  side `[stable]`
+- `ear/memory.py` — **the heart**: append-only ledger + pure-code re-scorer with decay, corroboration,
+  cross-channel, escalation, and retro re-scoring `[stable]`
+- `ear/arms.py` — the four (now five) comparison arms sharing one code path: stateless-max ·
+  dumb-ledger · long-context-10 · full-ledger · hybrid, plus per-mechanism ablations `[stable]`
+- `ear/evals.py` — true equal-alert-budget comparison (top-K ranking, not quantile thresholds),
+  per-stratum breakdown, lead-time survival, extraction fidelity, corpus diagnostics `[stable]`
+- `ear/cli.py` — `run` and `demo`, run manifest, results artifacts `[stable]`
+- `tests/test_separation.py` — **the honesty guard**: AST-level proof that the extractor cannot see the
+  answer key, plus an assertion that it is measurably imperfect. Do not relax `[stable]`
+- `tests/test_memory.py` — ledger invariants: never-discard, accumulation, retro re-score, decay,
+  determinism, and the super-additivity/concavity interaction `[stable]`
+- `results/` — per-run JSON artifacts with manifests `[generated]`
