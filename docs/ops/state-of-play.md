@@ -72,7 +72,23 @@ protocol promoted the corpus regrounding; the evidence turned out to implicate t
 instead, and the experiment that is actually blocking the entry needs only *more* fragments, not
 *real* ones. Read D-020 before re-arguing this.
 
-**1. Make the reader able to read prose it did not grow up with.** This was work 3, then deferred by
+**1. Build and measure the model extractor — the reader the product actually ships.** `Extractor` in
+`extract.py` is a protocol with **one** implementation, `OfflineLexiconExtractor`, the keyless
+26-regex fallback. The docstring has said "and by Claude / the comparison model later" since the file
+was written; later is now. The LLM is currently wired only into `agent/investigator.py`, so the thing
+the entry claims reads 100% of conversations has never been built or measured. Everything published
+about extraction — including the 0.0357 — describes the fallback.
+
+`benchmarks/cfpb/out/gold.jsonl` is exactly the asset this needs: 150 real narratives, marked, every
+positive carrying a span verified verbatim. Implement the model extractor against the existing
+protocol, score it on that same gold set with `benchmarks/cfpb/steps/05_score.py`, and publish the two
+numbers side by side. Constraints that do not move: it stays **stateless** (one conversation, no
+history, no ledger) or the memory ablation stops meaning anything; it never sees the answer key; and
+the offline path stays as a labelled fallback so the demo still runs in a room with no wifi (D-004).
+This also makes cost per 1,000 conversations real rather than theoretical, since a model reading every
+conversation is the product's main cost driver.
+
+**Then: make the fallback less blind, or retire the claim that it is a fair floor.** This was work 3, then deferred by
 D-020, and is now first on evidence rather than argument — see the measurement below. Fix the cue
 vocabulary in `extract_lexicon.py`. `benchmarks/cfpb/out/results.json` names the 24 cues that never
 fired and `benchmarks/cfpb/out/gold.jsonl` is a 150-document marked development set; the 56

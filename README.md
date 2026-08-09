@@ -186,10 +186,14 @@ opposite thing in each: **extractor decoys** are lookalikes and firing on one is
 firing is *correct* (**42.7%, 53 / 124**) and what is under test is whether the ledger goes on to
 over-accumulate them — it does not, their flag rate at the 10% budget is 0.000.
 
-**The extractor barely works on language it did not write, and we measured it rather than waiting to
-be asked.** Against 150 hand-marked real CFPB complaint narratives (public domain, CC0) the same
-unmodified extractor scores **0.0357 strict recall — 4 / 112** — versus **0.681** above on our own
-prose. `financial_distress`, `complaint_escalation` and `life_event` each scored **exactly zero**, and
+**The rule-based offline reader barely works on language it did not write, and we measured it rather
+than waiting to be asked.** Read the provider label before the number: this is
+`OfflineLexiconExtractor`, the keyless 26-regex fallback that exists so everything runs with no API
+keys and no network. **It is not the production reader.** `Extractor` in
+[extract.py](src/earshot/extract.py) is a protocol intended to be implemented by a model; that
+implementation does not exist yet, and measuring it is the next piece of work. Against 150
+hand-marked real CFPB complaint narratives (public domain, CC0) the offline reader scores **0.0357
+strict recall — 4 / 112** — versus **0.681** above on our own prose. `financial_distress`, `complaint_escalation` and `life_event` each scored **exactly zero**, and
 24 of its 26 cues never fired on any of the 150 documents. The sampling frame, the marking guide, the
 gold set and the interpretation thresholds were all committed **before** any narrative was read, and
 two failures of our own — a contaminated inter-marker comparison and a defect in the marking guide —
