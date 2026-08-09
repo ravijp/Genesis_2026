@@ -101,6 +101,11 @@ def evaluate_arm(
     outcomes = _outcome_customers(corpus)
     truth_by_id = {c.customer_id: c for c in corpus.customers}
 
+    # How many of the issued alerts sit exactly on the cut. Compared below against how many
+    # customers in the whole portfolio sit there: if they are equal, the tie cluster fitted
+    # inside the budget and nothing was decided by the tie-break.
+    _at_cut_flagged = sum(1 for cid in flagged if scores[cid] == threshold and scores[cid] > 0)
+
     hits = flagged & set(outcomes)
     recall = len(hits) / len(outcomes) if outcomes else 0.0
     precision = len(hits) / len(flagged) if flagged else 0.0
@@ -154,10 +159,18 @@ def evaluate_arm(
         n_outcomes=len(outcomes),
         flagged_ids=tuple(sorted(flagged)),
         n_distinct_scores=len(set(scores.values())),
-        # Alerts the score could not decide, counted against the queue that was actually
-        # issued rather than against K: an arm with fewer than K non-zero scores flags fewer
-        # than K customers, and mixing the two denominators inflates this badly.
-        n_tie_decided=max(0, len(flagged) - sum(1 for cid in flagged if scores[cid] > threshold)),
+        # Alerts the score could not decide. Zero unless the tie cluster at the cut is genuinely
+        # LARGER than the room left in the queue: `threshold` is the lowest flagged score, so
+        # that customer always equals it and a plain `len(flagged) - count(> threshold)` reports
+        # at least one arbitrary slot for every arm, always. That floor is what made an arm with
+        # a perfectly well-separated ranking read as 0.7% arbitrary rather than 0.0%.
+        n_tie_decided=(
+            _at_cut_flagged
+            if (
+                sum(1 for s in scores.values() if s == threshold and s > 0) > _at_cut_flagged
+            )
+            else 0
+        ),
         stratum_hits=dict(sorted(stratum_hits.items())),
         stratum_outcomes=dict(sorted(stratum_outcomes.items())),
     )

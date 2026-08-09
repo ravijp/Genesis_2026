@@ -41,8 +41,8 @@ seed by seed with an exact sign test. Full table in the README; reproduce with `
   `p=1.000` on diffuse arcs, and the sign flips across seed sets (on `100..109` the plain count wins
   it, `p=0.004`). At 30 seeds the ledger does significantly beat the plain count on *concentrated*
   arcs (`17-5-8`, `p=0.017`) — unclaimed until round 5. Separately, **decay** (not confidence
-  weighting) is what makes the ranking well-defined: 0.7% of the ledger's queue is decided
-  alphabetically against `dumb-ledger`'s 70.3%. `earshot sweep` prints the table.
+  weighting) is what makes the ranking well-defined: none of the ledger's queue is decided
+  alphabetically against `dumb-ledger`'s 55.1%. `earshot sweep` prints the table.
 
 Two earlier conclusions — "memory loses overall" and "long-context beats us" — were artifacts of a
 single 39-positive dataset and an answer-key leak. Both retracted in writing in the README.
@@ -100,7 +100,7 @@ listing them as planned is more useful than listing them as design.
    either parent on *both* strata, so the combination question is open rather than answered.
 3. **AT-52 — do decay, corroboration, cross-channel weighting and escalation survive?** On recall the
    plain count matches them, and the sign flips across seed sets. Decay has a defence that is not
-   recall — it is what stops the alert queue being ordered alphabetically (0.7% vs 70.3%). The other
+   recall — it is what stops the alert queue being ordered alphabetically (0.0% vs 55.1%). The other
    three have no defence yet: justify or remove.
 4. **AT-43 — does the extractor work on real customer language?** CFPB gives 3.8M real complaint
    narratives. This is the strongest available answer to "your reader only works on prose you wrote".

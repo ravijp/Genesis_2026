@@ -143,26 +143,27 @@ What survives a paired test:
 >
 > | arm | distinct scores | share of queue decided alphabetically |
 > |---|---|---|
-> | full-ledger | 673 | **0.7%** |
-> | stateless-top3 | 106 | 3.5% |
-> | window3-top2 | 61 | 6.6% |
-> | hybrid | 522 | 8.3% |
-> | long-context-3 | 74 | 9.4% |
-> | stateless-top2 | 60 | 30.6% |
+> | full-ledger | 673 | **0.0%** |
+> | stateless-top3 | 106 | 3.0% |
+> | window3-top2 | 61 | 6.3% |
+> | long-context-3 | 74 | 7.6% |
+> | hybrid | 522 | 8.1% |
+> | stateless-top2 | 60 | 25.4% |
 > | stateless-max | 15 | **40.8%** |
-> | dumb-ledger | 6 | **70.3%** |
+> | dumb-ledger | 6 | **55.1%** |
 >
 > The two arms most affected are **the pre-registered headline's own opponent** (`stateless-max`,
-> 40.8%) and the ablation behind "our machinery earns nothing" (`dumb-ledger`, 70.3%). So this caveat
+> 40.8%) and the ablation behind "our machinery earns nothing" (`dumb-ledger`, 55.1%). So this caveat
 > cuts against our own claims, not against a comparison we lose.
 >
 > Ties are broken by `customer_id`, deterministically. **We have not measured how much the headline
 > depends on that** — there is no randomised-tie-break harness in this repo, so treat `96 / 780` as
 > carrying an unquantified tie-break component rather than as a precise integer.
 >
-> What buys the ledger its resolution is **decay**, not confidence weighting — switching confidence
-> weighting off alone leaves the queue at 0.7% and 598 distinct scores, while switching decay off
-> takes it to 2.6% and 214. We had this attributed to the wrong mechanism until round 5.
+> What buys the ledger its resolution is **decay**, not confidence weighting: switching confidence
+> weighting off alone leaves the ranking as well-defined, while switching decay off collapses the
+> number of distinct scores by roughly a third. `earshot run` prints the ablations; it does not yet
+> print their tie-share, so we quote the direction and not the digits.
 
 > **Two retractions, both from earlier today.** (1) A first version of this table came from a single
 > 400-customer run with 39 outcome customers, where every rate was an integer over 39 — differences of

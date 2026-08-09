@@ -11,14 +11,22 @@ for something listed under "rejected", read the reason first.
 
 ---
 
-### D-018 · 2026-08-09 · A static guard is the first net; the behavioural band is the guarantee `ACCEPTED`
-The AST scan cannot be completed. `sys.modules["earshot.corpus"]`, `getattr` on the package, a name
-assembled and passed to `__import__`, or reading the file as text all reach the answer key with no
-import node and no forbidden spelling — verified, all pass the scan. So the guarantee is behavioural:
-published extraction recall is pinned to the band it was measured in, and a leak has to leave the
-extractor exactly as wrong as it already was to go unnoticed. **Rejected:** lengthening
-`FORBIDDEN_IDENTIFIERS` until the current attack list passes — that is a guard tuned to the attacks
-someone happened to think of, described as proof.
+### D-018 · 2026-08-09 · A static guard is the first net; the behavioural band is a partial backstop `ACCEPTED`
+**Amended after round 6, which showed the original wording overclaimed.** The band pins the
+EXTRACTOR's recall, not the system's honesty. A reviewer put a leak into `memory.py` that substituted
+the generator's true planted strength for the extractor's confidence: the band moved by nothing at all
+(0.6813, to four decimals) while the published headline went 134/780 to 143/780 and p=0.008 to p=0.004.
+A decoy-only leak is likewise free, because decoys appear in neither term of the recall fraction, and a
+partial leak tuned to `share=0.4` sits inside the band's headroom. The band is also measured on ONE
+dataset, which D-007 forbids for anything published. It remains worth having and it is not the
+guarantee the previous wording claimed. What is still open: a second pinned behavioural quantity
+covering the rest of the surface, and measuring the band across the same seed base `sweep` uses.
+
+The static scan still cannot be completed — `sys.modules`, `getattr` on the package, `__import__` on an
+assembled name and reading the file as text all pass it, verified. **Rejected:** lengthening
+`FORBIDDEN_IDENTIFIERS` until the current attack list passes, which is a guard tuned to the attacks
+someone thought of and described as proof; and, now, describing any single measured quantity as "the
+guarantee" — round 6 built exactly that mistake one file away, in the commit that wrote this down.
 
 ### D-017 · 2026-08-09 · Numbers are quoted from the command's own seed base, never an ad-hoc script `ACCEPTED`
 Our 30-seed figures were computed in a scratch script on seeds `7000..7029` while `earshot sweep

@@ -38,7 +38,19 @@ never-discard adds over a cheap window is currently **unproven**. See D-015 thro
   never printed. Round 5 found defects **inside those fixes** — the 30-seed figures came from a scratch
   script on a seed base no command uses and one of them inverted a conclusion; the guard was still
   walkable via `sys.modules`; a set-valued field broke artifact reproducibility; the ranking-resolution
-  claim named the wrong mechanism. **Round 6 found six published claims that no command could produce — the same defect D-017 was written to close, committed in the round that wrote it. Round 7 has not run.**
+  claim named the wrong mechanism. **Round 6 found six published claims no command could produce — the defect D-017 was written to
+  close, committed in the round that wrote it — and then found the same shape inside round 5's
+  guards: the recall band pins only the extractor (a leak in `memory.py` moved the headline from
+  8-0-2 to 9-0-1 while the band did not move at all), the reproducibility test cannot observe the
+  failure it names, and the AST provenance guard misses 13 of 15 bypasses. Round 7 has not run.**
+
+**Open, carried into round 7:** a second behavioural guard covering the surface beyond `extract.py`,
+  and the band measured across `sweep`'s seed base rather than one dataset · the reproducibility
+  test made cross-process · `get_transactions` truncating mid-JSON at a schema-legal `max_rows`,
+  swallowed into `{}` · the offline engine's unreachable `false_alarm` and its constant
+  `what_would_change_my_mind` · `overdraft_limit` overstated 27.5% of the time and `savings_balance`
+  actually a 90-day outflow total · no committed manifest at 15,000 customers · two rates without
+  denominators · `elapsed_seconds` makes "bit-for-bit reproducible" literally false for artifacts.
 - **Nothing is marked Done on the board, deliberately** — one author, no second reviewer. Namit and
   Ishant have not seen any of it.
 
@@ -78,10 +90,10 @@ for a number. If it starts competing with the evaluation for attention, stop and
 
 - No scoring mechanism earns anything in recall, and the full-ledger vs plain-count comparison flips
   sign across seed sets. **Decay** earns something that is not recall: it gives the ledger 673 distinct
-  scores against the plain count's 6, so 0.7% of its alert queue is decided alphabetically against
-  70.3%. Confidence weighting, corroboration, cross-channel and escalation have no defence yet.
+  scores against the plain count's 6, so 0.0% of its alert queue is decided alphabetically against
+  55.1%. Confidence weighting, corroboration, cross-channel and escalation have no defence yet.
 - Ranking resolution cuts against our own claims, not someone else's: the headline's opponent
-  (`stateless-max`) is 40.8% alphabetical and the `dumb-ledger` ablation is 70.3%. `earshot sweep`
+  (`stateless-max`) is 40.8% alphabetical and the `dumb-ledger` ablation is 55.1%. `earshot sweep`
   prints the table.
 - **Two cheaper arms beat us on the pre-registered stratum at 30 seeds**: `stateless-top2` and
   `window3-top2`, both `7-21-2`, `p=0.013`. `window3-top2` also holds us to a tie on concentrated arcs
