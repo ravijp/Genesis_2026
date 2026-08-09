@@ -96,6 +96,17 @@ def test_danger_surface_is_not_empty() -> None:
         f"stopped covering anything"
     )
 
+
+def test_every_reader_is_on_the_guarded_surface() -> None:
+    """Discovery is by glob, so a new reader is covered the moment its file exists — but a
+    reader the guard silently skips is worse than no reader at all, so both implementations of
+    the `Extractor` protocol are named here as a check on the discovery itself."""
+    readers = {"extract.py", "extract_model.py"}
+    missing = readers - set(EXTRACTOR_MODULES)
+    assert not missing, (
+        f"{sorted(missing)} implement the extraction protocol and are not being scanned"
+    )
+
 FORBIDDEN_MODULES = {"corpus", "corpus_lexicon"}
 # A forbidden module can arrive as the module OR as the imported name: `from earshot import
 # corpus` puts "earshot" in modules and "corpus" in names. Both sets are checked against

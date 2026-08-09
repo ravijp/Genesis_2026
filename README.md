@@ -190,8 +190,12 @@ over-accumulate them — it does not, their flag rate at the 10% budget is 0.000
 than waiting to be asked.** Read the provider label before the number: this is
 `OfflineLexiconExtractor`, the keyless 26-regex fallback that exists so everything runs with no API
 keys and no network. **It is not the production reader.** `Extractor` in
-[extract.py](src/earshot/extract.py) is a protocol intended to be implemented by a model; that
-implementation does not exist yet, and measuring it is the next piece of work. Against 150
+[extract.py](src/earshot/extract.py) is a protocol, and its model implementation now exists —
+[extract_model.py](src/earshot/extract_model.py), stateless per conversation, quotes verified
+verbatim, cost and latency captured per call. **It has never been run against a real model**, so
+there is no accuracy figure for it anywhere in this repository and every extraction number on this
+page still describes the fallback. One keyed run of `benchmarks/cfpb/steps/05_score.py --extractor
+model` produces the comparison and commits its cache for keyless replay. Against 150
 hand-marked real CFPB complaint narratives (public domain, CC0) the offline reader scores **0.0357
 strict recall — 4 / 112** — versus **0.681** above on our own prose. `financial_distress`, `complaint_escalation` and `life_event` each scored **exactly zero**, and
 24 of its 26 cues never fired on any of the 150 documents. The sampling frame, the marking guide, the
@@ -204,7 +208,9 @@ regrounded (D-019). It measures the **reader**, not the ledger, and it left the 
 untouched.
 
 **Not yet measured:** verdict and routing accuracy for the agent, cost per 1,000 conversations, and
-p50/p95 latency. Evidence groundedness is reported as a first-attempt repair rate by `earshot
+p50/p95 latency. The last two are now *instrumented* rather than measured — the model reader
+accumulates real spend and per-call latency and prints both, including cost per 1,000
+conversations, but no run has produced them. Evidence groundedness is reported as a first-attempt repair rate by `earshot
 investigate`, but is structurally zero on the offline provider (it copies quotes out of the ledger),
 so only a model provider exercises it — measuring it against a known answer at volume is AT-57. The two live Claude Sonnet 4.5 investigations in
 `artifacts/cache/` cost **$0.089 and $0.097** and took 30.3s and 33.4s. They are committed, and this
@@ -227,6 +233,7 @@ Runs three ways:
 | Provider | How | Use |
 |---|---|---|
 | `offline` (default) | nothing needed | CI, tests, and a demo in a room with no wifi |
+| `--extractor model` | a key, on `run` and `sweep` | Reads every conversation with a model instead of the regex lexicon. Never the default; refuses on other commands |
 | `openrouter` | `EARSHOT_OPENROUTER_API_KEY`, or `EARSHOT_OPENROUTER_API_KEY_FILE=<path>` | Real models. Default `anthropic/claude-sonnet-4.5` |
 | replay | `EARSHOT_CACHE_MODE=replay` | Replays committed responses from `artifacts/cache/` — real model output, zero network |
 
@@ -239,6 +246,7 @@ Keys are never committed and never logged. See `.env.example`.
 | Path | What |
 |---|---|
 | `src/earshot/corpus.py`, `memory.py` | The deterministic core: dataset generation, the signal ledger, the re-scoring maths |
+| `src/earshot/extract.py`, `extract_model.py` | The two readers behind one protocol: the keyless regex lexicon, and the model |
 | `src/earshot/arms.py`, `evals.py`, `sweep.py` | The six comparison arms, the metrics, and the multi-seed harness |
 | `src/earshot/core/` | Synthetic account and transaction state behind the agent's tools |
 | `src/earshot/agent/` | The investigator: loop, tools, decision schemas, prompts |

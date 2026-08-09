@@ -6,7 +6,8 @@ has been altered since.
 Three sections were added afterwards and are marked as such rather than folded into the frozen text:
 **§2a** (amendment log — both entries made before any narrative was read), **§5a** (a contamination
 disclosure about the second marker), and **§6a** (a defect found in the marking guide while marking).
-**§8** is the results, written after seeing them. None of these may change §1–§7, and none does.
+**§8** is the results, written after seeing them, and **§9** adds a second reader arm on 2026-08-10.
+None of these may change §1–§7, and none does.
 
 **Disclosure of what the author had seen when freezing this.** Aggregate counts only — the `product`,
 `issue` and `has_narrative` bucket counts reproduced in §2, obtained from `size=0` API queries. No
@@ -375,3 +376,46 @@ across all four types, with zero disagreements. Read §5a before quoting either 
   pre-registered genre mismatch as a live alternative explanation. The per-cue table is what
   distinguishes the two, and it points at cue coverage: a lexicon of 26 literal regexes does not
   generalise off the prose it was written against.
+
+## 9. A second reader arm, added 2026-08-10 — after the results in §8
+
+**Written after seeing §8, and marked as such.** §1–§7 are untouched and this section may not
+change them. What it adds is an *arm*, not a question: the same 150 documents, the same committed
+gold marks, the same `(document, signal_type)` grain, the same three metrics with the same
+denominators, and the same §6 thresholds. Nothing about what the number is allowed to mean moves.
+
+**Why.** §8 measures `OfflineLexiconExtractor`, the keyless 26-regex fallback. `Extractor` in
+`src/earshot/extract.py` has always been a protocol with a second intended implementation — a
+model — and until 2026-08-10 that implementation did not exist. So §8's 0.0357 describes the
+fallback and not the reader this entry says it ships. `src/earshot/extract_model.py` is that
+second implementation, and this section is how it gets scored against the same gold set.
+
+**How to run it.** One command, and it needs a key:
+
+```bash
+EARSHOT_OPENROUTER_API_KEY=... \
+  uv run python benchmarks/cfpb/steps/05_score.py --extractor model 2026-08-DD
+```
+
+It prints both readers side by side with their integers, writes `out/results-model.json`, appends
+to `RUNLOG.md`, and records every model response into `artifacts/cache/extractor.jsonl` so the
+measurement replays afterwards with `EARSHOT_CACHE_MODE=replay` and no key — the same
+record-then-replay path the two committed live investigations use. `out/results.json` is not
+rewritten, because §8's published artifact belongs to the run that produced it.
+
+**Two deviations from §4, both stated rather than absorbed.**
+
+1. The model arm runs the **pre-registered primary wrapping (sentence-per-turn) only** by
+   default; `--wrapping document` runs the other. §4's wrapping question exists because the
+   offline extractor applies dampeners *per turn*, so a whole-document turn lets one "my brother"
+   damp the document. A model is shown the entire narrative either way and the wrapping changes
+   only the grain at which it can cite a turn, so the sensitivity check is far less informative
+   here. It is available, not automatic.
+2. `rates` has no meaning for a model. `offline_miss_rate` and `offline_false_fire_rate` are
+   simulated imperfection knobs on the lexicon; the model arm records `"rates": "n/a"` rather
+   than pretending to a setting it does not have.
+
+**What is not claimed.** As of 2026-08-10 this arm has **never been run**. There is no key in the
+environment it was built in, no number for it exists in this repository, and none may be written
+here, in `README.md`, or anywhere else until it is copy-pasted from the output of the command
+above.

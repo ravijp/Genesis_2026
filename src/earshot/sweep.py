@@ -19,7 +19,7 @@ from .arms import run_all_arms
 from .config import RunConfig
 from .corpus import generate
 from .evals import evaluate_arm
-from .extract import OfflineLexiconExtractor, extract_all
+from .extract import Extractor, OfflineLexiconExtractor, extract_all
 
 
 @dataclass
@@ -88,12 +88,18 @@ class ArmSummary:
         return self._pooled(self.total_concentrated_hits, self.total_concentrated_outcomes)
 
 
-def _one_seed(base: RunConfig, seed: int, budget: float) -> list[ArmSample]:
+def _one_seed(
+    base: RunConfig, seed: int, budget: float, extractor: Extractor | None = None
+) -> list[ArmSample]:
     run = replace(base, seed=seed)
     corpus = generate(run)
-    extractor = OfflineLexiconExtractor(
-        miss_rate=run.offline_miss_rate, false_fire_rate=run.offline_false_fire_rate
-    )
+    # Built per seed when it is the offline lexicon, because its simulated rates come from the
+    # seed's own config. A caller-supplied reader is reused across seeds instead: it is stateless
+    # per conversation, and one instance is what accumulates cost and latency over the whole sweep.
+    if extractor is None:
+        extractor = OfflineLexiconExtractor(
+            miss_rate=run.offline_miss_rate, false_fire_rate=run.offline_false_fire_rate
+        )
     signals = extract_all(extractor, corpus.conversations)
     arms = run_all_arms(signals, run.scoring)
     out: list[ArmSample] = []
@@ -123,11 +129,14 @@ def _one_seed(base: RunConfig, seed: int, budget: float) -> list[ArmSample]:
 
 
 def sweep(
-    base: RunConfig, seeds: list[int], budget: float = 0.10
+    base: RunConfig,
+    seeds: list[int],
+    budget: float = 0.10,
+    extractor: Extractor | None = None,
 ) -> tuple[dict[str, ArmSummary], dict[str, list[ArmSample]]]:
     by_arm: dict[str, list[ArmSample]] = {}
     for seed in seeds:
-        for sample in _one_seed(base, seed, budget):
+        for sample in _one_seed(base, seed, budget, extractor):
             by_arm.setdefault(sample.arm, []).append(sample)
 
     summaries: dict[str, ArmSummary] = {}

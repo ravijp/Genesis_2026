@@ -17,8 +17,15 @@ Sprint-1 check-in is **2026-08-10 10:30** (15 minutes, progress only — brief a
 Sprint 1+2 demo, **2026-09-07** Sprint 3.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-an investigator agent that calls tools and produces case files with cited evidence. **189 tests**,
+an investigator agent that calls tools and produces case files with cited evidence. **231 tests**,
 ruff clean, `earshot sweep` produces every published number and now prints every comparison behind them.
+
+**The model reader now exists and has never been run** (D-021). `src/earshot/extract_model.py` is the
+second implementation of the `Extractor` protocol: stateless per conversation, on the separation
+surface, verbatim quotes or the signal is dropped, cost and latency captured per call. It is selected
+with `--extractor model` on `run` and `sweep` and by `05_score.py --extractor model` on the AT-43 gold
+set; offline stays the default everywhere. **There is no accuracy figure for it anywhere and there
+must not be one until a keyed run prints it.**
 
 **AT-43 landed 2026-08-09 and the answer is bad, which is what makes it worth having.** On 150
 hand-marked real CFPB narratives the extractor scores **0.0357 strict recall (4 / 112)** against
@@ -63,7 +70,9 @@ never-discard adds over a cheap window is currently **unproven**. See D-015 thro
 
 - **Jira project admin** — cannot delete the `[DELETE ME]` issues, cannot enable Sprints.
 - **AWS CodeCommit** — a named required deliverable, no repo provisioned. Requesting after the 08-10 call.
-- **Zenon model keys** — running on a personal OpenRouter account; rules say Zenon supplies them.
+- **Zenon model keys** — running on a personal OpenRouter account; rules say Zenon supplies them. A
+  key file sits at `C:/tmp/openrouterAPIKey.txt`, which `resolve_api_key()` finds with no env var
+  set, so work 1 below is unblocked on *this* machine and spends Ravi's own money when it runs.
 
 ## Next three things — in this order, set 2026-08-10 by D-020
 
@@ -72,21 +81,22 @@ protocol promoted the corpus regrounding; the evidence turned out to implicate t
 instead, and the experiment that is actually blocking the entry needs only *more* fragments, not
 *real* ones. Read D-020 before re-arguing this.
 
-**1. Build and measure the model extractor — the reader the product actually ships.** `Extractor` in
-`extract.py` is a protocol with **one** implementation, `OfflineLexiconExtractor`, the keyless
-26-regex fallback. The docstring has said "and by Claude / the comparison model later" since the file
-was written; later is now. The LLM is currently wired only into `agent/investigator.py`, so the thing
-the entry claims reads 100% of conversations has never been built or measured. Everything published
-about extraction — including the 0.0357 — describes the fallback.
+**1. Run the model reader once, with a key, and publish the two numbers side by side.** The reader is
+built, wired and tested (D-021); what is missing is the one command that costs money:
 
-`benchmarks/cfpb/out/gold.jsonl` is exactly the asset this needs: 150 real narratives, marked, every
-positive carrying a span verified verbatim. Implement the model extractor against the existing
-protocol, score it on that same gold set with `benchmarks/cfpb/steps/05_score.py`, and publish the two
-numbers side by side. Constraints that do not move: it stays **stateless** (one conversation, no
-history, no ledger) or the memory ablation stops meaning anything; it never sees the answer key; and
-the offline path stays as a labelled fallback so the demo still runs in a room with no wifi (D-004).
-This also makes cost per 1,000 conversations real rather than theoretical, since a model reading every
-conversation is the product's main cost driver.
+```bash
+EARSHOT_OPENROUTER_API_KEY=... \
+  uv run python benchmarks/cfpb/steps/05_score.py --extractor model 2026-08-DD
+```
+
+150 narratives, one model call each, on the same gold marks and the same `(document, type)` grain as
+the published 0.0357 (PROTOCOL §9). It prints both readers with their integers, writes
+`out/results-model.json`, and records every response into `artifacts/cache/extractor.jsonl` — commit
+that file and the measurement replays keyless forever. It also prints measured cost per 1,000
+conversations and p50/p95 latency, which is priority 3 arriving for free.
+
+Then, and only then, the numbers go into `README.md` and `PROTOCOL.md` §9, copy-pasted from that
+output. **Nothing may be written about the model reader's accuracy before that run.**
 
 **Then: make the fallback less blind, or retire the claim that it is a fair floor.** This was work 3, then deferred by
 D-020, and is now first on evidence rather than argument — see the measurement below. Fix the cue
@@ -161,7 +171,10 @@ wedge needs narrowing again in the same honest way. Nobody has confirmed it.
   Every command now prints this. It is the reason work 1 starts with widening the pools.
 - **The extractor barely works on language it did not write.** 0.0357 strict recall (4 / 112) on real
   CFPB narratives against 0.681 (496 / 728) on ours; three of four signal types at exactly zero. This
-  is measured, published in `benchmarks/cfpb/`, and is now work 1.
+  is measured, published in `benchmarks/cfpb/`, and describes the **fallback**.
+- **The model reader is unmeasured, and that is not the same as promising.** It is built and tested
+  but has never made a single call, so nothing is known about how well it reads — not its recall, not
+  its false-positive rate, not what it actually costs. A stub proves the contract, never the reader.
 - Extraction is matched at conversation level, not character spans.
 - Throughput falls sharply with corpus size — roughly 7x between 400 and 15,000 customers on one
   laptop. Not optimised, and not pinned by a committed manifest at the larger size.

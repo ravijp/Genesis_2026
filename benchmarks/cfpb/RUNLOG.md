@@ -83,3 +83,21 @@ Append-only, so the entry stands and is corrected here.
 - Most false positives in the *configured* runs are `:false-fire` entries — noise injected by
   `offline_false_fire_rate=0.08`, not cue matches on real text. Against real prose the genuine cue
   firings are only `c-close` (6), `c-rival` (1-2) and `c-move` (0-1).
+
+### 05_score — 2026-08-10 — regression check after the script grew a second arm
+
+Not a new measurement. `05_score.py` was refactored so a reader can be passed in (PROTOCOL.md
+§9), and this run checks the refactor moved nothing. Command:
+`uv run python benchmarks/cfpb/steps/05_score.py 2026-08-10`.
+
+- primary (sentence-per-turn, configured rates): **strict recall 0.0357 (4 / 112)** — identical
+- any-type recall 0.0964 (8 / 83), false-positive rate 0.0205 (10 / 488) — identical
+- per type — churn_intent 0.3077 (4 / 13) · financial_distress 0.0 (0 / 21) ·
+  complaint_escalation 0.0 (0 / 67) · life_event 0.0 (0 / 11) — identical
+- all three sensitivity variants: strict 0.0357 (4 / 112) — identical
+- cues that never fired: **24 of 26** — identical
+- `out/results.json` was regenerated and differed from the committed file in exactly one field,
+  `run_date`, so it was **restored to the 2026-08-09 version**. The published artifact keeps the
+  date it was published on; nothing in it is re-dated by a regression run.
+- The model arm has **not** been run. It needs a key, there is none in this environment, and no
+  figure for it exists anywhere.

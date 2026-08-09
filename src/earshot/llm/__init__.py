@@ -20,7 +20,12 @@ from .base import (
 )
 from .cache import CacheMiss, CachingProvider, ResponseCache, cache_mode, cache_path
 from .offline import OfflineProvider
-from .openrouter import MissingAPIKey, OpenRouterProvider, resolve_api_key
+from .openrouter import (
+    LazyOpenRouterProvider,
+    MissingAPIKey,
+    OpenRouterProvider,
+    resolve_api_key,
+)
 
 __all__ = [
     "DEFAULT_MODEL",
@@ -28,6 +33,7 @@ __all__ = [
     "CachingProvider",
     "Completion",
     "LLMProvider",
+    "LazyOpenRouterProvider",
     "Message",
     "MissingAPIKey",
     "ModelConfig",

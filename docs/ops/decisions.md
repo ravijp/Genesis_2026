@@ -11,6 +11,27 @@ for something listed under "rejected", read the reason first.
 
 ---
 
+### D-021 · 2026-08-10 · The model reader is built and instrumented, and stops at the number `ACCEPTED`
+`Extractor` in `extract.py` had exactly one implementation and the docstring had promised a second
+"later" since the file was written. `extract_model.py` is that second implementation. Four
+properties are not negotiable and each is pinned by a test: **stateless** — the prompt carries the
+turns and the channel and nothing else, so the model cannot tell which customer or which day it is
+reading, which is what keeps the memory ablation meaningful; **it never sees the answer key** — it
+is on the discovered separation surface and the prompt was authored from what each construct
+*means*; **a quote is verbatim or the signal is dropped**, sliced out of the turn rather than copied
+from the reply; **cost and latency accumulate per call**, which is what finally makes cost per 1,000
+conversations measurable.
+
+**No accuracy number for it exists, deliberately.** There was no key in the environment it was
+built in, so it has never been run. Everything is arranged so that ONE keyed run of
+`benchmarks/cfpb/steps/05_score.py --extractor model` produces the comparison and records its cache
+for keyless replay — the same record-then-replay path the two committed live investigations use.
+**Rejected:** a placeholder, an estimate, or an extrapolation from the investigator's costs. A
+number in a document has to have been copy-pasted from a command's output; anything else is the
+failure mode this project has retracted twice already. **Also rejected:** making the model reader
+the default. D-004 stands — everything runs with zero keys, and nothing reaches for the network
+unless the caller asked for it by name.
+
 ### D-020 · 2026-08-10 · The history-length experiment goes first, overriding AT-43's pre-registered consequence `ACCEPTED`
 **This overrides a pre-registration, so it is written down as an override rather than absorbed.**
 `benchmarks/cfpb/PROTOCOL.md` §6 said a score below 0.30 sends *"work 3 (regrounding the corpus

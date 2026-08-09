@@ -27,8 +27,14 @@ from .arms import demo_ledger, mechanism_ablations, run_all_arms
 from .config import DEFAULT, RunConfig
 from .corpus import generate, smallest_fragment_pool
 from .evals import corpus_diagnostics, evaluate_all, evaluate_arm, extraction_fidelity
-from .extract import OfflineLexiconExtractor, extract_all
-from .llm import CachingProvider, OfflineProvider, ProviderError, cache_mode
+from .extract import Extractor, OfflineLexiconExtractor, extract_all
+from .llm import (
+    CachingProvider,
+    LazyOpenRouterProvider,
+    OfflineProvider,
+    ProviderError,
+    cache_mode,
+)
 from .memory import ScoreBreakdown
 from .schema import Outcome, Stratum
 
@@ -73,18 +79,57 @@ def _git_sha() -> str:
     return f"{sha}-dirty" if changed else sha
 
 
-def _pipeline(run: RunConfig):
-    corpus = generate(run)
-    extractor = OfflineLexiconExtractor(
+def _offline_extractor(run: RunConfig) -> OfflineLexiconExtractor:
+    return OfflineLexiconExtractor(
         miss_rate=run.offline_miss_rate, false_fire_rate=run.offline_false_fire_rate
     )
+
+
+def build_extractor(name: str, run: RunConfig) -> Extractor:
+    """Offline by default, always. `model` is opt-in and is the only path that needs a key.
+
+    D-004: everything runs with zero keys, so nothing here may reach for the network unless the
+    caller asked for it by name.
+    """
+    if name != "model":
+        return _offline_extractor(run)
+
+    from .extract_model import model_extractor
+
+    return model_extractor()
+
+
+def _extraction_telemetry(extractor: Extractor) -> dict | None:
+    telemetry = getattr(extractor, "telemetry", None)
+    return telemetry.to_dict() if telemetry is not None else None
+
+
+def _print_extraction_telemetry(extractor: Extractor) -> None:
+    """What the reader cost and how often it had to be corrected. Printed only when a model read.
+
+    Cost per 1,000 conversations is a named deliverable, so it comes from this counter rather
+    than from a price list.
+    """
+    payload = _extraction_telemetry(extractor)
+    if payload is None:
+        return
+    print("\nMODEL READER — cost and latency, measured on this run")
+    for key, value in payload.items():
+        print(f"  {key:38s} {value}")
+    if cache_mode() == "replay":
+        print("  NOTE: replay. Cost and latency are the RECORDED figures from the keyed run.")
+
+
+def _pipeline(run: RunConfig, extractor: Extractor | None = None):
+    corpus = generate(run)
+    extractor = _offline_extractor(run) if extractor is None else extractor
     signals = extract_all(extractor, corpus.conversations)
     return corpus, extractor, signals
 
 
-def cmd_run(run: RunConfig) -> int:
+def cmd_run(run: RunConfig, extractor: Extractor | None = None) -> int:
     started = time.time()
-    corpus, extractor, signals = _pipeline(run)
+    corpus, extractor, signals = _pipeline(run, extractor)
     arms = run_all_arms(signals, run.scoring)
     results = evaluate_all(corpus, arms)
     fidelity = extraction_fidelity(corpus.seeded, signals)
@@ -95,7 +140,12 @@ def cmd_run(run: RunConfig) -> int:
     print(f"\n{'=' * 78}\nEAR ON EVERY CALL — eval run\n{'=' * 78}")
     print(f"provider={extractor.name}   seed={run.seed}   config={run.hash()}   git={_git_sha()}")
     n_outcomes = sum(1 for c in corpus.customers if c.outcome is not Outcome.NONE)
-    print("NOTE: offline provider. These are plumbing-and-memory numbers, not headline accuracy.")
+    if _extraction_telemetry(extractor) is None:
+        print(
+            "NOTE: offline provider. These are plumbing-and-memory numbers, not headline accuracy."
+        )
+    else:
+        print(f"NOTE: model reader ({extractor.name}). Every conversation was one model call.")
     print(f"NOTE: ONE dataset, {n_outcomes} outcome customers. Every recall below is an integer")
     print(f"      over {n_outcomes}, so arms one or two customers apart are indistinguishable.")
     print("      Nothing here should be published. Use `earshot sweep` for anything quotable.\n")
@@ -107,6 +157,8 @@ def cmd_run(run: RunConfig) -> int:
     print("\nEXTRACTION FIDELITY (published, not hidden)")
     for k, v in fidelity.items():
         print(f"  {k:38s} {v}")
+
+    _print_extraction_telemetry(extractor)
 
     print("\nARM COMPARISON — equal alert budget (each arm cut at its own threshold)")
     header = f"  {'budget':>7} {'arm':<20} {'flagged':>8} {'recall':>8} {'precision':>10} {'lead(d)':>8}"
@@ -149,6 +201,7 @@ def cmd_run(run: RunConfig) -> int:
         "manifest": manifest,
         "corpus_diagnostics": diagnostics,
         "extraction_fidelity": fidelity,
+        "extraction_telemetry": _extraction_telemetry(extractor),
         "arm_results": [asdict(r) for r in results],
         "mechanism_ablations": [asdict(r) for r in ablation_results],
     }
@@ -396,26 +449,10 @@ def _provider(name: str, prompt_sha: str):
     # something actually misses; building it eagerly makes replay depend on a key it will
     # never use.
     if cache_mode() == "replay":
-        return CachingProvider(_LazyOpenRouter(), prompt_sha)
+        return CachingProvider(LazyOpenRouterProvider(), prompt_sha)
 
     inner = OpenRouterProvider()
     return inner if cache_mode() == "off" else CachingProvider(inner, prompt_sha)
-
-
-class _LazyOpenRouter:
-    """Constructs the real client on first use, so replay never needs a key."""
-
-    name = "openrouter"
-
-    def __init__(self) -> None:
-        self._inner = None
-
-    def complete(self, *args, **kwargs):
-        if self._inner is None:
-            from .llm import OpenRouterProvider
-
-            self._inner = OpenRouterProvider()
-        return self._inner.complete(*args, **kwargs)
 
 
 def _print_case(
@@ -556,7 +593,7 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
     return 0
 
 
-def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
+def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) -> int:
     """Many seeds, paired comparison, and the integers behind every rate.
 
     `run` reports one draw, and on a single 400-customer corpus every arm's recall is an
@@ -566,8 +603,17 @@ def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
     from .sweep import paired_record, sign_test_p, sweep
 
     seeds = [run.seed + i for i in range(n_seeds)]
+    if _extraction_telemetry(extractor) is not None:
+        # A count, not an estimate: the reader is called once per conversation, and a sweep
+        # generates corpora it has not built yet. Someone pointing a model at this deserves to
+        # see the order of magnitude before it starts spending.
+        print(
+            f"NOTE: model reader over {n_seeds} seeds x {run.corpus.n_customers} customers. "
+            f"Every conversation is one model call; measured cost is printed at the end.",
+            file=sys.stderr,
+        )
     started = time.time()
-    summaries, by_arm = sweep(run, seeds, budget=INVESTIGATION_BUDGET)
+    summaries, by_arm = sweep(run, seeds, budget=INVESTIGATION_BUDGET, extractor=extractor)
     elapsed = time.time() - started
 
     print(f"\n{'=' * 86}\nEAR ON EVERY CALL — multi-seed evaluation\n{'=' * 86}")
@@ -651,6 +697,9 @@ def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
     print("headline above was declared in advance; a single p just under 0.05 among the rest")
     print("is a hint, not a result. Every number published anywhere is in this output.")
 
+    if extractor is not None:
+        _print_extraction_telemetry(extractor)
+
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     out = ARTIFACTS / f"sweep-{n_seeds}x{run.corpus.n_customers}-{run.hash()}.json"
     out.write_text(
@@ -663,6 +712,7 @@ def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
                     "config_hash": run.hash(),
                     "git_sha": _git_sha(),
                     "elapsed_seconds": round(elapsed, 2),
+                    "extraction_telemetry": _extraction_telemetry(extractor),
                 },
                 "arms": {
                     k: {
@@ -723,6 +773,15 @@ def main() -> int:
         help="investigate only. Offline needs no key and no network.",
     )
     parser.add_argument(
+        "--extractor",
+        choices=["offline", "model"],
+        default="offline",
+        help="run and sweep only: which reader turns conversations into signals. `offline` is "
+        "the keyless 26-regex lexicon and is the default, so everything runs with no key and no "
+        "network. `model` reads every conversation with a model and needs a key, or "
+        "EARSHOT_CACHE_MODE=replay against a recorded cache.",
+    )
+    parser.add_argument(
         "--limit", type=int, default=3, help="investigate only: how many cases to work."
     )
     args = parser.parse_args()
@@ -769,12 +828,28 @@ def main() -> int:
             corpus_cfg = replace(corpus_cfg, conversations_per_customer=conv_range)
         run = replace(run, seed=args.seed, corpus=corpus_cfg)
 
+    # None means "the offline lexicon, built from this run's config" — the default path, left
+    # untouched so every published number reproduces exactly as before.
+    extractor: Extractor | None = None
+    if args.command in ("run", "sweep") and args.extractor != "offline":
+        try:
+            extractor = build_extractor(args.extractor, run)
+        except ProviderError as exc:
+            # A missing key is a setup problem, not a crash. Say which command still works.
+            print(f"cannot build the {args.extractor} reader: {exc}", file=sys.stderr)
+            print(
+                "The default `--extractor offline` needs no key and no network.", file=sys.stderr
+            )
+            return 1
+    elif args.extractor != "offline":
+        parser.error(f"--extractor applies to run and sweep, not to {args.command}")
+
     if args.command == "run":
-        return cmd_run(run)
+        return cmd_run(run, extractor)
     if args.command == "demo":
         return cmd_demo(run)
     if args.command == "sweep":
-        return cmd_sweep(run, args.seeds)
+        return cmd_sweep(run, args.seeds, extractor)
     return cmd_investigate(run, args.provider, args.limit)
 
 

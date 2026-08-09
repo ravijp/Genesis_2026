@@ -40,6 +40,8 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `extract_lexicon.py` — **authoring pass B**: extractor cues, authored without reference to pass A. The partial overlap is the source of the honest miss rate — do not "fix" it `[stable]`
 - `corpus.py` — dataset generation. Strata labelled from generation parameters; outcomes drawn from latent risk `[stable]`
 - `extract.py` — stateless extraction + the offline lexicon provider `[stable]`
+- `extract_model.py` — **the model reader**: the second implementation of the `Extractor` protocol. One conversation per call, no customer id in the prompt, verbatim quotes or the signal is dropped, cost and latency per call. Never yet run against a real model `[stable]`
+- `prompt_files.py` — versioned prompt loading and hashing, shared by the investigator and the model reader `[stable]`
 - `memory.py` — **the heart**: append-only ledger + pure-code re-scorer. `score()` returns copies and never mutates the ledger `[stable]`
 - `arms.py` — six comparison arms through one code path + per-mechanism ablations. `stateless-top2` is the strongest fair per-call baseline and currently matches the ledger `[stable]`
 - `evals.py` — equal-alert-budget comparison by top-K ranking, per-stratum breakdown, extraction fidelity, corpus diagnostics `[stable]`
@@ -48,7 +50,7 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `__init__.py` (package root, and in `agent/`, `core/`, `llm/`) — package markers; all are covered by the separation guard `[stable]`
 - `core/accounts.py` — synthetic account state and transactions behind the agent's tools. Derives from `(customer_id, financial_state, seed, as_of_day)` and **never** from a truth object `[stable]`
 - `agent/schemas.py` · `tools.py` · `investigator.py` · `prompts.py` — the investigator: strict decision schema with mandatory evidence, five pure tools, a bounded loop, versioned prompt loading `[stable]`
-- `llm/base.py` · `openrouter.py` · `offline.py` · `cache.py` — provider abstraction, cost and latency capture, content-addressed response cache with record/replay `[stable]`
+- `llm/base.py` · `openrouter.py` · `offline.py` · `cache.py` — provider abstraction, cost and latency capture, content-addressed response cache with record/replay. `LazyOpenRouterProvider` builds its client on first use so replay needs no key `[stable]`
 
 ## tests/
 
@@ -60,6 +62,7 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `test_agent.py` — decision schema, bounded loop, the cost cap holding under a rising cost curve (and the documented spike case where it cannot), a crashing tool being contained `[stable]`
 - `test_sweep.py` — the multi-seed harness: sign test vs hand computation, pairing on seed, denominators present and identical across arms, equal alert budget, determinism, counted-not-reconstructed integers, artifact reproducibility `[stable]`
 - `test_cli.py` — the commands, and the demo's internal consistency: its narration may not contradict the claim it selected on, and its denominator must count customers `[stable]`
+- `test_extract_model.py` — the model reader against a stub provider: statelessness (no customer id in the prompt), verbatim quotes or nothing, the offline path's grain and floor, record-then-replay, and that the default reader stays keyless `[stable]`
 
 ## benchmarks/cfpb/ — AT-43, the extractor on real complaint narratives
 
@@ -75,7 +78,7 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 - `steps/02_download.py` — the bulk archive (~1.3 GB), verified by size and SHA-256, stored outside the repo `[stable]`
 - `steps/03_filter.py` — streams the archive into the 2025 retail-banking frame; fails if it disagrees with the API total `[stable]`
 - `steps/04_draw.py` — seeded, exactly uniform draw of Panel A and Panel B from the local frame `[stable]`
-- `steps/05_score.py` — the unmodified extractor against the gold marks; offline, no keys `[stable]`
+- `steps/05_score.py` — a reader against the gold marks. Default: the unmodified offline extractor, offline and keyless, reproducing every published figure. `--extractor model` adds the model reader as a second arm (PROTOCOL §9) and writes `out/results-model.json` `[stable]`
 - `steps/mark.py` — the marking tool: shows documents with panel/stratum withheld, validates a mark set (every positive mark's span must appear verbatim in its narrative), picks the second-marker subset from the seed, and reports Cohen's kappa `[stable]`
 - `out/frame.json` · `frame_local.json` — frame counts from the search API and from the bulk archive; they agree to the record `[generated]`
 - `out/sample.jsonl` · `draw_manifest.json` — the 150 drawn narratives and the seed, indices and ids behind the draw `[generated]`
@@ -96,6 +99,7 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 ## prompts/
 
 - `investigator/v1/system.md` · `task.md` — prompts as versioned files, so a change is a reviewable diff `[stable]`
+- `extractor/v1/system.md` · `task.md` — the model reader's prompt: the four constructs, the evidence rule, the JSON contract. Authored from what each construct *means*, not from the corpus lexicon, the extractor's regexes, or the CFPB marking guide `[stable]`
 
 ## docs/
 
@@ -113,6 +117,7 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 
 - `runs/pinned/` — one committed run + manifest `[generated]`
 - `cache/investigator-demo.jsonl` — committed model responses so the demo replays with no keys `[generated]`
+- `cache/extractor.jsonl` — the model reader's own cache, written by the first keyed extraction run so the measurement replays keyless. Does not exist yet — no keyed run has happened `[generated]`
 - `runs/` (unpinned) — per-run output, gitignored `[generated]`
 
 ## sources/ — primary inputs, do not edit

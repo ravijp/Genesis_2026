@@ -27,6 +27,21 @@ uv run python benchmarks/cfpb/steps/04_draw.py      # seeded draw of Panel A + P
 uv run python benchmarks/cfpb/steps/05_score.py     # extractor vs gold marks -> the numbers
 ```
 
+**A second reader arm** (PROTOCOL.md §9, added 2026-08-10). `src/earshot/extract.py` defines an
+`Extractor` protocol; the numbers above measure `OfflineLexiconExtractor`, the keyless 26-regex
+fallback. The model reader is the protocol's other implementation, and it is scored on the same 150
+documents, the same gold marks and the same `(document, type)` grain by the same script:
+
+```bash
+EARSHOT_OPENROUTER_API_KEY=... \
+  uv run python benchmarks/cfpb/steps/05_score.py --extractor model 2026-08-DD
+```
+
+It prints both readers side by side with their integers, writes `out/results-model.json` (leaving
+`out/results.json` alone), and records every response into `artifacts/cache/extractor.jsonl` so the
+run replays afterwards with `EARSHOT_CACHE_MODE=replay` and no key. **It has never been run** — no
+key existed in the environment it was built in, and no figure for it exists anywhere in this repo.
+
 Steps 01–02 need network; 03–05 are entirely local. The bulk archive and the extracted frame live
 **outside the repo** (default `c:/tmp/ccdb`, override with `CCDB_DIR`) because they are large; what is
 committed is their SHA-256, the 150 drawn documents, and the results. So **step 05 alone reproduces
@@ -49,7 +64,7 @@ archive's, reached by two different paths.
 | `PROTOCOL.md` | **The pre-registration.** Sampling frame, panel design, wrapping rule, interpretation thresholds, freeze rules. Committed *before* any narrative was read. |
 | `MARKING-GUIDE.md` | How a narrative gets marked, derived from the construct definitions and not from the extractor's cues. Committed *before* any narrative was read. |
 | `steps/*.py` | One script per step. Each logs its exact API URLs, response counts, and output hashes. |
-| `out/` | Generated, committed: the frame, day counts, the drawn sample, the gold marks, the results. |
+| `out/` | Generated, committed: the frame, day counts, the drawn sample, the gold marks, the results. `results-model.json` appears here the first time the model arm is run. |
 | `RUNLOG.md` | Append-only log of every run: command, date, key counts, output SHA-256. |
 
 ## Reading order for a reviewer

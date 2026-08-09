@@ -45,6 +45,13 @@ weighting still contribute nothing over a plain count, and that is written down 
 one thing. A strawman comparison invalidates everything downstream, and it is the first thing a
 technical judge probes.
 
+**Instrumented is not measured, and the word "now" hides the difference.** The model reader
+accumulates real spend and per-call latency and prints cost per 1,000 conversations — and has never
+made a call, so all of those are zero and none of them is a figure. A component that *would* produce
+a number is worth exactly nothing until a run has produced one; write "not measured" until the output
+exists, and never let a placeholder, an estimate or a projection from an adjacent measurement stand
+in for it. A stub proves a contract, never a reader.
+
 ---
 
 ## 2. Ground truth and honesty guards
@@ -107,6 +114,13 @@ the schema does not carry.
 
 **Check the commands in your own README run.** Ours referenced a package name that no longer existed
 and a `.env.example` that did not.
+
+**A published artifact keeps the date of the run that published it.** Re-running
+`benchmarks/cfpb/steps/05_score.py` to check that a refactor moved nothing rewrote
+`out/results.json` — every measured figure byte-identical, `run_date` bumped to today. That diff
+reads as "the benchmark was re-run and republished" when nothing was re-measured, and it would have
+been committed as part of an unrelated change. Restore the artifact, and log a regression check as a
+regression check.
 
 **No arguing with the reader.** Architecture docs describe the system; they do not cite the rubric,
 congratulate the authors, or re-litigate a decision. If a sentence exists to persuade, cut it.

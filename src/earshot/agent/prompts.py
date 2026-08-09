@@ -1,60 +1,32 @@
-"""Prompts as versioned files on disk, so a prompt change is a reviewable diff.
+"""The investigator's prompt files.
 
-The sha256 of each file goes into the response-cache key and into the run manifest. That is
-what makes "this recorded run was produced by this prompt" checkable rather than asserted — edit
-`system.md` and every cached response for the old prompt stops being served.
+Loading, hashing and `{{slot}}` rendering all live in `earshot.prompt_files`, which the model
+extractor uses too. This module is the investigator's view of it: the family name in one place,
+so a caller cannot address the wrong prompt directory by typo.
 """
 
 from __future__ import annotations
 
-import hashlib
-import os
-from dataclasses import dataclass
-from functools import lru_cache
-from pathlib import Path
+from ..prompt_files import DEFAULT_VERSION, Prompt, pair_sha, prompts_root, render
+from ..prompt_files import load_prompt as _load_prompt
 
-DEFAULT_VERSION = "v1"
+FAMILY = "investigator"
 
-
-@dataclass(frozen=True)
-class Prompt:
-    name: str
-    text: str
-    version: str
-    sha256: str
-
-
-def prompts_root() -> Path:
-    """`EARSHOT_PROMPTS`, else ./prompts, else the repo checkout this package was installed from.
-
-    The last fallback matters: `uv run pytest` from any directory must still find the prompts,
-    and a cwd-relative path alone would make that a coin toss.
-    """
-    # Both spellings are honoured: an override that is silently not read points the loader at
-    # nothing, with no error to say why.
-    override = (
-        os.environ.get("EARSHOT_PROMPTS") or os.environ.get("EAR_PROMPTS") or ""
-    ).strip()
-    if override:
-        return Path(override)
-    cwd = Path("prompts")
-    if cwd.is_dir():
-        return cwd
-    return Path(__file__).resolve().parents[3] / "prompts"
+__all__ = [
+    "DEFAULT_VERSION",
+    "FAMILY",
+    "Prompt",
+    "investigator_prompts",
+    "load_prompt",
+    "prompt",
+    "prompts_root",
+    "render",
+]
 
 
-@lru_cache(maxsize=None)
 def load_prompt(name: str, version: str = DEFAULT_VERSION) -> tuple[str, str, str]:
     """Returns `(text, version, sha256)` for `prompts/investigator/<version>/<name>.md`."""
-    path = prompts_root() / "investigator" / version / f"{name}.md"
-    if not path.is_file():
-        raise FileNotFoundError(
-            f"prompt not found: {path}. Set EARSHOT_PROMPTS to the directory holding "
-            f"investigator/{version}/."
-        )
-    text = path.read_text(encoding="utf-8")
-    sha = hashlib.sha256(text.encode("utf-8")).hexdigest()
-    return text, version, sha
+    return _load_prompt(FAMILY, name, version)
 
 
 def prompt(name: str, version: str = DEFAULT_VERSION) -> Prompt:
@@ -66,14 +38,4 @@ def investigator_prompts(version: str = DEFAULT_VERSION) -> tuple[Prompt, Prompt
     """System prompt, task template, and a combined sha covering both."""
     system = prompt("system", version)
     task = prompt("task", version)
-    combined = hashlib.sha256(f"{system.sha256}:{task.sha256}".encode()).hexdigest()
-    return system, task, combined
-
-
-def render(template: str, **slots: object) -> str:
-    """Fill `{{slot}}` placeholders. Deliberately not str.format — the templates contain JSON
-    braces, and a format-string collision in a prompt is a silent, ugly failure."""
-    out = template
-    for key, value in slots.items():
-        out = out.replace("{{" + key + "}}", str(value))
-    return out
+    return system, task, pair_sha(system, task)

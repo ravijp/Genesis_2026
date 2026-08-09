@@ -202,3 +202,24 @@ class OpenRouterProvider:
 
     def close(self) -> None:
         self._client.close()
+
+
+class LazyOpenRouterProvider:
+    """Same surface as `OpenRouterProvider`, but the client is built on first use.
+
+    Replay never touches the network, so a replay run must not need a key to get as far as the
+    cache. Building the real client eagerly makes a keyless replay fail on a key it would never
+    have used.
+    """
+
+    name = "openrouter"
+
+    def __init__(self) -> None:
+        self._inner: OpenRouterProvider | None = None
+
+    def complete(
+        self, messages: list[Message], tools: list[ToolSpec], model_cfg: ModelConfig
+    ) -> Completion:
+        if self._inner is None:
+            self._inner = OpenRouterProvider()
+        return self._inner.complete(messages, tools, model_cfg)
