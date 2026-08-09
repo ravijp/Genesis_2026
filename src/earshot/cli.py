@@ -483,28 +483,51 @@ def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
           f"review budget {INVESTIGATION_BUDGET:.0%}   git={_git_sha()}   ({elapsed:.0f}s)")
     print(f"seeds: {seeds[0]}..{seeds[-1]}\n")
 
-    print(f"{'arm':<18} {'recall':>8} {'stdev':>7} {'min':>7} {'max':>7} "
-          f"{'hits/outcomes':>16} {'diffuse':>9}")
+    diffuse_totals = {
+        name: (
+            sum(s.diffuse_hits for s in by_arm[name]),
+            sum(s.diffuse_outcomes for s in by_arm[name]),
+        )
+        for name in summaries
+    }
+
+    print(f"{'arm':<18} {'recall':>8} {'stdev':>7} {'hits/outcomes':>16} "
+          f"{'diffuse':>9} {'diffuse hits/n':>16}")
     print("-" * 86)
     for name, s in sorted(summaries.items(), key=lambda kv: -kv[1].pooled_recall):
-        print(f"{name:<18} {s.pooled_recall:>8.3f} {s.stdev:>7.3f} {s.lo:>7.3f} {s.hi:>7.3f} "
-              f"{str(s.total_hits) + '/' + str(s.total_outcomes):>16} {s.mean_diffuse:>9.3f}")
+        dh, dn = diffuse_totals[name]
+        print(f"{name:<18} {s.pooled_recall:>8.3f} {s.stdev:>7.3f} "
+              f"{str(s.total_hits) + '/' + str(s.total_outcomes):>16} "
+              f"{(dh / dn if dn else 0):>9.3f} {str(dh) + '/' + str(dn):>16}")
 
-    print("\nPAIRED, seed by seed — win-loss-tie and a two-sided sign test")
-    print("Overall:")
+    # The pre-registered headline goes FIRST, and it is a comparison on the diffuse stratum --
+    # not on overall recall. An earlier version of this command could only pair on overall
+    # recall, which meant the number the README leads with was not reproducible by anything in
+    # the repo.
+    print("\nPRE-REGISTERED HEADLINE — diffuse arcs (evidence spread thin), paired by seed")
+    for arm in ("full-ledger", "dumb-ledger", "long-context-3"):
+        if arm not in summaries:
+            continue
+        w, lost, tied = paired_record(by_arm, arm, "stateless-max", metric="diffuse_recall")
+        p = sign_test_p(w, lost)
+        mark = "  <-- significant" if p < 0.05 else ""
+        print(f"  {arm:<18} vs stateless-max     {w}-{lost}-{tied}  p={p:.3f}{mark}")
+
+    print("\nEXPLORATORY — overall recall, every pairing")
     names = list(summaries)
+    n_tests = 0
     for a in names:
         for b in names:
             if a >= b:
                 continue
+            n_tests += 1
             w, lost, tied = paired_record(by_arm, a, b)
             p = sign_test_p(w, lost)
-            mark = "  <-- significant" if p < 0.05 else ""
+            mark = "  <-- p<0.05, but see the note" if p < 0.05 else ""
             print(f"  {a:<18} vs {b:<18} {w}-{lost}-{tied}  p={p:.3f}{mark}")
 
-    print("\nNOTE: 14 pairwise tests with no multiplicity correction. Treat a single p just")
-    print("under 0.05 as a hint, not a result. The diffuse-stratum comparison is the")
-    print("pre-registered headline; everything else is exploratory.")
+    print(f"\nNOTE: {n_tests} pairwise tests below the headline, with no multiplicity")
+    print("correction. A single p just under 0.05 among them is a hint, not a result.")
 
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     out = ARTIFACTS / f"sweep-{n_seeds}x{run.corpus.n_customers}-{run.hash()}.json"

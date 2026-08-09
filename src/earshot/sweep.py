@@ -21,7 +21,7 @@ from .config import RunConfig
 from .corpus import generate
 from .evals import evaluate_arm
 from .extract import OfflineLexiconExtractor, extract_all
-from .schema import Outcome
+from .schema import Outcome, Stratum
 
 
 @dataclass
@@ -35,6 +35,8 @@ class ArmSample:
     outcomes: int
     flagged: int
     diffuse_recall: float
+    diffuse_hits: int = 0
+    diffuse_outcomes: int = 0
 
 
 @dataclass
@@ -65,9 +67,19 @@ def _one_seed(base: RunConfig, seed: int, budget: float) -> list[ArmSample]:
     arms = run_all_arms(signals, run.scoring)
     n_outcomes = sum(1 for c in corpus.customers if c.outcome is not Outcome.NONE)
 
+    # Denominator for the diffuse stratum: outcome customers whose evidence was spread thin.
+    # Carried explicitly so the headline rate is never quoted without the integers behind it
+    # (working-agreements.md §1).
+    n_diffuse = sum(
+        1
+        for c in corpus.customers
+        if c.outcome is not Outcome.NONE and c.stratum is Stratum.DIFFUSE
+    )
+
     out: list[ArmSample] = []
     for name, arm in arms.items():
         r = evaluate_arm(corpus, arm, budget)
+        diffuse = r.recall_by_stratum.get("diffuse", 0.0)
         out.append(
             ArmSample(
                 arm=name,
@@ -76,7 +88,9 @@ def _one_seed(base: RunConfig, seed: int, budget: float) -> list[ArmSample]:
                 hits=round(r.recall * n_outcomes),
                 outcomes=n_outcomes,
                 flagged=r.n_flagged,
-                diffuse_recall=r.recall_by_stratum.get("diffuse", 0.0),
+                diffuse_recall=diffuse,
+                diffuse_hits=round(diffuse * n_diffuse),
+                diffuse_outcomes=n_diffuse,
             )
         )
     return out
@@ -108,15 +122,20 @@ def sweep(
 
 
 def paired_record(
-    by_arm: dict[str, list[ArmSample]], a: str, b: str
+    by_arm: dict[str, list[ArmSample]], a: str, b: str, metric: str = "recall"
 ) -> tuple[int, int, int]:
-    """Seed-by-seed win/loss/tie for arm `a` against arm `b`.
+    """Seed-by-seed win/loss/tie for arm `a` against arm `b` on `metric`.
 
     Paired on seed, because the seeds share a corpus and comparing means across independent
     draws throws that pairing away.
+
+    `metric` exists because the pre-registered headline is the DIFFUSE-stratum comparison, and
+    a version of this that could only pair on overall recall meant the published number
+    (8-0-2, p=0.008) was not reproducible by any command in the repo — precisely the failure
+    working-agreements.md §4 forbids.
     """
-    left = {s.seed: s.recall for s in by_arm.get(a, [])}
-    right = {s.seed: s.recall for s in by_arm.get(b, [])}
+    left = {s.seed: getattr(s, metric) for s in by_arm.get(a, [])}
+    right = {s.seed: getattr(s, metric) for s in by_arm.get(b, [])}
     wins = losses = ties = 0
     for seed in sorted(set(left) & set(right)):
         if left[seed] > right[seed]:

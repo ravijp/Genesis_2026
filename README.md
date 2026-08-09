@@ -63,20 +63,20 @@ with a two-sided sign test.
 
 Recall at a **10% review budget**, since a review team's capacity is the real constraint:
 
-| Arm | Recall | Spread (min–max) | **Diffuse arcs** | Hits / outcomes |
+| Arm | Recall | Hits / outcomes | **Diffuse arcs** | Diffuse hits / n |
 |---|---|---|---|---|
-| stateless-max *(score each call, forget)* | 0.142 | 0.117–0.182 | 0.126 | 276 / 1945 |
-| hybrid *(rank-combined)* | 0.140 | 0.103–0.168 | 0.127 | 272 / 1945 |
-| long-context-3 *(last 3 conversations pooled)* | 0.135 | 0.112–0.170 | 0.143 | 262 / 1945 |
-| full-ledger *(decay, corroboration, channel, escalation)* | 0.131 | 0.100–0.157 | **0.174** | 254 / 1945 |
-| dumb-ledger *(unweighted count)* | 0.129 | 0.103–0.155 | **0.179** | 250 / 1945 |
+| stateless-max *(score each call, forget)* | 0.142 | 276 / 1945 | 0.123 | 96 / 780 |
+| hybrid *(rank-combined)* | 0.140 | 272 / 1945 | 0.126 | 98 / 780 |
+| long-context-3 *(last 3 conversations pooled)* | 0.135 | 262 / 1945 | 0.144 | 112 / 780 |
+| full-ledger *(decay, corroboration, channel, escalation)* | 0.131 | 254 / 1945 | **0.172** | **134 / 780** |
+| dumb-ledger *(unweighted count)* | 0.129 | 250 / 1945 | **0.177** | 138 / 780 |
 
 What survives a paired test:
 
 - **Memory wins on the arcs it exists for, and it is significant.** On diffuse arcs — evidence spread
-  thin, nothing alarming in any single conversation — the full ledger scores **0.174 against 0.126**
-  for scoring-and-forgetting, winning **8 seeds of 10 with 2 ties and zero losses** (`p=0.008`). This
-  is the entry's central claim and it holds.
+  thin, nothing alarming in any single conversation — the full ledger catches **134 of 780** against
+  **96 of 780** for scoring-and-forgetting, winning **8 seeds of 10 with 2 ties and zero losses**
+  (`p=0.008`). This is the entry's pre-registered headline, and `earshot sweep` prints it first.
 - **Overall, memory neither beats nor loses to per-call detection.** Every pairing involving the full
   ledger is non-significant (`p≥0.29`). One unrelated pairing does reach `p=0.039` (hybrid vs
   dumb-ledger) — with 14 pairwise tests and no multiplicity correction, that is a hint, not a result,

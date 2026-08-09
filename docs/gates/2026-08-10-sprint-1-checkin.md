@@ -24,7 +24,7 @@ precision numbers · build and rehearse the three-conversation accumulation scen
 Also landed, beyond the commitment: **an investigator agent** that works each flagged customer using
 tools (transactions, account history, prior cases) and produces a case file with quoted evidence; a
 five-arm comparison harness with per-mechanism ablations; multi-dataset evaluation with proper
-significance testing; 87 tests; and one-command reproduction with a run manifest.
+significance testing; 94 tests; and one-command reproduction with a run manifest.
 
 **A word on status.** Nothing above is marked Done on our board, and that is deliberate. All of it was
 written by one person over a weekend and none of it has been reviewed by a second — Namit and Ishant
@@ -41,8 +41,9 @@ earning their keep, and that is Sprint 2's question.
 Measured across 10 independent datasets of 1,500 customers each — 1,945 customers who went on to have
 a real outcome — at a review capacity of 10% of the portfolio:
 
-- On **thin-evidence cases**: memory 0.174 vs 0.126 for score-each-call-and-forget. It wins **8 of the
-  10 datasets, ties 2, loses none** (p=0.008). This is the claim the entry is built on, and it holds.
+- On **thin-evidence cases**: memory catches **134 of 780**; scoring-each-call-and-forgetting catches
+  **96 of 780**. Memory wins **8 of the 10 datasets, ties 2, loses none** (p=0.008). This is the claim
+  the entry is built on, and it holds.
 - **Across the whole portfolio, nothing separates the approaches.** Memory neither beats nor loses to
   per-call detection overall.
 - **A plain count of signals does as well as our weighted scoring.** Decay, corroboration and channel
