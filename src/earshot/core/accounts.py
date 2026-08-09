@@ -116,9 +116,13 @@ def generate_history(
 
     # Three noisy readings of the same latent state. Independent noise is what stops the
     # account from being a lookup table: indicators routinely disagree.
-    income_stress = _clamp(latent + rng.gauss(0.0, 0.30))
-    spend_stress = _clamp(latent + rng.gauss(0.0, 0.30))
-    buffer_stress = _clamp(latent + rng.gauss(0.0, 0.32))
+    # Floors are not cosmetic. Clamping to [0, 1] made `latent + gauss` land on exactly 0.0
+    # for roughly half of all zero-risk customers, which produced byte-identical salary
+    # credits and a "perfectly clean account" signature that fired 20x more often on decoys
+    # than on real arcs. Every customer carries some noise.
+    income_stress = _clamp(latent + rng.gauss(0.0, 0.30), 0.05, 0.95)
+    spend_stress = _clamp(latent + rng.gauss(0.0, 0.30), 0.05, 0.95)
+    buffer_stress = _clamp(latent + rng.gauss(0.0, 0.32), 0.05, 0.95)
 
     # ~1 in 5 customers runs a thin buffer whatever their risk — gig income, chaotic but
     # solvent. These are the honest false positives; without them the tool is a risk oracle.

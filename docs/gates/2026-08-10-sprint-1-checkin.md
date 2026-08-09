@@ -24,7 +24,28 @@ precision numbers · build and rehearse the three-conversation accumulation scen
 Also landed: a four-arm comparison harness, per-mechanism ablations, one-command reproducibility with a
 run manifest (seed, git SHA, config hash), and committed result artifacts per run.
 
-## 2. The finding — our own thesis does not yet hold, and that is the useful part
+## 2. Where the numbers stand
+
+**Short version for the room:** first numbers are in. Memory helps exactly where we said it would —
+on customers whose worry is spread thin across several conversations — and costs us on the obvious
+cases. The scoring refinements we built on top are not yet earning their place. We are carrying that
+into Sprint 2 as the open question rather than tuning it quietly.
+
+Measured across 10 independent datasets of 1,500 customers each (1,651 customers who went on to have
+a real outcome), at a review capacity of 10% of the portfolio:
+
+- On **thin-evidence cases**, memory catches 0.147 vs 0.114 for a tool that scores each call and
+  forgets — winning 8 of the 10 datasets.
+- **Overall it loses**, 0.150 vs 0.177, on 10 datasets out of 10. Accumulating evidence dilutes a
+  single decisive conversation, and most real cases are decisive.
+- **A plain count of signals does as well as our weighted scoring** (5–4–1 across datasets). Decay,
+  corroboration and channel weighting have not yet paid for themselves.
+
+*Not to volunteer, but the honest answer if asked how solid this is:* an earlier single-dataset run
+suggested a stronger negative result, and it turned out to be one customer's worth of noise. We
+re-ran it at ten times the scale before writing anything down.
+
+## 2b. Detail, if the room wants it
 
 The entry rests on one claim: a customer-level memory that accumulates weak signals beats a per-call
 tool that scores each conversation and forgets it. We built the harness to test that claim rather than

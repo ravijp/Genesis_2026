@@ -105,6 +105,14 @@ class CustomerTruth:
     outcome_day: int | None  # None when Outcome.NONE
     latent_risk: float  # the probability the outcome was drawn from
 
+    # What the customer's account actually looks like, which is NOT the same thing as how much
+    # they talked about it. Kept separate because conflating them made the account tool an
+    # oracle: `latent_risk` is a function of how much evidence was planted in conversations,
+    # so a tool reading it could recover the stratum -- the answer key -- without reading a
+    # word. Financial state correlates with risk, loosely, and is drawn for every customer
+    # from one common distribution so the populations genuinely overlap.
+    financial_state: float = 0.0
+
 
 @dataclass(frozen=True)
 class Corpus:

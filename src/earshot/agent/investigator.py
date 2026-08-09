@@ -283,6 +283,21 @@ def investigate(
             )
             trace.stopped_because = "provider_error"
             break
+        except Exception as exc:  # noqa: BLE001 - the loop must never take the demo down
+            # This module promises it always returns a decision rather than raising, and that
+            # promise was only true for ProviderError. Any other failure -- a bug in a
+            # provider, a JSON edge case, a network library raising something unexpected --
+            # propagated to the CLI as a traceback in front of whoever is watching.
+            trace.steps.append(
+                StepRecord(
+                    index=step,
+                    kind="model",
+                    name="internal_error",
+                    detail=f"{type(exc).__name__}: {exc}"[:200],
+                )
+            )
+            trace.stopped_because = "internal_error"
+            break
 
         # Report the model that actually served, not the one we asked for -- OpenRouter can
         # route to a different snapshot, and the offline provider is not a model at all.

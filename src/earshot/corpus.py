@@ -200,6 +200,27 @@ def generate(run: RunConfig | None = None) -> Corpus:
 
         # NULL: plants stay empty.
 
+        # Latent risk for the customers who are NOT on a distress arc.
+        #
+        # This used to be left at 0.0, which quietly made the whole thing a fraud: every
+        # decoy and null customer had latent_risk exactly 0.0 and every real arc had >= 0.55,
+        # so `latent_risk > 0` was a lossless readout of `Stratum` -- a ground-truth field the
+        # separation guard forbids by name. Tools take latent_risk as a plain float, so the
+        # guard never saw it, and the offline agent could separate decoys from real arcs at
+        # 2.4x base rate off the account tool without reading a single word of conversation.
+        #
+        # Real customers who are fine still have some risk, and it must OVERLAP the bottom of
+        # the distressed range or the account tool stays an oracle.
+        if stratum not in (Stratum.CONCENTRATED, Stratum.DIFFUSE):
+            latent_risk = rng.betavariate(2.0, 3.5) * 0.75
+
+        # Financial state: mostly idiosyncratic, only loosely tied to conversational risk.
+        # The 0.35 weight is what keeps the account tool useful (a distressed customer really
+        # is more likely to look distressed) without making it decisive on its own.
+        financial_state = min(
+            1.0, max(0.0, 0.35 * latent_risk + 0.65 * rng.betavariate(2.2, 2.6))
+        )
+
         # Outcome drawn from latent risk. Decoy-accumulator and null customers sit at the
         # base rate, so a few of them churn by chance -- as they would in a real portfolio.
         p_outcome = min(0.95, cfg.outcome_base_rate + cfg.outcome_risk_gain * latent_risk)
@@ -241,6 +262,7 @@ def generate(run: RunConfig | None = None) -> Corpus:
                 outcome=outcome,
                 outcome_day=outcome_day,
                 latent_risk=latent_risk,
+                financial_state=financial_state,
             )
         )
 

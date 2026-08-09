@@ -35,6 +35,10 @@ from .schema import Outcome, Stratum
 # framing the eval uses, rather than a magic score.
 INVESTIGATION_BUDGET = 0.10
 
+# Ceiling on model spend for a single case. A live Sonnet 4.5 investigation measured $0.078,
+# so this is ~3x headroom and still stops a runaway loop from being expensive.
+COST_CAP_PER_CASE_USD = 0.25
+
 # Anchored to the working directory, not to the package. A package-relative path resolves
 # inside site-packages once `ear` is installed rather than run from a checkout.
 ARTIFACTS = Path(os.environ.get("EARSHOT_ARTIFACTS", "artifacts")) / "runs"
@@ -309,7 +313,10 @@ def _context(corpus, customer_id: str, breakdown: ScoreBreakdown, threshold: flo
         customer_id=customer_id,
         as_of_day=breakdown.as_of_day,
         seed=seed,
-        latent_risk=truth.latent_risk,
+        # financial_state, NOT latent_risk. latent_risk is a function of how much evidence was
+        # planted in this customer's conversations, so handing it to a tool let the agent
+        # recover the stratum -- the answer key -- without reading anything.
+        latent_risk=truth.financial_state,
         signal_type=breakdown.signal_type.value,
         score=breakdown.score,
         threshold=threshold,
@@ -399,7 +406,10 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
     for i, (customer_id, breakdown) in enumerate(cut[:limit], start=1):
         ctx = _context(corpus, customer_id, breakdown, threshold, run.seed)
         try:
-            decision, trace = investigate(ctx, provider)
+            # A cost cap the shipped path never passes is not a cap. "Bounded spend per case"
+            # is a production-readiness claim, so it has to hold in the command people run,
+            # not only in the function signature.
+            decision, trace = investigate(ctx, provider, cost_cap_usd=COST_CAP_PER_CASE_USD)
         except ProviderError as exc:
             # Only reachable if the provider fails before the loop can record a step.
             print(f"\nCASE {i} - {customer_id}: provider unavailable ({exc})")

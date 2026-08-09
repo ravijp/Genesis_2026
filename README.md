@@ -51,34 +51,40 @@ Full picture, with diagrams: **[docs/architecture/architecture.md](docs/architec
 
 ## The honest state of the numbers
 
-We built the eval harness to *test* the claim rather than illustrate it, and as of 2026-08-09 it does
-not hold. Every figure below comes from the committed run at
-[`artifacts/runs/pinned/`](artifacts/runs/pinned/) — 400 customers, 1,393 conversations, seed `20260809`,
-config `07db21651cfa`. Reproduce with `uv run earshot run --customers 400`.
+The harness was built to *test* the claim, not illustrate it. Figures below are from **10 seeds ×
+1,500 customers — 1,651 outcome customers in total** — with every arm paired seed by seed and compared
+with a two-sided sign test.
 
-Recall at a **10% review budget** — every arm flags exactly 40 of 400 customers, because a review team's
-capacity is the real constraint:
+Recall at a **10% review budget**, since a review team's capacity is the real constraint:
 
-| Arm | Overall | Diffuse arcs | Concentrated arcs | False alarms |
+| Arm | Recall | Spread (min–max) | **Diffuse arcs** | Hits / outcomes |
 |---|---|---|---|---|
-| stateless-max *(score each call, forget)* | **0.154** | 0.143 | **0.214** | 0.000 |
-| dumb-ledger *(unweighted count)* | **0.154** | 0.191 | 0.143 | 0.000 |
-| long-context-3 *(last 3 conversations pooled)* | **0.154** | **0.238** | 0.071 | 0.000 |
-| full-ledger *(decay, corroboration, channel, escalation)* | 0.128 | 0.191 | 0.071 | 0.000 |
+| stateless-max *(score each call, forget)* | 0.142 | 0.117–0.182 | 0.126 | 276 / 1945 |
+| hybrid *(rank-combined)* | 0.140 | 0.103–0.168 | 0.127 | 272 / 1945 |
+| long-context-3 *(last 3 conversations pooled)* | 0.135 | 0.112–0.170 | 0.143 | 262 / 1945 |
+| full-ledger *(decay, corroboration, channel, escalation)* | 0.131 | 0.100–0.157 | **0.174** | 254 / 1945 |
+| dumb-ledger *(unweighted count)* | 0.129 | 0.103–0.155 | **0.179** | 250 / 1945 |
 
-What that actually says:
+What survives a paired test:
 
-- **Accumulation wins where it should.** On diffuse arcs — evidence spread thin, no single conversation
-  alarming — every memory arm beats scoring-and-forgetting.
-- **It loses overall**, because it dilutes a single decisive conversation. Per-call detection is better
-  at obvious cases, which is most of them.
-- **Our scoring mechanisms are not earning their place.** A dumb unweighted count matches the full
-  ledger, and removing decay or escalation *improves* recall by 0.026 each.
-- **Long-context currently beats us on our own home ground** (0.238 diffuse). That is the question a
-  judge will ask, and today the honest answer is that we do not have an accuracy win over it — the
-  ledger's case rests on cost, auditability and determinism instead. See
-  [build-plan.md](docs/architecture/build-plan.md) §3.5.
-- **No arm produces false alarms** on the decoy or clean-customer populations at this budget.
+- **Memory wins on the arcs it exists for, and it is significant.** On diffuse arcs — evidence spread
+  thin, nothing alarming in any single conversation — the full ledger scores **0.174 against 0.126**
+  for scoring-and-forgetting, winning **8 seeds of 10 with 2 ties and zero losses** (`p=0.008`). This
+  is the entry's central claim and it holds.
+- **Overall, no arm is distinguishable from any other** (all pairings `p≥0.29`). Memory does not beat
+  per-call detection across the whole portfolio, and does not lose to it either.
+- **Our scoring machinery still earns nothing.** Full ledger vs a dumb unweighted count on diffuse
+  arcs: **3–4–3, `p=1.000`**. Decay, corroboration, cross-channel weighting and escalation are
+  decoration until shown otherwise — a plain count of retained signals does the same work.
+- **Long-context does not beat the ledger.** On diffuse arcs the ledger leads it 8–2 (`p=0.109`).
+
+> **Two retractions, both from earlier today.** (1) A first version of this table came from a single
+> 400-customer run with 39 outcome customers, where every rate was an integer over 39 — differences of
+> one customer, inside binomial noise, written up as findings. (2) That corpus also gave every decoy
+> and clean customer a latent risk of exactly `0.0` while every real arc was `≥0.55`, which made the
+> risk value a lossless encoding of the answer key and leaked it into the agent's account tool. Both
+> are fixed; the numbers above are post-fix, and the earlier claim that "memory loses overall" and that
+> "long-context beats us" did not survive either correction.
 
 Supporting figures: the offline extractor's measured recall is **0.632** — it misses 37% of planted
 signals and is deliberately the weaker arm; it fires on 20% of decoys. Portfolio outcome rate 9.75%.
