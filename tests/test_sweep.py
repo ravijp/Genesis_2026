@@ -1,8 +1,8 @@
 """Tests for the multi-seed harness.
 
-`sweep.py` shipped with zero tests, which is how it reached a state where the pre-registered
-headline it exists to produce could not be produced by it. Everything published comes through
-here, so it needs the most coverage, not the least.
+Everything published comes through `sweep.py`, so it carries the most coverage in the suite:
+the sign test against hand computation, the pairing, and the invariants the multi-seed
+comparison depends on — equal budgets, matching denominators, determinism.
 """
 
 from __future__ import annotations
@@ -68,8 +68,8 @@ def test_pairing_ignores_seeds_present_in_only_one_arm() -> None:
 
 
 def test_pairing_can_use_a_metric_other_than_recall() -> None:
-    """The pre-registered headline is a diffuse-stratum comparison. A version of this that
-    could only pair on overall recall meant the published number was unreproducible."""
+    """The pre-registered headline is a diffuse-stratum comparison, so pairing has to work on
+    a metric other than overall recall or the published number is unreproducible."""
     by_arm = {
         "a": [_sample("a", 1, recall=0.9, diffuse=0.1)],
         "b": [_sample("b", 1, recall=0.1, diffuse=0.9)],
@@ -104,7 +104,7 @@ def test_pooled_recall_is_over_customers_not_a_mean_of_rates(swept) -> None:
 
 
 def test_every_rate_carries_its_denominator(swept) -> None:
-    """working-agreements.md §1. A rate without integers hides its own sample size."""
+    """A rate without its integers hides its own sample size."""
     _, by_arm = swept
     for samples in by_arm.values():
         for s in samples:

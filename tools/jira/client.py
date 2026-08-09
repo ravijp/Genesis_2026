@@ -1,8 +1,8 @@
 """Minimal Jira client for project AT.
 
-Every write reports its own result. A previous bulk script printed only the tail of its output
-and silently swallowed 37 permission failures, leaving a duplicate backlog on the board — so
-`Jira.failures` is checked and printed by every caller.
+No call raises. Every failure is appended to `Jira.failures`, and every caller ends by printing
+`report()` — a bulk script whose failures scroll past unread leaves the board in a state nobody
+knows about, and this account cannot delete an issue to undo it.
 
 Credentials: `JIRA_EMAIL` / `JIRA_TOKEN`, or `JIRA_TOKEN_FILE` pointing at a file containing
 the token. Never hard-code a token and never print one.
@@ -22,7 +22,7 @@ BASE = os.environ.get("JIRA_BASE", "https://zenonai.atlassian.net")
 PROJECT = os.environ.get("JIRA_PROJECT", "AT")
 
 # Transition ids for this project's workflow. There is no "Done" — the terminal state is
-# "Resolved" (see docs/ops/jira-conventions.md §5).
+# "Resolved" (see docs/ops/jira-conventions.md).
 TODO = "11"
 IN_PROGRESS = "21"
 WAITING = "31"
@@ -101,9 +101,9 @@ class Jira:
         """`blocker` blocks `blocked`.
 
         Jira's naming is the trap here: for the "Blocks" type the OUTWARD issue is the one
-        that *is blocked*, and the INWARD issue is the blocker. Getting this backwards produced
-        six links that all pointed the wrong way — a write-up blocking the experiment that
-        produced it, and a demo recording blocking the demo. Verify direction after creating.
+        that *is blocked*, and the INWARD issue is the blocker. Swap them and the links point
+        the wrong way with no error — a write-up blocking the experiment that produces it.
+        Verify the direction on the board after creating.
         """
         self._call(
             "POST",

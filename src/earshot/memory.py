@@ -1,17 +1,16 @@
 """The per-customer signal ledger and the re-scorer. Pure code, no model calls.
 
-This is the heart of the entry, and the two mechanics it exists to implement
-are the two the market does not ship:
+Two mechanics:
 
-**Never-discard (Rule 3).** Nothing here deletes or supersedes an entry. Incumbent customer
-memory reconciles to *current truth* -- new observations overwrite old ones -- which is right
-for personalization and structurally wrong for risk, because three faint distress signals must
-sum rather than overwrite. `append()` is the only mutator and it only ever grows the ledger.
+**Never-discard.** Nothing here deletes or supersedes an entry. Customer memory that reconciles
+to *current truth* -- new observations overwrite old ones -- is right for personalization and
+structurally wrong for risk, because three faint distress signals must sum rather than
+overwrite. `append()` is the only mutator and it only ever grows the ledger.
 
-**Retro re-scoring (Rule 4).** Every entry carries what it contributed *when it was written*
-and what it contributes *now*. A signal correctly scored "no action" in March is re-read in
-July: conversation #3 changes the interpretation of #1 and #2. `retro_delta` is that change,
-and it is the thing that goes on screen in the demo.
+**Retro re-scoring.** Every entry carries what it contributed *when it was written* and what it
+contributes *now*. A signal correctly scored "no action" in March is re-read in July:
+conversation #3 changes the interpretation of #1 and #2. `retro_delta` is that change, and it
+is the thing that goes on screen in the demo.
 
 Contribution is leave-one-out marginal: the score with this entry minus the score without it.
 That makes the evidence chain auditable -- a compliance officer can ask what any single quote
@@ -119,13 +118,12 @@ class SignalLedger:
     def score(
         self, customer_id: str, signal_type: SignalType, as_of_day: int
     ) -> ScoreBreakdown:
-        # COPIES, never the stored entries. `score()` writes contribution/score fields onto the
-        # entries it returns, and those used to be the same objects held in `self._entries` —
-        # so `timeline()`, which materialises every day's breakdown before anyone reads it,
-        # left every earlier breakdown carrying the FINAL day's numbers. `open_case()` is built
-        # on `timeline()`, which meant `Case.evidence` — the auditable chain a compliance
-        # officer inspects, and the input to `is_load_bearing()` — reported the wrong as-of-day
-        # contributions. Scoring must not mutate the ledger.
+        # COPIES, never the stored entries: scoring must not mutate the ledger. `score()`
+        # writes contribution and score fields onto the entries it returns, and `timeline()`
+        # materialises one breakdown per day before anyone reads any of them. Hand back the
+        # stored objects and every earlier breakdown ends up carrying the final day's numbers,
+        # so `Case.evidence` -- the auditable chain, and the input to `is_load_bearing()` --
+        # reports the wrong as-of-day contributions.
         live = [
             replace(e)
             for e in self._entries.get(customer_id, [])

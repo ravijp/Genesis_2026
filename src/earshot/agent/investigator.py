@@ -1,8 +1,8 @@
 """The bounded investigator loop.
 
 Three limits, all hard: **6 tool-calling steps, 2 schema-validation retries, an optional cost
-cap.** An agent that can loop forever is not production-ready, and feasibility is a quarter of
-the score. Budget exhaustion is not an exception — the loop always returns a decision, and an
+cap.** An agent that can loop forever cannot go near a production queue. Budget exhaustion is
+not an exception — the loop always returns a decision, and an
 exhausted budget returns `insufficient_evidence` with the reason recorded in the trace. A
 reviewer seeing "I ran out of steps" is strictly better served than one seeing a stack trace.
 
@@ -35,15 +35,16 @@ MAX_SCHEMA_RETRIES = 2
 TOOL_RESULT_CHAR_CAP = 6000  # a runaway tool result must not blow the context window
 
 # Headroom multiplier for the cost pre-flight. Each step replays the previous tool results as
-# prompt tokens, so the next call is reliably dearer than the last; estimating without this
-# let the cap be breached while still reporting "cost_cap".
+# prompt tokens, so the next call is reliably dearer than the last and "the priciest call so
+# far" systematically under-estimates it. 4x covers the ramps measured on this workload with
+# room to spare.
 #
-# WHAT THE CAP ACTUALLY ENFORCES, stated precisely because the previous version claimed more
-# than it delivered. Spend is bounded before each call using the priciest call so far times
-# this factor. That holds cumulative spend under the cap for any realistic cost curve, where
-# each call costs somewhat more than the last. It CANNOT bound a call that costs wildly more
-# than every prior call — no estimate can. A single call is bounded instead by `max_tokens`
-# on the request and `TOOL_RESULT_CHAR_CAP` on what can be fed back into the prompt.
+# WHAT THE CAP BOUNDS, stated because it is less than a reader assumes. Spend is checked
+# before each call against the priciest call so far times this factor, which holds CUMULATIVE
+# spend under the cap for any realistic cost curve, where each call costs somewhat more than
+# the last. It cannot bound a single call that costs wildly more than every call before it —
+# no pre-flight estimate can. One call is bounded instead by `max_tokens` on the request and
+# by `TOOL_RESULT_CHAR_CAP` on what can be fed back into the prompt.
 COST_GROWTH_FACTOR = 4.0
 
 
@@ -285,24 +286,16 @@ def investigate(
     decision: InvestigationDecision | None = None
     step = 0
 
-    # How much more the next call may cost than the priciest so far. Tool results accumulate
-    # into the prompt, so cost climbs; measured ramps sat well inside 4x.
     priciest_call = 0.0
     while step < max_steps:
         step += 1
 
-        # PRE-FLIGHT. Checking spend only after a call is not a cap, it is a report: with a
-        # $0.25 cap and $0.30-per-call model, the old check happily booked $0.30 and then
-        # announced "cost_cap". Refuse a call we already know we cannot afford, using the
-        # priciest call seen so far as the estimate.
+        # PRE-FLIGHT. Checking spend only after a call is a report, not a cap: a $0.30-per-call
+        # model books the $0.30 and then announces "cost_cap". Refuse a call we already know we
+        # cannot afford, estimating from the priciest call so far plus growth headroom.
         #
-        # Honest limit: the very first call cannot be estimated, so a cap below the cost of a
-        # single call cannot be enforced. Everything after that is genuinely bounded.
-        # Reserve headroom, because cost GROWS: every tool result is replayed as prompt tokens
-        # on the next call, so "the priciest call so far" systematically under-estimates the
-        # next one. Estimating with no growth factor let a $0.25 cap spend $0.26 on a gentle
-        # 1.5x ramp and $5.00 on a spike -- while still reporting "cost_cap", which is the
-        # exact shape of bug working-agreements.md §5 exists to prevent.
+        # Honest limit: the first call has nothing to estimate from, so a cap below the cost of
+        # a single call cannot be enforced. Everything after the first call is bounded.
         estimate = priciest_call * COST_GROWTH_FACTOR
         if cost_cap_usd is not None and trace.cost_usd + estimate > cost_cap_usd:
             trace.stopped_because = "cost_cap"
@@ -316,11 +309,11 @@ def investigate(
             )
             trace.stopped_because = "provider_error"
             break
-        except Exception as exc:  # noqa: BLE001 - the loop must never take the demo down
-            # This module promises it always returns a decision rather than raising, and that
-            # promise was only true for ProviderError. Any other failure -- a bug in a
-            # provider, a JSON edge case, a network library raising something unexpected --
-            # propagated to the CLI as a traceback in front of whoever is watching.
+        except Exception as exc:  # noqa: BLE001 - the loop must never take the run down
+            # This module promises a decision rather than an exception, and that has to hold
+            # for every failure, not only for ProviderError: a bug in a provider, a JSON edge
+            # case or a network library raising something unexpected would otherwise reach the
+            # CLI as a traceback.
             trace.steps.append(
                 StepRecord(
                     index=step,
@@ -352,8 +345,7 @@ def investigate(
             )
         )
 
-        # Track the most expensive call so far so the pre-flight check below can refuse a call
-        # that would breach the cap, rather than noticing afterwards.
+        # Feeds the next iteration's pre-flight estimate.
         priciest_call = max(priciest_call, completion.cost_usd)
 
         if cost_cap_usd is not None and trace.cost_usd >= cost_cap_usd:
@@ -419,9 +411,8 @@ def _run_tool(ctx: ToolContext, name: str, arguments: dict[str, Any]) -> tuple[s
             "invalid arguments",
         )
     except Exception as exc:  # noqa: BLE001 - a broken tool must not take the run down
-        # Catching only ToolError/ValidationError meant a plain KeyError inside a tool escaped
-        # `investigate()` as a traceback, in front of whoever was watching -- the same promise
-        # the model-call path already had to have widened.
+        # Anything a tool raises, not only ToolError and ValidationError: a plain KeyError
+        # inside a tool would otherwise escape `investigate()` as a traceback.
         return (
             json.dumps({"error": f"{type(exc).__name__}: {exc}"}),
             f"tool crashed: {type(exc).__name__}"[:120],

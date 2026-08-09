@@ -91,7 +91,7 @@ def description(
     done_when: list[str] | None = None,
     notes: str = "",
 ) -> dict:
-    """Build a description in the house structure (docs/ops/jira-conventions.md §3).
+    """Build a description in the house structure (docs/ops/jira-conventions.md).
 
     Empty blocks are omitted rather than rendered as headings with nothing under them.
     """

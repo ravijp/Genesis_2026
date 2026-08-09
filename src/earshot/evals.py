@@ -1,6 +1,6 @@
 """Evaluation harness.
 
-Two things here are deliberate corrections to v1 and should not be "simplified" away:
+Two properties hold everything else up, and neither survives being "simplified" away:
 
 **Equal alert budget, not a shared threshold.** An accumulating sum and a per-conversation max
 do not live on the same scale, so cutting both at the same number is a gift to the accumulator.
@@ -8,9 +8,9 @@ Instead each arm is cut at *its own* threshold chosen so that all arms flag the 
 customers -- which is also the real operating constraint, since a review team has fixed capacity.
 
 **Detectability is measured, never enforced.** `corpus_diagnostics` reports what share of each
-stratum each arm actually catches. v1 had a "rigging-validation pass" that regenerated any arc
-the baseline managed to detect; that is selection on the dependent variable, so it is reported
-here as a diagnostic and has no power to change the corpus.
+stratum each arm actually catches, and has no power to change the corpus. Regenerating arcs a
+baseline manages to detect would be selection on the dependent variable, so detectability is a
+diagnostic here and nothing more.
 """
 
 from __future__ import annotations
@@ -69,9 +69,9 @@ def evaluate_arm(
     # TRUE equal alert budget: rank and take the top K, rather than thresholding on a
     # quantile. Thresholding looks equivalent and is not — arms produce heavily tied scores
     # (every customer whose only evidence is one cue of the same weight scores identically),
-    # so a `>=` cut sweeps in the whole tie cluster. On the first 200-customer run that made
-    # stateless-max flag 47 customers at a nominal 10% budget while full-ledger flagged 21,
-    # which is not a comparison at all. Ties are broken deterministically by customer_id.
+    # so a `>=` cut sweeps in the whole tie cluster and the arms end up flagging wildly
+    # different numbers of customers at the same nominal budget, which is not a comparison at
+    # all. Ties are broken deterministically by customer_id.
     k = max(1, round(budget * len(scores)))
     ranked = sorted(scores.items(), key=lambda kv: (-kv[1], kv[0]))
     flagged = {cid for cid, s in ranked[:k] if s > 0}

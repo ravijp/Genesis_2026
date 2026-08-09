@@ -97,9 +97,9 @@ class CachingProvider:
     ) -> None:
         self.inner = inner
         self.prompt_sha = prompt_sha
-        # `is None`, not `or`: this class defines __len__, so an empty cache is falsy and
-        # `cache or ResponseCache()` silently discarded the caller's replay-mode cache — which
-        # meant a no-network demo would quietly try the network. Caught by test_agent.py.
+        # `is None`, not `or`: `ResponseCache` defines `__len__`, so an empty cache is falsy
+        # and `cache or ResponseCache()` would discard a caller's replay-mode cache and let a
+        # run that must not touch the network reach for it.
         self.cache = ResponseCache() if cache is None else cache
         self.name = f"{inner.name}+cache:{self.cache.mode}"
         self.hits = 0

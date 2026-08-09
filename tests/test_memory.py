@@ -31,7 +31,7 @@ def sig(
 
 
 def test_ledger_never_discards() -> None:
-    """Rule 3. Nothing may delete or supersede an entry — that is the design inversion
+    """Never-discard. Nothing may delete or supersede an entry — that is the design inversion
     against reconcile-to-current-truth."""
     ledger = SignalLedger()
     for i in range(5):
@@ -72,8 +72,8 @@ def test_repetition_inside_one_conversation_is_not_corroboration() -> None:
 
 
 def test_retro_rescoring_moves_the_conclusion_the_early_evidence_supports() -> None:
-    """Rule 4, and the demo beat. The March conversation is re-read in light of July: the
-    conclusion it supports moves, even though its own marginal value does not grow."""
+    """Retro re-scoring, and the demo beat. The March conversation is re-read in light of July:
+    the conclusion it supports moves, even though its own marginal value does not grow."""
     ledger = SignalLedger()
     ledger.extend([sig(0, "A"), sig(20, "B"), sig(40, "C")])
 
@@ -100,8 +100,8 @@ def test_corroboration_is_super_additive_and_concavity_opposes_it() -> None:
 
     Corroboration multiplies the whole evidence base, which RAISES what every existing signal
     is worth — that is the mechanism, not a side effect. Saturation is concave, which LOWERS
-    it. Which one wins depends on the operating range, so no fixed direction can be asserted;
-    two earlier versions of this test asserted one and then the other, and both were wrong.
+    it. Which one wins depends on the operating range, so neither direction is safe to assert
+    on its own and this test does not assert one.
 
     What is structural, and what this pins down: turning corroboration off must remove the
     super-additivity. If a future change makes the no-corroboration path grow marginal value

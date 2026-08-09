@@ -1,15 +1,11 @@
-"""The guard that keeps the entry honest (the build planule 5 / R2).
+"""The import guard: the extractor cannot see the answer key.
 
-The most likely way this build embarrasses us on stage is a judge asking:
+The obvious objection to this build is that the conversations are sub-threshold for a matcher
+we also wrote. The answer has to be mechanical rather than a promise, so nothing on the path
+from a conversation to a decision may import the corpus generator, its fragment lexicon, or a
+ground-truth type. "Fixing" the extractor's miss rate by reaching into the corpus fails here.
 
-    "So the cumulative conversations are sub-threshold for your own matcher,
-     which you also wrote?"
-
-The answer has to be mechanical, not a promise. The extractor must be unable to see the answer
-key: no import of the corpus generator, its fragment lexicon, or any ground-truth type. If
-someone later "fixes" the extractor's miss rate by reaching into the corpus, these tests fail.
-
-Do not relax them. A matcher that catches everything it planted proves nothing.
+Do not relax these. A matcher that catches everything it planted proves nothing.
 """
 
 from __future__ import annotations
@@ -24,20 +20,15 @@ import earshot
 # Resolved from the INSTALLED package, not from a path walk — survives any repo layout change.
 EAR = Path(earshot.__file__).resolve().parent
 
-# Every module on the path from raw conversation to a decision. None of them may see the
-# corpus side.
+# The guarded surface is DISCOVERED, not listed: everything under the package that is neither
+# the corpus side nor the evaluation side. A hand-maintained list is one forgotten line away
+# from a hole, and the hole is invisible until someone goes looking. Anything new is covered
+# the moment the file exists.
 #
-# The agent's tools are the dangerous new members of this list. A tool that derives a
-# customer's transactions or account state from `CustomerTruth.outcome` would be handing the
-# agent the answer key through the back door, and the whole experiment dies with it. Tools
-# must derive from `latent_risk` and the seed only. Add every new tool module here.
-# DISCOVERED, not listed. A hand-maintained list is one forgotten line away from a hole, and
-# the hole is invisible until a judge finds it. Anything matching these globs is covered the
-# moment it exists.
-# Recursive, and it covers the whole decision path -- not just the obvious modules. A review
-# found memory.py, arms.py, evals.py, cli.py and sweep.py all outside the old globs while
-# sitting squarely between a conversation and a decision. Anything under the package that is
-# not the corpus side belongs here.
+# The agent's tools are the sharpest edge of that surface. A tool deriving a customer's
+# transactions or account state from a ground-truth field hands the agent the answer key
+# through the back door; tools may derive from a risk figure and the seed only.
+
 # The corpus side AUTHORS the answer key.
 _CORPUS_SIDE = {"corpus.py", "corpus_lexicon.py", "config.py", "schema.py"}
 
@@ -57,7 +48,7 @@ def _is_danger(path) -> bool:
     """Everything that turns a conversation into a decision. Not the authors of truth, and
     not the scorers of it."""
     rel = path.relative_to(EAR).as_posix()
-    del rel  # membership is the only criterion; see below
+    del rel  # the file name alone decides membership; the relative path is not consulted
     return path.name not in _CORPUS_SIDE and path.name not in _EVALUATION_SIDE
 
 
@@ -72,8 +63,7 @@ def test_evaluation_exemptions_stay_small() -> None:
 def _danger_surface() -> list[str]:
     """Every module on the path from a conversation to a decision, discovered recursively.
 
-    `__init__.py` is INCLUDED: it can re-export anything, and excluding it was an open
-    evasion route.
+    `__init__.py` is INCLUDED, because it can re-export anything.
     """
     return sorted(
         path.relative_to(EAR).as_posix()
@@ -93,9 +83,9 @@ def test_danger_surface_is_not_empty() -> None:
     )
 
 FORBIDDEN_MODULES = {"corpus", "corpus_lexicon"}
-# Lowercase module names and dynamic import were both open evasion routes: a bare
-# `from .. import corpus` leaves node.module empty, and importlib bypasses the AST check
-# entirely unless the name itself is forbidden.
+# Two routes get past the import check on their own, so the identifier scan closes both: a
+# bare `from .. import corpus` leaves node.module empty, and importlib never appears as an
+# import at all unless the name itself is forbidden.
 FORBIDDEN_IDENTIFIERS = ("corpus_lexicon", "PLANTS", "DECOYS_EXTRACTOR",
                         "DECOYS_ACCUMULATOR", "BY_TYPE", "Fragment", "import_module",
                         "__import__")
@@ -138,10 +128,10 @@ def test_extractor_cannot_import_ground_truth_types(module: str) -> None:
 def _code_identifiers(path: Path) -> set[str]:
     """Every identifier and non-docstring string literal in the module.
 
-    Docstrings are excluded deliberately: this file's own modules *describe* the separation
-    rule in prose, and a naive text scan would flag that prose. What matters is that no
-    executable code reaches for the corpus side — e.g. a lazy `importlib.import_module` or a
-    hard-coded fragment id.
+    Docstrings are excluded deliberately: the guarded modules *describe* the separation rule
+    in prose, and a naive text scan would flag that prose. What matters is that no executable
+    code reaches for the corpus side — a lazy `importlib.import_module`, say, or a hard-coded
+    fragment id.
     """
     tree = ast.parse(path.read_text(encoding="utf-8"))
 

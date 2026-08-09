@@ -24,11 +24,15 @@ ruff clean, `earshot sweep` produces every published number.
 score-each-call-and-forget — 8 seeds of 10, 2 ties, no losses, p=0.008. Overall, no arm is
 distinguishable from any other.
 
+The system runs end to end with zero API keys, and the demo replays committed model responses with an
+invalid key set — a room without wifi cannot break it. **144 tests**, ruff clean.
+
 ## In flight
 
 - **Nothing is marked Done on the board, deliberately** — one author, no second reviewer. Namit and
   Ishant have not seen any of it.
-- Adversarial review rounds are still finding real defects. Round 3 pending.
+- Three adversarial review rounds done; each found real defects, and each round's fixes created work
+  for the next. Round 4 has not run.
 
 ## Blocked on someone else
 

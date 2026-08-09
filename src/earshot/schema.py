@@ -28,9 +28,9 @@ class SignalType(str, Enum):
 class Stratum(str, Enum):
     """Labelled from *generation parameters*, never from what a baseline can detect.
 
-    An earlier version defined these by reference to the baseline's decision function, which
-    made the headline result circular. Concentrated evidence mass -> CONCENTRATED; diffuse
-    mass -> DIFFUSE. Whether an arm can actually detect them is measured, not assumed.
+    Concentrated evidence mass -> CONCENTRATED; diffuse mass -> DIFFUSE. Labelling by
+    reference to a baseline's decision function instead would make the headline result
+    circular, so whether an arm can detect a stratum is measured, never assumed.
     """
 
     CONCENTRATED = "concentrated"  # most evidence mass in one conversation
@@ -106,11 +106,11 @@ class CustomerTruth:
     latent_risk: float  # the probability the outcome was drawn from
 
     # What the customer's account actually looks like, which is NOT the same thing as how much
-    # they talked about it. Kept separate because conflating them made the account tool an
-    # oracle: `latent_risk` is a function of how much evidence was planted in conversations,
-    # so a tool reading it could recover the stratum -- the answer key -- without reading a
-    # word. Financial state correlates with risk, loosely, and is drawn for every customer
-    # from one common distribution so the populations genuinely overlap.
+    # they talked about it. The two are kept separate because conflating them makes the
+    # account tool an oracle: `latent_risk` is a function of how much evidence was planted in
+    # conversations, so a tool reading it recovers the stratum -- the answer key -- without
+    # reading a word. Financial state correlates with risk, loosely, and is drawn for every
+    # customer from one common distribution so the populations genuinely overlap.
     financial_state: float = 0.0
 
 
@@ -136,11 +136,10 @@ class LedgerEntry:
     This is the design inversion against reconcile-to-current-truth. Nothing in this codebase
     may delete or supersede a ledger entry.
 
-    Rule 4 (retro re-scoring) needs care, because the obvious formulation is false. The
-    leave-one-out *marginal* contribution of any single signal necessarily SHRINKS as evidence
-    accumulates — the score function is concave, so later signals push everything into
-    diminishing returns. Claiming "this quote is worth more marginal points now" would be
-    mathematically wrong, and a technical judge would catch it.
+    Retro re-scoring needs care, because the obvious formulation is false. The leave-one-out
+    *marginal* contribution of any single signal necessarily SHRINKS as evidence accumulates —
+    the score function is concave, so later signals push everything into diminishing returns.
+    "This quote is worth more marginal points now" is mathematically wrong.
 
     What actually changes retroactively is the **interpretation**: the same conversation that
     supported a "no action" verdict when it arrived now sits inside an evidence chain that

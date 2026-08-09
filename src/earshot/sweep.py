@@ -1,14 +1,13 @@
-"""Multi-seed evaluation. The single most important thing this harness does.
+"""Multi-seed evaluation. Everything publishable comes through here.
 
-Why this module exists. A first run at 400 customers produced 39 outcome customers, so at a
-10% review budget every arm flagged 40 and the reported recalls were integers over 39:
-0.154 was six customers, 0.128 was five. The gap that looked like "our thesis fails" was ONE
-customer, and random flagging would have scored 0.100. Nothing in that run separated any arm
-from any other, but the numbers were written up as a finding anyway.
+A point estimate from one generator draw is not a result. A 400-customer corpus yields around
+40 outcome customers, so every recall is an integer over 40: two arms a single customer apart
+differ by 0.025 and read as a finding, while random flagging at a 10% budget already scores
+0.100. One draw cannot separate any arm from any other.
 
-A point estimate from one generator draw is not a result. This runs the whole pipeline across
-many seeds and reports the spread, the paired win/loss record between arms, and the raw
-counts behind every rate — so a rate is never quoted without the integers that produced it.
+So this runs the whole pipeline across many seeds and reports the spread, the paired win/loss
+record between arms, and the raw counts behind every rate — a rate is never quoted without the
+integers that produced it.
 """
 
 from __future__ import annotations
@@ -68,8 +67,7 @@ def _one_seed(base: RunConfig, seed: int, budget: float) -> list[ArmSample]:
     n_outcomes = sum(1 for c in corpus.customers if c.outcome is not Outcome.NONE)
 
     # Denominator for the diffuse stratum: outcome customers whose evidence was spread thin.
-    # Carried explicitly so the headline rate is never quoted without the integers behind it
-    # (working-agreements.md §1).
+    # Carried explicitly so the headline rate is never quoted without the integers behind it.
     n_diffuse = sum(
         1
         for c in corpus.customers
@@ -131,10 +129,9 @@ def paired_record(
     Paired on seed, because the seeds share a corpus and comparing means across independent
     draws throws that pairing away.
 
-    `metric` exists because the pre-registered headline is the DIFFUSE-stratum comparison, and
-    a version of this that could only pair on overall recall meant the published number
-    (8-0-2, p=0.008) was not reproducible by any command in the repo — precisely the failure
-    working-agreements.md §4 forbids.
+    `metric` chooses what the pairing is on. The pre-registered headline is the DIFFUSE-stratum
+    comparison rather than overall recall, and anything published has to be reproducible by a
+    command in this repo, so both must be reachable from here.
     """
     left = {s.seed: getattr(s, metric) for s in by_arm.get(a, [])}
     right = {s.seed: getattr(s, metric) for s in by_arm.get(b, [])}

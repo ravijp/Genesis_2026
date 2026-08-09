@@ -94,10 +94,10 @@ class OfflineLexiconExtractor:
                     )
                 )
 
-        # Simulated spurious firing, applied ONCE PER CONVERSATION rather than per turn.
-        # Per-turn was a modelling error: it multiplied by turn count, so a 12-turn call drew
-        # ~1 false signal and the noise swamped the corpus (114 unplanted extractions across
-        # 221 conversations on the first run). A real extractor's error rate is per document.
+        # Simulated spurious firing, applied ONCE PER CONVERSATION rather than per turn: a
+        # real extractor's error rate is quoted per document. Drawing per turn multiplies the
+        # rate by turn count, so a 12-turn call would produce about one false signal on its
+        # own and the noise would swamp the corpus.
         customer_turns = [t for t in conversation.turns if t.speaker == "customer"]
         if (
             self.false_fire_rate > 0

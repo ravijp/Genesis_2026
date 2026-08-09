@@ -19,7 +19,7 @@ warning and exists for debugging.
 **Always show the denominator.** A rate without its integers hides its own sample size. Every table we
 publish carries `hits / outcomes`.
 
-**Pre-register the headline, then respect it.** We run 14 pairwise comparisons with no multiplicity
+**Pre-register the headline, then respect it.** We run 13 pairwise comparisons with no multiplicity
 correction. One landing just under `p=0.05` is a hint. The diffuse-stratum comparison is the declared
 headline; everything else is exploratory and gets labelled that way.
 
@@ -99,7 +99,32 @@ congratulate the authors, or re-litigate a decision. If a sentence exists to per
 
 ---
 
-## 5. Tests
+## 5. Code comments and docstrings
+
+**Describe the present, not the journey.** A comment says what the code *is* and why it is built
+that way. It does not narrate what it used to be, what a review found, or which attempt this is.
+
+Wrong: *"This used to derive the threshold from the answer, which guaranteed the result; a review
+caught it, so now it comes from the operating point."*
+Right: *"The threshold comes from the same equal-alert-budget operating point the evaluation uses,
+so the demo and the numbers agree."*
+
+The history has three better homes and does not need a fourth: **`decisions.md`** for a choice and
+what was rejected, **this file** for a rule a mistake taught us, and **git** for what changed and
+when. A comment that duplicates them goes stale independently and then contradicts them.
+
+Two exceptions, both narrow:
+
+- **A trap worth signposting**, where the obvious change reintroduces a bug. State it as a
+  present-tense constraint — *"indexed rather than `.get()`: a renamed stratum must fail loudly"* —
+  not as a war story.
+- **A stated limitation**, where the code does less than a reader would assume. Say what it does and
+  does not bound.
+
+If a comment starts with "previously", "originally", "we used to", "a review found", or names a
+version of itself, it belongs in git.
+
+## 6. Tests
 
 **Assert the property, not the label.** A test checked `stopped_because == "cost_cap"` while the run
 had spent $0.30 against a $0.25 cap — it locked the breach in as correct. Assert the money.
@@ -116,7 +141,7 @@ vacuously.
 
 ---
 
-## 6. Bulk and scripted changes
+## 7. Bulk and scripted changes
 
 **Read the full output of every bulk operation.** A Jira script printed only its tail; 37 delete calls
 had failed with 403 and the board carried two complete parallel backlogs, with conflicting statuses on
@@ -132,7 +157,7 @@ not remove.
 
 ---
 
-## 7. Delegation and review
+## 8. Delegation and review
 
 **Red team the things that would be expensive to get wrong** — the core experiment, the honesty
 guards, anything that will be on screen. Give the reviewer permission to conclude the work is wrong,
@@ -150,7 +175,7 @@ the module written to fix the worst one was unreachable from any command.
 
 ---
 
-## 8. What we do not chase
+## 9. What we do not chase
 
 Originality is 15% of the score and impact × depth × feasibility is 75%. Time spent proving nobody has
 ever built something adjacent is time not spent on the things that carry the entry. When a novelty

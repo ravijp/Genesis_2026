@@ -6,8 +6,7 @@ SEPARATION RULE. The extractor's cue vocabulary lives in
 `extract_lexicon.py` and was authored as a separate pass, as if by someone who had never seen
 this file. The overlap is deliberately partial: some fragments here are phrased in ways the
 extractor's cues do not cover, which is where its honest miss rate comes from. Do not "fix"
-that overlap — a matcher that catches everything it planted proves nothing, and the whole
-originality claim collapses when a judge notices.
+that overlap — a matcher that catches everything it planted proves nothing.
 
 `tests/test_separation.py` asserts the extractor cannot import this module.
 """
@@ -72,8 +71,8 @@ DECOYS_EXTRACTOR: tuple[Fragment, ...] = (
 )
 
 # Decoys, kind 2 (accumulator-targeted): GENUINE weak signals that corroborate across
-# channels and months — and never lead to an outcome. v1 had no equivalent, which meant
-# nothing in the corpus could ever punish an over-eager accumulator.
+# channels and months — and never lead to an outcome. Without them nothing in the corpus
+# punishes an over-eager accumulator.
 DECOYS_ACCUMULATOR: tuple[Fragment, ...] = (
     Fragment("da-1", SignalType.FINANCIAL_DISTRESS, 0.30, "Cashflow's a bit lumpy this quarter, it always is."),
     Fragment("da-2", SignalType.FINANCIAL_DISTRESS, 0.28, "Can I move the direct debit to just after payday?"),

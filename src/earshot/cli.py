@@ -1,11 +1,12 @@
-"""One command reproduces every number .
+"""One command reproduces every number.
 
     uv run python -m earshot.cli run          # full pipeline + scorecard + results/ artifacts
     uv run python -m earshot.cli demo         # the accumulation moment, narrated
     uv run python -m earshot.cli investigate  # the agent works the top threshold crossings
+    uv run python -m earshot.cli sweep        # many seeds; the only source of publishable numbers
 
-Every run writes a manifest (seed, git SHA, config hash, timestamp) next to its results. The
-AI judge scores reproducibility directly and this is the cheapest way to earn it.
+Every run writes a manifest (seed, git SHA, config hash, timestamp) next to its results, so any
+figure we publish traces back to the run that produced it.
 """
 
 from __future__ import annotations
@@ -143,23 +144,19 @@ def cmd_run(run: RunConfig) -> int:
 
 
 def cmd_demo(run: RunConfig) -> int:
-    """The accumulation moment, with the retro re-score visible.
-
-    Per the collision review, retro re-scoring is the one thing no incumbent reproduces --
-    so it goes on screen rather than into prose.
-    """
+    """The accumulation moment, with the retro re-score visible on screen rather than asserted
+    in prose."""
     corpus, _, signals = _pipeline(run)
     ledger = demo_ledger(signals, run.scoring)
     truth = {c.customer_id: c for c in corpus.customers}
 
-    # Pick the best narrative: a diffuse arc whose score climbs across the most conversations.
-    # Prefer a diffuse arc that actually ended in an outcome -- narrating a true positive is
-    # the point. Outcomes are drawn stochastically, so a diffuse arc may legitimately not
-    # churn; fall back to any diffuse arc rather than pretending otherwise.
-    # Both arms and both thresholds are needed BEFORE choosing who to show, because the whole
-    # point is to find a customer the ledger catches and a per-call tool does not. Selecting on
-    # "biggest climb" instead picked customers whose final conversation was loud enough to trip
-    # a per-call scorer on its own — which is not the claim.
+    # Both arms and both thresholds are needed BEFORE choosing who to show, because the
+    # customer we want is one the ledger catches and a per-call tool never does. Selecting on
+    # "biggest climb" alone admits customers whose final conversation is loud enough to trip a
+    # per-call scorer on its own, which is a different claim.
+    #
+    # Outcomes are drawn stochastically, so a diffuse arc may legitimately not churn; there is
+    # a fallback below to any diffuse arc, labelled as such.
     arms = run_all_arms(signals, run.scoring)
     threshold = evaluate_arm(corpus, arms["full-ledger"], INVESTIGATION_BUDGET).threshold
     stateless_arm = arms["stateless-max"]
@@ -170,9 +167,9 @@ def cmd_demo(run: RunConfig) -> int:
         return bool(timeline) and any(s >= stateless_cut for _, s in timeline.points)
 
     # Customers the ledger catches that a per-call tool misses AND who went on to have a real
-    # outcome. The outcome filter is the point: without it the count included customers who
-    # were never at risk, so "4 caught by the ledger" was four true-positives-that-weren't, and
-    # the ratio underneath divided by a population that mostly had nothing to catch.
+    # outcome. The outcome filter is what makes the count meaningful: without it, customers
+    # who were never at risk are counted as caught, over a population that mostly had nothing
+    # to catch.
     accumulation_only: list[tuple[float, str, object, list]] = []
     for customer_id in ledger.customers():
         t = truth.get(customer_id)
@@ -226,14 +223,10 @@ def cmd_demo(run: RunConfig) -> int:
     print(f"{'=' * 78}")
     print(f"stratum={t.stratum.value}  outcome={t.outcome.value}  outcome_day={t.outcome_day}\n")
 
-    # The threshold comes from the SAME equal-alert-budget operating point the eval uses, and
-    # the comparison arm is actually run.
-    #
-    # This used to be `threshold = points[-1].score - 1e-9`, which derived the threshold from
-    # the answer and so guaranteed the crossing on the last conversation for any customer
-    # whatsoever, next to a hardcoded line asserting what a per-call tool "would have done".
-    # That is the one beat the entry leans on for originality, and it was theatre. If the beat
-    # fails on a given customer now, that is information we need before a judge finds it.
+    # The threshold comes from the SAME equal-alert-budget operating point the evaluation uses,
+    # so the demo and the published numbers agree. Deriving it from the customer's own final
+    # score would guarantee a crossing on the last conversation for any customer whatsoever.
+    # The comparison arm is run rather than narrated, so the beat is allowed to fail.
     stateless_points = dict(stateless_arm.timelines[customer_id].points)
 
     print(f"review budget {INVESTIGATION_BUDGET:.0%} of the portfolio  ->  "
@@ -272,11 +265,10 @@ def cmd_demo(run: RunConfig) -> int:
     print("     concave. What moves is the conclusion the evidence supports, and whether the")
     print("     case would collapse without it.)")
 
-    # No triumphant closing line here. The selection above already filtered to customers where
-    # the per-call arm never fires, so "look, the per-call arm never fired" would be a
-    # tautology dressed as a result -- and both of the old "honest note" branches were
-    # unreachable from this path for the same reason. The population count is the honest
-    # version of the same claim, so it is what closes.
+    # No triumphant closing line. The selection above filters to customers where the per-call
+    # arm never fires, so announcing that the per-call arm never fired would be a tautology
+    # dressed as a result. The population ratio is the honest form of the same claim, so it is
+    # what closes.
     print(f"\nChosen from {len(accumulation_only)} of {len(catchable)} thin-evidence customers who")
     print("went on to have a real outcome, where the ledger opens a case and per-call detection")
     print("never does. That ratio is the claim; this is one instance of it. The population")
@@ -318,8 +310,8 @@ def _queue(run: RunConfig, budget: float = INVESTIGATION_BUDGET):
 def _context(corpus, customer_id: str, breakdown: ScoreBreakdown, threshold: float, seed: int):
     """Assemble the agent's view of one customer.
 
-    The one line that matters for honesty: `latent_risk` is passed as a float and the truth
-    object stays here. Nothing downstream can reach `outcome` — see tests/test_separation.py.
+    The truth object stays in this function. Only primitives cross into `ToolContext`, and
+    nothing downstream can reach `outcome` — see tests/test_separation.py.
     """
     truth = next(c for c in corpus.customers if c.customer_id == customer_id)
     conversations = tuple(corpus.conversations_for(customer_id))
@@ -327,9 +319,9 @@ def _context(corpus, customer_id: str, breakdown: ScoreBreakdown, threshold: flo
         customer_id=customer_id,
         as_of_day=breakdown.as_of_day,
         seed=seed,
-        # financial_state, NOT latent_risk. latent_risk is a function of how much evidence was
-        # planted in this customer's conversations, so handing it to a tool let the agent
-        # recover the stratum -- the answer key -- without reading anything.
+        # financial_state, and only ever financial_state. The corpus-side risk figure is a
+        # function of how much evidence was planted in this customer's conversations, so a
+        # tool given it recovers the stratum -- the answer key -- without reading anything.
         latent_risk=truth.financial_state,
         signal_type=breakdown.signal_type.value,
         score=breakdown.score,
@@ -352,10 +344,9 @@ def _provider(name: str, prompt_sha: str):
     from .llm import OpenRouterProvider
 
     # In replay mode the network is never touched, so a key must not be required to get here.
-    # Building the provider first meant replay either raised MissingAPIKey with no key, or --
-    # worse, with a key present -- degraded to a clean-looking empty case file. Either way the
-    # "runs in a room with no wifi" claim was false. Defer construction behind a lambda so the
-    # cache serves first and the live client is only built if something actually misses.
+    # Construction is deferred so the cache serves first and the live client is built only if
+    # something actually misses; building it eagerly makes replay depend on a key it will
+    # never use.
     if cache_mode() == "replay":
         return CachingProvider(_LazyOpenRouter(), prompt_sha)
 
@@ -417,9 +408,9 @@ def _print_case(
 
 
 def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
-    # A model writes the rationale, so the output contains whatever punctuation it chose. On a
-    # Windows console redirected to a file that means cp1252, and one curly apostrophe would
-    # take the demo down with a UnicodeEncodeError. Degrade the character, not the run.
+    # A model writes the rationale, so the output carries whatever punctuation it chose. A
+    # Windows console redirected to a file encodes cp1252, where one curly apostrophe is a
+    # UnicodeEncodeError. Degrade the character, not the run.
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(errors="replace")
 
@@ -444,9 +435,8 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
     for i, (customer_id, breakdown) in enumerate(cut[:limit], start=1):
         ctx = _context(corpus, customer_id, breakdown, threshold, run.seed)
         try:
-            # A cost cap the shipped path never passes is not a cap. "Bounded spend per case"
-            # is a production-readiness claim, so it has to hold in the command people run,
-            # not only in the function signature.
+            # The cap is passed here, not just available on the signature: bounded spend per
+            # case has to hold in the command people actually run.
             decision, trace = investigate(ctx, provider, cost_cap_usd=COST_CAP_PER_CASE_USD)
         except ProviderError as exc:
             # Only reachable if the provider fails before the loop can record a step.
@@ -471,8 +461,8 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
           f"total ${total_cost:.4f}   unresolved evidence refs: {unresolved}")
 
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
-    # Provider, cache mode and limit in the filename: an offline run and a replay run
-    # previously wrote the SAME file, so comparing two providers silently destroyed the first.
+    # Provider, cache mode and limit are all in the filename, so two runs that differ only in
+    # which provider served them do not overwrite each other.
     slug = f"{provider_name}-{cache_mode()}-{limit}"
     out = ARTIFACTS / f"investigate-{run.seed}-{run.hash()}-{slug}.json"
     out.write_text(
@@ -505,10 +495,9 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
 def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
     """Many seeds, paired comparison, and the integers behind every rate.
 
-    This exists because `run` reports one draw. On a single 400-customer corpus there are ~54
-    outcome customers, so every arm's recall is an integer over 54 and the arms sit one or two
-    customers apart -- differences that are pure noise but read as findings. Nothing published
-    should come from `run` alone.
+    `run` reports one draw, and on a single 400-customer corpus every arm's recall is an
+    integer over roughly 50 outcome customers, so arms one or two customers apart look
+    different and are not. Nothing published comes from `run` alone.
     """
     from .sweep import paired_record, sign_test_p, sweep
 
@@ -540,9 +529,7 @@ def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
               f"{(dh / dn if dn else 0):>9.3f} {str(dh) + '/' + str(dn):>16}")
 
     # The pre-registered headline goes FIRST, and it is a comparison on the diffuse stratum --
-    # not on overall recall. An earlier version of this command could only pair on overall
-    # recall, which meant the number the README leads with was not reproducible by anything in
-    # the repo.
+    # not on overall recall. Everything after it is exploratory and is labelled as such.
     print("\nPRE-REGISTERED HEADLINE — diffuse arcs (evidence spread thin), paired by seed")
     for arm in ("full-ledger", "dumb-ledger", "long-context-3"):
         if arm not in summaries:
@@ -594,10 +581,9 @@ def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
 
 
 def main() -> int:
-    # Windows pipes stdout as cp1252, so redirecting output to a file crashed on the "Δ" in
-    # the ablation table and on the £ and curly quotes in model-authored rationales. Capturing
-    # a run to a file is exactly what someone does when recording evidence, and a demo must
-    # never die on an encoding error.
+    # Windows pipes stdout as cp1252, which cannot encode the "Δ" in the ablation table or the
+    # £ and curly quotes in model-authored rationales. Capturing a run to a file is exactly
+    # what someone does when recording evidence, so a run must not die on an encoding error.
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(errors="replace")  # type: ignore[union-attr]
 

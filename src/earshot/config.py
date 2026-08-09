@@ -19,7 +19,7 @@ class CorpusConfig:
     n_customers: int = 10
     conversations_per_customer: tuple[int, int] = (2, 5)
     horizon_days: int = 180
-    # Stratum mix. Deliberately includes both decoy kinds; v1 only had extractor-targeted ones.
+    # Stratum mix. Both decoy kinds are present: one targets the extractor, one the accumulator.
     stratum_weights: dict[str, float] = field(
         default_factory=lambda: {
             "concentrated": 0.25,
@@ -37,9 +37,9 @@ class CorpusConfig:
     total_arc_mass: tuple[float, float] = (0.55, 1.0)
     # Outcomes are drawn stochastically from latent risk so prediction is a real task.
     # Calibrated to a plausible retail-banking portfolio: ~3% background attrition, rising to
-    # ~20% for the highest-risk arcs. The first run used gain=0.75, which produced a 33%
-    # portfolio outcome rate -- unrealistic, and it made precision meaningless because a third
-    # of every random sample was a true positive.
+    # ~20% for the highest-risk arcs. The gain is what holds that ceiling down. A high gain
+    # pushes the portfolio outcome rate toward a third, which is unrealistic and also makes
+    # precision meaningless, because a third of any random sample is then a true positive.
     outcome_base_rate: float = 0.03
     outcome_risk_gain: float = 0.18
     filler_turns: tuple[int, int] = (4, 12)
@@ -67,16 +67,14 @@ class ScoringConfig:
     corroboration_enabled: bool = True
     cross_channel_enabled: bool = True
     escalation_enabled: bool = True
-    # Squashing keeps scores in [0,1) so arms are comparable after calibration.
+    # Squashing keeps scores in [0,1) so arms are comparable after calibration. The value is a
+    # readability choice and nothing more: at 1.6 a five-signal arc reaches 0.983 by its third
+    # conversation and 1.000 by its fifth, which tells a reviewer nothing on screen.
     #
-    # Readability only. At 1.6 a five-signal arc reached 0.983 by its third conversation and
-    # 1.000 by its fifth, which is useless on a reviewer's screen.
-    #
-    # Recorded because the first diagnosis was WRONG and the mistake is worth not repeating:
-    # this value cannot change any equal-alert-budget result. 1-exp(-kx) is strictly monotonic
-    # in x, so every k induces the identical customer ranking. Changing 1.6 -> 0.35 moved every
-    # recall/precision figure by exactly zero. If the ledger under-performs, saturation is not
-    # the reason -- look at decay and escalation, which the mechanism ablation implicates.
+    # It cannot move an equal-alert-budget result, whatever it is set to. 1-exp(-kx) is
+    # strictly monotonic in x, so every k induces the identical customer ranking and every
+    # top-K cut selects the identical customers. If the ledger under-performs, saturation is
+    # not the lever -- decay and escalation are what the mechanism ablation implicates.
     saturation: float = 0.35
 
 

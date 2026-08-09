@@ -23,9 +23,8 @@ DEFAULT_MODEL = "anthropic/claude-sonnet-4.5"
 def env(name: str, default: str = "") -> str:
     """Read `EARSHOT_<name>`, falling back to the older `EAR_<name>`.
 
-    The package was renamed mid-build. Honouring both spellings means an existing shell profile
-    or CI secret does not silently stop working — and a silently unread API key looks exactly
-    like a broken client.
+    Both spellings are honoured so an existing shell profile or CI secret keeps working. An API
+    key that is silently not read looks exactly like a broken client.
     """
     return (
         os.environ.get(f"EARSHOT_{name}") or os.environ.get(f"EAR_{name}") or default

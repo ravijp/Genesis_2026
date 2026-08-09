@@ -1,8 +1,8 @@
 """Offline provider: a valid decision with no key, no network, and no pretence.
 
-This exists so the whole product runs for a judge who has no credentials and no wifi. It is
-**not** a stand-in for model judgment and the code says so out loud, because a rule engine
-dressed up as an agent is exactly the kind of thing that loses an originality argument.
+This exists so the whole product runs for someone with no credentials and no wifi. It is
+**not** a stand-in for model judgment, and it says so in its own output rather than leaving a
+reader to assume a model was involved.
 
 What it does: walks a fixed tool plan, then applies a crude scoring rule over what the tools
 returned. What it cannot do: read the conversations, weigh ambiguity, notice that a returned

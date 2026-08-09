@@ -1,11 +1,12 @@
 """Statistical proof that the agent's tools cannot recover the answer key.
 
-`test_separation.py` guards IMPORTS. It cannot see the leak that actually happened: a
-ground-truth field was handed to the tools as a plain float, and `latent_risk > 0` was a
-lossless encoding of `Stratum`. No import was involved, so nothing failed, and the offline
-agent was separating decoys from real arcs off the account tool alone.
+`test_separation.py` guards IMPORTS, and an import guard is blind to the more dangerous leak:
+a ground-truth field handed to the tools as a plain float. `latent_risk > 0` is a lossless
+encoding of `Stratum`, no import is involved, nothing fails, and an agent can separate decoys
+from real arcs off the account tool without reading a word.
 
-These tests guard the DATA. They are the ones that would have caught it.
+These tests guard the DATA. A value that correlates with the answer is fine; a value that
+recovers it is not.
 """
 
 from __future__ import annotations
@@ -76,7 +77,8 @@ def test_latent_risk_is_still_revealing_and_therefore_must_never_reach_a_tool() 
 
 
 def test_tool_context_is_not_constructed_from_latent_risk() -> None:
-    """Reverting one token in cli.py reopened the leak with every other test still green."""
+    """One identifier in cli.py decides whether the answer key is reachable from the tools, and
+    no other test in the suite would notice it changing."""
     import inspect
 
     from earshot import cli
@@ -90,9 +92,9 @@ def test_tool_context_is_not_constructed_from_latent_risk() -> None:
 
 
 def _snapshot_fields() -> list[str]:
-    """Discovered, not listed. A hand-written list named `returned_payments`, which is not a
-    field on AccountSnapshot — so `getattr(..., 0.0)` returned a constant, the test skipped as
-    "near-constant", and the most distress-correlated value the agent reads went unguarded."""
+    """Discovered, not listed. A hand-written list can name a field that does not exist on
+    `AccountSnapshot`; `getattr(..., default)` then returns a constant, the check below skips
+    it as "near-constant", and a distress-correlated value the agent reads goes unguarded."""
     import dataclasses
 
     from earshot.core.accounts import AccountSnapshot

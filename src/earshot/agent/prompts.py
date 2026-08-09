@@ -30,8 +30,8 @@ def prompts_root() -> Path:
     The last fallback matters: `uv run pytest` from any directory must still find the prompts,
     and a cwd-relative path alone would make that a coin toss.
     """
-    # Both spellings: the package was renamed mid-build, and an env var that silently
-    # stopped being read would point the loader at nothing with no error.
+    # Both spellings are honoured: an override that is silently not read points the loader at
+    # nothing, with no error to say why.
     override = (
         os.environ.get("EARSHOT_PROMPTS") or os.environ.get("EAR_PROMPTS") or ""
     ).strip()

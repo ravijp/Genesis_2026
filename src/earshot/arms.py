@@ -1,27 +1,27 @@
-"""The five comparison arms.
+"""The five comparison arms, and what each one is for.
 
-v1 compared two arms and the eval review judged it circular and unfair. The ladder is now:
-
-  1. stateless-max    -- each conversation scored alone; customer score = running max.
-                         Stated honestly: ANY customer-level score implies an aggregator, so
-                         even this arm has a trivial memory. There is no such thing as a truly
-                         stateless customer-level baseline, and pretending otherwise is a
-                         strawman.
+  1. stateless-max    -- each conversation scored alone; customer score = running max. The
+                         incumbent shape: score it and archive it. Stated honestly, ANY
+                         customer-level score implies an aggregator, so even this arm has a
+                         trivial memory. There is no truly stateless customer-level baseline,
+                         and claiming one would be a strawman.
   2. dumb-ledger      -- unweighted count of signals. No decay, no corroboration, no channel
-                         weighting, no confidence weighting. THIS IS THE HONEST ARM: if it ties
-                         the full ledger, every mechanism in memory.py is decoration and the
-                         technical-depth claim is unearned. Better to learn that here than on
-                         stage.
-  3. long-context-N   -- the last N conversations pooled and read together, with no accumulation
-                         math. This approximates dropping N transcripts into one long prompt,
-                         which is the alternative a judge will actually raise. APPROXIMATION,
-                         stated: with a real model this arm would re-read raw text; here it
-                         pools the same extracted signals without decay or corroboration. It
-                         flatters the ledger slightly less than a real long-context run would
-                         on short histories, and slightly more on long ones.
+                         weighting, no confidence weighting. The floor the full ledger has to
+                         clear: if it ties the full ledger, every mechanism in memory.py is
+                         decoration.
+  3. long-context-N   -- the last N conversations pooled and read together, with no
+                         accumulation math. Approximates dropping N transcripts into one long
+                         prompt, which is the obvious alternative to a ledger. It is an
+                         APPROXIMATION: a real long-context run re-reads raw text, whereas
+                         this pools the same extracted signals without decay or corroboration.
+                         That flatters the ledger slightly less than a real long-context run
+                         would on short histories, and slightly more on long ones.
   4. full-ledger      -- decay + corroboration + cross-channel + escalation + retro re-scoring.
+  5. hybrid           -- stateless-max OR full-ledger, whichever fires first, combined on rank.
+                         The shippable shape: a memory added on top of the per-call detection a
+                         bank already runs, rather than a replacement for it.
 
-Every arm runs through the SAME SignalLedger code path with a different ScoringConfig, so the
+Arms 1-4 run through the SAME SignalLedger code path with a different ScoringConfig, so the
 ablation is structurally fair rather than fair-by-assertion.
 """
 
@@ -33,10 +33,9 @@ from .config import ScoringConfig
 from .memory import SignalLedger
 from .schema import ExtractedSignal, SignalType
 
-# Must be smaller than a typical customer's conversation count or this arm is a no-op. At 10
-# against `conversations_per_customer = (2, 5)` the window never bound, so "long-context"
-# silently collapsed into the confidence-weighted dumb ledger and scored identically to it at
-# every budget -- while being the alternative a judge is most likely to raise.
+# Must be smaller than a typical customer's conversation count or the window never binds and
+# this arm silently collapses into the confidence-weighted dumb ledger, scoring identically to
+# it at every budget. Against `conversations_per_customer = (2, 5)`, 3 binds.
 LONG_CONTEXT_WINDOW = 3
 
 
@@ -134,18 +133,16 @@ def _hybrid(
 ) -> dict[str, ArmTimeline]:
     """Commodity per-call detection OR accumulation — whichever fires first.
 
-    This is the arm the first 400-customer run argued for, and it is what the submission
-    actually describes: "It adds a memory on top of tools banks already run, rather than
-    replacing them." Running the ledger *instead of* per-call detection loses concentrated
-    arcs (one loud conversation), because accumulation dilutes a single decisive signal.
-    Running it *alongside* keeps both. Replacing the incumbent was never the pitch.
+    A memory added on top of the per-call detection a bank already runs. Running the ledger
+    *instead of* per-call detection loses concentrated arcs — one loud conversation — because
+    accumulation dilutes a single decisive signal. Running it *alongside* keeps both.
 
-    Combined on RANK, not on raw score. A first attempt took `max()` of the two raw scores and
-    came back byte-identical to the ledger arm: the ledger's saturation puts its scores
-    uniformly above the stateless arm's, so the max was never the stateless one. The two arms
-    are not on a common scale — the same incommensurability that makes a shared threshold
-    unfair. Mapping each arm's score to its percentile *within that arm* fixes it, and is the
-    cheap stand-in for dev-split probability calibration, which is not built.
+    Combined on RANK, not on raw score, because the two arms are not on a common scale: the
+    same incommensurability that makes a shared threshold unfair between them. Saturation puts
+    the ledger's scores uniformly above the stateless arm's, so a `max()` of raw scores would
+    always pick the ledger and the hybrid would be the ledger arm under another name. Mapping
+    each arm's score to its percentile *within that arm* is what makes the two comparable, and
+    it is a cheap stand-in for dev-split probability calibration, which is not built.
     """
 
     def percentiler(timelines: dict[str, ArmTimeline]):

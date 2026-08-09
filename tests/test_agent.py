@@ -239,10 +239,9 @@ def test_a_repaired_answer_is_accepted_on_the_second_attempt() -> None:
 def test_cost_cap_is_a_cap_not_a_report() -> None:
     """A cap that notices the overspend afterwards is not a cap.
 
-    This test previously asserted `trace.cost_usd > 0.25` against a $0.25 cap — it locked in
-    the breach as correct behaviour. The check ran after each call was booked, so a
-    $0.30-per-call model spent $0.30 and then announced "cost_cap". Now the loop refuses a call
-    it already knows it cannot afford.
+    Assert the money, not the label: `stopped_because == "cost_cap"` is equally true of a loop
+    that booked the spend and then complained about it. What has to hold is that the loop
+    refuses a call it already knows it cannot afford.
     """
     expensive = _tool_reply(cost_usd=0.20, usage=Usage(prompt_tokens=1000, completion_tokens=50))
     decision, trace = investigate(_context(), _Stub("pricey", [expensive]), cost_cap_usd=0.25)
@@ -255,8 +254,8 @@ def test_cost_cap_is_a_cap_not_a_report() -> None:
 def test_cost_cap_holds_when_each_call_costs_more_than_the_last() -> None:
     """The realistic shape: tool results accumulate into the prompt, so cost climbs.
 
-    A constant-cost stub is the one shape a naive estimator gets right, so testing only that
-    proved nothing. This ramps 1.5x per call, which broke the previous implementation.
+    A constant-cost stub is the one shape even a naive estimator gets right, so it proves
+    nothing on its own. This ramps 1.5x per call.
     """
 
     class Ramp:
@@ -304,8 +303,8 @@ def test_a_single_unbounded_call_can_still_breach_the_cap() -> None:
 
 
 def test_a_tool_that_crashes_does_not_take_the_run_down() -> None:
-    """`_run_tool` caught only ToolError/ValidationError, so a plain KeyError inside a tool
-    escaped `investigate()` as a traceback — in front of whoever was watching the demo."""
+    """Whatever a tool raises comes back as content the model can read. A tool that raises
+    something other than ToolError or ValidationError must not escape as a traceback."""
     import earshot.agent.investigator as inv
 
     class Exploding:

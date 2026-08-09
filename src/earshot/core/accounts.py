@@ -5,8 +5,8 @@ conversation to decision, so it must never see the answer key. Everything below 
 four primitives the caller hands in — `(customer_id, latent_risk, seed, as_of_day)` — and from
 nothing else. Latent risk is a legitimate generative parameter: real financial stress does show
 up in a current account, so a bank's transactions genuinely correlate with it. `outcome` is the
-answer key. A tool that let the agent read the outcome would make the eval worthless and a judge
-would find it in one grep, which is why `tests/test_separation.py` discovers this file by glob.
+answer key, and a tool that let the agent read it would make the evaluation worthless — which is
+why `tests/test_separation.py` discovers this file by glob rather than by a maintained list.
 
 **Why the numbers are deliberately noisy.** If transactions were a clean readout of latent risk,
 the investigator's job would be a threshold check and the whole experiment would measure nothing.
@@ -93,7 +93,7 @@ def _rng(customer_id: str, seed: int, *parts: str) -> random.Random:
     """Deterministic per-(customer, purpose) stream.
 
     Seeded from a digest rather than `hash()`, which is salted per process and would make the
-    same customer look different across runs — reproducibility is a scored criterion.
+    same customer look different from one run to the next.
     """
     key = "|".join((customer_id, str(seed), *parts)).encode()
     return random.Random(int.from_bytes(hashlib.sha256(key).digest()[:8], "big"))
@@ -116,10 +116,11 @@ def generate_history(
 
     # Three noisy readings of the same latent state. Independent noise is what stops the
     # account from being a lookup table: indicators routinely disagree.
-    # Floors are not cosmetic. Clamping to [0, 1] made `latent + gauss` land on exactly 0.0
-    # for roughly half of all zero-risk customers, which produced byte-identical salary
-    # credits and a "perfectly clean account" signature that fired 20x more often on decoys
-    # than on real arcs. Every customer carries some noise.
+    #
+    # The floors are load-bearing, not cosmetic. Clamping to [0, 1] lets `latent + gauss` land
+    # on exactly 0.0 for a large share of zero-risk customers, and a population of identical
+    # zero-stress accounts is a "perfectly clean" signature that picks decoys out on its own.
+    # Every customer carries some noise.
     income_stress = _clamp(latent + rng.gauss(0.0, 0.30), 0.05, 0.95)
     spend_stress = _clamp(latent + rng.gauss(0.0, 0.30), 0.05, 0.95)
     buffer_stress = _clamp(latent + rng.gauss(0.0, 0.32), 0.05, 0.95)

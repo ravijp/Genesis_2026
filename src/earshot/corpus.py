@@ -4,9 +4,9 @@ Two properties matter more than realism here:
 
 1. **Strata are generative.** A customer's stratum is decided by the Dirichlet concentration
    used to split their arc's evidence mass, NOT by asking whether some baseline can detect
-   them. v1 defined strata by reference to the baseline's decision function and then
-   regenerated any arc the baseline caught — selection on the dependent variable. Whether an
-   arm can detect a DIFFUSE arc is now a *measured result*, not a construction.
+   them. Defining a stratum by reference to a baseline's decision function, or regenerating
+   arcs that baseline catches, would be selection on the dependent variable. Whether an arm
+   can detect a DIFFUSE arc is a *measured result*, not a construction.
 
 2. **Outcomes are drawn stochastically from latent risk.** Nobody is handed the answer, so
    outcome prediction is a genuine prediction task rather than a lookup on the answer key.
@@ -200,17 +200,13 @@ def generate(run: RunConfig | None = None) -> Corpus:
 
         # NULL: plants stay empty.
 
-        # Latent risk for the customers who are NOT on a distress arc.
+        # Latent risk for the customers who are NOT on a distress arc. Real customers who are
+        # fine still carry some risk, and it must OVERLAP the bottom of the distressed range.
         #
-        # This used to be left at 0.0, which quietly made the whole thing a fraud: every
-        # decoy and null customer had latent_risk exactly 0.0 and every real arc had >= 0.55,
-        # so `latent_risk > 0` was a lossless readout of `Stratum` -- a ground-truth field the
-        # separation guard forbids by name. Tools take latent_risk as a plain float, so the
-        # guard never saw it, and the offline agent could separate decoys from real arcs at
-        # 2.4x base rate off the account tool without reading a single word of conversation.
-        #
-        # Real customers who are fine still have some risk, and it must OVERLAP the bottom of
-        # the distressed range or the account tool stays an oracle.
+        # Leaving this at 0.0 would make `latent_risk > 0` a lossless readout of `Stratum` --
+        # an answer-key field. Tools take latent risk as a plain float, so no import guard
+        # would see it, and an agent could separate decoys from real arcs off the account tool
+        # without reading a word of conversation.
         if stratum not in (Stratum.CONCENTRATED, Stratum.DIFFUSE):
             latent_risk = rng.betavariate(2.0, 3.5) * 0.75
 
