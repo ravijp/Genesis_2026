@@ -70,9 +70,17 @@ never-discard adds over a cheap window is currently **unproven**. See D-015 thro
 
 - **Jira project admin** — cannot delete the `[DELETE ME]` issues, cannot enable Sprints.
 - **AWS CodeCommit** — a named required deliverable, no repo provisioned. Requesting after the 08-10 call.
-- **Zenon model keys** — running on a personal OpenRouter account; rules say Zenon supplies them. A
-  key file sits at `C:/tmp/openrouterAPIKey.txt`, which `resolve_api_key()` finds with no env var
-  set, so work 1 below is unblocked on *this* machine and spends Ravi's own money when it runs.
+- **Model keys — the hard blocker, and it gates three deliverables.** Genesis/Zenon will supply the
+  key; OpenRouter was always temporary. The key file at `C:/tmp/openrouterAPIKey.txt` (which
+  `resolve_api_key()` finds with no env var set) is **valid but the account has never been funded** —
+  `auth/key` returns 200, a completion returns `HTTP 402 Insufficient credits`, verified 2026-08-10.
+  So **no model call can run on this machine today**, and an earlier note here claiming work 1 was
+  unblocked "for a few dollars" was wrong. Blocked behind that key: the model-extractor measurement
+  (work 1), agent verdict accuracy (AT-57), and cost per 1,000 conversations.
+  When the Genesis key lands, build against the `llm/` provider abstraction, never against a vendor —
+  and note that `artifacts/cache/investigator-demo.jsonl` and the `$0.089 / $0.097` costs in README
+  become provider-historical, needing a re-label or a re-record. That cache is what makes the demo
+  replay with no network (D-004), so it must not simply be dropped.
 
 ## Next three things — in this order, set 2026-08-10 by D-020
 
