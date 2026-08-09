@@ -58,7 +58,8 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `test_tools.py` — every agent tool, in-memory, no network `[stable]`
 - `test_no_answer_key_leak.py` — also discovers `AccountSnapshot`'s numeric fields rather than listing them; a hand-written list named a field that did not exist and silently skipped `[stable]`
 - `test_agent.py` — decision schema, bounded loop, the cost cap holding under a rising cost curve (and the documented spike case where it cannot), a crashing tool being contained `[stable]`
-- `test_sweep.py` — the multi-seed harness: sign test vs hand computation, pairing on seed, denominators present and identical across arms, equal alert budget, determinism `[stable]`
+- `test_sweep.py` — the multi-seed harness: sign test vs hand computation, pairing on seed, denominators present and identical across arms, equal alert budget, determinism, counted-not-reconstructed integers, artifact reproducibility `[stable]`
+- `test_cli.py` — the commands, and the demo's internal consistency: its narration may not contradict the claim it selected on, and its denominator must count customers `[stable]`
 
 ## tools/jira/
 

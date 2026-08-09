@@ -17,7 +17,7 @@ Sprint-1 check-in is **2026-08-10 10:30** (15 minutes, progress only — brief a
 Sprint 1+2 demo, **2026-09-07** Sprint 3.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-an investigator agent that calls tools and produces case files with cited evidence. **165 tests**,
+an investigator agent that calls tools and produces case files with cited evidence. **170 tests**,
 ruff clean, `earshot sweep` produces every published number and now prints every comparison behind them.
 
 **The headline holds and strengthened.** On thin-evidence customers the ledger catches 134/780 against
