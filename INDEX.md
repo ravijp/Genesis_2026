@@ -82,6 +82,11 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 - `out/gold.jsonl` · `gold_second.jsonl` — the hand marks (150) and the independent second marking (30) `[stable]`
 - `out/results.json` · `source_archive.json` — the scored result, and the SHA-256 of the 1.31 GB source archive `[generated]`
 
+## benchmarks/pool-widening/ — authored, measured, parked
+
+- `README.md` — why 56 new fragments exist, how they were authored blind, and the measurement that parked them `[stable]`
+- `fragments.py` — the 56 fragments, **not** wired into `corpus_lexicon.py`; splicing is blocked on the extractor `[stable]`
+
 ## tools/jira/
 
 - `adf.py` — renders a markdown subset into Atlassian Document Format so descriptions are readable `[stable]`

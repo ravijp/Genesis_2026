@@ -72,23 +72,32 @@ protocol promoted the corpus regrounding; the evidence turned out to implicate t
 instead, and the experiment that is actually blocking the entry needs only *more* fragments, not
 *real* ones. Read D-020 before re-arguing this.
 
-**1. Does never-discard buy anything over a cheap bounded window? (~2 days.)** The entry's central
-claim is currently *beaten* by two cheaper arms on its own pre-registered stratum (`stateless-top2`
-and `window3-top2`, both `7-21-2`, `p=0.013`). The corpus cannot pose the question because fragments
-are planted **without replacement** and the scarcest pool holds 4, so an arc can never carry more than
-4 signals however long it gets. Done: `--conversations-per-customer MIN,MAX` is exposed on every
-command and *refuses* a range whose MAX exceeds the smallest pool rather than quietly padding arcs
-with empty conversations. Left: widen all four pools to 20 (authored blind, see below), then sweep 30
-seeds at (2,5) / (4,9) / (8,20) and publish the curve. **It publishes either way** — if the ledger
-pulls ahead as arcs lengthen that is the entry; if it does not, the honest pitch is the agent with the
-ledger as its cheapest trigger (D-005), and that is Ravi's call, not a session's.
+**1. Make the reader able to read prose it did not grow up with.** This was work 3, then deferred by
+D-020, and is now first on evidence rather than argument — see the measurement below. Fix the cue
+vocabulary in `extract_lexicon.py`. `benchmarks/cfpb/out/results.json` names the 24 cues that never
+fired and `benchmarks/cfpb/out/gold.jsonl` is a 150-document marked development set; the 56
+blind-authored fragments in `benchmarks/pool-widening/` are the **held-out check** that catches
+tuning to it. Do not fit the cues to either set alone.
 
-*Authoring constraint, load-bearing:* new corpus fragments must be written by someone who has **not**
-seen `extract_lexicon.py`, or the overlap between the two lexicons stops being accidental and every
-published extraction number becomes meaningless (working-agreements §2). Widening the pools moves
-every published number, so this needs a full re-run, both answer-key guards re-validated, and the
-`RECALL_BAND` in `tests/test_separation.py` moved **deliberately after re-measuring** — never widened
-to pass.
+**Why it moved back to first, and it is not a preference.** Widening the fragment pools (the
+prerequisite for the history-length experiment) was done and measured, then reverted. The extractor
+catches **0.5325 (82/154)** of the original 24 fragments and **0.0353 (22/624)** of 56 new ones
+authored blind to the same construct definitions, in the same spoken UK bank register. Overall recall
+falls 0.681 → 0.1337, and `stateless-top2` collapses into `stateless-max` on every seed because there
+is no longer enough extracted signal to differentiate arms. So the history-length question cannot be
+asked on a corpus the reader cannot read — the reader is genuinely blocking, which is what AT-43's
+pre-registration guessed at while naming the wrong file.
+
+**0.0353 on blind-authored synthetic utterances against 0.0357 on real CFPB narratives is the same
+number from two directions**, and it closes the genre-mismatch escape route AT-43 left open. The
+published **0.681 measures how much pass A and pass B were co-developed, not what the extractor can
+read.** That is a finding about our own foundational separation claim and it should be presented that
+way on 09-07 rather than discovered by a judge.
+
+**Then, and only then, the history-length experiment (~1 day once the reader works).** Splice
+`benchmarks/pool-widening/fragments.py`, re-measure, move `RECALL_BAND` deliberately, re-run
+everything, then sweep 30 seeds at (2,5)/(4,9)/(8,20) and publish the curve. Done already:
+`--conversations-per-customer MIN,MAX` exists and refuses a range wider than the scarcest pool.
 
 **2. The reviewer queue UI.** `AT-61/62/64`. Never started, and the whole client-facing axis of a
 Track A entry — needed for 2026-08-24. It is blocked on persistence, not design: `cli.py:494` builds
