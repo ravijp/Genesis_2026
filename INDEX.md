@@ -14,11 +14,11 @@ build promoted to a `src/` layout. Nothing is lost — all of it is on `main`:
 
 ## Reading order for a fresh session
 
-1. `README.md` — what this is, and the fresh-machine quick start
-2. `CLAUDE.md` — session rules
-3. `docs/ops/working-agreements.md` — **the disciplines this project learned the hard way**
-4. `docs/architecture/architecture.md` — the shape of the system, with diagrams
-5. `sources/submission-ear-on-every-call.md` — the contract with the committee
+1. `docs/ops/state-of-play.md` — **start here.** Current state, in one screen
+2. `docs/ops/decisions.md` — what is settled and what was rejected
+3. `docs/ops/working-agreements.md` — the disciplines, each bought with a mistake
+4. `README.md` — what this is, and the current numbers
+5. `docs/architecture/architecture.md` — the shape of the system, with diagrams
 
 ## Root
 
@@ -69,6 +69,8 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 
 ## docs/
 
+- `ops/state-of-play.md` — **the boot file.** Where we are, what is in flight, what is blocked, the next three things. One screen, rewritten in place, never appended `[stable]`
+- `ops/decisions.md` — why things are the way they are and what was rejected, so a fresh session does not re-litigate settled ground `[stable]`
 - `ops/working-agreements.md` — **read before changing anything.** Evaluation discipline, the two-level answer-key guards, demo honesty, keeping docs in step with code, test discipline, bulk-operation discipline, delegation `[stable]`
 - `ops/jira-conventions.md` — how the AT board is written and updated `[stable]`
 - `architecture/architecture.md` — the shape of the system: three layers, data flow, agent loop, runtime, what is measured `[stable]`

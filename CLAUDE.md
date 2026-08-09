@@ -35,6 +35,24 @@ Frozen gates: **2026-08-10** 15-min check-in · **2026-08-24** combined Sprint 1
 - Add dependencies: `uv add <pkg>` (runtime) · `uv add --group dev <pkg>` (dev-only)
 - Never `pip install` into the venv directly. Always commit `pyproject.toml` + `uv.lock` together.
 
+## Starting a fresh session — read these four, in this order
+
+1. **`docs/ops/state-of-play.md`** — where we are right now, what is in flight, what is blocked, the
+   next three things. One screen, rewritten in place each session, never appended to.
+2. **`docs/ops/decisions.md`** — why things are the way they are, and what was rejected. Read this
+   before arguing for something; it exists so settled ground is not re-litigated.
+3. **`docs/ops/working-agreements.md`** — the disciplines, each one bought with a real mistake.
+4. **`README.md`** — what the thing is, and the current numbers.
+
+Then `docs/architecture/architecture.md` for the shape of the system. **Do not read
+`docs/architecture/build-plan.md`** — it predates the agent layer and contradicts the code.
+
+Session history is in git, deliberately: commit messages carry the *why*. `git log --grep` answers
+"did we already try X?" better than any prose file, and it never needs curating.
+
+**When you finish a working session:** rewrite `state-of-play.md` (do not append), add any new decision
+to `decisions.md`, and add a rule to `working-agreements.md` if a mistake taught you one.
+
 ## Read before changing anything
 
 **`docs/ops/working-agreements.md`** — the disciplines this project learned the hard way: evaluation
