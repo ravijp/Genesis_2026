@@ -58,28 +58,39 @@ never-discard adds over a cheap window is currently **unproven**. See D-015 thro
 
 ## Next three things — in this order, reset 2026-08-09 after the review freeze
 
-**1. The reviewer queue UI.** `AT-61/62/64`. Never started, and it is the whole presentation axis of a
+**1. Benchmark the extractor on real public narratives — and let the result decide work 3.**
+`AT-43`, ~1 day. Run the *existing* extractor over CFPB's real, public-domain complaint narratives
+against a hand-marked gold set of ~100-150, and publish the number with its denominator. It answers
+"your reader only works on prose you wrote yourself" — the most likely technical objection on 09-07 —
+and it touches nothing upstream of a published figure.
+
+It goes first because **it is the cheap experiment that gates the expensive one.** If the extractor
+holds up on real language, the corpus lexicon is good enough and work 3 is unnecessary. If it
+collapses, there is a measured reason to reground the fragments rather than a speculative one.
+
+**2. The reviewer queue UI.** `AT-61/62/64`. Never started, and it is the whole presentation axis of a
 Track A *client-facing* entry — needed for the 2026-08-24 combined Sprint 1+2 demo. Ranked case list ·
 a case with its evidence chain and the retro re-score visible · approve / dismiss / route. The queue
 *is* the human-in-the-loop claim made visible, so it feeds Zenon impact and feasibility, not only the
 presentation score. Constraints, already settled: it reads run artifacts already on disk rather than
 re-running the pipeline · works with zero API keys and no network · **never becomes a second source of
-truth for a number** — it displays what `earshot sweep` and the run artifacts already produced. Build
-it *functional*, then stop: working-agreements §9 warns that UI **polish** scores close to nothing,
-and it is right. If it starts competing with the evaluation for attention, stop and ship the numbers.
+truth for a number**. Build it *functional*, then stop — working-agreements §9 warns that UI **polish**
+scores close to nothing, and it is right. It reads artifacts, so it is indifferent to work 3 changing
+the corpus underneath it.
 
-**2. Benchmark the extractor on real public narratives — the evidence half of the CFPB work.**
-`AT-43`. Run the *existing* extractor over CFPB's real, public-domain complaint narratives against a
-hand-marked gold set of ~100-150, and publish the number with its denominator. This answers "your
-reader only works on prose you wrote yourself", which is the most likely technical objection on 09-07,
-and it touches nothing upstream of a published figure.
+**3. Reground the corpus lexicon in real phrasing — ONLY if work 1 says so.** Today both lexicons are
+hand-authored, which is what makes "you wrote the test and the marking scheme" bite. Taking the corpus
+fragments from real CFPB language leaves only the *placement* authored, which is a real answer to that
+objection rather than realism for its own sake. **Structure and the answer key do not change** — swap
+the words, not the plan. Every published number moves, so this needs a full re-run and a
+re-validation of both answer-key guards, and must not be in flight when a gate lands.
 
-**Deliberately NOT doing `AT-42` (fitting the generated distribution to CFPB) before 08-24.** Two
-settled reasons: working-agreements §9 lists corpus realism as work that feels productive and scores
-close to nothing, and D-010 settles that synthetic data is a *requirement of the measurement* — the
-answer key has to be authored before the text, which no real corpus can supply. Regenerating
-`corpus.py` is also upstream of every published number, so it means re-running and re-validating all
-of them two weeks before the gate. Revisit after 08-24 if there is time.
+**Still off the table before 09-07**, and these are settled rather than open: fitting the whole
+generative distribution to CFPB (working-agreements §9 — corpus realism scores close to nothing), and
+stitching real complaints into invented customer histories (D-010 — incoherent people, and it destroys
+the answer key the measurement depends on). CFPB has no persistent customer identifier across
+contacts and no outcome label, so the repeat-contact structure this entry measures cannot come from
+it; that is why the generator stays synthetic.
 
 **3. Write `known-issues.md` and close the review out.** Triage the open list above against one
 question: *would a technical judge's score change if this stayed broken?* Fix only those. Everything
