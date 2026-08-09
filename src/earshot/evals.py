@@ -59,7 +59,17 @@ class BudgetResult:
     # must ask THIS set, not `score >= threshold`: arms produce large tie clusters at the cut,
     # and a threshold comparison silently answers for the whole cluster rather than for the K
     # customers the budget really buys.
-    flagged_ids: frozenset[str] = frozenset()
+    #
+    # A SORTED TUPLE, not a set: run artifacts are serialised with `default=str`, and a set
+    # stringifies in hash order, so two identical runs would write different files and the
+    # bit-for-bit reproducibility claim would be false.
+    flagged_ids: tuple[str, ...] = ()
+    # How well-defined this arm's ranking is. An arm with few distinct scores has a large tie
+    # cluster sitting at the cut, so part of its alert queue is chosen by the `customer_id`
+    # tie-break rather than by evidence. Published, because it is the difference between a
+    # comparison that means something and one that is partly alphabetical.
+    n_distinct_scores: int = 0
+    n_tie_decided: int = 0
 
 
 def _outcome_customers(corpus: Corpus) -> dict[str, int | None]:
@@ -142,7 +152,12 @@ def evaluate_arm(
         lead_survival={d: round(v, 4) for d, v in survival.items()},
         n_hits=len(hits),
         n_outcomes=len(outcomes),
-        flagged_ids=frozenset(flagged),
+        flagged_ids=tuple(sorted(flagged)),
+        n_distinct_scores=len(set(scores.values())),
+        # Alerts the score could not decide, counted against the queue that was actually
+        # issued rather than against K: an arm with fewer than K non-zero scores flags fewer
+        # than K customers, and mixing the two denominators inflates this badly.
+        n_tie_decided=max(0, len(flagged) - sum(1 for cid in flagged if scores[cid] > threshold)),
         stratum_hits=dict(sorted(stratum_hits.items())),
         stratum_outcomes=dict(sorted(stratum_outcomes.items())),
     )
@@ -177,6 +192,19 @@ def extraction_fidelity(
     decoys = [s for s in seeded if s.is_decoy]
     decoys_fired = [s for s in decoys if (s.conversation_id, s.signal_type) in found]
 
+    # The two decoy families are aimed at different components and a firing means the opposite
+    # thing in each, so pooling them averages a success and a failure into one uninterpretable
+    # rate. Extractor decoys are lookalikes: firing is a mistake. Accumulator decoys are
+    # GENUINE weak signals that never amount to anything: firing is correct, and what is being
+    # tested is whether the ledger goes on to over-accumulate them.
+    def _split(is_extractor_decoy: bool) -> tuple[int, int]:
+        family = [s for s in decoys if (s.decoy_kind == "extractor") is is_extractor_decoy]
+        fired = [s for s in family if (s.conversation_id, s.signal_type) in found]
+        return len(fired), len(family)
+
+    extractor_fired, extractor_n = _split(True)
+    accumulator_fired, accumulator_n = _split(False)
+
     return {
         "planted_genuine": len(genuine),
         "extraction_recall": round(len(caught) / len(genuine), 4) if genuine else 0.0,
@@ -184,6 +212,14 @@ def extraction_fidelity(
         "unplanted_extractions": len(unplanted),
         "decoys_planted": len(decoys),
         "decoy_fire_rate": round(len(decoys_fired) / len(decoys), 4) if decoys else 0.0,
+        "extractor_decoys_planted": extractor_n,
+        "extractor_decoy_fire_rate": (
+            round(extractor_fired / extractor_n, 4) if extractor_n else 0.0
+        ),
+        "accumulator_decoys_planted": accumulator_n,
+        "accumulator_decoy_fire_rate": (
+            round(accumulator_fired / accumulator_n, 4) if accumulator_n else 0.0
+        ),
     }
 
 

@@ -43,6 +43,8 @@ class ArmSample:
     concentrated_recall: float = 0.0
     concentrated_hits: int = 0
     concentrated_outcomes: int = 0
+    distinct_scores: int = 0
+    tie_decided: int = 0
 
 
 @dataclass
@@ -113,6 +115,8 @@ def _one_seed(base: RunConfig, seed: int, budget: float) -> list[ArmSample]:
                 concentrated_recall=r.recall_by_stratum["concentrated"],
                 concentrated_hits=r.stratum_hits["concentrated"],
                 concentrated_outcomes=r.stratum_outcomes["concentrated"],
+                distinct_scores=r.n_distinct_scores,
+                tie_decided=r.n_tie_decided,
             )
         )
     return out

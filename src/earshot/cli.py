@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import statistics
 import subprocess
 import sys
 import time
@@ -46,8 +47,13 @@ ARTIFACTS = Path(os.environ.get("EARSHOT_ARTIFACTS", "artifacts")) / "runs"
 
 
 def _git_sha() -> str:
+    """The commit a run came from, suffixed `-dirty` if the tree had uncommitted changes.
+
+    Without the suffix a manifest names a commit that cannot reproduce it, which is worse than
+    naming nothing: a committed artifact stamped with a clean SHA is read as provenance.
+    """
     try:
-        return subprocess.run(
+        sha = subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"],
             capture_output=True,
             text=True,
@@ -55,6 +61,16 @@ def _git_sha() -> str:
         ).stdout.strip()
     except Exception:
         return "unknown"
+    try:
+        changed = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    except Exception:
+        return sha
+    return f"{sha}-dirty" if changed else sha
 
 
 def _pipeline(run: RunConfig):
@@ -249,7 +265,16 @@ def cmd_demo(run: RunConfig) -> int:
         day = breakdown.as_of_day
         verdict = "CASE OPENED" if breakdown.score >= threshold else "no action"
         alone = max((s for d, s in stateless_points.items() if d <= day), default=0.0)
-        alone_verdict = "would flag" if alone >= stateless_cut else "silent"
+        # The same question the queue asks, not `>= cut`. This customer was selected BECAUSE
+        # the baseline never alerts on them, and the baseline's scores cluster heavily at the
+        # cut -- so a threshold comparison here prints "would flag" directly underneath the
+        # line saying per-call detection never fires, on the customer chosen for that property.
+        if per_call_catches(customer_id):
+            alone_verdict = "would flag"
+        elif alone >= stateless_cut:
+            alone_verdict = "at the cut, but ranked out of the queue"
+        else:
+            alone_verdict = "silent"
         print(f"--- conversation {i}   day {day}   [{newest.signal.channel.value}] ---")
         print(f'    heard: "{newest.signal.evidence_quote.strip()}"')
         print(f"    extractor confidence {newest.signal.confidence:.2f} (cue {newest.signal.cue_id})")
@@ -459,11 +484,23 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
     # The FIRST-attempt failure rate, not the post-retry one. A decision whose citations do not
     # resolve is rejected inside the loop and never reaches here, so counting unresolved refs on
     # the returned decisions would report zero however badly the model behaved.
-    first_attempt_failures = sum(r["trace"]["evidence_repairs"] for r in records)
+    #
+    # CASES, not attempts: `evidence_repairs` counts rejected attempts and can reach 3 for a
+    # single case, which printed against a denominator of cases would read "3/1".
+    needed_repair = sum(1 for r in records if r["trace"]["evidence_repairs"])
+    # The offline rule engine builds its citations from ledger entries it has already read, so
+    # it cannot produce an unresolvable one. Saying so keeps a structural zero from reading as a
+    # measurement of the model's honesty.
+    caveat = (
+        "  (offline rule engine — citations are built from the ledger, so this cannot be "
+        "non-zero)"
+        if provider_name == "offline"
+        else ""
+    )
     print(f"\n{'-' * 78}")
     print(f"{len(records)} investigations in {elapsed:.1f}s   "
           f"total ${total_cost:.4f}   "
-          f"cases needing an evidence repair: {first_attempt_failures}/{len(records)}")
+          f"cases needing an evidence repair: {needed_repair}/{len(records)}{caveat}")
 
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     # Provider, cache mode and limit are all in the filename, so two runs that differ only in
@@ -526,6 +563,19 @@ def cmd_sweep(run: RunConfig, n_seeds: int) -> int:
               f"{f'{s.total_diffuse_hits}/{s.total_diffuse_outcomes}':>15} "
               f"{s.pooled_concentrated:>7.3f} "
               f"{f'{s.total_concentrated_hits}/{s.total_concentrated_outcomes}':>15}")
+
+    # How much of each arm's alert queue its score actually decided. An arm with few distinct
+    # scores has a big tie cluster at the cut, and the rest of its queue is filled in
+    # customer_id order -- which is worth knowing before trusting any comparison it appears in.
+    print("\nRANKING RESOLUTION — how much of each queue the score decided, mean per seed")
+    print(f"  {'arm':<18} {'distinct scores':>16} {'queue decided alphabetically':>30}")
+    for name in sorted(summaries, key=lambda n: statistics.mean(
+            [s.tie_decided for s in by_arm[n]])):
+        samples = by_arm[name]
+        distinct = statistics.mean([s.distinct_scores for s in samples])
+        arbitrary = statistics.mean([s.tie_decided / s.flagged if s.flagged else 0.0
+                                     for s in samples])
+        print(f"  {name:<18} {distinct:>16.0f} {arbitrary:>29.1%}")
 
     comparisons: list[dict[str, object]] = []
 

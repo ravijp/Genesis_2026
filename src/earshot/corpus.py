@@ -247,6 +247,13 @@ def generate(run: RunConfig | None = None) -> Corpus:
                         fragment_id=frag.fragment_id,
                         is_decoy=stratum
                         in (Stratum.DECOY_EXTRACTOR, Stratum.DECOY_ACCUMULATOR),
+                        decoy_kind=(
+                            "extractor"
+                            if stratum is Stratum.DECOY_EXTRACTOR
+                            else "accumulator"
+                            if stratum is Stratum.DECOY_ACCUMULATOR
+                            else None
+                        ),
                     )
                 )
 

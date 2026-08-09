@@ -115,8 +115,13 @@ def _run(
         for day in days:
             visible = [s for s in sigs if s.day <= day]
             if window is not None:
-                recent_conversations = sorted({s.conversation_id for s in visible})[-window:]
-                visible = [s for s in visible if s.conversation_id in set(recent_conversations)]
+                # Ordered by DAY, not by conversation id. Ids sort lexicographically, so from ten
+                # conversations on "C9" sorts above "C10" and the window silently selects the
+                # wrong transcripts -- which is invisible at the shipped 2-5 conversations and
+                # wrong exactly where we are heading next.
+                by_day = sorted({(s.day, s.conversation_id) for s in visible})[-window:]
+                recent = {cid for _, cid in by_day}
+                visible = [s for s in visible if s.conversation_id in recent]
 
             best = 0.0
             types = {s.signal_type for s in visible}

@@ -79,6 +79,11 @@ class SeededSignal:
     turn_index: int
     fragment_id: str  # which corpus fragment was planted, for provenance
     is_decoy: bool = False
+    # Which component the decoy is aimed at: "extractor" (a lookalike, firing on it is a
+    # mistake) or "accumulator" (a genuine weak signal that never amounts to anything, where
+    # firing is correct and the question is whether the ledger over-accumulates it). Carried
+    # separately because a pooled fire rate averages a success and a failure together.
+    decoy_kind: str | None = None
 
 
 @dataclass(frozen=True)

@@ -1,11 +1,22 @@
-"""The import guard: the extractor cannot see the answer key.
+"""The separation guard: the extractor cannot see the answer key.
 
-The obvious objection to this build is that the conversations are sub-threshold for a matcher
-we also wrote. The answer has to be mechanical rather than a promise, so nothing on the path
-from a conversation to a decision may import the corpus generator, its fragment lexicon, or a
-ground-truth type. "Fixing" the extractor's miss rate by reaching into the corpus fails here.
+The obvious objection to this build is that the conversations are sub-threshold for a matcher we
+also wrote, so nothing on the path from a conversation to a decision may reach the corpus
+generator, its fragment lexicon, or a ground-truth type.
 
-Do not relax these. A matcher that catches everything it planted proves nothing.
+**Two layers, because the first one cannot be complete.** The AST scans catch import statements
+and literal identifiers, which is what an accident looks like. They do not catch a determined
+route: `sys.modules["earshot.corpus"]`, a `getattr` on the package, a name assembled from
+fragments and passed to `__import__`, or reading `corpus.py` as text all reach the answer key
+with no import node and no forbidden spelling. That is a property of static analysis, not a bug
+to be fixed by lengthening the list — and believing otherwise is what let a review lift published
+recall from 0.66 to 0.93 with the whole suite green.
+
+So the guarantee that actually holds is `test_published_extraction_recall_stays_in_its_measured
+_band`: reaching the answer key raises recall, and recall is pinned to the band it was measured
+in. The scans are the cheap first net; the band is the guard.
+
+Do not relax either. A matcher that catches everything it planted proves nothing.
 """
 
 from __future__ import annotations
@@ -238,4 +249,50 @@ def test_offline_extractor_is_measurably_imperfect() -> None:
     assert fidelity["extraction_recall"] < 1.0, (
         "the offline extractor caught 100% of planted signals — that means its cue vocabulary "
         "has been aligned to the corpus fragments, which invalidates the experiment"
+    )
+
+
+# The band the extractor's published recall must stay inside. Widened from the observed spread
+# (0.635-0.686 over six seeds at 400 customers) so ordinary drift does not trip it, but tight
+# enough that reaching the answer key does.
+RECALL_BAND = (0.55, 0.78)
+
+
+def test_published_extraction_recall_stays_in_its_measured_band() -> None:
+    """The behavioural backstop, and the guard that actually holds.
+
+    The AST scans above catch import statements and literal identifiers. They cannot be made
+    complete: `sys.modules["earshot.corpus"]`, a `getattr` on the package, a built-up string
+    passed to `__import__`, or reading `corpus.py` as text all reach the answer key without an
+    import node or a forbidden spelling anywhere. Treating the static scan as the guarantee is
+    what let a reviewer lift published recall from 0.66 to 0.93 with the whole suite green.
+
+    So the real guarantee is behavioural: reading the answer key RAISES recall, and recall is
+    pinned to the band it was measured in. A leak has to keep the extractor as wrong as it
+    already is to go unnoticed, which is not a leak worth having. Measured on the configured
+    extractor the pipeline actually builds, on a corpus large enough for the rate to be stable.
+    """
+    from dataclasses import replace
+
+    from earshot.config import RunConfig
+    from earshot.corpus import generate
+    from earshot.evals import extraction_fidelity
+    from earshot.extract import OfflineLexiconExtractor, extract_all
+
+    base = RunConfig()
+    run = replace(base, corpus=replace(base.corpus, n_customers=400))
+    corpus = generate(run)
+    extractor = OfflineLexiconExtractor(
+        miss_rate=run.offline_miss_rate, false_fire_rate=run.offline_false_fire_rate
+    )
+    fidelity = extraction_fidelity(corpus.seeded, extract_all(extractor, corpus.conversations))
+
+    assert fidelity["planted_genuine"] > 500, "sample too small for the rate to mean anything"
+    lo, hi = RECALL_BAND
+    recall = fidelity["extraction_recall"]
+    assert lo < recall < hi, (
+        f"extraction recall is {recall}, outside the measured band {RECALL_BAND}. If it went UP, "
+        f"the extractor is seeing something it should not — check for a route to the corpus that "
+        f"is not an import. If it went DOWN, the lexicon or the miss rate changed. Either way the "
+        f"published miss rate is now wrong; re-measure, then move the band deliberately."
     )

@@ -74,9 +74,15 @@ the answer out of a comparison the code computes in full:
 | hybrid *(rank-combined)* | 0.140 | 272 / 1945 | 0.126 | 98 / 780 | 0.277 | 174 / 629 |
 | stateless-max *(score each call, forget)* | 0.142 | 276 / 1945 | 0.123 | 96 / 780 | **0.286** | **180 / 629** |
 
-Read the two stratum columns together and the shape is one dial, not a winner: **the more
-conversations an arm is allowed to combine, the better it does on thin evidence and the worse it does
-on a single loud call.** That trade is the finding.
+Read the two stratum columns together and the shape is a **trade, not a winner**: arms that aggregate
+across conversations do better on thin evidence and worse on a single loud call, and `stateless-max` —
+which aggregates nothing — is the extreme of both.
+
+That is as far as the ordering goes. It is *not* monotone in how many conversations an arm may combine:
+a `stateless-top3` we built to check is significantly **worse** than `top2` at this budget, and the row
+order inverts at a 20% budget. The stable claim is "aggregating anything beats aggregating nothing on
+diffuse arcs, and the reverse on concentrated ones"; the exact row order below is a 10%-budget
+artifact.
 
 What survives a paired test:
 
@@ -84,39 +90,65 @@ What survives a paired test:
   thin, nothing alarming in any single conversation — the full ledger catches **134 of 780** against
   **96 of 780** for scoring-and-forgetting, winning **8 seeds of 10 with 2 ties and zero losses**
   (`p=0.008`). This is the entry's pre-registered headline, and `earshot sweep` prints it first. It is
-  the one comparison declared before the run; at 30 seeds it strengthens to **27–2–1**.
+  the one comparison declared before the run; at `--seeds 30` it strengthens to **27–0–3**.
 - **And memory loses on concentrated arcs, by a comparable margin.** **119 of 629** against
-  **180 of 629**, losing 8 seeds of 10 (`p=0.039`; at 30 seeds, **1–27–2**). Accumulation dilutes a
+  **180 of 629**, losing 8 seeds of 10 (`p=0.039`; at 30 seeds, **3–25–2**). Accumulation dilutes a
   single decisive signal. We publish this because it is the same size as the win and comes from the
   same run — and because it is the actual argument for running a memory *alongside* per-call detection
   rather than instead of it.
-- **The cheapest possible aggregator matches the whole ledger.** `stateless-top2` sums the two loudest
-  calls — two floats per customer, no ledger, no never-discard, no retro re-scoring — and takes
-  **147 of 780** diffuse arcs, slightly ahead of the full ledger's 134 (`3–6–1`, `p=0.508`; at 30
-  seeds the ledger is behind at `9–19–2`, `p=0.087`). It also beats `stateless-max` outright
-  (`8–2–0`). So the honest reading of the headline is **aggregation beats no aggregation** — not
-  memory beats detection. Our diffuse customers average 2.55 extracted signals, so "keep everything"
-  and "keep the best two" are not yet distinguishable at this history length. Whether never-discard
-  pulls ahead as histories lengthen is open, and is the question the ledger has to answer.
+- **The cheapest possible aggregator beats the whole ledger where it matters most, and loses where the
+  ledger is weakest.** `stateless-top2` sums the two loudest calls — two floats per customer, no
+  ledger, no never-discard, no retro re-scoring — and takes **147 of 780** diffuse arcs against the
+  full ledger's 134. At 10 seeds that gap is not significant (`3–6–1`, `p=0.508`); **at 30 seeds it
+  is: the ledger loses `7–21–2`, `p=0.013`.** On concentrated arcs the ledger wins the same
+  comparison (`17–5–8`, `p=0.017`). Both are exploratory — 45 uncorrected tests — but we are not
+  going to soften them.
+
+  So the honest reading of the pre-registered headline is **aggregation beats no aggregation**, not
+  memory beats detection: `stateless-top2` also beats `stateless-max` outright. Our diffuse customers
+  average 2.55 extracted signals, so "keep everything" discards almost nothing more than "keep the
+  best two" — and on the evidence so far the cheaper rule is *better* on thin evidence, not merely
+  equal. Whether never-discard pulls ahead as histories lengthen is the question the ledger has to
+  answer, and the corpus cannot currently pose it (see the fragment-pool limit in the build plan).
 - **Overall, memory neither beats nor loses to per-call detection.** Every pairing involving the full
   ledger is non-significant on whole-portfolio recall.
 - **Our scoring machinery still earns nothing.** Full ledger vs a dumb unweighted count on diffuse
-  arcs: **3–4–3, `p=1.000`**. Decay, corroboration, cross-channel weighting and escalation are
-  decoration until shown otherwise — a plain count of retained signals does the same work.
+  arcs: **3–4–3, `p=1.000`**. But this flips sign across seed sets — on seeds `100..109` the plain
+  count significantly **beats** the full ledger on diffuse arcs (`0–9–1`, `p=0.004`) — and points the
+  other way on the other stratum, where at 30 seeds the full ledger significantly beats the plain
+  count on concentrated arcs (`17–5–8`, `p=0.017`). So "decoration" is too strong in one direction and
+  too generous in the other. The honest statement: the mechanisms are not distinguishable on the
+  stratum we pre-registered, and nothing we have earns a claim either way elsewhere.
 - **Multiplicity.** `earshot sweep` runs **45 pairwise tests** (15 pairings × 3 metrics) with no
   correction, and prints every one. Only the headline above was declared in advance; any other single
   `p` under 0.05 is a hint, not a result. Every number quoted in this README appears in that output.
 
-> **A caveat on ranking, which cuts against one of our own comparisons.** Alerts are the top *K* of a
-> ranked list, and arms differ enormously in how many distinct scores they produce. At 1,500 customers
-> the full ledger produces ~808 distinct scores and only **0.7%** of its alert queue is decided by the
-> `customer_id` tie-break; `long-context-3` produces ~69 and **69.5% on average, up to 95%**, of its
-> queue is decided alphabetically. So "long-context does not beat the ledger" rests on an arm whose
-> ranking is mostly arbitrary, and we would not defend that particular comparison hard. The headline
-> comparison is not affected in direction — it survives randomised tie-breaks — but the exact
-> `96 / 780` for `stateless-max` (mean 17% arbitrary) moves by roughly ±15 under a different tie-break.
-> This is also the one concrete thing confidence weighting buys: it earns nothing in recall, but it is
-> what makes the ledger's ranking well-defined instead of alphabetical.
+> **A caveat on ranking, and it cuts against our own headline.** Alerts are the top *K* of a ranked
+> list, and the arms differ enormously in how many distinct scores they produce — so part of each
+> queue is filled by the `customer_id` tie-break rather than by evidence. `earshot sweep` prints this:
+>
+> | arm | distinct scores | share of queue decided alphabetically |
+> |---|---|---|
+> | full-ledger | 673 | **0.7%** |
+> | hybrid | 522 | 8.3% |
+> | long-context-3 | 74 | 9.4% |
+> | stateless-top2 | 60 | 30.6% |
+> | stateless-max | 15 | **40.8%** |
+> | dumb-ledger | 6 | **70.3%** |
+>
+> The two arms most affected are **the pre-registered headline's own opponent** (`stateless-max`,
+> 40.8%) and the ablation behind "our machinery earns nothing" (`dumb-ledger`, 70.3%). So this caveat
+> cuts against our own claims, not against a comparison we lose.
+>
+> Under 25 randomised tie-breaks the direction is robust — the ledger loses in **0 of 25** draws at 10
+> seeds and **0 of 25** at 30 — but the significance is not: `p<0.05` in 18 of 25 draws at 10 seeds
+> (25 of 25 at 30 seeds). The published `96 / 780` is also the *favourable* end of the range for the
+> baseline, not the middle: randomising gives a mean of 89, range 78–100. The true gap is if anything
+> slightly wider than we publish, and the same effect understates `stateless-top2`'s lead over us.
+>
+> What buys the ledger its resolution is **decay**, not confidence weighting — switching confidence
+> weighting off alone leaves the queue at 0.7% and 598 distinct scores, while switching decay off
+> takes it to 2.6% and 214. We had this attributed to the wrong mechanism until round 5.
 
 > **Two retractions, both from earlier today.** (1) A first version of this table came from a single
 > 400-customer run with 39 outcome customers, where every rate was an integer over 39 — differences of
@@ -129,12 +161,20 @@ What survives a paired test:
 **Diagnostics, from the committed 400-customer run** in `artifacts/runs/pinned/` — these describe the data and the extractor rather
 than comparing arms, so a single dataset is appropriate; they are not comparison results and should not
 be quoted as such. Extractor recall **0.681 (496 / 728 planted signals)** — it misses 32% and is
-deliberately the weaker option; it fires on **22% (57 / 264)** of the lookalikes planted to fool it;
-portfolio outcome rate **13.5% (54 / 400)**. Extraction is matched at conversation level — did the
-extractor find *this signal type in this conversation* — not at character-span level.
+deliberately the weaker option; portfolio outcome rate **13.5% (54 / 400)**. Extraction is matched at
+conversation level — did the extractor find *this signal type in this conversation* — not at
+character-span level.
 
-**Not yet measured:** verdict and routing accuracy for the agent, first-attempt evidence-groundedness,
-cost per 1,000 conversations, and p50/p95 latency. The two live Claude Sonnet 4.5 investigations in
+The corpus plants two kinds of decoy and they are reported separately, because a firing means the
+opposite thing in each: **extractor decoys** are lookalikes and firing on one is a mistake
+(**2.9%, 4 / 140**); **accumulator decoys** are genuine weak signals that never amount to anything, so
+firing is *correct* (**42.7%, 53 / 124**) and what is under test is whether the ledger goes on to
+over-accumulate them — it does not, their flag rate at the 10% budget is 0.000.
+
+**Not yet measured:** verdict and routing accuracy for the agent, cost per 1,000 conversations, and
+p50/p95 latency. Evidence groundedness is reported as a first-attempt repair rate by `earshot
+investigate`, but is structurally zero on the offline provider (it copies quotes out of the ledger),
+so only a model provider exercises it — measuring it against a known answer at volume is AT-57. The two live Claude Sonnet 4.5 investigations in
 `artifacts/cache/` cost **$0.089 and $0.097** and took 30.3s and 33.4s. They are committed, and this
 exact command replays them with no network and a deliberately invalid key:
 

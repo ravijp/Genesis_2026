@@ -24,7 +24,8 @@ precision numbers · build and rehearse the three-conversation accumulation scen
 Also landed, beyond the commitment: **an investigator agent** that works each flagged customer using
 tools (transactions, account history, prior cases) and produces a case file with quoted evidence; a
 six-arm comparison harness with per-mechanism ablations; multi-dataset evaluation with proper
-significance testing; 157 tests; and one-command reproduction with a run manifest.
+significance testing; a test suite covering the honesty guards, the ledger invariants, the agent
+loop and the multi-seed harness; and one-command reproduction with a run manifest.
 
 **A word on status.** Nothing above is marked Done on our board, and that is deliberate. All of it was
 written by one person over a weekend and none of it has been reviewed by a second — Namit and Ishant
@@ -43,21 +44,24 @@ a real outcome — at a review capacity of 10% of the portfolio:
 
 - On **thin-evidence cases**: memory catches **134 of 780**; scoring-each-call-and-forgetting catches
   **96 of 780**. Memory wins **8 of the 10 datasets, ties 2, loses none** (p=0.008). This is the claim
-  the entry is built on, and it holds — at 30 datasets it strengthens to 27 wins, 2 losses, 1 tie.
+  the entry is built on, and it holds — at 30 datasets it strengthens to 27 wins, 0 losses, 3 ties.
 - **And it loses, by the same margin, on the cases it is not built for.** On concentrated cases — one
   loud conversation — memory catches **119 of 629** against per-call detection's **180 of 629**, losing
-  8 of 10 datasets (p=0.039; at 30 datasets, 1-27-2). Both results come from the same run and we
+  8 of 10 datasets (p=0.039; at 30 datasets, 3-25-2). Both results come from the same run and we
   publish both. The shape is a trade, not a win: depth of aggregation buys thin-evidence cases and
   costs loud ones, which is the argument for running both together rather than replacing one.
 - **Across the whole portfolio, nothing separates the approaches.** Memory neither beats nor loses to
   per-call detection overall.
 - **A plain count of signals does as well as our weighted scoring.** Decay, corroboration and channel
   weighting have not paid for themselves yet — either we justify them in Sprint 2 or we take them out.
-- **A two-line baseline we built this week to attack ourselves matches the full ledger.** Summing the
-  two loudest calls per customer — no ledger, no memory — catches **147 of 780** thin-evidence cases,
-  slightly ahead of the ledger's 134. At the history lengths in our corpus (customers average 3.5
-  conversations) "never discard" and "keep the best two" are not yet distinguishable. Sprint 2 tests
-  whether the ledger pulls ahead as histories lengthen, which is the regime the product is actually for.
+- **A two-line baseline we built this week to attack ourselves beats the full ledger.** Summing the
+  two loudest calls per customer — no ledger, no memory, two numbers — catches **147 of 780**
+  thin-evidence cases against the ledger's 134. Over 10 datasets that gap is not significant; over 30
+  it is (`p=0.013`), and the ledger loses. It wins the same comparison on loud single calls
+  (`p=0.017`). At the history lengths in our corpus — customers average 3.5 conversations — "keep
+  everything" discards almost nothing more than "keep the best two", so the corpus cannot yet pose the
+  question the ledger exists to answer. Sprint 2 lengthens the histories and re-runs. We would rather
+  say this now than be asked it in September.
 
 *If asked how solid this is:* solid enough that we threw away our own first answer. Our first run used
 a single dataset with 39 relevant customers, where every difference we reported was one or two people —

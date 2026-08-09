@@ -166,6 +166,14 @@ known bypass is now a parametrized case written as source, so the guard is teste
 rather than only against the code that happens to exist today. Match on the path from the package root,
 never the bare filename: `agent/config.py` must not inherit the root `config.py` exemption.
 
+**A static guard cannot be complete, so back it with a behavioural one.** Closing the import hole did
+not close the property: `sys.modules[...]`, `getattr` on the package, `__import__` on an assembled
+string, and reading the file as text all still reach the answer key with no import node and no
+forbidden spelling. Lengthening the list is a losing game. What holds is that *using* the answer key
+changes behaviour — so the published extraction recall is pinned to the band it was measured in, and a
+leak has to leave the extractor exactly as wrong as it already was to pass. State the static scan as
+the first net and the band as the guarantee; do not describe an AST check as "mechanical proof".
+
 ---
 
 ## 7. Bulk and scripted changes
@@ -199,6 +207,13 @@ right about the direction of a result but wrong about its significance. Check th
 
 **Re-review after fixing.** The pass that verified six fixes found four new problems, including that
 the module written to fix the worst one was unreachable from any command.
+
+**Do not edit the tree while a review is measuring it.** A round-5 reviewer started on a clean tree and
+finished with fifteen files modified underneath it; one of its sweeps came back one to two customers
+off on six of ten seeds and never reproduced. It caught this itself and re-ran everything against
+`git archive <sha>` in a temp dir with its own venv, which is the only reason the result was usable.
+Either hold edits until the round lands, or hand reviewers a pinned SHA to extract. The same applies to
+the shared scratchpad — two agents writing `attack.py` collide silently.
 
 ---
 

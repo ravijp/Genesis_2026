@@ -194,7 +194,7 @@ rather than replacing them.
 | Question | Metric |
 |---|---|
 | Does the extractor find what was planted? | Conversation-level recall vs seeded signals — matched on (conversation, signal type), not on character spans; **published miss rate** |
-| Does memory beat forgetting? | Five arms at **equal alert budget**, broken out per stratum |
+| Does memory beat forgetting? | Six arms at **equal alert budget**, broken out per stratum |
 | Does each scoring mechanism earn its place? | Per-mechanism ablation |
 | Is the agent right? | Verdict and routing accuracy vs the seeded trajectory — **not yet computed** |
 | Is the agent honest? | Share of decisions whose evidence resolves on the FIRST attempt (not after retries) — **not yet computed** |

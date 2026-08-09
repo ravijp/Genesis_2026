@@ -2,10 +2,10 @@
   "manifest": {
     "seed": 20260809,
     "config_hash": "07db21651cfa",
-    "git_sha": "1906877",
+    "git_sha": "09e6991",
     "provider": "offline-lexicon",
-    "elapsed_seconds": 0.73,
-    "conversations_per_second": 1883.7
+    "elapsed_seconds": 0.87,
+    "conversations_per_second": 1561.8
   },
   "corpus_diagnostics": {
     "n_customers": 400,
@@ -28,7 +28,11 @@
     "measured_miss_rate": 0.3187,
     "unplanted_extractions": 84,
     "decoys_planted": 264,
-    "decoy_fire_rate": 0.2159
+    "decoy_fire_rate": 0.2159,
+    "extractor_decoys_planted": 140,
+    "extractor_decoy_fire_rate": 0.0286,
+    "accumulator_decoys_planted": 124,
+    "accumulator_decoy_fire_rate": 0.4274
   },
   "arm_results": [
     {
@@ -62,7 +66,15 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0014",
+        "CUST-0051",
+        "CUST-0083",
+        "CUST-0110"
+      ],
+      "n_distinct_scores": 15,
+      "n_tie_decided": 4
     },
     {
       "arm": "stateless-top2",
@@ -95,7 +107,15 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0107",
+        "CUST-0207"
+      ],
+      "n_distinct_scores": 50,
+      "n_tie_decided": 1
     },
     {
       "arm": "dumb-ledger",
@@ -128,7 +148,15 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0055",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0102"
+      ],
+      "n_distinct_scores": 6,
+      "n_tie_decided": 4
     },
     {
       "arm": "long-context-3",
@@ -161,7 +189,15 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0207"
+      ],
+      "n_distinct_scores": 54,
+      "n_tie_decided": 2
     },
     {
       "arm": "full-ledger",
@@ -194,7 +230,15 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0055",
+        "CUST-0156",
+        "CUST-0190",
+        "CUST-0207"
+      ],
+      "n_distinct_scores": 182,
+      "n_tie_decided": 1
     },
     {
       "arm": "hybrid",
@@ -227,7 +271,15 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0055",
+        "CUST-0156",
+        "CUST-0190",
+        "CUST-0207"
+      ],
+      "n_distinct_scores": 136,
+      "n_tie_decided": 1
     },
     {
       "arm": "stateless-max",
@@ -260,7 +312,19 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0014",
+        "CUST-0051",
+        "CUST-0083",
+        "CUST-0110",
+        "CUST-0146",
+        "CUST-0159",
+        "CUST-0167",
+        "CUST-0172"
+      ],
+      "n_distinct_scores": 15,
+      "n_tie_decided": 8
     },
     {
       "arm": "stateless-top2",
@@ -293,7 +357,19 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0107",
+        "CUST-0125",
+        "CUST-0207"
+      ],
+      "n_distinct_scores": 50,
+      "n_tie_decided": 5
     },
     {
       "arm": "dumb-ledger",
@@ -326,7 +402,19 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0055",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0102",
+        "CUST-0129",
+        "CUST-0156",
+        "CUST-0177",
+        "CUST-0252"
+      ],
+      "n_distinct_scores": 6,
+      "n_tie_decided": 8
     },
     {
       "arm": "long-context-3",
@@ -359,7 +447,19 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0062",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0133",
+        "CUST-0207"
+      ],
+      "n_distinct_scores": 54,
+      "n_tie_decided": 6
     },
     {
       "arm": "full-ledger",
@@ -392,7 +492,19 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0055",
+        "CUST-0064",
+        "CUST-0156",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 182,
+      "n_tie_decided": 1
     },
     {
       "arm": "hybrid",
@@ -425,7 +537,19 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0055",
+        "CUST-0064",
+        "CUST-0156",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 136,
+      "n_tie_decided": 1
     },
     {
       "arm": "stateless-max",
@@ -458,7 +582,31 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0000",
+        "CUST-0014",
+        "CUST-0027",
+        "CUST-0051",
+        "CUST-0079",
+        "CUST-0083",
+        "CUST-0103",
+        "CUST-0110",
+        "CUST-0145",
+        "CUST-0146",
+        "CUST-0148",
+        "CUST-0159",
+        "CUST-0167",
+        "CUST-0172",
+        "CUST-0178",
+        "CUST-0203",
+        "CUST-0307",
+        "CUST-0320",
+        "CUST-0323",
+        "CUST-0396"
+      ],
+      "n_distinct_scores": 15,
+      "n_tie_decided": 6
     },
     {
       "arm": "stateless-top2",
@@ -491,7 +639,31 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0107",
+        "CUST-0125",
+        "CUST-0134",
+        "CUST-0147",
+        "CUST-0168",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0237",
+        "CUST-0239",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0350",
+        "CUST-0351",
+        "CUST-0354"
+      ],
+      "n_distinct_scores": 50,
+      "n_tie_decided": 17
     },
     {
       "arm": "dumb-ledger",
@@ -524,7 +696,31 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0006",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0101",
+        "CUST-0102",
+        "CUST-0129",
+        "CUST-0133",
+        "CUST-0156",
+        "CUST-0177",
+        "CUST-0252",
+        "CUST-0284",
+        "CUST-0293",
+        "CUST-0297"
+      ],
+      "n_distinct_scores": 6,
+      "n_tie_decided": 9
     },
     {
       "arm": "long-context-3",
@@ -557,7 +753,31 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0062",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0133",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0168",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0217",
+        "CUST-0223",
+        "CUST-0237",
+        "CUST-0243",
+        "CUST-0280",
+        "CUST-0284"
+      ],
+      "n_distinct_scores": 54,
+      "n_tie_decided": 18
     },
     {
       "arm": "full-ledger",
@@ -590,7 +810,31 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0006",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0156",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0233",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0297",
+        "CUST-0307",
+        "CUST-0350",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 182,
+      "n_tie_decided": 1
     },
     {
       "arm": "hybrid",
@@ -623,7 +867,31 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0006",
+        "CUST-0014",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0051",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0083",
+        "CUST-0110",
+        "CUST-0146",
+        "CUST-0156",
+        "CUST-0159",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 136,
+      "n_tie_decided": 7
     },
     {
       "arm": "stateless-max",
@@ -656,7 +924,51 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0000",
+        "CUST-0006",
+        "CUST-0009",
+        "CUST-0014",
+        "CUST-0023",
+        "CUST-0027",
+        "CUST-0028",
+        "CUST-0036",
+        "CUST-0042",
+        "CUST-0044",
+        "CUST-0051",
+        "CUST-0067",
+        "CUST-0079",
+        "CUST-0083",
+        "CUST-0098",
+        "CUST-0103",
+        "CUST-0107",
+        "CUST-0110",
+        "CUST-0115",
+        "CUST-0131",
+        "CUST-0145",
+        "CUST-0146",
+        "CUST-0148",
+        "CUST-0159",
+        "CUST-0167",
+        "CUST-0172",
+        "CUST-0178",
+        "CUST-0203",
+        "CUST-0212",
+        "CUST-0233",
+        "CUST-0242",
+        "CUST-0259",
+        "CUST-0275",
+        "CUST-0307",
+        "CUST-0312",
+        "CUST-0320",
+        "CUST-0323",
+        "CUST-0357",
+        "CUST-0390",
+        "CUST-0396"
+      ],
+      "n_distinct_scores": 15,
+      "n_tie_decided": 6
     },
     {
       "arm": "stateless-top2",
@@ -689,7 +1001,51 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0009",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0058",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0077",
+        "CUST-0083",
+        "CUST-0096",
+        "CUST-0102",
+        "CUST-0107",
+        "CUST-0125",
+        "CUST-0133",
+        "CUST-0134",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0168",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0199",
+        "CUST-0207",
+        "CUST-0212",
+        "CUST-0215",
+        "CUST-0217",
+        "CUST-0223",
+        "CUST-0237",
+        "CUST-0239",
+        "CUST-0243",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0298",
+        "CUST-0350",
+        "CUST-0351",
+        "CUST-0354",
+        "CUST-0380",
+        "CUST-0384"
+      ],
+      "n_distinct_scores": 50,
+      "n_tie_decided": 1
     },
     {
       "arm": "dumb-ledger",
@@ -722,7 +1078,51 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0001",
+        "CUST-0006",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0101",
+        "CUST-0102",
+        "CUST-0129",
+        "CUST-0133",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0233",
+        "CUST-0235",
+        "CUST-0239",
+        "CUST-0252",
+        "CUST-0269",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0285",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0297",
+        "CUST-0307",
+        "CUST-0309",
+        "CUST-0328",
+        "CUST-0338",
+        "CUST-0341",
+        "CUST-0350",
+        "CUST-0351",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 6,
+      "n_tie_decided": 1
     },
     {
       "arm": "long-context-3",
@@ -755,7 +1155,51 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0028",
+        "CUST-0036",
+        "CUST-0044",
+        "CUST-0048",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0062",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0098",
+        "CUST-0102",
+        "CUST-0109",
+        "CUST-0133",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0158",
+        "CUST-0167",
+        "CUST-0168",
+        "CUST-0172",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0217",
+        "CUST-0223",
+        "CUST-0237",
+        "CUST-0243",
+        "CUST-0244",
+        "CUST-0265",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0307",
+        "CUST-0338",
+        "CUST-0351",
+        "CUST-0354",
+        "CUST-0357",
+        "CUST-0380",
+        "CUST-0384"
+      ],
+      "n_distinct_scores": 54,
+      "n_tie_decided": 7
     },
     {
       "arm": "full-ledger",
@@ -788,7 +1232,51 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0006",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0101",
+        "CUST-0109",
+        "CUST-0129",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0167",
+        "CUST-0168",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0217",
+        "CUST-0233",
+        "CUST-0235",
+        "CUST-0237",
+        "CUST-0239",
+        "CUST-0243",
+        "CUST-0252",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0285",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0297",
+        "CUST-0307",
+        "CUST-0309",
+        "CUST-0338",
+        "CUST-0350",
+        "CUST-0351",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 182,
+      "n_tie_decided": 1
     },
     {
       "arm": "hybrid",
@@ -821,7 +1309,51 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0000",
+        "CUST-0006",
+        "CUST-0014",
+        "CUST-0027",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0051",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0079",
+        "CUST-0083",
+        "CUST-0096",
+        "CUST-0103",
+        "CUST-0110",
+        "CUST-0129",
+        "CUST-0146",
+        "CUST-0156",
+        "CUST-0159",
+        "CUST-0167",
+        "CUST-0172",
+        "CUST-0178",
+        "CUST-0190",
+        "CUST-0203",
+        "CUST-0207",
+        "CUST-0233",
+        "CUST-0252",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0297",
+        "CUST-0307",
+        "CUST-0320",
+        "CUST-0323",
+        "CUST-0350",
+        "CUST-0380",
+        "CUST-0396"
+      ],
+      "n_distinct_scores": 136,
+      "n_tie_decided": 4
     }
   ],
   "mechanism_ablations": [
@@ -856,7 +1388,51 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0006",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0101",
+        "CUST-0102",
+        "CUST-0109",
+        "CUST-0129",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0167",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0233",
+        "CUST-0235",
+        "CUST-0239",
+        "CUST-0243",
+        "CUST-0252",
+        "CUST-0269",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0285",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0297",
+        "CUST-0307",
+        "CUST-0309",
+        "CUST-0328",
+        "CUST-0338",
+        "CUST-0350",
+        "CUST-0351",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 111,
+      "n_tie_decided": 1
     },
     {
       "arm": "no-corroboration",
@@ -889,7 +1465,51 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0006",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0085",
+        "CUST-0096",
+        "CUST-0101",
+        "CUST-0109",
+        "CUST-0129",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0158",
+        "CUST-0167",
+        "CUST-0168",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0217",
+        "CUST-0233",
+        "CUST-0235",
+        "CUST-0237",
+        "CUST-0239",
+        "CUST-0243",
+        "CUST-0252",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0297",
+        "CUST-0307",
+        "CUST-0338",
+        "CUST-0350",
+        "CUST-0351",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 180,
+      "n_tie_decided": 1
     },
     {
       "arm": "no-cross-channel",
@@ -922,7 +1542,51 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0006",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0101",
+        "CUST-0102",
+        "CUST-0129",
+        "CUST-0133",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0168",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0217",
+        "CUST-0233",
+        "CUST-0235",
+        "CUST-0237",
+        "CUST-0239",
+        "CUST-0243",
+        "CUST-0252",
+        "CUST-0269",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0297",
+        "CUST-0307",
+        "CUST-0309",
+        "CUST-0338",
+        "CUST-0350",
+        "CUST-0351",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 182,
+      "n_tie_decided": 1
     },
     {
       "arm": "no-escalation",
@@ -955,7 +1619,51 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0006",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0101",
+        "CUST-0102",
+        "CUST-0109",
+        "CUST-0129",
+        "CUST-0133",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0168",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0233",
+        "CUST-0235",
+        "CUST-0237",
+        "CUST-0239",
+        "CUST-0243",
+        "CUST-0252",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0297",
+        "CUST-0307",
+        "CUST-0328",
+        "CUST-0338",
+        "CUST-0350",
+        "CUST-0351",
+        "CUST-0354",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 182,
+      "n_tie_decided": 1
     },
     {
       "arm": "no-confidence-weighting",
@@ -988,7 +1696,51 @@
       "stratum_outcomes": {
         "concentrated": 16,
         "diffuse": 24
-      }
+      },
+      "flagged_ids": [
+        "CUST-0006",
+        "CUST-0028",
+        "CUST-0044",
+        "CUST-0052",
+        "CUST-0055",
+        "CUST-0060",
+        "CUST-0062",
+        "CUST-0064",
+        "CUST-0077",
+        "CUST-0096",
+        "CUST-0101",
+        "CUST-0109",
+        "CUST-0129",
+        "CUST-0147",
+        "CUST-0156",
+        "CUST-0177",
+        "CUST-0190",
+        "CUST-0207",
+        "CUST-0215",
+        "CUST-0233",
+        "CUST-0235",
+        "CUST-0239",
+        "CUST-0243",
+        "CUST-0252",
+        "CUST-0269",
+        "CUST-0280",
+        "CUST-0284",
+        "CUST-0285",
+        "CUST-0287",
+        "CUST-0293",
+        "CUST-0297",
+        "CUST-0307",
+        "CUST-0309",
+        "CUST-0328",
+        "CUST-0336",
+        "CUST-0338",
+        "CUST-0341",
+        "CUST-0350",
+        "CUST-0351",
+        "CUST-0380"
+      ],
+      "n_distinct_scores": 166,
+      "n_tie_decided": 1
     }
   ]
 }

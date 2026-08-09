@@ -315,6 +315,12 @@ def test_the_committed_cache_is_exactly_the_two_live_investigations() -> None:
     )
     total = sum(e.get("completion", e).get("cost_usd", 0.0) for e in entries)
     assert abs(total - 0.1855) < 0.001, f"committed cache cost drifted to ${total:.4f}"
+    # Exact, not >=: a duplicate or a zero-cost re-record leaves both the model set and the
+    # cost sum unchanged, so only the count catches it.
+    assert len(entries) == 10, (
+        f"the committed cache holds {len(entries)} completions, not the 10 that make up the two "
+        f"live investigations — something has been appended to it"
+    )
 
 
 def test_the_committed_cache_covers_the_documented_replay_invocation() -> None:

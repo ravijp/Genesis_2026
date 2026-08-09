@@ -101,6 +101,108 @@ def test_every_arm_runs_on_every_seed(swept) -> None:
         assert sorted(s.seed for s in samples) == SEEDS, f"{arm} dropped a seed"
 
 
+def test_the_long_context_window_selects_by_day_not_by_id_spelling() -> None:
+    """Ids sort lexicographically, so "C9" > "C10" and a 3-window would pick C7,C8,C9 out of
+    fourteen conversations. Harmless at 2-5 conversations and wrong the moment histories
+    lengthen, which is the next thing this project intends to do."""
+    from earshot.arms import LONG_CONTEXT_WINDOW, _run, _stateless_config
+    from earshot.config import ScoringConfig
+    from earshot.schema import Channel, ExtractedSignal, SignalType
+
+    signals = [
+        ExtractedSignal(
+            customer_id="C1",
+            conversation_id=f"C1-C{i}",
+            turn_index=0,
+            signal_type=SignalType.FINANCIAL_DISTRESS,
+            confidence=0.1 if i < 11 else 0.9,
+            evidence_quote="q",
+            day=i * 10,
+            channel=Channel.CALL,
+            cue_id=f"cue{i}",
+        )
+        for i in range(14)
+    ]
+    timelines = _run(
+        signals, _stateless_config(ScoringConfig()), window=LONG_CONTEXT_WINDOW
+    )
+    final = timelines["C1"].final()
+
+    # The three most recent conversations by day are 11, 12, 13 — the loud ones. A window
+    # chosen by id spelling would pick C7/C8/C9 and score near zero.
+    assert final > 0.3, (
+        f"long-context final score {final:.3f} — the window selected early quiet conversations, "
+        f"so it is ordering conversation ids as text rather than by day"
+    )
+
+
+def test_a_run_artifact_serialises_identically_twice() -> None:
+    """"Reproducible bit-for-bit" is claimed in four documents, so it is pinned here.
+
+    Artifacts are written with `default=str`, so any set-valued field stringifies in hash order
+    and two identical runs produce different files. That is invisible to every other test and
+    fatal to the claim, which is exactly the combination worth a test.
+    """
+    import json
+    from dataclasses import asdict
+
+    from earshot.arms import run_all_arms
+    from earshot.corpus import generate
+    from earshot.evals import evaluate_arm
+    from earshot.extract import OfflineLexiconExtractor, extract_all
+
+    def serialise() -> str:
+        run = replace(SMALL, seed=SEEDS[0])
+        corpus = generate(run)
+        signals = extract_all(OfflineLexiconExtractor(), corpus.conversations)
+        results = [
+            asdict(evaluate_arm(corpus, arm, 0.10))
+            for arm in run_all_arms(signals, run.scoring).values()
+        ]
+        return json.dumps(results, default=str, sort_keys=True)
+
+    assert serialise() == serialise(), (
+        "two identical runs serialised differently — a set-valued field is being written in "
+        "hash order, so no published figure traces back to a reproducible artifact"
+    )
+
+
+def test_no_module_recovers_an_integer_by_multiplying_a_rate() -> None:
+    """The counts must be counted. This pins the provenance, not just the value.
+
+    Asserting the integers equal a hand-computed intersection is not enough on its own: at our
+    denominators `round(round(rate, 4) * n)` round-trips exactly, so a reconstruction produces
+    the identical number and the value-based test cannot tell the two apart. What distinguishes
+    them is whether the code multiplies a rate by a denominator at all.
+    """
+    import ast
+    from pathlib import Path
+
+    import earshot
+
+    package = Path(earshot.__file__).resolve().parent
+    rate_names = {"recall", "diffuse", "diffuse_recall", "concentrated_recall", "rate"}
+    offenders: list[str] = []
+
+    for path in package.rglob("*.py"):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if not (isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mult)):
+                continue
+            operands = []
+            for side in (node.left, node.right):
+                if isinstance(side, ast.Name):
+                    operands.append(side.id)
+                elif isinstance(side, ast.Attribute):
+                    operands.append(side.attr)
+            if any(name in rate_names for name in operands):
+                offenders.append(
+                    f"{path.relative_to(package).as_posix()}:{node.lineno} multiplies "
+                    f"{operands} — recover counts by counting, not by scaling a rate"
+                )
+
+    assert not offenders, "\n".join(offenders)
+
+
 def test_published_integers_are_counted_not_recovered_from_a_rate() -> None:
     """The integers beside every published rate must be the ones that PRODUCED it.
 

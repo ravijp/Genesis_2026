@@ -11,9 +11,26 @@ for something listed under "rejected", read the reason first.
 
 ---
 
+### D-018 · 2026-08-09 · A static guard is the first net; the behavioural band is the guarantee `ACCEPTED`
+The AST scan cannot be completed. `sys.modules["earshot.corpus"]`, `getattr` on the package, a name
+assembled and passed to `__import__`, or reading the file as text all reach the answer key with no
+import node and no forbidden spelling — verified, all pass the scan. So the guarantee is behavioural:
+published extraction recall is pinned to the band it was measured in, and a leak has to leave the
+extractor exactly as wrong as it already was to go unnoticed. **Rejected:** lengthening
+`FORBIDDEN_IDENTIFIERS` until the current attack list passes — that is a guard tuned to the attacks
+someone happened to think of, described as proof.
+
+### D-017 · 2026-08-09 · Numbers are quoted from the command's own seed base, never an ad-hoc script `ACCEPTED`
+Our 30-seed figures were computed in a scratch script on seeds `7000..7029` while `earshot sweep
+--seeds 30` uses `20260809+`. Every triple was wrong, and one of them inverted a conclusion: the
+ledger does not "match" `stateless-top2` on the pre-registered stratum, it loses to it (`7-21-2`,
+`p=0.013`). This is the same defect as round 4's unreachable p-values, committed inside the fix for
+it. **Rejected:** keeping the scratch numbers and noting the seed set — if a command cannot print it,
+it is not a published number.
+
 ### D-016 · 2026-08-09 · Both arc strata are published, always `ACCEPTED`
 The ledger wins on diffuse arcs (`p=0.008`) and loses on concentrated ones by a comparable margin
-(`p=0.039`; 1-27-2 at 30 seeds). `evals.py` computed both from the start and `sweep` printed only the
+(`p=0.039`; 3-25-2 at 30 seeds). `evals.py` computed both from the start and `sweep` printed only the
 win. The result is a **trade** — depth of aggregation buys thin evidence and costs loud single calls —
 and stated that way it is the argument for running memory alongside per-call detection rather than
 instead of it. **Rejected:** reporting the win and describing the loss as "out of scope"; it is the
