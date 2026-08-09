@@ -32,12 +32,12 @@ class CacheMiss(ProviderError):
 
 
 def cache_mode(default: str = "record") -> str:
-    mode = os.environ.get("EARSHOT_CACHE_MODE", default).strip().lower() or default
+    mode = env("CACHE_MODE", default).lower() or default
     return mode if mode in MODES else default
 
 
 def cache_path() -> Path:
-    return Path(os.environ.get("EARSHOT_CACHE_PATH", str(DEFAULT_CACHE_PATH)))
+    return Path(env("CACHE_PATH") or DEFAULT_CACHE_PATH)
 
 
 class ResponseCache:

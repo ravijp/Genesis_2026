@@ -47,11 +47,11 @@ class MissingAPIKey(ProviderError):
 
 def resolve_api_key() -> str:
     """env var -> env-named file -> default path. Whitespace stripped, never echoed."""
-    inline = os.environ.get("EARSHOT_OPENROUTER_API_KEY", "").strip()
+    inline = env("OPENROUTER_API_KEY")
     if inline:
         return inline
 
-    path = Path(os.environ.get("EARSHOT_OPENROUTER_API_KEY_FILE", "").strip() or DEFAULT_KEY_PATH)
+    path = Path(env("OPENROUTER_API_KEY_FILE") or DEFAULT_KEY_PATH)
     if path.is_file():
         key = path.read_text(encoding="utf-8").strip()
         if key:
