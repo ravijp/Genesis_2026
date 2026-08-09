@@ -215,6 +215,14 @@ right about the direction of a result but wrong about its significance. Check th
 **Re-review after fixing.** The pass that verified six fixes found four new problems, including that
 the module written to fix the worst one was unreachable from any command.
 
+**A blind double-marking stays blind only until you read the other marker's report.** A second marker
+was given a gold-set subset to mark independently; its completion report arrived mid-task and named
+specific document ids together with its verdicts, and nine of those documents had not yet been marked
+by the first marker. Agreement over them is no longer independent, and the contaminated κ is the
+*higher* number — which is how you would never notice. Finish your own marks before opening a blind
+counterpart's output, and when it has already happened, publish the uncontaminated subset separately
+with its denominator rather than the flattering pooled figure. `benchmarks/cfpb/PROTOCOL.md` §5a.
+
 **Do not edit the tree while a review is measuring it.** A round-5 reviewer started on a clean tree and
 finished with fifteen files modified underneath it; one of its sweeps came back one to two customers
 off on six of ten seeds and never reproduced. It caught this itself and re-ran everything against

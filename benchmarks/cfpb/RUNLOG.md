@@ -50,3 +50,36 @@ This log is append-only, so the entry above stands as written and is corrected h
 - all 150 complaint_ids distinct
 - `out/sample.jsonl` sha256 `dc5b1e49625e35272142da8bb2fdefbdbd59303836b06bbc9b8a74f205951c1d`
 - `out/draw_manifest.json` sha256 `af13e836e075df980c5616b727c32a68ec3634499f1c3f0abbeae08526370cbd`
+
+### 04_score — 2026-08-09
+- primary (sentence-per-turn, configured rates): **strict recall 0.0357 (4 / 112)**
+- any-type recall 0.0964 (8 / 83)
+- false-positive rate 0.0205 (10 / 488)
+- per type — churn_intent: recall 0.3077 (4 / 13), fp 0.0292 (4 / 137)
+- per type — financial_distress: recall 0.0 (0 / 21), fp 0.0465 (6 / 129)
+- per type — complaint_escalation: recall 0.0 (0 / 67), fp 0.0 (0 / 83)
+- per type — life_event: recall 0.0 (0 / 11), fp 0.0 (0 / 139)
+- per panel — A: recall 0.0244 (2 / 82) over 100 docs
+- per panel — B/churn_intent: recall 0.0833 (1 / 12) over 17 docs
+- per panel — B/complaint_escalation: recall 0.125 (1 / 8) over 16 docs
+- per panel — B/financial_distress: recall 0.0 (0 / 10) over 17 docs
+- sensitivity — sentence-raw: strict 0.0357 (4 / 112)
+- sensitivity — document-configured: strict 0.0357 (4 / 112)
+- sensitivity — document-raw: strict 0.0357 (4 / 112)
+- cues that never fired on real prose: **24 of 26** — c-move, c-switch, c-shop, c-exit-fee, c-dormant, c-notice, f-cant-pay, f-job, f-hours, f-tight, f-credit, f-late, f-date, f-bounce, f-juggle, f-payday, e-nth, e-callback, e-before, e-ref, l-bereave, l-separate, l-move, l-statpay
+- `out/results.json` sha256 `4e47be33d367b6ac502436d6db77457db95fc1c5e661349501635288039f2985`
+
+### correction to the 05_score entry above — 2026-08-09
+
+Append-only, so the entry stands and is corrected here.
+
+- It is headed `04_score` because the script still carried its pre-renumber label. The run itself is
+  `steps/05_score.py`; the label is now fixed.
+- **Strict recall is identical (4 / 112) across all four run variants, and that is a coincidence of
+  small numbers, not a bug.** The variants genuinely differ: false positives are 10, 5, 11 and 5 for
+  sentence-configured, sentence-raw, document-configured and document-raw. Every true positive comes
+  from one cue (`c-close`), which survives the simulated miss-rate draw in both configured runs, so
+  the recall numerator does not move while the FP numerator does.
+- Most false positives in the *configured* runs are `:false-fire` entries — noise injected by
+  `offline_false_fire_rate=0.08`, not cue matches on real text. Against real prose the genuine cue
+  firings are only `c-close` (6), `c-rival` (1-2) and `c-move` (0-1).

@@ -158,6 +158,17 @@ def cmd_agree(argv: list[str]) -> None:
     a = {str(r["complaint_id"]): r["marks"] for r in load_marks(Path(argv[0]))}
     b = {str(r["complaint_id"]): r["marks"] for r in load_marks(Path(argv[1]))}
     shared = sorted(set(a) & set(b))
+    # --restrict narrows the comparison to a named set of documents. It exists so the
+    # UNCONTAMINATED subset can be reported by command rather than by assertion: the first
+    # marker read the second marker's summary partway through marking, so agreement over
+    # documents marked after that point is not independent. See PROTOCOL.md section 5a.
+    if "--restrict" in argv:
+        keep = {x.strip() for x in argv[argv.index("--restrict") + 1].split(",") if x.strip()}
+        missing = keep - set(shared)
+        if missing:
+            raise SystemExit(f"--restrict names documents not double-marked: {sorted(missing)}")
+        shared = [c for c in shared if c in keep]
+        print(f"restricted to {len(shared)} of {len(set(a) & set(b))} double-marked documents")
     if not shared:
         raise SystemExit("the two mark sets share no documents")
 

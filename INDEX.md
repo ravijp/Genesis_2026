@@ -77,7 +77,10 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 - `steps/04_draw.py` — seeded, exactly uniform draw of Panel A and Panel B from the local frame `[stable]`
 - `steps/05_score.py` — the unmodified extractor against the gold marks; offline, no keys `[stable]`
 - `steps/mark.py` — the marking tool: shows documents with panel/stratum withheld, validates a mark set (every positive mark's span must appear verbatim in its narrative), picks the second-marker subset from the seed, and reports Cohen's kappa `[stable]`
-- `out/` — committed: frame counts, the drawn sample, the gold marks, the results `[generated]`
+- `out/frame.json` · `frame_local.json` — frame counts from the search API and from the bulk archive; they agree to the record `[generated]`
+- `out/sample.jsonl` · `draw_manifest.json` — the 150 drawn narratives and the seed, indices and ids behind the draw `[generated]`
+- `out/gold.jsonl` · `gold_second.jsonl` — the hand marks (150) and the independent second marking (30) `[stable]`
+- `out/results.json` · `source_archive.json` — the scored result, and the SHA-256 of the 1.31 GB source archive `[generated]`
 
 ## tools/jira/
 

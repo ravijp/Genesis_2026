@@ -212,7 +212,7 @@ def main() -> None:
         + (", ".join(never_fired) if never_fired else "none")
     )
     lines.append(f"`out/results.json` sha256 `{digest}`")
-    log("04_score", run_date, lines)
+    log("05_score", run_date, lines)
 
 
 if __name__ == "__main__":
