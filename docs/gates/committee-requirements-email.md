@@ -1,83 +1,81 @@
-# DRAFT — tooling & access requirements
+# Access request emails — ready to send
 
-**Send:** immediately after the 2026-08-10 check-in call, so it lands with the CodeCommit conversation
-already had rather than ahead of it.
+Two separate emails. Short and direct on purpose: these are requests, not status reports.
+
+---
+
+## 1 · Model APIs and infrastructure
 
 **To:** genesis@zenon.ai
 **Cc:** Ishant Gupta; Namit Mittal; Bharti Sahai; Suyash Baderiya; Novnit Kashyap; Riya Gupta
-**Subject:** Agentic Trio — tooling & access requirements (overdue, with apologies)
-
----
+**Subject:** Agentic Trio — tooling and access requirements
 
 Hi Genesis Committee,
 
-Apologies — this is late. You asked for tooling requirements by 24 July and chased on 29 July, and we
-didn't come back to you. That one is on us. Here is the list, following on from this morning's check-in.
+Our tooling and access requirements for Track A (*Ear on Every Call*):
 
-**Team:** Agentic Trio (Ishant Gupta, Namit Mittal, Ravi Prakash)
-**Entry:** Track A — *Ear on Every Call*
+**Model APIs**
 
-## 1. Model API access
+1. **Claude API key** — primary model, for signal extraction and the investigator agent.
+2. **OpenAI API key** — the comparison model. Our brief commits to running a second model through the
+   same eval harness, which needs two providers.
+3. **Direct vendor APIs or AWS Bedrock?** Please confirm which route you intend, so we build against
+   the right one.
+4. **The per-team budget limit, as a number** — we batch-process a conversation corpus and want to size
+   our eval runs to the budget.
 
-| # | What | Why |
-|---|---|---|
-| 1 | **Claude API key**, with the budget limit you apply | Primary model — signal extraction and the investigator agent |
-| 2 | **OpenAI API key** (or a second provider of your choosing), with budget limit | Our submitted brief commits to running a comparison model through the identical eval harness "so the numbers are honest". We can't deliver that on one provider |
-| 3 | Confirmation: **direct vendor APIs, or AWS Bedrock?** | The rest of the stack is AWS. If Bedrock is the intended route we'd rather build against it now than migrate in September |
-| 4 | The **per-team budget limit**, as a number | We batch-process a synthetic corpus, so we can size eval runs to the budget rather than discover the ceiling mid-sprint |
+**AWS**
 
-To be transparent about where we are: rather than stay blocked, we bridged model access on a **personal
-OpenRouter account** so the agent layer could be built this week. That is fine for development, but
-competition rule 1 says the IP is Zenon's and rule 2 says Zenon provides the keys — so we'd like the
-final submission running on Zenon-provided credentials. Our provider layer is model-agnostic, so
-switching is a new provider class behind the same interface — an afternoon, not a migration.
+5. **S3 bucket** — generated corpora, model-response caches, and per-run eval artifacts.
+6. **Bedrock access**, if that is the model route (see 3).
 
-## 2. AWS services
+Nothing else. The runtime is a nightly batch job with no always-on infrastructure; if that changes we
+will come back.
 
-| # | What | Why |
-|---|---|---|
-| 5 | **AWS CodeCommit** repository URL + IAM credentials (or the SSO path) | Per this morning's discussion. Detail below |
-| 6 | **S3** bucket | Generated synthetic corpora, model-response caches, per-run eval artifacts |
-| 7 | **Bedrock**, if that's the model route (see #3) | — |
-
-Nothing else. The runtime is deliberately a nightly batch job with no always-on infrastructure — if
-that changes we'll come back rather than sit on it.
-
-**On CodeCommit specifically.** *"Functional prototype: code in AWS CodeCommit"* is a named required
-deliverable and commit/PR discipline is scored in the operating model, so we'd like to resolve this
-well before the finals. When the repository is available, could you send the URL, credentials, and
-whether you want us on `git-remote-codecommit` or HTTPS Git credentials — whichever the other teams are
-using. Our full commit history is intact and we'll push it as history rather than one squashed commit,
-so the "meaningful commits" evidence survives the move.
-
-## 3. JIRA — resolved, no action needed
-
-We have board access and have loaded the backlog under project **AT (Agentic Trio)**: 8 epics and 37
-tasks covering the dataset, the reading step, the customer memory, the investigator, the review queue,
-measurement, the demo, and engineering practice. Nothing is marked resolved yet — none of it has been
-reviewed by a second person. Please flag if you'd rather we filed somewhere else.
-
-## 4. Where we are
-
-We aren't blocked on any of the above. The pipeline runs end to end with **no API keys at all** on a
-deterministic offline provider — corpus generation, the per-customer signal ledger, the evaluation
-harness, and the demo scenario are all working and reproduce from a single command on a fresh machine.
-Model access improves extraction quality and unlocks the two-model comparison; it doesn't gate the
-project.
-
-Thanks, and again, sorry for the delay on our side.
-
+Thanks,
 Ravi
-*on behalf of Agentic Trio*
 
 ---
 
-## Notes for us — not part of the email
+## 2 · CodeCommit credentials and Jira delete permission
 
-- **Don't soften the apology.** They chased twice. Owning it in one line and moving on reads better
-  than an explanation.
-- **The comparison-model ask (#2) is a stated deliverable**, not a nice-to-have — the brief promises it
-  in writing. Dropping it quietly means shipping less than we said we would.
-- **CodeCommit is the real exposure, not the keys.** Keys we routed around in an evening. A named
-  required deliverable we cannot satisfy is the thing that costs marks, and the AI judge scores repo
-  hygiene directly.
+**Send as a reply to:** Ashwani Kaushik (Zenon Helpdesk), thread *"Team Agentic Trio – GenAI Competition
+| Jira Project & Git Repository"*, 2026-07-10
+**Cc:** Abhishek Pradhan; Ishant Gupta; Namit Mittal
+**Subject:** RE: Team Agentic Trio – GenAI Competition | Jira Project & Git Repository
+
+Hi Ashwani,
+
+Two access requests, both on the project and repository below.
+
+**1. AWS CodeCommit credentials.** We have the repository URL but no credentials, so we cannot push.
+Could you provide:
+
+- HTTPS Git credentials for CodeCommit, or an IAM user/role we can configure with
+  `git-remote-codecommit`
+- Whichever of the two the other teams are using, so we match
+
+Repository: `https://git-codecommit.us-east-1.amazonaws.com/v1/repos/agentic-trio`
+
+**2. Delete permission on Jira project AT.** We can create, edit and transition issues but not delete
+them. We have some duplicate issues to clear out and cannot remove them. Could you grant delete
+permission to Ishant Gupta, Namit Mittal and me?
+
+While you are in the project settings — could you also **enable Sprints** on board 209? It is currently
+a Kanban-style board that does not support sprints, and our milestones are Sprint 1/2/3.
+
+Thanks,
+Ravi
+
+---
+
+## Notes for us — not part of either email
+
+- **CodeCommit has existed since 2026-07-10**, provisioned by Zenon Helpdesk in the same email that gave
+  us the Jira board. Only credentials are missing. Our full commit history is intact and pushes as
+  history, not as one squashed commit.
+- **The comparison model is a stated deliverable**, not a nice-to-have — the submitted brief promises a
+  second model through the same harness in writing.
+- Model access is currently bridged on a personal OpenRouter account. That is fine for development and
+  wrong for the final submission: competition rule 1 puts the IP with Zenon and rule 2 says Zenon
+  supplies the keys. Switching providers is a new provider class behind the existing interface.

@@ -59,6 +59,20 @@ High), chased again **2026-07-29 14:08** because several teams had not replied:
 **Status as of 2026-08-09:** no model API keys available on the build machine. This is the entry's
 top-ranked risk (BUILD-PLAN §8, R1) and the primary roadblock to raise at the 2026-08-10 check-in.
 
+## Jira and CodeCommit — provisioned 2026-07-10
+
+From Ashwani Kaushik (Manager - IT, Zenon Helpdesk) to Ishant Gupta, Namit Mittal and Ravi Prakash,
+cc Abhishek Pradhan, **2026-07-10 15:28**, subject *"Team Agentic Trio – GenAI Competition | Jira
+Project & Git Repository"*:
+
+- **Jira project:** `https://zenonai.atlassian.net/jira/software/projects/AT/boards/209`
+- **Git repository:** `https://git-codecommit.us-east-1.amazonaws.com/v1/repos/agentic-trio`
+
+Both were created and access "provided to the team". **Credentials for CodeCommit were not included**,
+and no push has been made to it. Delete permission on the Jira project was also not granted — the team
+can create, edit and transition issues but not delete them, and board 209 does not support sprints.
+Both requested in `docs/gates/committee-requirements-email.md` §2.
+
 ## Judging
 
 Official weights: Zenon impact 25 · technical depth 25 · feasibility & production readiness 25 ·
