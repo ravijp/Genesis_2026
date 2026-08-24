@@ -1,0 +1,32 @@
+# AWS config template — copy to ~/.aws/config (NOT into this repo).
+#
+#   Windows:  %USERPROFILE%\.aws\config
+#
+# Nothing secret belongs in this file. It names *where* to get credentials, never the
+# credentials themselves — which is the whole point: there is no secret to leak and
+# nothing to recreate when a token expires.
+#
+# Fill the two <PLACEHOLDER> values before use. See docs/ops/aws-credentials.md.
+
+[sso-session zenon]
+# NOT https://identitycenter.amazonaws.com/ssoins-... — that is the instance console URL and
+# `aws sso login` rejects it. Get the real one from IAM Identity Center -> Dashboard ->
+# Settings summary -> "AWS access portal URL". Looks like https://d-xxxxxxxxxx.awsapps.com/start
+sso_start_url = <SSO_START_URL>
+# The region the Identity Center INSTANCE lives in — independent of the build region below,
+# and shown next to the start URL on that same console page. Reported as us-east-1; if login
+# fails with the start URL correct, this is the next thing to check (the console runs on
+# ap-southeast-2, so the instance may be there too).
+sso_region = us-east-1
+sso_registration_scopes = sso:account:access
+
+[profile genesis]
+sso_session = zenon
+sso_account_id = 859430413223
+sso_role_name = agentic-trio
+# The BUILD region — where Bedrock and every resource live. Deliberately us-east-1 and NOT
+# ap-southeast-2, even though the console opens on Sydney: Appendix B's prices, the model ARNs
+# and the `us.` inference profiles in infrastructure.md §A.1 are all us-east-1. Switching the
+# console region picker is cosmetic; this line is what the CLI and boto3 actually use.
+region = us-east-1
+output = json

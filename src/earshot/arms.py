@@ -1,4 +1,4 @@
-"""The six comparison arms, and what each one is for.
+"""The eight comparison arms, and what each one is for.
 
   1. stateless-max    -- each conversation scored alone; customer score = running max. The
                          incumbent shape: score it and archive it. Stated honestly, ANY
@@ -12,19 +12,27 @@
                          built to have no loud call, so beating it would show only that one
                          number is worse than two. Whatever the ledger claims over this arm is
                          what accumulation actually buys.
-  3. dumb-ledger      -- unweighted count of signals. No decay, no corroboration, no channel
+  3. stateless-top3   -- as top2, over the three loudest calls. Bounds how much of top2's
+                         strength is just "more than one number" rather than the specific two.
+  4. windowN-top2     -- only the last N conversations exist, and only the two loudest of those
+                         count. Strictly less state than a ledger and the HARDEST opponent it
+                         has: at 30 seeds it holds the ledger to a tie on concentrated arcs and
+                         beats it on the pre-registered thin-evidence stratum. Shipped rather
+                         than described, because an opponent you only describe is one you have
+                         not really run.
+  5. dumb-ledger      -- unweighted count of signals. No decay, no corroboration, no channel
                          weighting, no confidence weighting. The floor the full ledger has to
                          clear: if it ties the full ledger, every mechanism in memory.py is
                          decoration.
-  4. long-context-N   -- the last N conversations pooled and read together, with no
+  6. long-context-N   -- the last N conversations pooled and read together, with no
                          accumulation math. Approximates dropping N transcripts into one long
                          prompt, which is the obvious alternative to a ledger. It is an
                          APPROXIMATION: a real long-context run re-reads raw text, whereas
                          this pools the same extracted signals without decay or corroboration.
                          That flatters the ledger slightly less than a real long-context run
                          would on short histories, and slightly more on long ones.
-  5. full-ledger      -- decay + corroboration + cross-channel + escalation + retro re-scoring.
-  6. hybrid           -- stateless-max OR full-ledger, whichever fires first, combined on rank.
+  7. full-ledger      -- decay + corroboration + cross-channel + escalation + retro re-scoring.
+  8. hybrid           -- stateless-max OR full-ledger, whichever fires first, combined on rank.
                          A memory added on top of the per-call detection a bank already runs,
                          rather than a replacement for it.
 

@@ -1,6 +1,18 @@
 """Apply the house Jira standard (docs/ops/jira-conventions.md) to every issue on the board.
 
-Updates existing issues only — never creates. Run with `uv run python tools/jira/apply_standards.py`.
+ALREADY APPLIED, 2026-08-09 (commit c3d774b). **Do not re-run it as-is.** It is a one-shot
+migration that presents as a maintained tool, which is the trap this note exists to close:
+
+- Not idempotent. `comment()` and `link()` are POSTs, so a second run duplicates a 56-line
+  comment on AT-38 and duplicates every blocking link. Jira deletion returns 403 for us
+  (jira-conventions.md), so the duplicates would be permanent.
+- It would silently revert work. Line ~525 transitions AT-61 to In Progress; commit 6ab0d06
+  deliberately moved it back to To Do because the reviewer queue was never started.
+- Its due dates (2026-08-13, 2026-08-17) are in the past.
+- The 45 issue keys AT-38..AT-82 are hardcoded, with no JQL and no --dry-run.
+
+To change the board now, write a new scoped script rather than re-running this one. Kept
+because it is the only record of how the board's house style was actually applied.
 """
 
 from __future__ import annotations

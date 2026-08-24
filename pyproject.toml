@@ -12,10 +12,22 @@ dependencies = [
 [project.scripts]
 earshot = "earshot.cli:main"
 
+[project.optional-dependencies]
+# Runtime deps of the DEPLOYED artifact only. Kept out of [project.dependencies] so a laptop
+# `uv sync` and the offline test suite stay boto3-free — "everything runs with zero API keys"
+# has to remain true of a fresh clone.
+aws = ["boto3>=1.35"]
+
 [dependency-groups]
 dev = [
     "pytest>=8.0",
     "ruff>=0.8",
+]
+# Build-time only. PEP 735 groups are never part of a built distribution, so aws-cdk-lib
+# (tens of MB) cannot reach the Lambda image however the Dockerfile is written.
+infra = [
+    "aws-cdk-lib>=2.150",
+    "constructs>=10.3",
 ]
 
 [build-system]
@@ -29,9 +41,12 @@ packages = ["src/earshot"]
 testpaths = ["tests"]
 addopts = "-q --strict-markers"
 markers = ["live: hits a real model over the network; deselected by default"]
+# testpaths already keeps bare `uv run pytest` at the product suite. This is for the day
+# someone types `uv run pytest .` and would otherwise collect CDK and node trees.
+norecursedirs = ["infra", "ui", "cdk.out", "node_modules", "artifacts", "benchmarks", ".venv"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py313"
-src = ["src", "tests"]
-exclude = [".venv"]
+src = ["src", "tests", "infra"]
+exclude = [".venv", "cdk.out", "ui"]

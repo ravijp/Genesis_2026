@@ -243,20 +243,22 @@ Keys are never committed and never logged. See `.env.example`.
 
 ## Repository
 
-| Path | What |
-|---|---|
-| `src/earshot/corpus.py`, `memory.py` | The deterministic core: dataset generation, the signal ledger, the re-scoring maths |
-| `src/earshot/extract.py`, `extract_model.py` | The two readers behind one protocol: the keyless regex lexicon, and the model |
-| `src/earshot/arms.py`, `evals.py`, `sweep.py` | The six comparison arms, the metrics, and the multi-seed harness |
-| `src/earshot/core/` | Synthetic account and transaction state behind the agent's tools |
-| `src/earshot/agent/` | The investigator: loop, tools, decision schemas, prompts |
-| `src/earshot/llm/` | Provider abstraction, response cache, cost + latency capture |
-| `prompts/` | Prompts as versioned files, so a prompt change is a reviewable diff |
-| `tests/` | Including `test_separation.py` (no module on the decision path can *import* the answer key) and `test_no_answer_key_leak.py` (nor recover it statistically from what the tools return) |
-| `docs/architecture/` | [architecture.md](docs/architecture/architecture.md) · [build-plan.md](docs/architecture/build-plan.md) |
-| `docs/gates/` | Sprint gate briefs for the Genesis Committee |
-| `sources/` | The submitted brief and committee correspondence — `[source]`, do not edit |
-| `artifacts/` | Run manifests and the committed response cache |
+**[docs/INDEX.md](docs/INDEX.md) is the file map** — one line per file, kept current in the same commit
+as any change. This section used to repeat it and had already drifted; a map in two places is a map
+that disagrees with itself.
+
+The four things worth knowing before you read any of it:
+
+- **`src/earshot/`** — the product. `corpus.py` and `memory.py` are the deterministic core: generation,
+  the signal ledger, the re-scoring maths. No model touches them.
+- **`src/earshot/agent/`** — the investigator: bounded loop, five pure tools, decision schemas with
+  mandatory evidence. This is the part that makes it Track A rather than analytics.
+- **`tests/`** — two guards worth naming. `test_separation.py` proves no module on the decision path can
+  *import* the answer key, and `test_no_answer_key_leak.py` proves it cannot be recovered statistically
+  from what the tools return. Both discover their own surface by glob, so new files are covered without
+  editing the test.
+- **`prompts/`** — versioned files, so a prompt change is a reviewable diff. Their sha goes into the
+  response-cache key, which is what makes "this recorded answer came from this prompt" checkable.
 
 ---
 

@@ -2,14 +2,85 @@
 
 Why things are the way they are, and what not to re-open. One entry per decision, newest first.
 
-**Format:** date · what was decided · why · what we rejected. Status is `ACCEPTED`, or `SUPERSEDED BY
-<id>` — superseded entries are cut to a single line rather than deleted, so the record stays honest
-without the file growing. If an entry no longer affects any current choice, delete it; git remembers.
+**This file holds only decisions that still bind.** It is not a history — git is the history.
+
+**Format:** date · what was decided · why · what we rejected. Keep an entry under ~10 lines; if it needs
+more, the detail belongs in the document it governs and this entry links to it.
+
+**When a decision is replaced — fold, then delete.**
+
+1. Copy the surviving reasoning into the new entry, above all the **rejected alternatives**. A stale
+   decision is worthless; the rejection that killed an alternative stays true forever and is what stops
+   the idea coming back.
+2. Delete the old entry outright. No stubs, no `SUPERSEDED BY` tombstones — they were costing more to
+   carry than they returned.
+3. Re-word any sentence that referenced the deleted ID so it stands alone. A dangling `D-0xx` is worse
+   than no reference.
+4. Say what you removed in the commit message. `git log --grep=D-002` then finds the full text, which is
+   why deleting is safe rather than lossy.
+
+Numbers are never reused. A gap in the sequence means an entry was folded away — that is expected.
 
 **This file exists so a fresh session does not re-litigate settled ground.** If you are about to argue
 for something listed under "rejected", read the reason first.
 
 ---
+
+### D-023 · 2026-08-25 · All prose lives under `docs/`; the repo root is code and config only `ACCEPTED`
+`sources/` → `docs/sources/` and `INDEX.md` → `docs/INDEX.md`. The root now holds two `.md` files, both
+of which must be there: `README.md` (the landing page CodeCommit renders) and `CLAUDE.md` (Claude Code
+auto-loads it **from the root** — in `docs/` it silently stops being read and every rule in it stops
+applying). Everything else at root is config.
+
+**This reverses the earlier decision to keep `sources/` at the top level**, which existed to make the
+edit boundary structural rather than conventional. The boundary itself is unchanged and now lives in
+CLAUDE.md: everything under `docs/` is ours to rewrite, `docs/sources/` is the committee contract and is
+not. That is a convention where it used to be a folder layout — a real, small loss, accepted for a root
+that reads as a code repository. **Rejected: keeping the split** — one prose tree beats a boundary
+nobody violated in eight months.
+
+**Rejected: moving `prompts/`.** It looks like documentation and is not. `prompt_files.py:31-45` loads
+it at runtime and §3.2 bakes it into the container image rather than fetching it, deliberately. Moving
+it would break the loader. (It would *not* invalidate the response cache — `ResponseCache.key` hashes
+prompt text, not paths — so the Appendix B.5 re-payment risk does not apply here.) **Rejected: moving
+`benchmarks/*/PROTOCOL.md`** away from the `steps/*.py` that implement them; a pre-registered protocol
+belongs beside its code.
+
+### D-022 · 2026-08-24 · Credentials are SSO-minted only; the OpenAI key is dropped and both arms go to Bedrock `ACCEPTED`
+Both reader arms move to Bedrock, so **no static secret exists on a developer machine or in the
+deployment**. This deletes Appendix A row 4 (the OpenAI key) and the one genuine regression §3.4
+admitted against Bedrock's "no API key exists to leak" property — the SSM SecureString parameter §3.6
+called "the only secret" is no longer needed either. Setup and the exact commands are in
+`docs/ops/aws-infrastructure.md`, which is also the one place live resource coordinates are recorded.
+
+Three findings changed the plan as written, all verified 2026-08-24:
+- **The start URL we were given is not a start URL.** `https://identitycenter.amazonaws.com/ssoins-…`
+  is the Identity Center *instance console* URL; `aws sso login` needs `…awsapps.com/start` or
+  `https://ssoins-….portal.<region>.app.aws`. Recorded because it would have read as a broken account.
+- **AWS CLI v2 needs an administrator on this machine, and there is no way around it.** `awscli` on
+  PyPI is v1-only and v1 has no `sso login`; `AWSCLIV2.zip` 404s; the MSI hardcodes
+  `C:\Program Files\…` and fails per-user with 1603; winget is absent. This is the only remaining
+  blocker and it is a one-time admin action.
+- **Bedrock's per-model console opt-in was retired 2025-10**, narrowing §A.1's warning: serverless
+  models are region-wide on IAM alone, but Anthropic models still need a one-time EUA acceptance.
+
+**The build region stays `us-east-1`, though the console opens on `ap-southeast-2` (Sydney).** Account
+(`859430413223`) and permission set (`agentic-trio`) confirmed 2026-08-24; the region **confirmed by
+evidence 2026-08-25** — the CodeCommit repo is at `git-codecommit.us-east-1.amazonaws.com`, so the
+source of record already lives there. The two region settings are independent and the console's is
+cosmetic. **Rejected: deploying to Sydney to match it** — every model ARN
+in Appendix A, the `us.` inference-profile prefixes in §A.1, and **every price in Appendix B** are
+us-east-1; moving would invalidate all three and require re-verifying Bedrock model availability, for no
+stated residency requirement. Revisit only if one appears.
+
+**Rejected: the static `AWS_ACCESS_KEY_ID`/`AWS_SESSION_TOKEN` trio.** It expires — the exact
+recreation problem SSO removes — and env vars *outrank* the SSO profile in both CLI and boto3
+precedence, so leaving them set silently disables SSO and fails later as a confusing `ExpiredToken`.
+**Rejected: CodeCommit HTTPS Git credentials.** A long-lived static secret, and AWS documents it as
+unusable with federated/SSO access at all; `git-remote-codecommit` (verified to build under uv) signs
+with the SSO session and stores nothing. **Not rejected — retained:** `resolve_api_key()` and the
+OpenRouter provider stay. §3.4 said they would "stop existing"; they are load-bearing in the test
+suite, README and the CFPB protocol, and a Bedrock provider is additive per A5/§2.1.
 
 ### D-021 · 2026-08-10 · The model reader is built and instrumented, and stops at the number `ACCEPTED`
 `Extractor` in `extract.py` had exactly one implementation and the docstring had promised a second
@@ -42,9 +113,10 @@ Two things came out after the number that the pre-registration could not have kn
 1. **It named the wrong file.** §6 assumed the only fix for "the reader fails on real language" was to
    make the *corpus* more real. AT-43's own per-cue table says otherwise: 24 of 26 cues in
    `extract_lexicon.py` never fired, so the defect is in the **reader's cue coverage**, not in the
-   realism of the planted prose. D-019 quietly retargeted the work to the extractor without flagging
-   the substitution; that substitution is correct on the evidence but it was a judgement call, and
-   calling it "the pre-registered consequence" in a commit message was wrong.
+   realism of the planted prose. An earlier decision the same week quietly retargeted the work from the
+   corpus to the extractor without flagging the substitution; that substitution is correct on the
+   evidence but it was a judgement call, and calling it "the pre-registered consequence" in a commit
+   message was wrong.
 2. **The blocking experiment does not need real language at all, only more of it.** Fragments are
    planted *without replacement* (`corpus.py`, `used` set), so the scarcest pool — 4 fragments — caps
    how many signals any arc can carry. That, not realism, is why the corpus cannot pose the question
@@ -60,12 +132,6 @@ carries depth (25) and originality (15), and the result publishes either way.
 seeing the data; it does not oblige you to do work its own evidence has since shown to be aimed at the
 wrong file. **Also rejected:** doing this silently — the override is the kind of thing that looks like
 integrity drift later, so it is dated, reasoned and attributable here.
-
-### D-019 · 2026-08-09 · The extractor is regrounded in real phrasing `SUPERSEDED BY D-020`
-The measurement stands and is the reason any of this is known — 0.0357 strict recall (4 / 112) on real
-CFPB narratives against 0.681 (496 / 728) on ours, written up in `benchmarks/cfpb/`. What D-020 overturns
-is only its scheduling conclusion, and its claim that the ordering followed automatically from the
-pre-registration.
 
 ### D-018 · 2026-08-09 · A static guard is the first net; the behavioural band is a partial backstop `ACCEPTED`
 **Amended after round 6, which showed the original wording overclaimed.** The band pins the
@@ -179,10 +245,6 @@ the demo. Consequence: offline numbers are always labelled and never headlined.
 `ear` was an unexplained abbreviation. `src/` forces tests to import the *installed* package, which is
 what makes "works on a fresh machine" provable rather than asserted. **Rejected:** keeping the build
 nested under a numbered folder with a `PYTHONPATH` hack.
-
-### D-002 · 2026-08-09 · `sources/` stays out of `docs/` `ACCEPTED`
-`docs/` is ours to edit; `sources/` holds the committee contract and competition rules and is not. That
-boundary is worth a top-level folder.
 
 ### D-001 · 2026-07-24 · The entry is *Ear on Every Call*, submitted and locked `ACCEPTED`
 All prior ideation (`02_ideas*`, `03_selection`, the C-numbered shortlists) is **superseded** and lives

@@ -14,21 +14,29 @@ build promoted to a `src/` layout. Nothing is lost — all of it is on `main`:
 
 ## Reading order for a fresh session
 
-1. `docs/ops/state-of-play.md` — **start here.** Current state, in one screen
-2. `docs/ops/decisions.md` — what is settled and what was rejected
-3. `docs/ops/working-agreements.md` — the disciplines, each bought with a mistake
-4. `README.md` — what this is, and the current numbers
-5. `docs/architecture/architecture.md` — the shape of the system, with diagrams
+1. `ops/state-of-play.md` — **start here.** Current state, in one screen
+2. `ops/decisions.md` — what is settled and what was rejected
+3. `ops/working-agreements.md` — the disciplines, each bought with a mistake
+4. `../README.md` — what this is, and the current numbers
+5. `architecture/architecture.md` — the shape of the system, with diagrams
+
+Paths below are relative to this file's home, `docs/`, except the Root section.
 
 ## Root
 
+Code and config only, plus the two `.md` files that must live here (D-023).
+
 - `README.md` — front door: quick start, the numbers with their denominators, model access, repo map `[stable]`
-- `CLAUDE.md` — LLM session instructions and the load-bearing build rules `[stable]`
-- `INDEX.md` — this map `[stable]`
+- `CLAUDE.md` — LLM session instructions and the load-bearing build rules. **Stays at root**: Claude Code auto-loads it from the project root, and in `docs/` it silently stops being read `[stable]`
 - `pyproject.toml` / `uv.lock` / `.python-version` — uv-managed Python 3.13, hatchling build, `earshot` installed editable, console script `earshot` `[stable]`
 - `.env.example` — every `EARSHOT_*` variable with dummy values; the real `.env` is gitignored `[stable]`
+- `.aws.config.example` — template for `~/.aws/config`: the `[sso-session]` + `[profile]` form, with placeholders for the start URL, account and role. Names where credentials come from, never a credential `[stable]`
 - `.gitignore` — ignores regenerable output and secrets; deliberately KEEPS `artifacts/cache/` and `artifacts/runs/pinned/` tracked so a judge can replay without keys `[stable]`
-- `.markdownlint.json` `[stable]`
+- `.markdownlint.json` — config for a linter nothing in this repo invokes; presumably an editor extension reads it `[stable]`
+- `.claude/settings.json` — **enforces the edit-approval tiers** that CLAUDE.md states in prose: `docs/sources/` is denied outright, and `decisions.md`, `working-agreements.md`, `CLAUDE.md`, `docs/architecture/`, the frozen benchmark protocols and the committed artifacts all prompt before an edit. Read-only commands are pre-allowed so routine work does not prompt. Committed deliberately — it is team policy, not personal config; `settings.local.json` is the per-developer file and is gitignored `[stable]`
+- `Dockerfile` — one image for all three Lambdas and the sweep task; which handler runs is a CMD override, never a separate build. Carries `prompts/` and pins `EARSHOT_PROMPTS`/`EARSHOT_ARTIFACTS` rather than relying on path fallbacks that break in a wheel install `[skeleton]`
+- `.dockerignore` — keeps `prompts/`, `src/`, `uv.lock` in; everything regenerable or judge-facing out `[stable]`
+- `buildspec.yml` — CodeBuild: ruff → pytest → image → ECR → `cdk deploy`. Lint and tests run *before* the image build so a broken commit fails fast. Deploys the immutable digest, never the tag `[skeleton]`
 
 ## src/earshot/ — the product
 
@@ -43,22 +51,30 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `extract_model.py` — **the model reader**: the second implementation of the `Extractor` protocol. One conversation per call, no customer id in the prompt, verbatim quotes or the signal is dropped, cost and latency per call. Never yet run against a real model `[stable]`
 - `prompt_files.py` — versioned prompt loading and hashing, shared by the investigator and the model reader `[stable]`
 - `memory.py` — **the heart**: append-only ledger + pure-code re-scorer. `score()` returns copies and never mutates the ledger `[stable]`
-- `arms.py` — six comparison arms through one code path + per-mechanism ablations. `stateless-top2` is the strongest fair per-call baseline and currently matches the ledger `[stable]`
+- `arms.py` — **eight** comparison arms through one code path + per-mechanism ablations. `stateless-top2` and `window3-top2` are the two that currently beat the ledger on its own pre-registered stratum `[stable]`
 - `evals.py` — equal-alert-budget comparison by top-K ranking, per-stratum breakdown, extraction fidelity, corpus diagnostics `[stable]`
 - `sweep.py` — **multi-seed evaluation**: paired seed-by-seed comparison on any metric, exact sign test, and the integers behind every rate `[stable]`
 - `cli.py` — the four commands, run manifests, artifacts `[stable]`
-- `__init__.py` (package root, and in `agent/`, `core/`, `llm/`) — package markers; all are covered by the separation guard `[stable]`
+- `__init__.py` (package root, and in `agent/`, `aws/`, `core/`, `llm/`) — package markers, **all on the guarded surface because an `__init__.py` can re-export anything** (`test_separation.py:75-84`). Their re-export bodies are largely unused — every consumer imports from the submodule — but **deleting a file drops the guard from 20 modules to 19 and the suite from 75 tests to 72 with everything still green.** Empty the body if you must; never remove the file `[stable]`
 - `core/accounts.py` — synthetic account state and transactions behind the agent's tools. Derives from `(customer_id, financial_state, seed, as_of_day)` and **never** from a truth object `[stable]`
 - `agent/schemas.py` · `tools.py` · `investigator.py` · `prompts.py` — the investigator: strict decision schema with mandatory evidence, five pure tools, a bounded loop, versioned prompt loading `[stable]`
 - `llm/base.py` · `openrouter.py` · `offline.py` · `cache.py` — provider abstraction, cost and latency capture, content-addressed response cache with record/replay. `LazyOpenRouterProvider` builds its client on first use so replay needs no key `[stable]`
+- `aws/__init__.py` — AWS entrypoints. Inside the package **so the separation guard covers the deployed decision path**: adding it took the guard 72 → 75 tests with no edit to the test. Handlers (`ingest`, `investigate`, `api`) and DynamoDB `stores.py` land here `[skeleton]`
+
+## Not created yet — decided, and where they go
+
+**Neither directory exists.** Empty directories are invisible to git, so creating them before there is
+content would put a lie in this file. The placement is settled; the first real file creates the folder.
+
+- `infra/` — AWS CDK in Python, two stages (`dev`, `demo`), one account. Named for its role, not its tool: §3.5 records Terraform as the rejected alternative, so the tool is revocable and must not become the directory's name. Wired as the `[dependency-groups] infra` group **already in `pyproject.toml`**, never a second project — a separate venv could not `import earshot` without the PYTHONPATH hack CLAUDE.md forbids
+- `ui/` — the three-screen reviewer SPA. Already excluded from ruff and pytest, with `node_modules/` and `dist/` gitignored — so CodeBuild must build it rather than reading a committed `dist/`
 
 ## tests/
 
 - `test_separation.py` — **import guard**: nothing on the decision path may import the generator, its lexicon, or a ground-truth type. Discovers its own surface by glob `[stable]`
-- `test_no_answer_key_leak.py` — **data guard**: nothing may receive a value that *encodes* a ground-truth field. The one that would have caught the leak we actually had `[stable]`
+- `test_no_answer_key_leak.py` — **data guard**: nothing may receive a value that *encodes* a ground-truth field. The one that would have caught the leak we actually had. Discovers `AccountSnapshot`'s numeric fields rather than listing them — a hand-written list once named a field that did not exist and silently skipped `[stable]`
 - `test_memory.py` — ledger invariants: never-discard, accumulation, retro re-score, decay, determinism `[stable]`
 - `test_tools.py` — every agent tool, in-memory, no network `[stable]`
-- `test_no_answer_key_leak.py` — also discovers `AccountSnapshot`'s numeric fields rather than listing them; a hand-written list named a field that did not exist and silently skipped `[stable]`
 - `test_agent.py` — decision schema, bounded loop, the cost cap holding under a rising cost curve (and the documented spike case where it cannot), a crashing tool being contained `[stable]`
 - `test_sweep.py` — the multi-seed harness: sign test vs hand computation, pairing on seed, denominators present and identical across arms, equal alert budget, determinism, counted-not-reconstructed integers, artifact reproducibility `[stable]`
 - `test_cli.py` — the commands, and the demo's internal consistency: its narration may not contradict the claim it selected on, and its denominator must count customers `[stable]`
@@ -103,14 +119,17 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 
 ## docs/
 
+- `INDEX.md` — this map. Moved here from the root by D-023 `[stable]`
 - `ops/state-of-play.md` — **the boot file.** Where we are, what is in flight, what is blocked, the next three things. One screen, rewritten in place, never appended `[stable]`
 - `ops/decisions.md` — why things are the way they are and what was rejected, so a fresh session does not re-litigate settled ground `[stable]`
 - `ops/working-agreements.md` — **read before changing anything.** Evaluation discipline, the two-level answer-key guards, demo honesty, keeping docs in step with code, test discipline, bulk-operation discipline, delegation `[stable]`
 - `ops/jira-conventions.md` — how the AT board is written and updated `[stable]`
+- `ops/aws-infrastructure.md` — **the single record of live AWS fact**, as opposed to `architecture/infrastructure.md`'s design: account `859430413223`, permission set, region us-east-1 (confirmed by the CodeCommit host), `s3://agentic-trio`, the CodeCommit URL, and the granted-service list with what its two gaps (no Kinesis, one bucket not two) cost us. Then credentials: SSO-minted short-lived tokens only, no static secret anywhere, the two credentials NOT to use, and the interim static-key path while CLI v2 awaits an admin install `[stable]`
 - `architecture/architecture.md` — the shape of the system: three layers, data flow, agent loop, runtime, what is measured `[stable]`
 - `architecture/build-plan.md` — **v3.** What is left to build and what is still open: the agent layer, what is measured vs not, four open questions, the 08-24 scope, risks, and the deltas from the submitted brief `[stable]`
+- `architecture/infrastructure.md` — **AWS technical design.** §1 architecture (live + batch paths, data model, two-provider model layer, numbered assumptions `A1..A11` and open questions `Q1..Q5` written to be red-teamed) · §2 scope of build (work packages W1-W11, critical path, out of scope) · §3 service selection with a rejected alternative per choice · §4 failure modes · Appendix A provisioning table, one row per SKU, with the Bedrock per-model ARNs needing console opt-in · Appendix B cost model at build and 500k-conversation scale, plus the $200 budget `[stable]`
 - `gates/2026-08-10-sprint-1-checkin.md` — Sprint 1 check-in brief `[stable]`
-- `gates/committee-requirements-email.md` — tooling/access email, to send after the 2026-08-10 call `[stable]`
+- `gates/committee-requirements-email.md` — the tooling/access emails, **sent and fully answered**: Bedrock was the route, `s3://agentic-trio` and the CodeCommit repo exist. Two of its asks are now things we actively refuse — an OpenAI key (D-022) and HTTPS Git credentials (unusable with SSO). **Kept, not deleted, only because `sources/genesis-committee-comms.md:74` cites it and `sources/` is never-edit** `[stable]`
 - `impact/finance-brief.md` — finance value-chain research; feeds the Zenon-impact axis `[stable]`
 
 ## artifacts/
@@ -122,6 +141,8 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 
 ## sources/ — primary inputs, do not edit
 
+Inside `docs/` since D-023, but still the one folder under it that is **not** ours to rewrite.
+
 - `submission-ear-on-every-call.md` — verbatim finalized Track A idea sent to the committee 2026-07-24 `[source]`
 - `genesis-committee-comms.md` — frozen gate dates, the Sprint-1 downgrade, tooling status `[source]`
 - `kickoff-notes.md` — competition facts: tracks, deliverables, rules, judging rubric `[stable]`
@@ -130,6 +151,13 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 
 ## Tracked elsewhere
 
-Sprint backlog: JIRA project **AT (Agentic Trio)**, `https://zenonai.atlassian.net` — 8 epics, 37 live
-tasks. Issues prefixed `[DELETE ME]` are dead and await a project admin. AWS CodeCommit is not yet
-provisioned.
+Sprint backlog: JIRA project **AT (Agentic Trio)**, `https://zenonai.atlassian.net`. Read live
+2026-08-25: **45 issues, `AT-38`–`AT-82`, 8 epics + 37 tasks — 28 In Progress, 17 To Do, 0 Resolved.**
+No `[DELETE ME]` issues remain in the live set; whether an admin removed them or the note was always
+stale is unknown. **Sprints are enabled** — board 209 has `AT Sprint 1` (`id=672`, state `future`,
+created 2026-08-11), unstarted and unassigned, so the team is tracking gates by due date instead.
+Earlier notes here and in `ops/jira-conventions.md` saying sprints could not be enabled are wrong.
+
+AWS is provisioned — account, region, bucket and CodeCommit URL are in `ops/aws-infrastructure.md`.
+**No AT ticket covers any of the eleven AWS work packages `W1`–`W11`** in
+`architecture/infrastructure.md` §2.2; the board predates that document.

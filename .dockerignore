@@ -1,0 +1,35 @@
+# Keep the build context small and the image reproducible.
+#
+# MUST NOT be excluded: src/, prompts/, pyproject.toml, uv.lock.
+# prompts/ is loaded at runtime and its sha goes into the response-cache key, so an image
+# without it fails the provenance chain rather than merely erroring.
+
+.git/
+.github/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Regenerable or judge-facing, not runtime input
+artifacts/
+benchmarks/
+docs/
+tests/
+tools/
+
+# Node + CDK
+ui/node_modules/
+ui/dist/
+infra/
+cdk.out/
+.cdk.staging/
+
+# Caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Local config
+.env
+.aws.config.example

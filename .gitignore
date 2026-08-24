@@ -12,6 +12,17 @@ dist/
 *apikey*
 *api_key*
 
+# AWS credentials. Nothing here should ever exist inside the repo — real config lives in
+# ~/.aws/ — but these patterns mean a stray copy cannot be committed by accident.
+.aws/
+**/credentials
+*.pem
+aws-exports.js
+# `aws sso login` caches a bearer token as PLAINTEXT JSON under ~/.aws/sso/cache/.
+# It is short-lived but it is a live credential while it lasts.
+sso/cache/
+.envrc
+
 # Run artifacts: regenerable output is ignored, but the pinned run and the
 # response cache are COMMITTED so a judge can replay the demo with no keys.
 artifacts/runs/*
@@ -22,3 +33,14 @@ data/generated/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+
+# Claude Code: settings.json IS committed (it enforces the edit-approval tiers for the whole
+# team). settings.local.json is per-developer and must not be.
+.claude/settings.local.json
+
+# Node — the reviewer SPA (ui/) and the CDK CLI (infra/)
+node_modules/
+
+# CDK synth output. Regenerable from infra/, and it embeds absolute local paths.
+cdk.out/
+.cdk.staging/

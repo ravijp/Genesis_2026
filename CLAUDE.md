@@ -1,6 +1,6 @@
 # Genesis 2026 — Project Instructions (branch `build/ear-on-every-call`)
 
-Read `INDEX.md` first for the current file map. Keep INDEX.md updated **in the same commit** whenever
+Read `docs/INDEX.md` first for the current file map. Keep it updated **in the same commit** whenever
 files are added, moved, or removed.
 
 ## Mission
@@ -10,7 +10,7 @@ Call** — a conversation signal layer that reads 100% of a bank's customer conv
 them into a standing per-customer ledger that re-scores as new conversations arrive.
 
 The finalized idea was submitted to the Genesis Committee on 2026-07-24 and is the contract:
-`sources/submission-ear-on-every-call.md`. `docs/architecture/architecture.md` describes the system;
+`docs/sources/submission-ear-on-every-call.md`. `docs/architecture/architecture.md` describes the system;
 `docs/architecture/build-plan.md` (v3) covers what is left to build, what is measured and what is not,
 and the deltas from the submitted brief.
 
@@ -21,7 +21,7 @@ originality 15 / presentation 10, plus an AI judge scoring engineering quality (
 accuracy/cost/latency evidence).
 
 Frozen gates: **2026-08-10** 15-min check-in · **2026-08-24** combined Sprint 1+2 demo ·
-**2026-09-07** Sprint 3 demo. Details in `sources/genesis-committee-comms.md`.
+**2026-09-07** Sprint 3 demo. Details in `docs/sources/genesis-committee-comms.md`.
 
 ## Python environment (uv)
 
@@ -102,3 +102,45 @@ deterministic Python in `corpus.py` and `memory.py`; weighing ambiguous evidence
   cheaper done directly.
 - **RTK is NOT installed on this machine.** The global CLAUDE.md's `rtk` guidance does not apply in this
   repo — use plain `git`, `gh`, etc.
+
+## How to write
+
+Plain English. Short sentences. Active voice. The test: can Ravi skim it in 30 seconds and act?
+
+**Do:**
+
+- Lead with the answer. Then the reason.
+- One idea per sentence. Tables and lists beat paragraphs when the content is a set of facts.
+- Every number carries its denominator (`4 / 112`, not "3.5%"). Every date is absolute (`2026-08-25`).
+- Say what broke, what we lost, what is still unproven. A stated loss buys more credit than a clean sweep.
+- Code comments explain **why**. The code already shows what.
+
+**Don't:**
+
+- No fluff openers, no restating the question, no "Certainly".
+- No hedging to sound careful. "Unproven" beats "may potentially not fully hold".
+- No bold on every third phrase. If everything is emphasised, nothing is.
+- **Don't cut the *why* to save words.** Dense is the goal, not short. This repo's value is its recorded
+  reasoning — `decisions.md` exists so settled ground is not re-argued. A doc that drops the trade-off
+  costs an hour later. Compress the prose, never the content.
+
+## Files: what to maintain, what to ask about
+
+Prefer editing an existing file over adding one. A new `.md` needs a reason. Delete stale content
+instead of leaving it — git remembers.
+
+**Maintain freely** — keep current, rewrite, prune, no need to ask:
+
+- `docs/INDEX.md` · `docs/ops/state-of-play.md` · `docs/ops/aws-infrastructure.md`
+- `README.md` numbers, when a run produces new ones
+- anything created in the current session
+
+**Ask first** — one line on what and why, then wait:
+
+- `docs/ops/decisions.md` — append only. Never rewrite or delete an entry; supersede it.
+- `docs/ops/working-agreements.md` — every rule there was bought with a real mistake.
+- `CLAUDE.md` · `docs/architecture/*.md` · `benchmarks/*/PROTOCOL.md` (pre-registered)
+
+**Never edit:** `docs/sources/` — the committee contract and competition rules. Not ours. It sits inside
+`docs/` for a tidy repo root (D-023), but the edit boundary is unchanged: everything else under `docs/`
+is ours to rewrite, that folder is not.

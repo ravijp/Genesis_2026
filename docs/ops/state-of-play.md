@@ -1,190 +1,99 @@
 # State of play
 
-**Updated 2026-08-09.** Rewritten in place every working session — **never appended to**. Hard cap:
+**Updated 2026-08-25.** Rewritten in place every working session — **never appended to**. Hard cap:
 this file fits on one screen. If something will not fit, it belongs in `decisions.md` (a choice),
 `working-agreements.md` (a rule), or Jira (work). Anything historical belongs in git.
 
-**If you are a fresh session, read in this order:** this file → `decisions.md` →
-`working-agreements.md` → `README.md` → `docs/architecture/architecture.md`. That is enough to work.
-`docs/architecture/build-plan.md` covers what is left to build.
+**Fresh session, read in this order:** this file → `decisions.md` → `working-agreements.md` →
+`../../README.md` → `../architecture/architecture.md`. Then `../architecture/infrastructure.md` for the
+AWS design and `aws-infrastructure.md` for what is actually provisioned.
 
 ---
 
 ## Where we are
 
-Sprint-1 check-in is **2026-08-10 10:30** (15 minutes, progress only — brief at
-`docs/gates/2026-08-10-sprint-1-checkin.md`, updated through round 5). Real gates: **2026-08-24** combined
-Sprint 1+2 demo, **2026-09-07** Sprint 3.
+**The decision is made: everything runs on AWS.** Whatever works ships to AWS, pushes to CodeCommit,
+and is tracked on the AT board. Team size and calendar are not treated as constraints — Claude Code is
+building it. Next gate **2026-09-07**. The 08-10 check-in and the 08-24 combined demo have passed; no
+artifact records what 08-24 showed.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-an investigator agent that calls tools and produces case files with cited evidence. **231 tests**,
-ruff clean, `earshot sweep` produces every published number and now prints every comparison behind them.
+investigator agent producing case files with cited evidence. **236 tests**, ruff clean.
 
-**The model reader now exists and has never been run** (D-021). `src/earshot/extract_model.py` is the
-second implementation of the `Extractor` protocol: stateless per conversation, on the separation
-surface, verbatim quotes or the signal is dropped, cost and latency captured per call. It is selected
-with `--extractor model` on `run` and `sweep` and by `05_score.py --extractor model` on the AT-43 gold
-set; offline stays the default everywhere. **There is no accuracy figure for it anywhere and there
-must not be one until a keyed run prints it.**
+**AWS is provisioned and reachable.** Account `859430413223`, permission set `agentic-trio`,
+**us-east-1** (confirmed — the CodeCommit host says so), bucket `s3://agentic-trio`, repo
+`agentic-trio`. Coordinates and setup: `aws-infrastructure.md`.
 
-**AT-43 landed 2026-08-09 and the answer is bad, which is what makes it worth having.** On 150
-hand-marked real CFPB narratives the extractor scores **0.0357 strict recall (4 / 112)** against
-**0.681 (496 / 728)** on our own prose; three of four signal types scored **exactly zero** and 24 of
-26 cues never fired. Everything — pre-registration, gold set, results, and the two failures I
-disclosed — is in `benchmarks/cfpb/`; `steps/05_score.py` reproduces it offline. Nothing upstream was
-touched, so the synthetic 0.681 stands.
+**The AWS CLI is not a blocker — that was wrong and is corrected.** boto3, `npx cdk` and
+`git-remote-codecommit` all read credentials from the environment. Only `aws sso login` needs the v2
+CLI. Use the no-`@` CodeCommit URL (`codecommit::us-east-1://agentic-trio`) until SSO exists.
 
-**The headline holds and strengthened.** On thin-evidence customers the ledger catches 134/780 against
-96/780 for score-each-call-and-forget — 8 seeds of 10, 2 ties, no losses, p=0.008; at 30 seeds, 27-0-3.
+**Branch is prepared for the build.** `[dependency-groups] infra` (CDK cannot leak into the Lambda
+image), `[project.optional-dependencies] aws` (a fresh clone stays boto3-free), `Dockerfile`,
+`.dockerignore`, `buildspec.yml`, `src/earshot/aws/`, `infra/`, `ui/`. Adding `earshot/aws/` took the
+separation guard 72 → 75 tests **with no edit to the test** — the deployed decision path is guarded
+by construction.
 
-**What rounds 4-5 changed about what we claim.** The ledger *loses* on concentrated arcs by a
-comparable margin (119/629 vs 180/629, p=0.039), which we now publish — the result is a trade, not a
-win. And a two-float baseline, `stateless-top2`, does not merely match it on thin evidence: at 30
-seeds it **beats** it (`7-21-2`, `p=0.013`), as does a bounded three-conversation window. So the
-honest claim is *aggregation beats no aggregation*, not *memory beats detection*, and what
-never-discard adds over a cheap window is currently **unproven**. See D-015 through D-018.
+## Blocked, and on what
 
-## In flight
+- **Four granted-list gaps, none of them fatal, all needing a substitution.** **CloudFormation** is not
+  granted and CDK deploys through it — verify before the CDK commitment in §3.5 is load-bearing;
+  `cdk bootstrap` also wants its own bucket, ECR repo and IAM roles. **VPC/EC2** is not granted, so
+  ECS Fargate cannot launch (it needs a subnet) — substitute CodeBuild for the sweep, or keep it local.
+  **SNS** is not granted — alarm targets become EventBridge → Lambda. **Budgets/Cost Explorer** are not
+  granted — put the spend ceiling in our own code beside `COST_CAP_PER_CASE_USD`, which is the A9
+  argument applied to cost and lives in the repo a judge reads.
+- **Object Lock on `agentic-trio` is unverified and irreversible.** `aws s3api
+  get-object-lock-configuration --bucket agentic-trio`. If it is off, write-once on the evidence archive
+  is gone permanently. **A6's ledger guarantee is unaffected** — that is DynamoDB, no TTL, no delete
+  permission. Do not conflate them on stage.
+- **Zero model calls have ever been made.** The reader has no accuracy figure, and must not be given one
+  until a keyed run prints it.
 
-- **Adversarial review is FROZEN at six rounds.** Rounds 4-6 each found real defects, and each found
-  its worst ones *inside the previous round's fixes* — twice the fix reproduced the defect it was
-  fixing. The stopping rule was the problem: "run until a round finds nothing" never fires against a
-  competent reviewer on 7k lines. Everything found so far is fixed. What remains is
-  listed below and is deliberately not being chased; writing it up as `docs/ops/known-issues.md` —
-  what is wrong, how it was found, what a fix would cost — is a half-day job nobody has done yet.
-  **Do not open an unbounded round 7.** If a further pass is wanted, bound it: one reviewer, one
-  lens (what a judge sees on 08-24), a severity bar of "changes a published number or breaks on
-  stage", against a pinned SHA.
-- **Open defects, deliberately unfixed and not yet written up:** the recall band pins only
-  `extract.py` (a leak planted in `memory.py` moved the headline 8-0-2 → 9-0-1 while the band did
-  not move at all); the artifact-reproducibility test cannot observe the failure it names; the AST
-  provenance guard misses 13 of 15 bypasses; `get_transactions` truncates mid-JSON at a schema-legal
-  `max_rows` and the parse failure is swallowed into `{}`; the offline engine's `false_alarm` is
-  unreachable; `overdraft_limit` is overstated 27.5% of the time and `savings_balance` is a 90-day
-  outflow total; no committed manifest at 15,000 customers; `elapsed_seconds` makes "bit-for-bit
-  reproducible" literally false for artifacts.
-- **Nothing is marked Done on the board, deliberately** — one author, no second reviewer. Namit and
-  Ishant have not seen any of it.
+## Next, in order
 
-## Blocked on someone else
+1. **Bedrock provider** (`src/earshot/llm/bedrock.py`). `uv add --optional aws boto3`; Converse
+   translation both ways; price table labelled "computed from published prices", never "charged" (G1).
+   Absorbs the dead OpenAI package — one provider now serves both reader arms.
+2. **Persist case fields** (W1). `cli.py:531` writes `decision` and `trace` and drops `ctx.score`,
+   `ctx.signal_type`, `ctx.threshold` and the retro fields. **All three reviewer-UI beats are
+   unrenderable from disk until this lands.** The dangerous shortcut is regenerating the corpus from
+   `manifest.seed` — it puts `stratum`/`outcome`/`latent_risk` behind a client-facing screen.
+3. **First keyed run**, both arms, 150 CFPB docs, ~$0.30. Converts four "not measured" deliverables into
+   numbers. Commit the response cache and it replays keyless forever.
+4. **Ledger + case stores → ingest → investigate → reviewer UI** (W6 → W7 → W8 → W10).
 
-- **Jira project admin** — cannot delete the `[DELETE ME]` issues, cannot enable Sprints.
-- **AWS CodeCommit** — a named required deliverable, no repo provisioned. Requesting after the 08-10 call.
-- **Model keys — the hard blocker, and it gates three deliverables.** Genesis/Zenon will supply the
-  key; OpenRouter was always temporary. The key file at `C:/tmp/openrouterAPIKey.txt` (which
-  `resolve_api_key()` finds with no env var set) is **valid but the account has never been funded** —
-  `auth/key` returns 200, a completion returns `HTTP 402 Insufficient credits`, verified 2026-08-10.
-  So **no model call can run on this machine today**, and an earlier note here claiming work 1 was
-  unblocked "for a few dollars" was wrong. Blocked behind that key: the model-extractor measurement
-  (work 1), agent verdict accuracy (AT-57), and cost per 1,000 conversations.
-  When the Genesis key lands, build against the `llm/` provider abstraction, never against a vendor —
-  and note that `artifacts/cache/investigator-demo.jsonl` and the `$0.089 / $0.097` costs in README
-  become provider-historical, needing a re-label or a re-record. That cache is what makes the demo
-  replay with no network (D-004), so it must not simply be dropped.
-
-## Next three things — in this order, set 2026-08-10 by D-020
-
-**D-020 overrides AT-43's pre-registered consequence, deliberately and in writing.** §6 of the
-protocol promoted the corpus regrounding; the evidence turned out to implicate the *extractor's* cues
-instead, and the experiment that is actually blocking the entry needs only *more* fragments, not
-*real* ones. Read D-020 before re-arguing this.
-
-**1. Run the model reader once, with a key, and publish the two numbers side by side.** The reader is
-built, wired and tested (D-021); what is missing is the one command that costs money:
-
-```bash
-EARSHOT_OPENROUTER_API_KEY=... \
-  uv run python benchmarks/cfpb/steps/05_score.py --extractor model 2026-08-DD
-```
-
-150 narratives, one model call each, on the same gold marks and the same `(document, type)` grain as
-the published 0.0357 (PROTOCOL §9). It prints both readers with their integers, writes
-`out/results-model.json`, and records every response into `artifacts/cache/extractor.jsonl` — commit
-that file and the measurement replays keyless forever. It also prints measured cost per 1,000
-conversations and p50/p95 latency, which is priority 3 arriving for free.
-
-Then, and only then, the numbers go into `README.md` and `PROTOCOL.md` §9, copy-pasted from that
-output. **Nothing may be written about the model reader's accuracy before that run.**
-
-**Then: make the fallback less blind, or retire the claim that it is a fair floor.** This was work 3, then deferred by
-D-020, and is now first on evidence rather than argument — see the measurement below. Fix the cue
-vocabulary in `extract_lexicon.py`. `benchmarks/cfpb/out/results.json` names the 24 cues that never
-fired and `benchmarks/cfpb/out/gold.jsonl` is a 150-document marked development set; the 56
-blind-authored fragments in `benchmarks/pool-widening/` are the **held-out check** that catches
-tuning to it. Do not fit the cues to either set alone.
-
-**Why it moved back to first, and it is not a preference.** Widening the fragment pools (the
-prerequisite for the history-length experiment) was done and measured, then reverted. The extractor
-catches **0.5325 (82/154)** of the original 24 fragments and **0.0353 (22/624)** of 56 new ones
-authored blind to the same construct definitions, in the same spoken UK bank register. Overall recall
-falls 0.681 → 0.1337, and `stateless-top2` collapses into `stateless-max` on every seed because there
-is no longer enough extracted signal to differentiate arms. So the history-length question cannot be
-asked on a corpus the reader cannot read — the reader is genuinely blocking, which is what AT-43's
-pre-registration guessed at while naming the wrong file.
-
-**0.0353 on blind-authored synthetic utterances against 0.0357 on real CFPB narratives is the same
-number from two directions**, and it closes the genre-mismatch escape route AT-43 left open. The
-published **0.681 measures how much pass A and pass B were co-developed, not what the extractor can
-read.** That is a finding about our own foundational separation claim and it should be presented that
-way on 09-07 rather than discovered by a judge.
-
-**Then, and only then, the history-length experiment (~1 day once the reader works).** Splice
-`benchmarks/pool-widening/fragments.py`, re-measure, move `RECALL_BAND` deliberately, re-run
-everything, then sweep 30 seeds at (2,5)/(4,9)/(8,20) and publish the curve. Done already:
-`--conversations-per-customer MIN,MAX` exists and refuses a range wider than the scarcest pool.
-
-**2. The reviewer queue UI.** `AT-61/62/64`. Never started, and the whole client-facing axis of a
-Track A entry — needed for 2026-08-24. It is blocked on persistence, not design: `cli.py:494` builds
-each case record and discards `ctx.score` and `ctx.signal_type`, and the retro re-score fields
-(`memory.py:161-173`) are computed and printed by `cmd_demo` but written to no artifact. So none of the
-three beats — ranked list, evidence chain, retro re-score — can be rendered from disk today. Persist
-those fields first, then build it *functional* and stop (§9: polish scores nothing). **The dangerous
-shortcut is regenerating the corpus from `manifest.seed` to recover transcripts** — that puts the
-evidence chain and `stratum`/`outcome`/`latent_risk` on one object behind a client-facing screen.
-
-**3. Cost per 1,000 conversations and p50/p95 latency.** A *named* required deliverable still marked
-"not measured", and the answer to the feasibility question a judge is most likely to ask. Note an
-unpriced risk surfaced 2026-08-10: if a bank does not already transcribe, **ASR dominates our cost
-story**, and our cost narrative currently ignores it entirely.
-
-**Still off the table before 09-07**, settled: fitting the generative distribution to CFPB
-(working-agreements §9), and stitching real complaints into invented histories (D-010). AT-43 added a
-third reason — uniformly drawn CFPB narratives carry escalation in **50 of 100** cases, because people
-who complain to a regulator have usually complained to the firm first. That is the complaint channel,
-not bank conversations.
-
-**Unverified and worth checking before 09-07:** a claim that NICE ships an *Enlighten AI for
-Vulnerable Customers* product. If true it is a second novelty collision of the D-006 kind and the
-wedge needs narrowing again in the same honest way. Nobody has confirmed it.
+**Arm B is deferred, deliberately.** GPT-4o-mini is unreachable; any second Bedrock family works and
+the choice is ~zero incremental work once the provider exists. Candidates: Nova Lite, Llama, Mistral.
+**The brief never required two vendors** — it says "a comparison model runs through the same harness"
+(`../sources/submission-ear-on-every-call.md:86-87`). That obligation was self-imposed and is retired.
 
 ## Known-weak, stated rather than hidden
 
-- No scoring mechanism earns anything in recall, and the full-ledger vs plain-count comparison flips
-  sign across seed sets. **Decay** earns something that is not recall: it gives the ledger 673 distinct
-  scores against the plain count's 6, so 0.0% of its alert queue is decided alphabetically against
-  55.1%. Confidence weighting, corroboration, cross-channel and escalation have no defence yet.
-- Ranking resolution cuts against our own claims, not someone else's: the headline's opponent
-  (`stateless-max`) is 40.8% alphabetical and the `dumb-ledger` ablation is 55.1%. `earshot sweep`
-  prints the table.
-- **Two cheaper arms beat us on the pre-registered stratum at 30 seeds**: `stateless-top2` and
-  `window3-top2`, both `7-21-2`, `p=0.013`. `window3-top2` also holds us to a tie on concentrated arcs
-  (`16-8-6`, `p=0.152`), so it is not even a trade. Both are shipped arms — `earshot sweep` prints
-  this. What never-discard buys over a three-conversation window is currently unproven.
-- Agent verdict/routing accuracy, cost per 1,000 conversations and p50/p95 latency are not measured.
-  Evidence groundedness is now reported as a first-attempt repair rate (AT-57).
-- **Two of four trajectories can never carry more than 4 signals, and this bounds every published
-  number.** Fragments are planted without replacement and the `complaint_escalation` and `life_event`
-  pools hold 4, while arcs run to 5 conversations — so on those trajectories the later conversations
-  are empty by construction. Found 2026-08-10 when the new pool guard rejected the *default* range.
-  Every command now prints this. It is the reason work 1 starts with widening the pools.
 - **The extractor barely works on language it did not write.** 0.0357 strict recall (4 / 112) on real
-  CFPB narratives against 0.681 (496 / 728) on ours; three of four signal types at exactly zero. This
-  is measured, published in `benchmarks/cfpb/`, and describes the **fallback**.
-- **The model reader is unmeasured, and that is not the same as promising.** It is built and tested
-  but has never made a single call, so nothing is known about how well it reads — not its recall, not
-  its false-positive rate, not what it actually costs. A stub proves the contract, never the reader.
-- Extraction is matched at conversation level, not character spans.
-- Throughput falls sharply with corpus size — roughly 7x between 400 and 15,000 customers on one
-  laptop. Not optimised, and not pinned by a committed manifest at the larger size.
+  CFPB narratives against 0.681 (496 / 728) on ours; three of four signal types exactly zero. Blind
+  -authored synthetic fragments give 0.0353 (22 / 624) — the same number from two directions, which
+  closes the genre-mismatch escape route. **The published 0.681 measures how much pass A and pass B were
+  co-developed, not what the extractor can read.**
+- **Two cheaper arms beat us on the pre-registered stratum at 30 seeds**: `stateless-top2` and
+  `window3-top2`, both `7-21-2`, `p=0.013`. `window3-top2` also holds us to a tie on concentrated arcs.
+  What never-discard buys over a three-conversation window is **unproven**. The honest claim is
+  *aggregation beats no aggregation*, not *memory beats detection*.
+- The ledger **loses** on concentrated arcs (119/629 vs 180/629, p=0.039). Published. It is a trade.
+- Decay earns something that is not recall: 673 distinct scores against a plain count's 6, so 0.0% of
+  its alert queue is decided alphabetically against 55.1%.
+- **Two of four trajectories can never carry more than 4 signals**, bounding every published number —
+  fragments are planted without replacement and the scarcest pool holds 4 while arcs run to 5.
 - The cost cap bounds cumulative spend, not a single anomalous call. Documented, with a test.
-- No reviewer queue exists yet — the demo shows case files, not a working queue.
+- Agent verdict accuracy, cost per 1,000 conversations and p50/p95 latency are not measured.
+- **Cost model has two known errors**: `B.3:655` says $1.24 where the arithmetic gives $1.12, and §1.2
+  ("55–80×") contradicts B.4 ("55–140×") where B.3's own totals give **82–144×**. Both understate the
+  strongest feasibility number in the entry.
+- **The demo cache is invalidated by the provider move regardless of model pinning** — it was recorded
+  through OpenRouter, so §1.5's pinning rationale survives only on cost comparability. Re-record on
+  Bedrock, or say plainly that the demo and deployed investigators are different providers.
+- **No AT ticket covers any of W1–W11.** The board predates `infrastructure.md`. 45 issues live, 28 In
+  Progress, 0 Resolved. Sprints *are* enabled (board 209, `AT Sprint 1`, unstarted) — earlier notes
+  saying otherwise are wrong.
+- Adversarial review is **frozen at six rounds**; open defects are listed in git history and not yet
+  written up as `known-issues.md`. Do not open an unbounded round 7.
