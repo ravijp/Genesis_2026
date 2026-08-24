@@ -200,8 +200,6 @@ class OpenRouterProvider:
 
         raise ProviderError(f"OpenRouter failed after {MAX_ATTEMPTS} attempts ({last})")
 
-    def close(self) -> None:
-        self._client.close()
 
 
 class LazyOpenRouterProvider:

@@ -61,11 +61,7 @@ class Conversation:
     day: int  # days since corpus epoch
     turns: tuple[Turn, ...]
 
-    def text(self) -> str:
-        return "\n".join(f"{t.speaker}: {t.text}" for t in self.turns)
 
-    def customer_text(self) -> str:
-        return "\n".join(t.text for t in self.turns if t.speaker == "customer")
 
 
 @dataclass(frozen=True)

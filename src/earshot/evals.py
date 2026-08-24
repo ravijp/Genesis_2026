@@ -25,16 +25,6 @@ DEFAULT_BUDGETS = (0.01, 0.02, 0.05, 0.10)
 LEAD_HORIZONS = (0, 7, 14, 30, 60)
 
 
-def quantile(values: list[float], q: float) -> float:
-    if not values:
-        return 0.0
-    ordered = sorted(values)
-    if q <= 0:
-        return ordered[0]
-    if q >= 1:
-        return ordered[-1]
-    idx = min(len(ordered) - 1, max(0, int(round(q * (len(ordered) - 1)))))
-    return ordered[idx]
 
 
 @dataclass
@@ -94,9 +84,21 @@ def evaluate_arm(
     # so a `>=` cut sweeps in the whole tie cluster and the arms end up flagging wildly
     # different numbers of customers at the same nominal budget, which is not a comparison at
     # all. Ties are broken deterministically by customer_id.
+    # This ranks on ArmTimeline.final() -- the PEAK score across the whole timeline -- because
+    # the question here is "did the ledger ever surface this customer in time", which is the
+    # recall question a real system answers by alerting the moment a score crosses.
+    #
+    # `cli._queue()` deliberately ranks differently: `ledger.best(cid, as_of=last day)` is the
+    # max across signal FAMILIES on one day, not across time, because a reviewer queue asks
+    # "who should someone look at today". With decay the two orders differ -- a customer who
+    # peaked on day 30 and faded by day 60 ranks high here and low there. Both are correct for
+    # their own question; they are not interchangeable, and `cmd_demo` (this threshold) and
+    # `cmd_investigate` (that one) can therefore disagree about who crossed at the same budget.
+    # Do not "unify" them without deciding which question you are asking.
     k = max(1, round(budget * len(scores)))
     ranked = sorted(scores.items(), key=lambda kv: (-kv[1], kv[0]))
     flagged = {cid for cid, s in ranked[:k] if s > 0}
+    # Default 1.0, not 0.0: with nothing flagged, nothing should count as crossing.
     threshold = min((scores[cid] for cid in flagged), default=1.0)
     outcomes = _outcome_customers(corpus)
     truth_by_id = {c.customer_id: c for c in corpus.customers}

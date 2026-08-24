@@ -26,6 +26,7 @@ from ..llm.base import (
     ModelConfig,
     ProviderError,
     assistant_message,
+    first_json_object,
 )
 from .prompts import investigator_prompts, render
 from .schemas import EvidenceRef, InvestigationDecision, decision_schema_text
@@ -133,23 +134,8 @@ class InvestigationTrace:
         }
 
 
-def _extract_json(text: str) -> dict[str, Any] | None:
-    """Pull one JSON object out of a model reply that may be fenced or prefaced with prose."""
-    if not text:
-        return None
-    candidate = text.strip()
-    if candidate.startswith("```"):
-        candidate = candidate.split("```")[1] if "```" in candidate[3:] else candidate[3:]
-        if candidate.lstrip().lower().startswith("json"):
-            candidate = candidate.lstrip()[4:]
-    start, end = candidate.find("{"), candidate.rfind("}")
-    if start == -1 or end <= start:
-        return None
-    try:
-        parsed = json.loads(candidate[start : end + 1])
-    except json.JSONDecodeError:
-        return None
-    return parsed if isinstance(parsed, dict) else None
+# _extract_json was byte-identical to llm.base.first_json_object; aliased to it.
+_extract_json = first_json_object
 
 
 def _validate(

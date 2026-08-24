@@ -35,8 +35,6 @@ class ScoreBreakdown:
     as_of_day: int
     entries: list[LedgerEntry] = field(default_factory=list)
 
-    def top_evidence(self, n: int = 3) -> list[LedgerEntry]:
-        return sorted(self.entries, key=lambda e: -e.contribution_now)[:n]
 
 
 def _decay(age_days: int, half_life: float, enabled: bool) -> float:

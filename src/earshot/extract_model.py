@@ -33,14 +33,13 @@ what makes cost per 1,000 conversations a measured figure rather than a projecti
 
 from __future__ import annotations
 
-import json
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from .extract import CONFIDENCE_FLOOR
-from .llm.base import Completion, LLMProvider, Message, ModelConfig, env
+from .llm.base import Completion, LLMProvider, Message, ModelConfig, env, first_json_object
 from .prompt_files import DEFAULT_VERSION, Prompt, pair_sha, prompt, render
 from .schema import Conversation, ExtractedSignal, SignalType, Turn
 
@@ -137,25 +136,7 @@ class ExtractionTelemetry:
         }
 
 
-def first_json_object(text: str) -> dict[str, Any] | None:
-    """Pull one JSON object out of a reply that may be fenced or prefaced with prose."""
-    if not text:
-        return None
-    candidate = text.strip()
-    if candidate.startswith("```"):
-        candidate = candidate.split("```")[1] if "```" in candidate[3:] else candidate[3:]
-        if candidate.lstrip().lower().startswith("json"):
-            candidate = candidate.lstrip()[4:]
-    start, end = candidate.find("{"), candidate.rfind("}")
-    if start == -1 or end <= start:
-        return None
-    try:
-        parsed = json.loads(candidate[start : end + 1])
-    except json.JSONDecodeError:
-        return None
-    return parsed if isinstance(parsed, dict) else None
-
-
+# first_json_object now lives in llm/base.py -- see the note there.
 class ModelExtractor:
     """A model reading one conversation at a time. Same protocol as the offline lexicon."""
 

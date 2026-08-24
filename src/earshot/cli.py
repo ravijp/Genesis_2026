@@ -401,6 +401,14 @@ def _queue(run: RunConfig, budget: float = INVESTIGATION_BUDGET):
         if breakdown.score > 0:
             scored.append((customer.customer_id, breakdown))
 
+    # Ranks on `ledger.best(cid, as_of=last day)` -- the max across signal FAMILIES on the
+    # customer's most recent day. A reviewer queue asks "who should someone look at today", so
+    # a faded score should rank low even if it once peaked.
+    #
+    # `evals.evaluate_arm()` ranks on the PEAK across the timeline instead, because it is
+    # answering the recall question. The two orders diverge under decay, so this threshold and
+    # that one can disagree about who crossed at the same budget. That is intended; see the
+    # longer note in evals.py before changing either.
     scored.sort(key=lambda pair: (-pair[1].score, pair[0]))
     k = max(1, round(budget * len(corpus.customers)))
     cut = scored[:k]

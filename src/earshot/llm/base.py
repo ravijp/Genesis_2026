@@ -10,6 +10,7 @@ Nothing here may import the corpus side (see tests/test_separation.py).
 
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass, field
 from typing import Any, Protocol
@@ -49,10 +50,6 @@ class ToolCall:
 class Usage:
     prompt_tokens: int = 0
     completion_tokens: int = 0
-
-    @property
-    def total_tokens(self) -> int:
-        return self.prompt_tokens + self.completion_tokens
 
 
 @dataclass(frozen=True)
@@ -125,3 +122,27 @@ def assistant_message(completion: Completion) -> Message:
             for call in completion.tool_calls
         ]
     return message
+
+
+def first_json_object(text: str) -> dict[str, Any] | None:
+    """Pull one JSON object out of a model reply that may be fenced or prefaced with prose.
+
+    Lives here because both callers -- the investigator loop and the model reader -- have to
+    survive the same provider behaviour, and they had drifted into byte-identical private
+    copies. A single copy means a fix to the fence handling reaches both.
+    """
+    if not text:
+        return None
+    candidate = text.strip()
+    if candidate.startswith("```"):
+        candidate = candidate.split("```")[1] if "```" in candidate[3:] else candidate[3:]
+        if candidate.lstrip().lower().startswith("json"):
+            candidate = candidate.lstrip()[4:]
+    start, end = candidate.find("{"), candidate.rfind("}")
+    if start == -1 or end <= start:
+        return None
+    try:
+        parsed = json.loads(candidate[start : end + 1])
+    except json.JSONDecodeError:
+        return None
+    return parsed if isinstance(parsed, dict) else None

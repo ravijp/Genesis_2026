@@ -26,6 +26,12 @@ from dataclasses import dataclass
 WINDOW_DAYS = 90
 DAYS_PER_MONTH = 30
 
+# The generator picks a limit from this ladder and `_overdraft_limit()` recovers it by asking
+# how deep the account was allowed to go. Both ends must read the same tuple: when they were
+# two separate literals, changing one silently made the tool report a limit the account never
+# had, with nothing failing.
+OVERDRAFT_LADDER = (0.0, 250.0, 500.0, 1000.0, 1500.0)
+
 # Categories the agent sees. Split into essential vs discretionary so belt-tightening is
 # visible without the tool having to editorialise about it.
 ESSENTIAL_CATEGORIES = frozenset({"housing", "utilities", "groceries", "transport", "credit"})
@@ -132,7 +138,7 @@ def generate_history(
 
     monthly_income = round(rng.uniform(1500.0, 3600.0), 2)
     rent = round(monthly_income * rng.uniform(0.28, 0.45), 2)
-    overdraft_limit = rng.choice((0.0, 250.0, 500.0, 1000.0, 1500.0))
+    overdraft_limit = rng.choice(OVERDRAFT_LADDER)
     balance = round(monthly_income * rng.uniform(0.05, 0.90) * (1.0 - 0.6 * buffer_stress), 2)
 
     payday = rng.randrange(DAYS_PER_MONTH)
@@ -264,10 +270,10 @@ def account_snapshot(
 def _overdraft_limit(txns: list[Transaction]) -> float:
     """Recover the limit the generator used, from how deep the account was allowed to go."""
     worst = min((t.balance_after for t in txns), default=0.0)
-    for limit in (0.0, 250.0, 500.0, 1000.0, 1500.0):
+    for limit in OVERDRAFT_LADDER:
         if worst >= -limit:
             return limit
-    return 1500.0
+    return OVERDRAFT_LADDER[-1]
 
 
 def synthesize_prior_cases(
