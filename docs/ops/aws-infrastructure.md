@@ -45,12 +45,37 @@ Invocation Logging · ECS Fargate · EventBridge
   ordering that makes `score_at_write` honest. What is lost is *replay*, and never-discard means we
   re-score history — so the target-state argument stands and must be presented as target state, not as
   built.
-- **One S3 bucket, not two.** Object Lock can only be enabled **at bucket creation**. If `agentic-trio`
-  was created without it, the evidence archive's write-once guarantee (A6, §1.1 "Deletion must be
-  impossible, not merely unused") is no longer structural — it degrades to an IAM convention, which is
-  precisely the distinction A6 refuses to blur. **Verify before claiming never-discard is enforced by
-  the store.** Prefix separation (`evidence/`, `artifacts/`) is the fallback and it is weaker; say so
-  on stage rather than implying parity, the way §3.6 already handles CloudFront-vs-bank-VPC.
+- **One S3 bucket, not two.** Object Lock is **OFF** on `agentic-trio` (verified 2026-08-25) and is not
+  enablable after creation without an AWS Support case. So the evidence archive's write-once guarantee
+  degrades from structural to an IAM convention — precisely the distinction A6 refuses to blur. Say so
+  on stage rather than implying parity, the way §3.6 handles CloudFront-vs-bank-VPC. **A6's ledger
+  guarantee is unaffected**: that is DynamoDB, no TTL, no delete permission, and DynamoDB is fully
+  granted. Do not let the two claims merge.
+
+### The S3 permission bug — a missing `/*`, not a missing policy
+
+**Verified 2026-08-25.** The permission set's inline policy reads:
+
+```json
+{ "Effect": "Allow", "Action": ["s3:*"], "Resource": ["arn:aws:s3:::agentic-trio"] }
+```
+
+That ARN is the **bucket**. Object operations require the **objects** ARN, `arn:aws:s3:::agentic-trio/*`.
+S3 treats those as different resources, so the split is exact and reproducible:
+
+| Action class | Example | Result |
+|---|---|---|
+| Bucket-level | `ListBucket`, `GetBucketVersioning`, `GetBucketEncryption` | **works** |
+| Object-level | `PutObject`, `GetObject`, `DeleteObject` | **AccessDenied** |
+
+So this is a two-line correction to an existing policy, not a new grant. The fix is to list both ARNs:
+
+```json
+"Resource": ["arn:aws:s3:::agentic-trio", "arn:aws:s3:::agentic-trio/*"]
+```
+
+Worth asking for in exactly those terms — "add `/*` to the existing statement" is a far smaller ask
+than "give us S3 access", and it is almost certainly an oversight rather than a policy decision.
 
 ## The principle
 
