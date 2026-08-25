@@ -54,13 +54,17 @@ called "the only secret" is no longer needed either. Setup and the exact command
 `docs/ops/aws-infrastructure.md`, which is also the one place live resource coordinates are recorded.
 
 Three findings changed the plan as written, all verified 2026-08-24:
-- **The start URL we were given is not a start URL.** `https://identitycenter.amazonaws.com/ssoins-…`
-  is the Identity Center *instance console* URL; `aws sso login` needs `…awsapps.com/start` or
-  `https://ssoins-….portal.<region>.app.aws`. Recorded because it would have read as a broken account.
-- **AWS CLI v2 needs an administrator on this machine, and there is no way around it.** `awscli` on
-  PyPI is v1-only and v1 has no `sso login`; `AWSCLIV2.zip` 404s; the MSI hardcodes
-  `C:\Program Files\…` and fails per-user with 1603; winget is absent. This is the only remaining
-  blocker and it is a one-time admin action.
+- ~~**The start URL we were given is not a start URL.**~~ **RETRACTED 2026-08-25 — it works.** Tested
+  on aws-cli/2.36.29: `https://identitycenter.amazonaws.com/ssoins-7223528ddbceb375` is accepted,
+  registers an OIDC client and returns an authorize URL. The claim was inferred from the canonical
+  portal forms (`…awsapps.com/start`, `…portal.<region>.app.aws`) and repeated three times without a
+  test. Kept visible rather than deleted: the failure mode — a confident inference about someone
+  else's infrastructure, cheap to check and never checked — is worth more than the wrong fact.
+- **AWS CLI v2 needed an administrator; installed 2026-08-25** (aws-cli/2.36.29, `C:\Program
+  Files\Amazon\AWSCLIV2\`). Note it is not on the PATH of already-open shells — the installer only
+  updates PATH for new processes. Also note this was never a *build* blocker: boto3, `npx cdk` and
+  `git-remote-codecommit`'s no-`@` URL form all read credentials from the environment. The CLI
+  uniquely provides `aws sso login`.
 - **Bedrock's per-model console opt-in was retired 2025-10**, narrowing §A.1's warning: serverless
   models are region-wide on IAM alone, but Anthropic models still need a one-time EUA acceptance.
 

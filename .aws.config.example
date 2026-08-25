@@ -9,14 +9,13 @@
 # Fill the two <PLACEHOLDER> values before use. See docs/ops/aws-credentials.md.
 
 [sso-session zenon]
-# NOT https://identitycenter.amazonaws.com/ssoins-... — that is the instance console URL and
-# `aws sso login` rejects it. Get the real one from IAM Identity Center -> Dashboard ->
-# Settings summary -> "AWS access portal URL". Looks like https://d-xxxxxxxxxx.awsapps.com/start
+# Ours is https://identitycenter.amazonaws.com/ssoins-7223528ddbceb375 and it WORKS — verified
+# on aws-cli/2.36.29. The canonical portal forms (https://d-xxxxxxxxxx.awsapps.com/start,
+# https://ssoins-....portal.<region>.app.aws) also work; the CLI requires an https scheme and a
+# resolvable OIDC endpoint, not a particular hostname. To check any candidate without a browser:
+#   aws sso login --profile genesis --no-browser
 sso_start_url = <SSO_START_URL>
-# The region the Identity Center INSTANCE lives in — independent of the build region below,
-# and shown next to the start URL on that same console page. Reported as us-east-1; if login
-# fails with the start URL correct, this is the next thing to check (the console runs on
-# ap-southeast-2, so the instance may be there too).
+# The region the Identity Center INSTANCE lives in — independent of the build region below.
 sso_region = us-east-1
 sso_registration_scopes = sso:account:access
 

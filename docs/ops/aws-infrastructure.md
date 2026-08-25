@@ -108,21 +108,26 @@ it **cannot** be used with SSO/federated access at all
 `git-remote-codecommit` instead (below), which signs each request with your SSO session and stores
 nothing.
 
-## The start URL you have is not a start URL
+## The start URL — corrected 2026-08-25
 
-`https://identitycenter.amazonaws.com/ssoins-7223528ddbceb375` is the **console management URL for the
-Identity Center instance** (the `ssoins-…` is the instance ID inside its ARN,
-`arn:aws:sso:::instance/ssoins-…`). It is not a login start URL and `aws sso login` will not accept it.
+**`https://identitycenter.amazonaws.com/ssoins-7223528ddbceb375` works.** An earlier version of this
+file said it was only the instance console URL and that `aws sso login` would reject it. **That was
+wrong, and it was asserted three times before anyone tested it.** Tested on aws-cli/2.36.29: the CLI
+accepts it, registers an OIDC client against `oidc.us-east-1.amazonaws.com`, and returns a real
+authorize URL. It is in `~/.aws/config` and is the configured value.
 
-A real `sso_start_url` looks like one of:
+The reasoning that produced the error was plausible and still partly true — `ssoins-…` *is* the
+instance ID from `arn:aws:sso:::instance/ssoins-…`, and the canonical portal forms really are
+`https://d-xxxxxxxxxx.awsapps.com/start` and `https://ssoins-….portal.<region>.app.aws`. What was
+wrong was concluding that anything else must be refused. The CLI only requires an `https` scheme and a
+resolvable OIDC endpoint; it does not enforce a hostname pattern.
 
-- `https://d-xxxxxxxxxx.awsapps.com/start` — or a custom subdomain
-- `https://ssoins-7223528ddbceb375.portal.us-east-1.app.aws` — newer dual-stack form, CLI ≥ 2.22.0
+**The lesson, since it cost real time:** a one-command check beats a confident inference. `aws sso
+login --profile <p> --no-browser` prints the authorize URL and exits without needing a browser, so
+validating a start URL is free.
 
-**Find yours** in either place:
-- IAM Identity Center console → **Dashboard** → *Settings summary* → **AWS access portal URL**
-- AWS access portal → your permission set → *Access keys* → **IAM Identity Center credentials**, which
-  shows the start URL and region together
+If you ever do need the canonical portal URL: IAM Identity Center console → **Dashboard** →
+*Settings summary* → **AWS access portal URL**.
 
 ### Mapping the live values onto config keys
 
