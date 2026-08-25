@@ -28,7 +28,10 @@ def probe(area: str, action: str, need: str, fn) -> None:
         status = "PASS"
     except Exception as e:  # noqa: BLE001 - any failure is a finding, not a crash
         code = getattr(e, "response", {}).get("Error", {}).get("Code", "") or type(e).__name__
-        status, detail = ("DENIED" if "AccessDenied" in code or "Unauthor" in code else "FAIL"), code
+        # A RuntimeError here is one we raised ourselves with a diagnosis attached; its message
+        # is the actionable part, so keep it rather than printing the class name.
+        detail = str(e) if isinstance(e, RuntimeError) else code
+        status = "DENIED" if "AccessDenied" in code or "Unauthor" in code else "FAIL"
     rows.append({"area": area, "action": action, "status": status, "detail": detail, "need": need})
     print(f"  [{status:6}] {action:44} {detail[:60]}")
 
@@ -69,12 +72,17 @@ def main() -> int:
     print("\nBEDROCK -- the reader and the investigator")
     probe("bedrock", "bedrock:ListFoundationModels", "model selection",
           lambda: f"{len(b('bedrock').list_foundation_models()['modelSummaries'])} models")
-    probe("bedrock", "bedrock:InvokeModel (Haiku)", "every published number",
+    # Anthropic models need the `us.` INFERENCE-PROFILE prefix -- the bare foundation-model id
+    # fails with "on-demand throughput isn't supported". Amazon and Meta models take the bare
+    # id. Getting this wrong reads as a missing permission and is not one.
+    probe("bedrock", "bedrock:InvokeModel (Haiku 4.5)", "reader arm A, every published number",
           lambda: _converse(b("bedrock-runtime"), "us.anthropic.claude-haiku-4-5-20251001-v1:0"))
-    probe("bedrock", "bedrock:InvokeModel (Nova Lite)", "reader arm B",
-          lambda: _converse(b("bedrock-runtime"), "amazon.nova-lite-v1:0"))
-    probe("bedrock", "bedrock:InvokeModel (Sonnet)", "the investigator",
+    probe("bedrock", "bedrock:InvokeModel (Sonnet 4.5)", "the investigator",
           lambda: _converse(b("bedrock-runtime"), "us.anthropic.claude-sonnet-4-5-20250929-v1:0"))
+    probe("bedrock", "bedrock:InvokeModel (Nova Lite)", "reader arm B candidate",
+          lambda: _converse(b("bedrock-runtime"), "amazon.nova-lite-v1:0"))
+    probe("bedrock", "bedrock:InvokeModel (Llama 3 8B)", "reader arm B candidate",
+          lambda: _converse(b("bedrock-runtime"), "meta.llama3-8b-instruct-v1:0"))
 
     print("\nCOMPUTE + QUEUE")
     probe("lambda", "lambda:ListFunctions", "W7/W8",
@@ -89,10 +97,12 @@ def main() -> int:
     print("\nDELIVERY -- image, source of record, IaC")
     probe("ecr", "ecr:DescribeRepositories", "container image",
           lambda: f"{len(b('ecr').describe_repositories()['repositories'])} repos")
-    probe("codecommit", "codecommit:GetRepository", "the named deliverable",
+    # NOT a blocker, however this prints. The CodeCommit API and CodeCommit git are authorized
+    # separately: the API is denied, and `git push` works via `aws codecommit
+    # credential-helper`, which mints a SigV4 password from the SSO session. Proven 2026-08-25
+    # by pushing build/ear-on-every-call. Kept as a probe so the asymmetry stays visible.
+    probe("codecommit", "codecommit:GetRepository (API only)", "nothing -- git push works regardless",
           lambda: b("codecommit").get_repository(repositoryName=BUCKET)["repositoryMetadata"]["repositoryName"])
-    probe("codecommit", "codecommit:GitPush", "pushing at all",
-          lambda: f"{len(b('codecommit').list_repositories()['repositories'])} repos")
     probe("cloudformation", "cloudformation:ListStacks", "CDK",
           lambda: f"{len(b('cloudformation').list_stacks()['StackSummaries'])} stacks")
     probe("codebuild", "codebuild:ListProjects", "CI/CD + the sweep runner",
@@ -145,23 +155,43 @@ def main() -> int:
 
 
 def _converse(rt, model_id: str) -> str:
-    """One token in, one out. Cheapest possible proof the model is actually invocable."""
-    rt.converse(modelId=model_id, messages=[{"role": "user", "content": [{"text": "hi"}]}],
-                inferenceConfig={"maxTokens": 1})
-    return "invocable"
+    """One token in, one out. Cheapest possible proof the model is actually invocable.
+
+    Two failures here are configuration, not permission, and the messages are the only way to
+    tell them apart -- both otherwise look like a denial:
+      * "on-demand throughput isn't supported" -> use the `us.` inference-profile id
+      * "use case details have not been submitted" -> the one-time Anthropic EUA form
+    """
+    try:
+        rt.converse(modelId=model_id, messages=[{"role": "user", "content": [{"text": "hi"}]}],
+                    inferenceConfig={"maxTokens": 1})
+        return "invocable"
+    except Exception as e:
+        msg = str(e)
+        if "use case details" in msg:
+            raise RuntimeError("EUA FORM NEEDED -- Anthropic use case form, console one-time") from e
+        if "on-demand" in msg:
+            raise RuntimeError("needs the us. inference-profile id, not the bare model id") from e
+        raise
 
 
 def _make_table(ddb) -> str:
-    """CreateTable then delete. The only honest test of whether W6 can be built."""
+    """CreateTable then delete. The only honest test of whether W6 can be built.
+
+    DeleteTable fails while the table is still CREATING, so wait for ACTIVE first -- an
+    earlier version skipped this and left `conn-test-delete-me` behind twice.
+    """
     name = "conn-test-delete-me"
     ddb.create_table(TableName=name, BillingMode="PAY_PER_REQUEST",
                      KeySchema=[{"AttributeName": "pk", "KeyType": "HASH"}],
                      AttributeDefinitions=[{"AttributeName": "pk", "AttributeType": "S"}])
     try:
+        ddb.get_waiter("table_exists").wait(
+            TableName=name, WaiterConfig={"Delay": 2, "MaxAttempts": 15})
         ddb.delete_table(TableName=name)
         return "created + deleted"
     except Exception:
-        return "CREATED but delete failed -- remove conn-test-delete-me manually"
+        return f"CREATED but delete failed -- run: aws dynamodb delete-table --table-name {name}"
 
 
 def _make_queue(sqs) -> str:
