@@ -94,11 +94,20 @@ def main() -> int:
 
     # --- granted services ---------------------------------------------------------------
     print("\nGRANTED SERVICES")
+    # HeadBucket alone is NOT an access check -- it passed here while PutObject was denied,
+    # which made this script report S3 as fine when no artifact could be written. Probe the
+    # action the build actually needs.
     try:
         s3.head_bucket(Bucket=BUCKET)
-        record("S3 bucket", OK, f"s3://{BUCKET} reachable")
+        try:
+            s3.put_object(Bucket=BUCKET, Key="_conn-test/probe.txt", Body=b"probe")
+            s3.delete_object(Bucket=BUCKET, Key="_conn-test/probe.txt")
+            record("S3 read+write", OK, f"s3://{BUCKET} writable")
+        except ClientError as e:
+            record("S3 read+write", FAIL,
+                   f"reachable but {err(e)} on PutObject -- artifacts cannot be written")
     except ClientError as e:
-        record("S3 bucket", FAIL, err(e))
+        record("S3 read+write", FAIL, err(e))
 
     try:
         n = len(boto3.client("dynamodb", region_name=REGION).list_tables()["TableNames"])
@@ -124,11 +133,15 @@ def main() -> int:
     except ClientError as e:
         record("ECR", FAIL, err(e))
 
+    # The CodeCommit *API* and CodeCommit *git* are separately authorized. The API is denied
+    # for us; git push WORKS via the credential helper, which mints a SigV4 password from the
+    # SSO session (`aws codecommit credential-helper`). Verified 2026-08-25 by pushing this
+    # branch. So an API denial here is expected and is NOT a blocker -- do not read it as one.
     try:
         meta = boto3.client("codecommit", region_name=REGION).get_repository(repositoryName=REPO)
-        record("CodeCommit", OK, meta["repositoryMetadata"]["cloneUrlHttp"])
+        record("CodeCommit API", OK, meta["repositoryMetadata"]["cloneUrlHttp"])
     except ClientError as e:
-        record("CodeCommit", FAIL, err(e))
+        record("CodeCommit API", WARN, f"{err(e)} -- expected; git push works via credential-helper")
 
     # --- Bedrock: the one that gates every published number -----------------------------
     print("\nBEDROCK")

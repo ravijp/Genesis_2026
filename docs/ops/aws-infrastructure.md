@@ -240,7 +240,37 @@ aws sts get-caller-identity         # confirms who you are
 
 When the token lapses, re-run `aws sso login`. Nothing is ever recreated or re-pasted.
 
-### Step 4 — CodeCommit, with no static secret
+### Step 4 — CodeCommit: WORKING, via the credential helper
+
+**Verified 2026-08-25: `build/ear-on-every-call` is pushed.** No static Git password was needed and
+none is stored.
+
+**The API and git are authorized separately.** `codecommit:GetRepository` and `ListRepositories` are
+denied for the `agentic-trio` permission set — but `git push` works, because
+`aws codecommit credential-helper` mints a short-lived SigV4 password from the SSO session. An API
+denial is therefore expected and is **not** a blocker. `aws_check.py` reports it as WARN for that
+reason.
+
+Configured locally, scoped to the CodeCommit host so it cannot affect GitHub:
+
+```bash
+git config --local credential."https://git-codecommit.us-east-1.amazonaws.com".helper "$HOME/bin/cc-cred.sh"
+git config --local credential.UseHttpPath true
+git remote add codecommit https://git-codecommit.us-east-1.amazonaws.com/v1/repos/agentic-trio
+```
+
+`~/bin/cc-cred.sh` is a two-line wrapper around the AWS CLI. It exists because git's inline
+`!`-helper syntax breaks on the space in `C:\Program Files\...` — the failure is an unhelpful
+`[Errno 22] Invalid argument`, so the wrapper is worth keeping rather than rediscovering.
+
+**You do not need the `rprakash-at-859430413223` HTTPS Git credential.** It would work, but it is a
+long-lived static secret and the helper above needs none. D-022's reasoning stands.
+
+**Reading an empty repo's response:** `git ls-remote` on a repo with no commits returns nothing and
+exits 0, which is indistinguishable from a silent auth failure. Use `--exit-code`: exit 2 means
+"authenticated, no refs", 128 means "auth failed". That distinction cost real time.
+
+### Step 4b — the old no-static-secret notes
 
 `git-remote-codecommit` signs each push with the SSO profile. Under uv, no global install:
 
