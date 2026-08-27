@@ -1,13 +1,13 @@
 """The ingest handler: one conversation in, a re-scored ledger and maybe an investigation out.
 
-    SQS record -> Conversation -> extract() -> LedgerStore.append() -> re-score -> threshold
+    SQS record -> Conversation -> archive -> extract() -> ledger append -> re-score -> threshold
 
 **This module does not score anything.** It loads, delegates to an unchanged `SignalLedger`, and
 persists. `memory.py` is the only scorer in this codebase, online or offline, and the one thing
 this architecture forbids is a second one appearing on the deployed path where nobody compares it
 to the local one. Every number below comes back from `SignalLedger.best()`.
 
-Four properties, each bought with a reason:
+Five properties, each bought with a reason:
 
 1. **Redelivery is a no-op, not an error.** `LedgerStore.append()` writes conditional on
    `attribute_not_exists(sk)`, so SQS's at-least-once delivery cannot double-count a signal. The
@@ -18,7 +18,11 @@ Four properties, each bought with a reason:
 3. **Keyless by default.** The extractor is the offline lexicon unless `EARSHOT_EXTRACTOR=bedrock`
    says otherwise, chosen by an explicit `if`/`elif` -- `aws/__init__.py` forbids dynamic imports
    on the guarded surface, so there is no registry lookup here and there must never be one.
-4. **Nothing here can see the answer key.** It reads a transcript off a queue; there is no corpus
+4. **The transcript is archived before it is read.** A signal on the ledger whose transcript is
+   missing is a citation the investigator can never resolve, and it would burn its whole retry
+   budget discovering that. A transcript with no signal costs a few kilobytes. See
+   `transcripts.py`.
+5. **Nothing here can see the answer key.** It reads a transcript off a queue; there is no corpus
    import and no truth object anywhere in the module. `tests/test_separation.py` covers this file
    by glob.
 
@@ -45,64 +49,27 @@ from typing import Any
 
 from ..config import ScoringConfig
 from ..extract import Extractor, OfflineLexiconExtractor
-from ..schema import Channel, Conversation, Turn
+from ..schema import Conversation
 from .stores import REGION, LedgerStore, table_name
+from .transcripts import TranscriptArchive, TranscriptError, parse_conversation
+
+# Re-exported: the transcript wire format lives in `transcripts.py`, next to the archive that
+# stores it, so `ingest.py` and `investigate.py` cannot drift on what a transcript is.
+__all__ = [
+    "DEFAULT_THRESHOLD",
+    "IngestResult",
+    "Ingestor",
+    "QueuePublisher",
+    "TranscriptError",
+    "build_ingestor",
+    "handler",
+    "parse_conversation",
+]
 
 # The online cut. Deliberately a constant rather than a budget -- see the module docstring.
 DEFAULT_THRESHOLD = 0.60
 
 DEFAULT_STAGE = "dev"
-
-
-class IngestError(ValueError):
-    """A record that cannot be turned into a `Conversation`. Fails that record alone."""
-
-
-def parse_conversation(payload: Any) -> Conversation:
-    """Strict parse of one transcript message. Rejects rather than defaults.
-
-    A missing `day` defaulted to 0 would place every signal at the corpus epoch and decay it to
-    nothing, which reads on a dashboard as "the ledger does not work" rather than as bad input. So
-    every field a score depends on is required, and an unknown channel is an error rather than a
-    fallback -- `Channel` is a closed set, and adding to it is a change to the model, not something
-    a queue producer gets to do in a payload.
-    """
-    if not isinstance(payload, dict):
-        raise IngestError(f"transcript must be a JSON object, got {type(payload).__name__}")
-    missing = {"conversation_id", "customer_id", "channel", "day", "turns"} - set(payload)
-    if missing:
-        raise IngestError(f"transcript is missing {sorted(missing)}")
-    try:
-        channel = Channel(payload["channel"])
-    except ValueError as exc:
-        known = ", ".join(c.value for c in Channel)
-        raise IngestError(f"unknown channel {payload['channel']!r}; known: {known}") from exc
-    day = payload["day"]
-    if isinstance(day, bool) or not isinstance(day, int):
-        raise IngestError(f"day must be an integer, got {day!r}")
-    raw_turns = payload["turns"]
-    if not isinstance(raw_turns, list) or not raw_turns:
-        raise IngestError("turns must be a non-empty list")
-    turns = []
-    for i, turn in enumerate(raw_turns):
-        if not isinstance(turn, dict) or "speaker" not in turn or "text" not in turn:
-            raise IngestError(f"turn {i} must be an object with 'speaker' and 'text'")
-        # The producer's index wins when it gives one: evidence citations resolve by
-        # (conversation_id, turn_index), so re-indexing a turn breaks every quote citing it.
-        turns.append(
-            Turn(
-                index=int(turn.get("index", i)),
-                speaker=str(turn["speaker"]),
-                text=str(turn["text"]),
-            )
-        )
-    return Conversation(
-        conversation_id=str(payload["conversation_id"]),
-        customer_id=str(payload["customer_id"]),
-        channel=channel,
-        day=day,
-        turns=tuple(turns),
-    )
 
 
 @dataclass(frozen=True)
@@ -123,6 +90,7 @@ class IngestResult:
     threshold: float
     crossed: bool
     as_of_day: int
+    archived: bool = False
     enqueued: bool = False
 
     def to_dict(self) -> dict[str, Any]:
@@ -137,6 +105,7 @@ class IngestResult:
             "threshold": self.threshold,
             "crossed": self.crossed,
             "as_of_day": self.as_of_day,
+            "archived": self.archived,
             "enqueued": self.enqueued,
         }
 
@@ -178,15 +147,22 @@ class Ingestor:
         *,
         threshold: float = DEFAULT_THRESHOLD,
         publisher: QueuePublisher | None = None,
+        archive: TranscriptArchive | None = None,
         scoring: ScoringConfig | None = None,
     ) -> None:
         self.extractor = extractor
         self.store = ledger_store
         self.threshold = threshold
         self.publisher = publisher
+        self.archive = archive
         self.scoring = scoring or ScoringConfig()
 
     def ingest(self, conversation: Conversation) -> IngestResult:
+        # Archive BEFORE extracting. A signal on the ledger whose transcript is missing is a
+        # citation the investigator can never resolve; a transcript with no signal costs a few
+        # kilobytes. Order the failure so the cheap side loses.
+        archived = self.archive.put(conversation) if self.archive is not None else False
+
         signals = self.extractor.extract(conversation)
         written, duplicates = self.store.append_all(signals)
 
@@ -212,6 +188,7 @@ class Ingestor:
             threshold=self.threshold,
             crossed=crossed,
             as_of_day=as_of_day,
+            archived=archived,
         )
         if crossed and self.publisher is not None:
             # The crossing's coordinates only. The investigate handler reloads the ledger from
@@ -246,7 +223,7 @@ def _extractor_from_env() -> Extractor:
         from ..llm.bedrock import BedrockProvider  # noqa: PLC0415
 
         return ModelExtractor(BedrockProvider())
-    raise IngestError(f"unknown EARSHOT_EXTRACTOR {name!r}; known: offline, bedrock")
+    raise TranscriptError(f"unknown EARSHOT_EXTRACTOR {name!r}; known: offline, bedrock")
 
 
 def build_ingestor() -> Ingestor:
@@ -258,6 +235,7 @@ def build_ingestor() -> Ingestor:
         LedgerStore(table_name(stage, "ledger")),
         threshold=float(os.environ.get("EARSHOT_THRESHOLD", DEFAULT_THRESHOLD)),
         publisher=QueuePublisher(queue_url) if queue_url else None,
+        archive=TranscriptArchive(stage),
     )
 
 

@@ -50,7 +50,7 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | W5 | First keyed reader run | TODO | Needs W3. 150 CFPB docs, ~$0.30, both arms |
 | W6 | Ledger + case DynamoDB stores | **DONE (code); tables not created** | `aws/stores.py` + `tools/provision.py`. Conditional writes, no delete path on the ledger, scoring delegated. 39 stub tests. Dry-run verified against the real account |
 | W7 | Ingest path (SQS FIFO → handler) | **DONE** | `aws/ingest.py`. Partial batch failure, conditional append, scoring delegated. 18 tests, no AWS |
-| W8 | Investigate path | **TODO — unblocked** | D-025 moved the investigator to Haiku 4.5, which is invocable. No longer waiting on the Anthropic form |
+| W8 | Investigate path | **DONE (code)** | `aws/investigate.py` + `aws/transcripts.py`. Loop unchanged, score recomputed not trusted, account data labelled synthetic. 29 tests |
 | W9 | CI/CD | BLOCKED (IT) | CodeBuild + CodePipeline denied. `buildspec.yml` is written and parked, ready to run |
 | W10 | Reviewer UI, 3 screens | TODO | Needs W1 only. Whole client-facing axis |
 | W11 | Observability (EMF) | TODO | CloudWatch granted; no SNS, so alarms target EventBridge → Lambda |
@@ -74,6 +74,32 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-28 (later still)** · **W8 done — `aws/investigate.py`, plus `aws/transcripts.py`.**
+379 tests (+35), ruff clean. Three things surfaced that the work package did not name:
+
+1. **W7 had a hole: the investigator had nothing to read.** The ledger stores signals, not
+   conversations, and `unresolved_evidence()` rejects any decision whose citations do not resolve
+   against a transcript. Deployed, the loop would have burned its whole retry budget rejecting its
+   own decisions and landed a case saying "insufficient evidence" about a customer with plenty. So
+   `transcripts.py` owns the wire format and an S3 archive, and ingest now archives **before** it
+   extracts — a signal whose transcript is missing is unrecoverable, a transcript with no signal
+   costs kilobytes.
+2. **Write-once degrades and the code says so.** A.1 line 13 wants Object Lock in compliance mode;
+   it must be enabled at bucket creation and `s3://agentic-trio` was not. The substitute is a
+   conditional put (`IfNoneMatch="*"`), which stops overwrite and redelivery but not a deliberate
+   `DeleteObject`. Say the smaller thing on stage. **The ledger's A6 guarantee is untouched** and
+   must not be merged with this one.
+3. **There is no bank core feed, so the account tools are fiction — and each case now says so.**
+   `core/accounts.py` needs a `latent_risk`; locally that is the corpus's `financial_state`.
+   Deployed it is a SHA-256 draw from the customer id (stable per customer, derived from nothing
+   real) and every case carries `account_data: "synthetic"`. A single constant instead would make
+   every customer's account identical, which is a worse thing to put on a screen. **This is the
+   seam a real feed replaces.**
+
+Also: the queue message's score is never trusted. A conversation can land between the crossing and
+the investigation, so the score is recomputed from the ledger and the message's copy is used only
+to report drift.
 
 **2026-08-28 (later)** · **W7 done — `aws/ingest.py`.** SQS record → `Conversation` → `extract()` →
 conditional append → reload → unchanged `SignalLedger` → threshold → enqueue. 344 tests (+18), ruff

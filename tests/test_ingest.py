@@ -22,14 +22,9 @@ import pytest
 from test_stores import FakeTable
 
 from earshot.aws import ingest as ingest_mod
-from earshot.aws.ingest import (
-    IngestError,
-    Ingestor,
-    QueuePublisher,
-    handler,
-    parse_conversation,
-)
+from earshot.aws.ingest import Ingestor, QueuePublisher, handler
 from earshot.aws.stores import LedgerStore
+from earshot.aws.transcripts import TranscriptError, parse_conversation
 from earshot.config import ScoringConfig
 from earshot.extract import OfflineLexiconExtractor
 from earshot.memory import SignalLedger
@@ -81,7 +76,7 @@ def build(threshold: float = 0.6, table: FakeTable | None = None):
 def test_a_transcript_missing_a_scoring_field_is_rejected_not_defaulted() -> None:
     """`day` defaulted to 0 would place the signal at the corpus epoch and decay it to nothing --
     a wrong answer that looks like a working system."""
-    with pytest.raises(IngestError, match="missing"):
+    with pytest.raises(TranscriptError, match="missing"):
         parse_conversation({"conversation_id": "C1", "customer_id": "X", "channel": "call"})
 
 
@@ -103,7 +98,7 @@ def test_a_malformed_field_names_itself(payload: dict, match: str) -> None:
         "day": 3,
         "turns": [{"speaker": "customer", "text": "hello"}],
     }
-    with pytest.raises(IngestError, match=match):
+    with pytest.raises(TranscriptError, match=match):
         parse_conversation({**base, **payload})
 
 
