@@ -24,6 +24,7 @@ from pathlib import Path
 from .agent import InvestigationDecision, InvestigationTrace, ToolContext, investigate
 from .agent.prompts import investigator_prompts
 from .arms import demo_ledger, mechanism_ablations, run_all_arms
+from .aws.transcripts import to_payload
 from .case_record import case_record
 from .config import DEFAULT, RunConfig
 from .corpus import generate, smallest_fragment_pool
@@ -578,6 +579,14 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
               "floor, not a result.")
 
     records: list[dict] = []
+    # The transcripts behind the cited quotes, so the artifact is sufficient for a reviewer screen
+    # on its own. Deployed these live in S3, not in the case item, and this mirrors that split
+    # exactly: a top-level map, keyed by conversation id, in `transcripts.to_payload`'s wire
+    # format. Taken from the ToolContext the agent actually saw — which `test_separation.py`
+    # already guarantees is answer-key-free — and NEVER by regenerating the corpus from the seed,
+    # which is the shortcut that would put `stratum`, `outcome` and `latent_risk` behind a
+    # client-facing screen.
+    transcripts: dict[str, dict] = {}
     for i, (customer_id, breakdown) in enumerate(cut[:limit], start=1):
         ctx = _context(corpus, customer_id, breakdown, threshold, run.seed)
         try:
@@ -592,6 +601,8 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
         records.append(
             _case_record(ledger, ctx, breakdown, threshold, decision, trace)
         )
+        for conversation in ctx.conversations:
+            transcripts[conversation.conversation_id] = to_payload(conversation)
 
     elapsed = time.time() - started
     total_cost = sum(r["trace"]["cost_usd"] for r in records)
@@ -646,6 +657,7 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
                     "total_cost_usd": round(total_cost, 6),
                 },
                 "cases": records,
+                "conversations": transcripts,
             },
             indent=2,
             default=str,

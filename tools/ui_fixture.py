@@ -1,0 +1,157 @@
+"""Turn an `earshot investigate` artifact into the reviewer UI's data file.
+
+    uv run python tools/ui_fixture.py                 # newest artifact -> ui/data.js
+    uv run python tools/ui_fixture.py --artifact PATH --out ui/data.js
+
+**Why this exists.** The reviewer UI must be demonstrable with no AWS, no key and no network — a
+judging room without wifi cannot be allowed to break the demo (D-004). So the SPA reads a plain
+`data.js` that assigns `window.EARSHOT_DATA`, which loads over `file://` where `fetch()` of a local
+JSON does not.
+
+**It reformats; it never computes.** The queue rows come from `api._queue_row`, the same function
+the deployed `GET /cases` uses, so the offline screen and the live screen render identical objects.
+Nothing here scores, ranks by its own rule, or invents a field. The cases and the transcripts are
+copied out of the artifact untouched.
+
+**It never regenerates the corpus.** The artifact carries its own transcripts precisely so this
+tool does not have to reach for `manifest.seed` — which would put `stratum`, `outcome` and
+`latent_risk` one object away from a client-facing screen. This file does not import the corpus,
+and `tests/test_ui_fixture.py` asserts no answer-key field reaches the output.
+
+**Provenance travels with the data.** The manifest goes into `data.js` and the UI prints it in a
+banner. Offline numbers are always labelled with their provider (`offline-rules` is a rule engine,
+not a model), because a screenshot outlives the caveat someone said out loud next to it.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Any
+
+from earshot.aws.api import _queue_row
+
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_OUT = ROOT / "ui" / "data.js"
+ARTIFACT_GLOB = "artifacts/runs/investigate-*.json"
+
+# Answer-key fields. Checked here as well as in the tests: this tool is the last thing standing
+# between the run artifact and a browser, and a fixture is exactly where someone would one day add
+# "just the stratum, for colour".
+ANSWER_KEY_FIELDS = frozenset(
+    {
+        "stratum",
+        "outcome",
+        "outcome_day",
+        "latent_risk",
+        "financial_state",
+        "seeded",
+        "seeded_signals",
+        "lead_days",
+    }
+)
+
+
+class FixtureError(RuntimeError):
+    """Something about the artifact makes it unusable as UI data. Named, not a traceback."""
+
+
+def newest_artifact(root: Path = ROOT) -> Path:
+    """The most recently modified investigate artifact. Refuses rather than guessing when there is
+    none — the fix is one command, and saying so beats a KeyError three functions later."""
+    found = sorted(root.glob(ARTIFACT_GLOB), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not found:
+        raise FixtureError(
+            f"no artifact matching {ARTIFACT_GLOB}. Run: "
+            "uv run earshot investigate --customers 400 --limit 8"
+        )
+    return found[0]
+
+
+def all_keys(obj: Any) -> set[str]:
+    if isinstance(obj, dict):
+        return set(obj) | {k for v in obj.values() for k in all_keys(v)}
+    if isinstance(obj, list):
+        return {k for v in obj for k in all_keys(v)}
+    return set()
+
+
+def build(artifact: dict[str, Any]) -> dict[str, Any]:
+    """The three screens' data, in the shapes the deployed API returns."""
+    cases = artifact.get("cases") or []
+    if not cases:
+        raise FixtureError("the artifact investigated nothing; there is no queue to render")
+
+    # Highest current score first -- the same order `CaseStore.list_queue` returns off the GSI,
+    # and the same question `cli.py:_queue` asks: who should someone look at today.
+    ranked = sorted(cases, key=lambda c: (-c["score"], c["case_id"]))
+    payload = {
+        "manifest": artifact.get("manifest", {}),
+        "queue": {
+            "status": "open",
+            "count": len(ranked),
+            "limit": len(ranked),
+            "truncated": False,
+            "cases": [_queue_row(case) for case in ranked],
+        },
+        "cases": {case["case_id"]: case for case in ranked},
+        "conversations": artifact.get("conversations", {}),
+    }
+
+    leaked = all_keys(payload) & ANSWER_KEY_FIELDS
+    if leaked:
+        raise FixtureError(f"answer-key fields would reach the browser: {sorted(leaked)}")
+
+    missing = {
+        row["conversation_id"]
+        for case in ranked
+        for row in case.get("evidence", [])
+    } - set(payload["conversations"])
+    if missing:
+        raise FixtureError(
+            f"cited conversations with no transcript: {sorted(missing)}. The artifact predates "
+            "transcript capture -- re-run `earshot investigate`."
+        )
+    return payload
+
+
+def render(payload: dict[str, Any]) -> str:
+    """A `.js` assignment, not a `.json` file: the SPA has to load over `file://`, where a
+    `fetch()` of a sibling JSON is blocked by the browser and a `<script src>` is not."""
+    body = json.dumps(payload, indent=2, default=str)
+    return (
+        "// GENERATED by tools/ui_fixture.py -- do not edit by hand.\n"
+        "// A recorded run, not live data. Its provenance is in `manifest` and the UI prints it.\n"
+        f"window.EARSHOT_DATA = {body};\n"
+    )
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--artifact", type=Path, default=None, help="default: the newest one")
+    parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    args = parser.parse_args()
+
+    try:
+        path = args.artifact or newest_artifact()
+        payload = build(json.loads(path.read_text(encoding="utf-8")))
+    except FixtureError as exc:
+        print(f"ui_fixture: {exc}")
+        return 1
+
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(render(payload), encoding="utf-8")
+
+    manifest = payload["manifest"]
+    print(f"artifact  {path}")
+    print(f"provider  {manifest.get('provider')}   seed {manifest.get('seed')}   "
+          f"git {manifest.get('git_sha')}")
+    print(f"wrote     {args.out}  "
+          f"({payload['queue']['count']} cases, {len(payload['conversations'])} transcripts, "
+          f"{args.out.stat().st_size / 1000:.0f} kB)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

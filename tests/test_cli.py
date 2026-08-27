@@ -205,3 +205,33 @@ def test_the_investigate_artifact_carries_the_whole_case_not_just_the_verdict(
 
     leaked = _all_keys(cases) & ANSWER_KEY_FIELDS
     assert not leaked, f"answer-key fields on a client-facing artifact: {sorted(leaked)}"
+
+
+def test_the_investigate_artifact_carries_the_transcripts_behind_its_quotes(cli, tmp_path) -> None:
+    """A reviewer checks a cited quote by reading the turn around it. Deployed those transcripts
+    come from S3; the artifact carries them in the same wire format so the UI has one code path.
+
+    They come from the `ToolContext` the agent saw — never from regenerating the corpus, which is
+    what would put `stratum`, `outcome` and `latent_risk` behind a client-facing screen.
+    """
+    import json
+
+    from earshot.aws.transcripts import parse_conversation
+
+    assert cli.cmd_investigate(SMALL, "offline", limit=1) == 0
+    written = next(iter((tmp_path / "runs").glob("investigate-*.json")))
+    artifact = json.loads(written.read_text(encoding="utf-8"))
+    conversations = artifact["conversations"]
+    assert conversations, "no transcripts, so no quote can be read in context"
+
+    cited = {
+        row["conversation_id"] for case in artifact["cases"] for row in case["evidence"]
+    }
+    assert cited <= set(conversations), (
+        f"cited conversations with no transcript: {sorted(cited - set(conversations))}"
+    )
+    for payload in conversations.values():
+        parse_conversation(payload)  # the S3 wire format, or the UI has two code paths
+
+    leaked = _all_keys(conversations) & ANSWER_KEY_FIELDS
+    assert not leaked, f"answer-key fields on a transcript: {sorted(leaked)}"

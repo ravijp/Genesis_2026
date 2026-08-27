@@ -68,13 +68,13 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `aws/investigate.py` — queue consumer: crossing → ledger → **unchanged `investigate()` loop** → `CaseStore`. The message's score is used only to detect drift; the score of record is recomputed. **The account tools are synthetic** — no bank core feed exists, `latent_risk` is a SHA-256 draw from the customer id, and every case carries `account_data: "synthetic"` so no screen can present it as a record `[stable]`
 - `aws/stores.py` — DynamoDB ledger/cases/reviews. Case serialization comes from `case_record.py`; `put_case` adds only `pk`/`gsi1pk`/`gsi1sk` on top, and the ranked queue sorts on the **current** score, not the crossing-day one. Every ledger write conditional on `attribute_not_exists(sk)`, so a duplicate delivery is a no-op and its failure count is the duplicate metric (A7). **No delete method exists on `LedgerStore`**, and a test scans the class surface for anything delete-shaped (A6). Scoring is delegated to the unchanged `SignalLedger` — a test asserts a round-trip is bit-identical `[stable]`
 
-## Not created yet — decided, and where they go
+## Not created yet — decided, and where it goes
 
-**Neither directory exists.** Empty directories are invisible to git, so creating them before there is
+**`infra/` does not exist.** Empty directories are invisible to git, so creating it before there is
 content would put a lie in this file. The placement is settled; the first real file creates the folder.
+(`ui/` was in this section until 2026-08-28 and now has its own, below.)
 
 - `infra/` — AWS CDK in Python, two stages (`dev`, `demo`), one account. Named for its role, not its tool: §3.5 records Terraform as the rejected alternative, so the tool is revocable and must not become the directory's name. Wired as the `[dependency-groups] infra` group **already in `pyproject.toml`**, never a second project — a separate venv could not `import earshot` without the PYTHONPATH hack CLAUDE.md forbids
-- `ui/` — the three-screen reviewer SPA. Already excluded from ruff and pytest, with `node_modules/` and `dist/` gitignored — so CodeBuild must build it rather than reading a committed `dist/`
 
 ## tests/
 
@@ -82,6 +82,7 @@ content would put a lie in this file. The placement is settled; the first real f
 - `test_bedrock.py` — 33 tests against a stubbed `converse()`. Passes whether or not boto3 is installed, and that is itself under test `[stable]`
 - `test_stores.py` — 39 tests against a hand-rolled fake table. Duplicate-delivery no-op, Decimal round-trip, the absent delete surface, and score delegation `[stable]`
 - `test_ingest.py` — 18 tests over the real path (fake DynamoDB, fake SQS, no model): a sub-threshold signal is retained and still counts later, two conversations cross where neither alone would, the online score equals `memory.py`'s bit for bit, redelivery changes nothing, one poison record fails alone `[stable]`
+- `test_ui.py` — 9 tests: the fixture's rows are the API's own rows, the queue ranks on the score today, cases pass through untouched, no answer-key field reaches a browser, a citation without a transcript fails the build, and every screen renders (via `ui/smoke.mjs`, skipped with no node) `[stable]`
 - `test_api.py` — 24 tests over the real routing and the real stores: no answer-key field reaches a response body, no route contacts anyone, a review annotates without mutating evidence, a truncated queue says so, and a 500 carries no stack trace `[stable]`
 - `test_transcripts.py` — 12 tests against a fake S3: lossless round trip (a lost turn index breaks every citation), a redelivery refused by the precondition rather than silently applied, and a customer with more than one page of history read in full rather than truncated at page one `[stable]`
 - `test_investigate_handler.py` — 17 tests on the crossing→case path with the offline rule engine: the score of record is recomputed and drift is reported, a missing archive fails loudly, re-investigation overwrites one case, and a customer who no longer crosses produces none `[stable]`
@@ -93,6 +94,16 @@ content would put a lie in this file. The placement is settled; the first real f
 - `test_sweep.py` — the multi-seed harness: sign test vs hand computation, pairing on seed, denominators present and identical across arms, equal alert budget, determinism, counted-not-reconstructed integers, artifact reproducibility `[stable]`
 - `test_cli.py` — the commands, and the demo's internal consistency: its narration may not contradict the claim it selected on, and its denominator must count customers. Also that the `investigate` artifact is **sufficient on its own** — the reviewer UI must never regenerate the corpus from `manifest.seed` to fill in missing fields `[stable]`
 - `test_extract_model.py` — the model reader against a stub provider: statelessness (no customer id in the prompt), verbatim quotes or nothing, the offline path's grain and floor, record-then-replay, and that the default reader stays keyless `[stable]`
+
+## ui/ — the reviewer SPA, three screens, no build step
+
+Open `ui/index.html`. No npm, no bundler, no dev server, no network — three static files plus a
+generated, committed `data.js`, so a judging room with no wifi still sees the product (D-004), and
+`aws s3 sync` deploys it today while CodeBuild is blocked (W9). Details in `ui/README.md`.
+
+- `index.html` · `styles.css` · `app.js` — ranked queue (`#/queue`), one case (`#/case/<id>`), the retro re-score (`#/case/<id>/retro`), and the transcript behind a cited quote. Renders the **same objects** the deployed API returns; computes nothing; escapes all customer speech before it reaches innerHTML `[stable]`
+- `data.js` — **generated and committed** by `tools/ui_fixture.py` so a fresh clone works with no Python run. A `<script src>` rather than a JSON fetch, which is what makes `file://` work. Carries its manifest, and the page prints provenance in a banner on every screen `[generated]`
+- `smoke.mjs` — renders all seven routes against a stub DOM in node. Catches what `node --check` cannot: a route that throws, a field renamed in `case_record()` that the page still reads, a placeholder leaking into the markup. Run by `uv run pytest` when node is on PATH `[stable]`
 
 ## benchmarks/cfpb/ — AT-43, the extractor on real complaint narratives
 
@@ -123,6 +134,7 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 ## tools/
 
 - `aws-login.ps1` · `aws-login.sh` — **run first, every session.** Login only if the token is dead, then verify every permission. `-Force`/`--force` reissues the SSO session, which is how a new IAM grant actually takes effect `[stable]`
+- `ui_fixture.py` — turns an `earshot investigate` artifact into `ui/data.js`. **Reformats, never computes**: queue rows come from `api._queue_row`, the same function the deployed `GET /cases` uses, so the offline screen and the live screen render identical objects. Refuses to write an answer-key field or a citation with no transcript `[stable]`
 - `deploy.py` — **the deploy path** (CDK is unusable, D-024): one zip → S3 → three Lambdas, dry-run by default, idempotent. Deps are **cross-compiled for manylinux cp313** — `pydantic-core` is a compiled extension and a Windows-built zip dies at import inside Lambda. The zip's sha goes in the S3 key and every function's description, so "are all three running the same code?" is readable rather than inferred. Deployed keyless by default (`--extractor` / `--provider` flip to Bedrock) `[stable]`
 - `provision.py` — idempotent boto3 provisioning, **dry-run by default**. Three tables, three queues with DLQ redrive. Schema imported from `stores.TABLE_SPECS` so the two cannot drift. Teardown has no code path that can delete the ledger. Known permission gaps print **PARKED** rows naming the gap, the owner and the workaround. PITR is enabled with a bounded retry: a table is ACTIVE seconds before its backups subsystem is, and the gap reports as `ContinuousBackupsUnavailableException`, which reads like a permission problem `[stable]`
 - `aws_probe.py` — 34 probes at build depth, each naming the IAM action and what breaks without it. Creates-then-deletes where a write is the only honest test `[stable]`

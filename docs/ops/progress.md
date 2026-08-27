@@ -52,7 +52,7 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | W7 | Ingest path (SQS FIFO → handler) | **DONE** | `aws/ingest.py`. Partial batch failure, conditional append, scoring delegated. 18 tests, no AWS |
 | W8 | Investigate path | **DONE (code)** | `aws/investigate.py` + `aws/transcripts.py`. Loop unchanged, score recomputed not trusted, account data labelled synthetic. 29 tests |
 | W9 | CI/CD | BLOCKED (IT) | CodeBuild + CodePipeline denied. `buildspec.yml` is written and parked, ready to run |
-| W10 | Reviewer UI, 3 screens | **TODO — unblocked, next** | W1 done, and `aws/api.py` now serves the five reads + one write it needs. Whole client-facing axis |
+| W10 | Reviewer UI, 3 screens | **DONE (read-only)** | `ui/`, no build step. All three beats render from a committed artifact with zero AWS. The write path waits on the API being reachable |
 | W11 | Observability (EMF) | TODO | CloudWatch granted; no SNS, so alarms target EventBridge → Lambda |
 | W12 | Sweep runner | DROPPED for now | Fargate needs VPC subnets; keep the sweep local |
 
@@ -75,6 +75,39 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-28 (W10)** · **The reviewer UI, three screens, no build step.** `ui/index.html` +
+`styles.css` + `app.js` + a generated, committed `data.js`. 416 tests (+10), ruff clean.
+
+**No npm, no bundler, no dev server, and that is the design.** CodeBuild is blocked (W9) so there is
+nothing to build with, and D-004's lesson is that a judging room with no wifi must not be able to
+break the demo. `aws s3 sync ui/ s3://agentic-trio/ui/` deploys it with permissions we already have.
+`data.js` is a `<script src>` rather than a JSON fetch specifically so `file://` works — a fetch of a
+sibling JSON is blocked by the browser and a script tag is not.
+
+**One code path, offline or live.** `tools/ui_fixture.py` builds the queue rows with
+`api._queue_row`, the same function the deployed `GET /cases` uses, and copies the cases out of the
+artifact untouched. So the page renders identical objects whichever it is fed, and a test asserts
+row-for-row equality rather than trusting that.
+
+**`cmd_investigate` now also persists the transcripts behind its quotes**, in `transcripts
+.to_payload`'s wire format at the artifact's top level — mirroring the deployed split where they
+live in S3 rather than in the case item. That is what lets "read the quote in context" work offline
+**without** regenerating the corpus from `manifest.seed`, which is the shortcut that would put
+`stratum`, `outcome` and `latent_risk` one object away from a client-facing screen. They come from
+the `ToolContext` the agent saw, which `test_separation.py` already guarantees is clean.
+
+Answer-key discipline is checked three times on the way to the browser: the fixture refuses to write
+one, `test_ui.py` asserts it, and `ui/smoke.mjs` greps the generated file. Three because this is the
+last hop before a screen someone demonstrates to a bank.
+
+`ui/smoke.mjs` renders all seven routes against a stub DOM in node — including the two that must
+degrade to "not found" rather than throwing — and `uv run pytest` runs it when node is present,
+skipping when it is not so a fresh clone with no toolchain stays green.
+
+**Read-only for now.** `POST /cases/{id}/reviews` exists in `aws/api.py`; the page cannot call it
+until the API is reachable from a browser (the Function URL is `AuthType=AWS_IAM`, which a static
+page cannot sign, and the execution role is missing its permissions anyway).
 
 **2026-08-28 (AWS is real)** · **Provisioned and deployed, on Ravi's go-ahead.** 3 DynamoDB tables
 (PITR on, no TTL), 3 SQS queues with DLQ redrive, and all three Lambdas live on python3.13 from one
