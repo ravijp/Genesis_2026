@@ -18,7 +18,7 @@ building it. Next gate **2026-09-07**. The 08-10 check-in and the 08-24 combined
 artifact records what 08-24 showed.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-investigator agent producing case files with cited evidence. **323 tests**, ruff clean.
+investigator agent producing case files with cited evidence. **406 tests**, ruff clean.
 
 **The AWS layer now exists in code.** `llm/bedrock.py` (Converse, Haiku 4.5, computed-not-charged cost),
 `aws/stores.py` (DynamoDB ledger/cases/reviews, conditional writes, no delete path on the ledger) and
@@ -32,6 +32,23 @@ crossing, and `score`/`as_of_day`/`evidence` from the customer today. Merging th
 choice — take the score from the crossing and a faded case keeps its opening-day seat at the top of
 the queue; take the evidence from the crossing and the retro chain freezes on the opening day, which
 empties the beat for every customer who kept accumulating.
+
+**All three Lambda handlers exist, and the end-to-end path closes in code (2026-08-28).**
+`aws/ingest.py` (archive → extract → conditional append → re-score → threshold → enqueue),
+`aws/investigate.py` (crossing → unchanged `investigate()` loop → `CaseStore`), `aws/api.py` (five
+reads + one write). Plus `aws/transcripts.py`, which W7 needed and did not have: the ledger stores
+signals, not conversations, so without an archive every deployed citation would be unresolvable.
+Three things to carry:
+
+- **The online threshold is a fixed cut (`EARSHOT_THRESHOLD`, default 0.60), not the budget-derived
+  local one.** A streaming handler has no population to rank against. The two will disagree about
+  whether a given customer crossed; do not present them as one number.
+- **Write-once on the evidence archive is a conditional put, not Object Lock.** It stops overwrite
+  and redelivery, not a deliberate `DeleteObject`. The ledger's A6 guarantee is DynamoDB and is
+  untouched — keep the two apart on stage.
+- **The account tools are synthetic and every case says so** (`account_data: "synthetic"`). There is
+  no bank core feed; `latent_risk` is a SHA-256 draw from the customer id. That is the seam a real
+  feed replaces.
 
 **AWS is provisioned and reachable.** Account `859430413223`, permission set `agentic-trio`,
 **us-east-1** (confirmed — the CodeCommit host says so), bucket `s3://agentic-trio`, repo
@@ -69,19 +86,16 @@ by construction.
 
 ## Next, in order
 
-1. **The three Lambda handlers** — `aws/ingest.py`, `investigate.py`, `api.py`. The stores, the
-   provider and now the case record all exist, so this is the glue that closes the end-to-end path.
-   Delegate with `isolation: "worktree"`.
-2. **First keyed run**, both arms, 150 CFPB docs, ~$0.30. Converts four "not measured" deliverables into
-   numbers. Commit the response cache and it replays keyless forever.
-3. **Reviewer UI** (W10) — **unblocked**, and the whole client-facing axis of a Track A entry.
-   `earshot investigate`'s artifact is now sufficient on its own: `case_id`, `signal_type`, `score`
-   (today) and `score_at_open`, `threshold`, `opened_on_day`/`as_of_day`, and an evidence chain
-   carrying `score_at_write`/`score_now`/`retro_delta`/`load_bearing` per quote. Build the three
-   screens off that file, and off `CaseStore` in deployment — both are the same shape by
-   construction (`case_record()`). **Never regenerate the corpus from `manifest.seed` to fill a
-   gap**: that puts `stratum`/`outcome`/`latent_risk` behind a client-facing screen, and a test
-   now scans the artifact for those field names.
+1. **Reviewer UI** (W10) — the whole client-facing axis of a Track A entry, and now fully unblocked.
+   `aws/api.py` serves the three screens; `earshot investigate`'s artifact has the same shape offline
+   (`case_record()`), so the SPA can be built and demoed with no AWS at all. **Never regenerate the
+   corpus from `manifest.seed` to fill a gap** — that puts `stratum`/`outcome`/`latent_risk` behind a
+   client-facing screen, and tests now scan both the artifact and every API response for those names.
+2. **Deploy the three handlers** — zip, passing `zenon-poc-lambda-execution` (D-024). Needs the
+   tables and queues, which bill: Ravi's call.
+3. **First keyed run**, both arms, 150 CFPB docs, ~$0.30. Converts four "not measured" deliverables
+   into numbers. Commit the response cache and it replays keyless forever.
+4. **Observability** (W11) and the spend ceiling in our own code (W4).
 
 **Not yet done and it bills:** `tools/provision.py --stage dev --no-dry-run` creates the real tables and
 queues. Dry-run is clean. Needs Ravi's go-ahead.

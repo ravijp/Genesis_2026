@@ -5,7 +5,7 @@ in place at each handover. **Keep it under ~60 lines** — it loads into every c
 baton, not a history: next action, live blockers, traps already paid for. History goes in
 `progress.md` or git.
 
-**2026-08-28** · branch `build/ear-on-every-call` · **323 tests**, guard at 84, ruff clean
+**2026-08-28** · commit `fb7e551` · branch `build/ear-on-every-call` · **406 tests**, guard at 96, ruff clean
 
 ## First turn
 
@@ -15,25 +15,27 @@ baton, not a history: next action, live blockers, traps already paid for. Histor
 3. `docs/ops/progress.md` for work-package status and blocker owners. `decisions.md` before arguing
    for anything.
 
-## Next action — the Lambda handlers
+## Next action — the reviewer UI (W10)
 
-`src/earshot/aws/ingest.py`, `investigate.py`, `api.py`. The stores and the provider both exist, so
-this is the glue that closes the end-to-end path.
+**All three Lambda handlers exist and the end-to-end path closes in code.** `aws/ingest.py`,
+`aws/investigate.py`, `aws/api.py`, plus `aws/transcripts.py` (the S3 evidence archive W7 needed and
+did not have). Nothing has been created in AWS.
 
-- **`ingest`**: one SQS record → `Conversation` → `extract()` → `LedgerStore.append()` (conditional,
-  so a redelivery is a no-op) → re-score via the unchanged `SignalLedger` → if the threshold is
-  crossed, enqueue to the investigations queue. **Do not reimplement scoring** — load, delegate,
-  persist. That is the one thing this architecture forbids.
-- **`investigate`**: queue consumer running the existing `investigate()` loop unchanged, writing a case
-  through `CaseStore.put_case(case, threshold=…, now=breakdown)`. **W1 landed 2026-08-28** —
-  `case_record.py` is the one serializer for the disk artifact and the DynamoDB item, so pass the
-  CURRENT breakdown as `now=` and the reviewer UI is fed by construction. Passing only the opened
-  case freezes the evidence chain on the crossing day and empties the retro beat.
-- **`api`**: five read endpoints over `CaseStore` + `ReviewStore` for the SPA.
-- Deploy: **zip, passing the existing role** `arn:aws:iam::859430413223:role/zenon-poc-lambda-execution`.
-  No new role, no container image (D-024).
-- **Delegate this to a subagent with `isolation: "worktree"`.** Two agents in one tree already
-  collided here and one wiped the other's untracked files.
+W10 is the whole client-facing axis of a Track A entry and is now fully unblocked:
+
+- **Build it against the offline artifact first.** `earshot investigate` writes the same case shape
+  the API returns — both come from `case_record()` — so all three screens can be built and demoed
+  with **zero AWS**. `ui/` exists, is gitignored for `node_modules/` and `dist/`, and is excluded
+  from ruff and pytest.
+- The five reads and one write are in `aws/api.py`'s module docstring. The three beats: ranked queue
+  (`GET /cases`), evidence chain (`GET /cases/{id}`), retro re-score (the `score_at_write` /
+  `score_now` / `retro_delta` / `load_bearing` fields on every evidence row).
+- **Never regenerate the corpus from `manifest.seed` to fill a gap.** It puts `stratum`, `outcome`
+  and `latent_risk` behind a client-facing screen. Tests scan the artifact and every API response
+  for those names.
+- **Delegate with `isolation: "worktree"`.** Two agents in one tree already collided here.
+
+Then: deploy the handlers (zip, passing `zenon-poc-lambda-execution`, D-024) and the first keyed run.
 
 **Ravi's call before anything real is created:** `tools/provision.py --stage dev --no-dry-run` makes
 billed resources. Dry-run is clean — 3 tables, 3 queues, 4 PARKED rows. Do not run it unprompted.
@@ -41,30 +43,33 @@ billed resources. Dry-run is clean — 3 tables, 3 queues, 4 PARKED rows. Do not
 ## State
 
 **One model, Haiku 4.5, for reader and investigator** (D-025) — `us.anthropic.claude-haiku-4-5-20251001-v1:0`.
-Nova Lite and Llama 3 8B are the arm-B candidates; arm B is deliberately undecided. Sonnet is dropped,
-which *unblocked* the investigator. Haiku's verdict accuracy on a multi-turn loop is **unmeasured** —
-not a cost win until AT-57 says so.
+Arm B is deliberately undecided (Nova Lite / Llama 3 8B). Haiku's verdict accuracy on a multi-turn
+loop is **unmeasured** — not a cost win until AT-57 says so.
 
-**CDK does not work here** (D-024): `cdk bootstrap` needs `s3:CreateBucket`, `iam:CreateRole`,
+**CDK does not work here** (D-024): bootstrap needs `s3:CreateBucket`, `iam:CreateRole`,
 `ecr:CreateRepository`, all denied. boto3 scripts instead. Do not re-litigate.
 
-**Only real IT ask left: CodeBuild + CodePipeline.** `buildspec.yml` is written and parked. Note it is
-blocked by the same `iam:CreateRole` gap as the Lambda roles — the one role we can pass is scoped to
-Lambda's trust policy, not CodeBuild's.
+**Only real IT ask left: CodeBuild + CodePipeline.** `buildspec.yml` is written and parked, blocked by
+the same `iam:CreateRole` gap.
 
-`boto3` is installed via the `aws` extra. It stays **optional** in `pyproject.toml` so a fresh clone
-runs all 323 tests keyless — that guarantee is load-bearing, do not promote it to a hard dependency.
+`boto3` is installed via the `aws` extra and stays **optional** — a fresh clone runs all 406 tests
+keyless. Load-bearing; do not promote it to a hard dependency.
 
 ## Traps already paid for
 
+- **Three deployed numbers are not what they look like, and each is stated in code, not just docs.**
+  (1) The online threshold is a fixed cut (`EARSHOT_THRESHOLD`, default 0.60), **not** the local
+  budget-derived one — a streaming handler has no population to rank against, and the two will
+  disagree. (2) Evidence-archive write-once is a conditional put, not Object Lock: it stops
+  overwrite and redelivery, not a deliberate delete. The ledger's A6 guarantee is DynamoDB and is
+  untouched — keep the two apart on stage. (3) The account tools are synthetic (`account_data:
+  "synthetic"` on every case); there is no bank core feed.
 - **A new IAM grant does nothing until the SSO session is reissued.** Use `--force`.
 - **Agents that write files need `isolation: "worktree"`.** Untracked files + another agent's
-  `git stash -u` nearly lost three of them, and the only tell was a `reset` in reflog, after the fact.
-- **Never delete an `__init__.py`.** Drops the guard 20 modules → 19 and the suite silently.
+  `git stash -u` nearly lost three of them.
+- **Never delete an `__init__.py`.** Drops the guard and the suite silently.
 - **Green stub tests are not proof.** Two provisioner bugs lived in the seam between our code and the
-  SDK: SQS's absent-queue wire code differs from botocore's class name, and PITR was probed on a table
-  dry-run never created. Exercise tools against reality.
-- **A test that assumes an optional dep is absent is broken.** The missing-boto3 test flipped to
-  failing the moment `uv sync --extra aws` ran. Simulate absence, never assume it.
+  SDK. Exercise tools against reality.
+- **A test that assumes an optional dep is absent is broken.** Simulate absence, never assume it.
 - **When something reads as AccessDenied, read the error *message*.** Two probe bugs and the Anthropic
   model-id prefix all masqueraded as permission problems.
