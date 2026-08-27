@@ -26,6 +26,31 @@ for something listed under "rejected", read the reason first.
 
 ---
 
+### D-024 · 2026-08-25 · Deploy with boto3 scripts, not CDK; zip Lambdas, not container images `ACCEPTED`
+**This reverses §3.5's commitment to AWS CDK, and it is forced rather than chosen.** CloudFormation
+access was granted on 2026-08-25, so CDK looked viable. It is not: `cdk bootstrap` needs
+`s3:CreateBucket` (our S3 grant is scoped to `agentic-trio` alone), `iam:CreateRole` (CDK creates 4-5
+deploy roles) and `ecr:CreateRepository` (ECR PowerUser gives push/pull to *existing* repos only). All
+three tested, all denied.
+
+What works, each proven by creating and deleting the real resource: **Lambda deploy by passing the
+existing role** `arn:aws:iam::859430413223:role/zenon-poc-lambda-execution`; DynamoDB tables; SQS
+queues; S3 objects in `agentic-trio`. That existing role is the unlock — without it no Lambda could be
+deployed at all, since we cannot create one.
+
+**Two claims must be retired from the write-up, not quietly dropped:**
+- **"Promote the same image digest, never rebuild"** (§3.5). No ECR repo we can create, so the
+  deployed artifact is a zip. `Dockerfile` stays for local runs and for if ECR opens up.
+- **One IAM role per function** (Appendix A rows 6-8). One shared role instead. Per-function least
+  privilege becomes target-state, and §3.6's "one IAM role per function" line is now aspirational.
+
+**Rejected: asking IT for `iam:CreateRole` + `ecr:CreateRepository` + `s3:CreateBucket` to save CDK.**
+Three broad grants — role creation especially — to avoid writing a provisioning script we can write in
+a day. The boto3 path also keeps the deployment logic in the repository a judge reads, which is the
+same argument A9 makes for hosting the agent loop ourselves. Revisit only if the script becomes the
+bottleneck. **Rejected: Fargate for the sweep** — needs VPC subnets we do not have; the sweep stays
+local, where a judge can reproduce it with no account.
+
 ### D-023 · 2026-08-25 · All prose lives under `docs/`; the repo root is code and config only `ACCEPTED`
 `sources/` → `docs/sources/` and `INDEX.md` → `docs/INDEX.md`. The root now holds two `.md` files, both
 of which must be there: `README.md` (the landing page CodeCommit renders) and `CLAUDE.md` (Claude Code
