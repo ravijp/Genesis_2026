@@ -50,8 +50,8 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | W5 | First keyed reader run | TODO | Needs W3. 150 CFPB docs, ~$0.30, both arms |
 | W6 | Ledger + case DynamoDB stores | TODO | Verified creatable |
 | W7 | Ingest path (SQS FIFO → handler) | TODO | Needs W3, W6 |
-| W8 | Investigate path | BLOCKED (Ravi) | Needs Sonnet 4.5 → Anthropic use-case form |
-| W9 | CI/CD | BLOCKED (IT) | CodeBuild + CodePipeline denied |
+| W8 | Investigate path | **TODO — unblocked** | D-025 moved the investigator to Haiku 4.5, which is invocable. No longer waiting on the Anthropic form |
+| W9 | CI/CD | BLOCKED (IT) | CodeBuild + CodePipeline denied. `buildspec.yml` is written and parked, ready to run |
 | W10 | Reviewer UI, 3 screens | TODO | Needs W1 only. Whole client-facing axis |
 | W11 | Observability (EMF) | TODO | CloudWatch granted; no SNS, so alarms target EventBridge → Lambda |
 | W12 | Sweep runner | DROPPED for now | Fargate needs VPC subnets; keep the sweep local |
@@ -60,11 +60,18 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 
 | Item | Owner | Ask |
 |---|---|---|
-| CodeBuild + CodePipeline | **IT (Vikash)** | Scope to `earshot-*` resources, or he creates project+pipeline |
-| Claude Sonnet 4.5 | **Ravi** | One-time Anthropic use-case form. Blocks the investigator only |
+| CodeBuild + CodePipeline | **IT (Vikash)** | **The only real ask left.** Scope to `earshot-*`, or he creates the project + pipeline |
 | Bedrock invocation logging | IT (Vikash) | In progress, not blocking |
-| S3 Object Lock | IT, Support case | Off, unchangeable now. Evidence write-once degrades to IAM |
-| `iam:CreateRole`, `ecr:CreateRepository`, `s3:CreateBucket` | IT — **not yet asked** | Would restore CDK and per-function roles. Ask only if we want them |
+| S3 Object Lock | IT, Support case | Off, unchangeable now. Evidence write-once degrades to IAM. Accept and state it |
+
+**Do NOT ask for these — we do not need them:**
+
+| Not asking for | Why not |
+|---|---|
+| `iam:CreateRole` | **We never needed it.** Lambdas deploy by *passing* the existing role `zenon-poc-lambda-execution`; verified by creating and deleting a real function. Asking for role creation is a broad grant to avoid a script we can write in a day. |
+| `s3:CreateBucket` | `s3://agentic-trio` is the team's provisioned bucket and object read/write works. Prefixes (`dev/`, `demo/`, `evidence/`, `artifacts/`) do the rest. |
+| `ecr:CreateRepository` | Zip deploys instead of container images (D-024). Costs us the "same digest promoted" claim, which we retire honestly. |
+| Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
 

@@ -26,6 +26,43 @@ for something listed under "rejected", read the reason first.
 
 ---
 
+### D-025 · 2026-08-25 · Haiku 4.5 everywhere; Sonnet is dropped, which unblocks the investigator `ACCEPTED`
+**One model does both jobs: `us.anthropic.claude-haiku-4-5-20251001-v1:0`.** Reader and investigator.
+Sonnet 4.5 is not used anywhere.
+
+**This removes a blocker rather than adding one.** Sonnet 4.5 needs a one-time Anthropic use-case form
+on this account and returns `ResourceNotFoundException` until it is filed. Haiku is already invocable,
+so **W8 (the investigate path) stops being blocked** and the form stops being on the critical path. It
+is still worth filing, but nothing waits on it.
+
+**§1.5's pinning argument was already void, for a reason unrelated to this.** It justified pinning
+Sonnet because `artifacts/cache/investigator-demo.jsonl` is keyed on the model, so a change invalidates
+the cache the demo replays from (D-004). But that cache was recorded through **OpenRouter** — moving to
+Bedrock changes the model string and invalidates it whichever Anthropic model we pick. The cache has to
+be re-recorded regardless; this decision does not cost us anything the provider move had not already
+cost.
+
+**Consequences, all of which must be stated rather than absorbed:**
+- **`$0.089` and `$0.097` per investigation become provider-historical.** They were measured on live
+  Sonnet 4.5 via OpenRouter. Re-record on Bedrock Haiku, or label them explicitly. A number labelled
+  wrong is worse than a number missing.
+- **`COST_CAP_PER_CASE_USD = 0.25` was derived from those two figures** (`cli.py:48`). Haiku is
+  materially cheaper per token than Sonnet, so the cap stays safe — but it is now loose rather than
+  tuned, and the honest move is to re-derive it from the first real Bedrock run, not to leave a cap
+  that looks measured and is not.
+- **Quality is unmeasured on the harder job.** Haiku was chosen for the reader precisely because
+  extraction is short-input, short-output and schema-constrained. The investigator is a multi-turn tool
+  loop with long context — a genuinely harder task. **Nothing is known about Haiku's verdict accuracy
+  there**, and AT-57's groundedness metric is how we will find out. Do not present the single-model
+  choice as a cost optimisation until that number exists; today it is a constraint we are making the
+  best of.
+
+**Rejected: waiting for the Anthropic form to use Sonnet on the investigator.** It puts a
+third-party form on the critical path for the entry's central agentic beat, to buy model quality we
+have not shown we need. Revisit after the first measured run. **Rejected: Nova Lite or Llama 3 8B for
+the investigator** — both are cheaper and both are weaker on multi-step tool use; they stay as reader
+arm-B candidates where the task is simple and the volume is the whole cost curve.
+
 ### D-024 · 2026-08-25 · Deploy with boto3 scripts, not CDK; zip Lambdas, not container images `ACCEPTED`
 **This reverses §3.5's commitment to AWS CDK, and it is forced rather than chosen.** CloudFormation
 access was granted on 2026-08-25, so CDK looked viable. It is not: `cdk bootstrap` needs

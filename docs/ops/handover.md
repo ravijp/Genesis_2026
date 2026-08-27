@@ -36,16 +36,22 @@ deleting a real function. Zip artifacts, not container images. Do not re-litigat
 
 Then **W1** (persist case fields) and **W10** (reviewer UI) — neither needs AWS.
 
-| Model | Id | State |
+**One model does both jobs: Haiku 4.5** (D-025). Sonnet is dropped, which *unblocked* the investigator
+— it needed an Anthropic form and Haiku does not.
+
+| Model | Id | Use |
 |---|---|---|
-| Haiku 4.5 | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | invocable |
-| Nova Lite | `amazon.nova-lite-v1:0` | invocable |
-| Llama 3 8B | `meta.llama3-8b-instruct-v1:0` | invocable |
-| Sonnet 4.5 | `us.anthropic.claude-sonnet-4-5-20250929-v1:0` | **blocked** — Anthropic use-case form (Ravi) |
+| Haiku 4.5 | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | reader **and** investigator |
+| Nova Lite | `amazon.nova-lite-v1:0` | reader arm B candidate |
+| Llama 3 8B | `meta.llama3-8b-instruct-v1:0` | reader arm B candidate |
 
 Arm B is undecided and that is fine: any second Bedrock family works, ~zero extra work once the
 provider exists. **The brief never required two vendors** — it says "a comparison model runs through
 the same harness" (`docs/sources/submission-ear-on-every-call.md:86-87`).
+
+**Haiku's investigator quality is unmeasured.** It was chosen for the reader because extraction is
+short and schema-constrained; the investigator is a multi-turn tool loop. Do not present one model as a
+cost win until AT-57's groundedness number exists.
 
 ## Traps already paid for
 
