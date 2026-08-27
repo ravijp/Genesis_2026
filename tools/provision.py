@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from typing import Any
 
 from earshot.aws.stores import REGION, STAGES, TABLE_SPECS, table_name
@@ -66,6 +67,11 @@ def _table_exists(ddb: Any, name: str) -> bool:
         raise
 
 
+# Six attempts with 1.5x backoff from 5s is a little over two minutes -- longer than any
+# observed backups-subsystem lag, and short enough that a genuinely broken run still ends.
+_PITR_ATTEMPTS = 6
+
+
 def _ensure_pitr(ddb: Any, name: str, dry_run: bool) -> None:
     """Checked and converged on EVERY run, whether the table pre-existed or was just created --
     idempotent means "ensure this state", not just "ensure existence"."""
@@ -81,14 +87,29 @@ def _ensure_pitr(ddb: Any, name: str, dry_run: bool) -> None:
     if dry_run:
         _record(f"dynamodb:{name}:pitr", "ENABLE", "DRY-RUN -- would enable point-in-time recovery")
         return
-    try:
-        ddb.update_continuous_backups(
-            TableName=name,
-            PointInTimeRecoverySpecification={"PointInTimeRecoveryEnabled": True},
-        )
-        _record(f"dynamodb:{name}:pitr", "ENABLE", "enabled")
-    except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
-        _record(f"dynamodb:{name}:pitr", "ENABLE", f"FAILED {_error_code(exc)}")
+    # A freshly created table is ACTIVE (the `table_exists` waiter checks exactly that) several
+    # seconds before its continuous-backups subsystem is, and DynamoDB reports the gap as
+    # `ContinuousBackupsUnavailableException`. Found the hard way on 2026-08-28: the first real
+    # run created all three tables and left all three with PITR DISABLED, and the failure reads
+    # like a permission problem. Retry that one code, and only that one -- an AccessDenied here
+    # must still fail on the first attempt rather than after a minute of pointless waiting.
+    delay = 5.0
+    for attempt in range(1, _PITR_ATTEMPTS + 1):
+        try:
+            ddb.update_continuous_backups(
+                TableName=name,
+                PointInTimeRecoverySpecification={"PointInTimeRecoveryEnabled": True},
+            )
+            suffix = "" if attempt == 1 else f" (after {attempt} attempts)"
+            _record(f"dynamodb:{name}:pitr", "ENABLE", f"enabled{suffix}")
+            return
+        except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
+            code = _error_code(exc)
+            if code != "ContinuousBackupsUnavailableException" or attempt == _PITR_ATTEMPTS:
+                _record(f"dynamodb:{name}:pitr", "ENABLE", f"FAILED {code}")
+                return
+            time.sleep(delay)
+            delay *= 1.5
 
 
 def _provision_tables(ddb: Any, stage: str, dry_run: bool) -> None:

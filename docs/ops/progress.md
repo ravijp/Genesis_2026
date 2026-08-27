@@ -60,7 +60,8 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 
 | Item | Owner | Ask |
 |---|---|---|
-| CodeBuild + CodePipeline | **IT (Vikash)** | **The only real ask left.** Scope to `earshot-*`, or he creates the project + pipeline |
+| **SQS/DynamoDB/Bedrock on `zenon-poc-lambda-execution`** | **IT (Vikash)** | **NEW 2026-08-28, and now the blocker.** One inline policy on that role. Without it the three deployed Lambdas are inert and neither queue can be wired. Exact actions in `aws-infrastructure.md` |
+| CodeBuild + CodePipeline | **IT (Vikash)** | Scope to `earshot-*`, or he creates the project + pipeline |
 | Bedrock invocation logging | IT (Vikash) | In progress, not blocking |
 | S3 Object Lock | IT, Support case | Off, unchangeable now. Evidence write-once degrades to IAM. Accept and state it |
 
@@ -74,6 +75,33 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-28 (AWS is real)** · **Provisioned and deployed, on Ravi's go-ahead.** 3 DynamoDB tables
+(PITR on, no TTL), 3 SQS queues with DLQ redrive, and all three Lambdas live on python3.13 from one
+zip (sha `532a888f9bf4`), each passing `zenon-poc-lambda-execution`. Reviewer API on a Function URL
+with `AuthType=AWS_IAM`. `tools/deploy.py` is the deploy path, same shape as `provision.py`.
+
+**Two real bugs, both invisible to any stub test:**
+
+1. **PITR silently did not enable.** `create_table` + the `table_exists` waiter returns while the
+   continuous-backups subsystem is still catching up, and DynamoDB says
+   `ContinuousBackupsUnavailableException` — which reads exactly like a permission problem. The first
+   real run left all three tables with PITR **DISABLED** while reporting the tables created. Fixed
+   with a bounded retry on that one error code; a second run converged 13/13.
+2. **A Windows-built zip cannot run on Lambda.** `pydantic-core` is a compiled extension, so the
+   naive `uv pip install --target` vendors a `.pyd`. The build now cross-compiles
+   (`--python-platform x86_64-manylinux2014 --python-version 3.13 --only-binary :all:`).
+
+**And one finding that changes the critical path: D-024 verified that the shared role can be
+*passed*, not that it can *do* anything.** `zenon-poc-lambda-execution` has one attached policy,
+`zenon-poc-s3-lambda`, and no inline policies — so no SQS, no DynamoDB, no Bedrock. Neither event
+source mapping could be created (*"the function execution role does not have permissions to call
+ReceiveMessage on SQS"*) and `GET /cases` on the deployed API returns 500 with `ClientError`.
+`GET /health` returns 200, which proves the artifact and the code are fine. **The deployment is
+correct and inert.** New IT ask, small and precise; exact actions in `aws-infrastructure.md`.
+
+Incidentally proved in production: the API's "a 500 carries no stack trace" guarantee. The first
+real error returned `{"error": "internal error"}` and put the detail in the log.
 
 **2026-08-28 (end of session)** · **`aws/api.py` — the reviewer API.** Five reads (ranked queue,
 one case, its reviews, a customer's standing ledger, the transcript behind a quote) and one write.

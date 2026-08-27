@@ -46,6 +46,10 @@ Region **us-east-1** for everything below.
 | **Permission set** | `agentic-trio` | Federated as `AWSReservedSSO_agentic-trio_<suffix>/rprakash@zenon.ai` |
 | **S3 bucket** | `s3://agentic-trio` | One bucket. Appendix A rows 13–14 assume **two** (`earshot-evidence` with Object Lock, `earshot-artifacts` versioned) — see the caveat below |
 | **CodeCommit** | `https://git-codecommit.us-east-1.amazonaws.com/v1/repos/agentic-trio` | Push via `codecommit://genesis@agentic-trio`, never the HTTPS URL — see Step 4 |
+| **DynamoDB** | `earshot-dev-ledger` · `earshot-dev-cases` · `earshot-dev-reviews` | Created 2026-08-28. On-demand, PITR **on**, no TTL on any of the three |
+| **SQS** | `earshot-dev-transcripts.fifo` · `earshot-dev-investigations` (+ `-dlq`) | Created 2026-08-28. Redrive to the DLQ at 3 receives |
+| **Lambda** | `earshot-dev-ingest` · `earshot-dev-investigate` · `earshot-dev-api` | Deployed 2026-08-28, python3.13, zip sha `532a888f9bf4`, all passing `zenon-poc-lambda-execution`. **Inert — see the IAM gap below** |
+| **Reviewer API URL** | `https://omqdmdwrekgdrkybgerq7ggkji0soujn.lambda-url.us-east-1.on.aws/` | Function URL, `AuthType=AWS_IAM`. `GET /health` returns 200; everything touching a store returns 500 until the role is fixed |
 | **SSO start URL** | *still unknown* | The one value blocking `aws sso login`. IAM Identity Center → Dashboard → *Settings summary* → **AWS access portal URL** |
 
 > **The region is confirmed, not assumed.** The CodeCommit host is literally
@@ -55,6 +59,27 @@ Region **us-east-1** for everything below.
 > [committee-requirements-email.md](../gates/committee-requirements-email.md) and
 > [genesis-committee-comms.md](../sources/genesis-committee-comms.md); this table is now the one
 > place to change them.
+
+### The IAM gap that makes the deployment inert — found 2026-08-28
+
+**`zenon-poc-lambda-execution` can be *passed*, but it cannot *do* anything of ours.** Its only
+attached policy is `zenon-poc-s3-lambda`; there are no inline policies. So:
+
+- `lambda:CreateEventSourceMapping` fails with `InvalidParameterValueException` — *"The function
+  execution role does not have permissions to call ReceiveMessage on SQS"*. **Neither queue is
+  wired to its handler**, so nothing flows end to end.
+- Anything touching DynamoDB returns `ClientError`. Verified against the deployed function:
+  `GET /health` → 200, `GET /cases` → 500 with `api.error ... ClientError` in the log.
+- Bedrock invoke would fail the same way, which is why both handlers are deployed with the
+  offline provider.
+
+**D-024 verified deployability, not functionality**, and that distinction was not visible until a
+handler actually had to read a table. The fix is one scoped inline policy on that role —
+`sqs:ReceiveMessage`/`DeleteMessage`/`GetQueueAttributes` on the two `earshot-dev-*` queues,
+DynamoDB `PutItem`/`GetItem`/`Query`/`UpdateItem` (**never `DeleteItem`** — A6) on the three tables
+and the cases GSI, `s3:GetObject`/`PutObject`/`ListBucket` on the `evidence/` and `artifacts/`
+prefixes, and `bedrock:InvokeModel`. We cannot write it ourselves: `iam:SimulatePrincipalPolicy` is
+denied, so even asking "may I?" is denied. **This is a new IT ask, and it is small and precise.**
 
 ### Services granted
 
