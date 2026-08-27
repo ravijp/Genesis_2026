@@ -45,7 +45,7 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | # | What | Status | Notes |
 |---|---|---|---|
 | W3 | Bedrock provider (`llm/bedrock.py`) | **DONE** | Converse both ways, Haiku 4.5 default, computed-not-charged cost, lazy client. 33 stub tests |
-| W1 | Persist case fields | **TODO — next** | `cli.py` drops `ctx.score`, `signal_type`, `threshold`, retro fields. Blocks all three UI beats |
+| W1 | Persist case fields | **DONE** | `case_record.py` — one serializer for the disk artifact and the DynamoDB item. Unblocks W10 |
 | W4 | Spend cap in our own code | TODO | Budgets/Cost Explorer not granted. Put the ceiling next to `COST_CAP_PER_CASE_USD` |
 | W5 | First keyed reader run | TODO | Needs W3. 150 CFPB docs, ~$0.30, both arms |
 | W6 | Ledger + case DynamoDB stores | **DONE (code); tables not created** | `aws/stores.py` + `tools/provision.py`. Conditional writes, no delete path on the ledger, scoring delegated. 39 stub tests. Dry-run verified against the real account |
@@ -74,6 +74,27 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-28** · **W1 done.** `src/earshot/case_record.py`: one `case_record()` builds both the
+`earshot investigate` artifact and the DynamoDB `CASES` item, so the reviewer UI renders either and
+neither can drift from the other. `cli.py` was writing `decision` and `trace` only. 323 tests
+(315 → +7 unit, +1 end-to-end on the artifact), guard 81 → 84 by glob, ruff clean.
+
+Two defects the ticket's own wording would have shipped:
+
+1. **The evidence chain must come from the customer TODAY, not from `open_case()`.** A `Case` carries
+   the evidence known at the crossing, so building the record from it freezes the retro chain on the
+   opening day — the "we re-read March in light of July" beat would render empty for exactly the
+   customers who kept accumulating, which are the ones the entry is about. Caught by a test asserting
+   three evidence rows and getting one, not by review.
+2. **A case has two scores and they are not interchangeable.** The crossing-day score and the score
+   today differ under decay. One field for both either ranks a faded case at its opening-day seat
+   forever, or loses the crossing. The record carries `score` (today, what the GSI ranks on) and
+   `score_at_open`, named apart. `CaseStore.put_case` now ranks the queue on the current score,
+   matching what `cli.py:_queue` already documented as the question it asks.
+
+Verified against a real artifact rather than asserted: `CUST-0006#life_event#000123` renders four
+evidence rows, day 39 supporting 0.100 when it arrived and 0.875 now (+0.775), all load-bearing.
 
 **2026-08-25 (late)** · W3 and W6 built by two parallel subagents: `llm/bedrock.py`, `aws/stores.py`,
 `tools/provision.py`, 72 new stub tests. Suite 236 → 312; separation guard 75 → 81 by glob discovery,

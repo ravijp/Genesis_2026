@@ -1,6 +1,6 @@
 # State of play
 
-**Updated 2026-08-25 (late).** Rewritten in place every working session — **never appended to**. Hard cap:
+**Updated 2026-08-28.** Rewritten in place every working session — **never appended to**. Hard cap:
 this file fits on one screen. If something will not fit, it belongs in `decisions.md` (a choice),
 `working-agreements.md` (a rule), or Jira (work). Anything historical belongs in git.
 
@@ -18,12 +18,20 @@ building it. Next gate **2026-09-07**. The 08-10 check-in and the 08-24 combined
 artifact records what 08-24 showed.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-investigator agent producing case files with cited evidence. **312 tests**, ruff clean.
+investigator agent producing case files with cited evidence. **323 tests**, ruff clean.
 
 **The AWS layer now exists in code.** `llm/bedrock.py` (Converse, Haiku 4.5, computed-not-charged cost),
 `aws/stores.py` (DynamoDB ledger/cases/reviews, conditional writes, no delete path on the ledger) and
 `tools/provision.py` (idempotent, dry-run by default). All stub-tested with zero AWS access. **No table
 has been created yet** — that needs Ravi's go-ahead, since it bills.
+
+**A case now survives the process that produced it (W1, 2026-08-28).** `case_record.py` builds the
+disk artifact and the DynamoDB item from one function, so the reviewer UI renders either and they
+cannot drift. A case carries **two moments, named apart**: `score_at_open`/`opened_on_day` from the
+crossing, and `score`/`as_of_day`/`evidence` from the customer today. Merging them is not a style
+choice — take the score from the crossing and a faded case keeps its opening-day seat at the top of
+the queue; take the evidence from the crossing and the retro chain freezes on the opening day, which
+empties the beat for every customer who kept accumulating.
 
 **AWS is provisioned and reachable.** Account `859430413223`, permission set `agentic-trio`,
 **us-east-1** (confirmed — the CodeCommit host says so), bucket `s3://agentic-trio`, repo
@@ -61,16 +69,19 @@ by construction.
 
 ## Next, in order
 
-1. **Persist case fields** (W1). `cli.py:531` writes `decision` and `trace` and drops `ctx.score`,
-   `ctx.signal_type`, `ctx.threshold` and the retro fields. **All three reviewer-UI beats are
-   unrenderable from disk until this lands.** The dangerous shortcut is regenerating the corpus from
-   `manifest.seed` — it puts `stratum`/`outcome`/`latent_risk` behind a client-facing screen.
-2. **The three Lambda handlers** — `aws/ingest.py`, `investigate.py`, `api.py`. The stores and the
-   provider both exist, so this is the glue that closes the end-to-end path. Delegate with
-   `isolation: "worktree"`.
-3. **First keyed run**, both arms, 150 CFPB docs, ~$0.30. Converts four "not measured" deliverables into
+1. **The three Lambda handlers** — `aws/ingest.py`, `investigate.py`, `api.py`. The stores, the
+   provider and now the case record all exist, so this is the glue that closes the end-to-end path.
+   Delegate with `isolation: "worktree"`.
+2. **First keyed run**, both arms, 150 CFPB docs, ~$0.30. Converts four "not measured" deliverables into
    numbers. Commit the response cache and it replays keyless forever.
-4. **Reviewer UI** (W10), which needs only W1 and is the whole client-facing axis of a Track A entry.
+3. **Reviewer UI** (W10) — **unblocked**, and the whole client-facing axis of a Track A entry.
+   `earshot investigate`'s artifact is now sufficient on its own: `case_id`, `signal_type`, `score`
+   (today) and `score_at_open`, `threshold`, `opened_on_day`/`as_of_day`, and an evidence chain
+   carrying `score_at_write`/`score_now`/`retro_delta`/`load_bearing` per quote. Build the three
+   screens off that file, and off `CaseStore` in deployment — both are the same shape by
+   construction (`case_record()`). **Never regenerate the corpus from `manifest.seed` to fill a
+   gap**: that puts `stratum`/`outcome`/`latent_risk` behind a client-facing screen, and a test
+   now scans the artifact for those field names.
 
 **Not yet done and it bills:** `tools/provision.py --stage dev --no-dry-run` creates the real tables and
 queues. Dry-run is clean. Needs Ravi's go-ahead.

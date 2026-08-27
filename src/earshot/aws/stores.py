@@ -39,9 +39,24 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 
+from ..case_record import case_record, evidence_chain, evidence_item, make_case_id
 from ..config import ScoringConfig
-from ..memory import SignalLedger
-from ..schema import Case, Channel, ExtractedSignal, LedgerEntry, SignalType
+from ..memory import ScoreBreakdown, SignalLedger
+from ..schema import Case, Channel, ExtractedSignal, SignalType
+
+# Re-exported: these moved to `earshot/case_record.py` so `cli.py` can write the identical case
+# shape to disk with boto3 uninstalled. Importing them from here still works and always will --
+# this module is where the DynamoDB reader looks for them.
+__all__ = [
+    "CaseStore",
+    "LedgerStore",
+    "ReviewStore",
+    "case_record",
+    "evidence_chain",
+    "evidence_item",
+    "make_case_id",
+    "table_name",
+]
 
 REGION = "us-east-1"
 STAGES = ("dev", "demo")
@@ -319,38 +334,6 @@ def _padded_score(score: float) -> str:
     return f"{score:0{_SCORE_WIDTH}.6f}"
 
 
-def evidence_item(entry: LedgerEntry, threshold: float) -> dict[str, Any]:
-    """One evidence-chain row from an UNCHANGED `memory.LedgerEntry`. Every number below --
-    `contribution_at_write/now`, `score_at_write/now`, `retro_delta`, `load_bearing` -- is read
-    directly off the entry `memory.score()` already computed; nothing here recomputes any of
-    it. `threshold` is required because `is_load_bearing()` takes it as an argument: memory.py
-    never stores a load-bearing bit on the entry itself, since the answer depends on which
-    threshold is asked about."""
-    s = entry.signal
-    return {
-        "conversation_id": s.conversation_id,
-        "day": s.day,
-        "channel": s.channel.value,
-        "signal_type": s.signal_type.value,
-        "evidence_quote": s.evidence_quote,
-        "confidence": s.confidence,
-        "turn_index": s.turn_index,
-        "cue_id": s.cue_id,
-        "contribution_at_write": entry.contribution_at_write,
-        "contribution_now": entry.contribution_now,
-        "score_at_write": entry.score_at_write,
-        "score_now": entry.score_now,
-        "retro_delta": entry.retro_delta,
-        "load_bearing": entry.is_load_bearing(threshold),
-    }
-
-
-def evidence_chain(entries: list[LedgerEntry], threshold: float) -> list[dict[str, Any]]:
-    """`evidence_item()` for a whole case, oldest first -- the order the retro re-score prints
-    in (`cli.py`'s `RETRO RE-SCORE` block) and the order a reviewer reads an evidence chain in."""
-    return [evidence_item(e, threshold) for e in sorted(entries, key=lambda e: e.signal.day)]
-
-
 class CaseStore:
     """DynamoDB persistence for the reviewer's ranked case queue -- what S1.6 says `cli.py`
     currently throws away: `ctx.score`, `ctx.signal_type`, `ctx.threshold`, and the retro
@@ -383,16 +366,16 @@ class CaseStore:
         self.table_name = table_name
         self._table = _resolve_table(table_name, region_name, table)
 
-    @staticmethod
-    def make_case_id(customer_id: str, signal_type: SignalType | str, opened_on_day: int) -> str:
-        st = signal_type.value if isinstance(signal_type, SignalType) else signal_type
-        return f"{customer_id}#{st}#{opened_on_day:0{_DAY_WIDTH}d}"
+    # Kept as a method because callers reach for `CaseStore.make_case_id`; the id format itself
+    # lives in `case_record.py`, where the disk path can share it.
+    make_case_id = staticmethod(make_case_id)
 
     def put_case(
         self,
         case: Case,
         *,
         threshold: float,
+        now: ScoreBreakdown | None = None,
         case_id: str | None = None,
         status: str = "open",
         decision: dict[str, Any] | None = None,
@@ -400,34 +383,39 @@ class CaseStore:
     ) -> str:
         """Persist one `memory.Case`, evidence chain and all. `threshold` is required because
         `is_load_bearing()` needs it (see `evidence_item`) -- pass the same threshold the case
-        was opened against. `decision`/`trace` are the plain dicts `InvestigationDecision
-        .model_dump()` / `InvestigationTrace.to_dict()` already produce (see `cli.py`'s
-        `_print_case`); this module treats both as opaque and only ever converts their floats.
+        was opened against. `now` is the customer's CURRENT `ScoreBreakdown` and carries the
+        score, as-of day and evidence chain the reviewer actually reads; it defaults to the
+        crossing on `case`. Pass it whenever a current breakdown is in hand -- the GSI ranks on
+        its score, and without it the evidence chain is frozen at the day the case opened. `decision`/`trace` are the plain dicts
+        `InvestigationDecision.model_dump()` / `InvestigationTrace.to_dict()` already produce
+        (see `cli.py`'s `_print_case`); this module treats both as opaque and only ever converts
+        their floats.
 
         Returns the case_id actually written, so a caller that let this method derive one via
         `make_case_id` still has it for `update_status` or `ReviewStore`.
         """
-        case_id = case_id or self.make_case_id(
-            case.customer_id, case.signal_type, case.opened_on_day
+        record = case_record(
+            case,
+            threshold=threshold,
+            now=now,
+            case_id=case_id,
+            status=status,
+            decision=decision,
+            trace=trace,
         )
+        case_id = record["case_id"]
+        # Only the three key attributes are added here. Every readable field comes from
+        # `case_record()`, which the disk artifact also calls -- that is what makes "the reviewer
+        # UI renders the same case from either source" true by construction rather than by care.
         item: dict[str, Any] = {
+            **record,
             "pk": f"CASE#{case_id}",
-            "case_id": case_id,
-            "customer_id": case.customer_id,
-            "signal_type": case.signal_type.value,
-            "score": case.score,
-            "threshold": threshold,
-            "opened_on_day": case.opened_on_day,
-            "opened_by_conversation": case.opened_by_conversation,
-            "evidence": evidence_chain(case.evidence, threshold),
-            "status": status,
             "gsi1pk": f"QUEUE#{status}",
-            "gsi1sk": _padded_score(case.score),
+            # Ranks on the CURRENT score, not the crossing-day one, so a decayed case falls down
+            # the queue instead of holding its opening-day seat forever. Same rationale as
+            # `cli.py:_queue`, which ranks on `ledger.best(cid, as_of=last day)`.
+            "gsi1sk": _padded_score(record["score"]),
         }
-        if decision is not None:
-            item["decision"] = decision
-        if trace is not None:
-            item["trace"] = trace
         self._table.put_item(Item=_floats_to_decimal(item))
         return case_id
 

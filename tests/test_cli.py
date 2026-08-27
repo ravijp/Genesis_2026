@@ -135,3 +135,73 @@ def test_a_dirty_tree_is_recorded_in_the_run_manifest(cli) -> None:
         assert sha.endswith("-dirty") == bool(changed), (
             f"manifest SHA {sha!r} does not reflect whether the tree is dirty"
         )
+
+
+# ---- the persisted case (W1) ------------------------------------------------------------------
+
+
+ANSWER_KEY_FIELDS = {
+    "stratum",
+    "outcome",
+    "outcome_day",
+    "latent_risk",
+    "financial_state",
+    "seeded",
+    "seeded_signals",
+    "lead_days",
+}
+
+
+def _all_keys(obj) -> set[str]:
+    if isinstance(obj, dict):
+        return set(obj) | {k for v in obj.values() for k in _all_keys(v)}
+    if isinstance(obj, list):
+        return {k for v in obj for k in _all_keys(v)}
+    return set()
+
+
+def test_the_investigate_artifact_carries_the_whole_case_not_just_the_verdict(
+    cli, tmp_path
+) -> None:
+    """Until W1 the artifact held `decision` and `trace` only, so the score, the signal type, the
+    threshold and every retro field died with the process — and all three reviewer-UI beats
+    (ranked list, evidence chain, retro re-score) had nothing on disk to render.
+
+    This asserts the artifact is sufficient on its own. The shortcut it rules out is a UI that
+    regenerates the corpus from `manifest.seed` to recover the missing fields, which would put
+    the answer key behind a client-facing screen.
+    """
+    import json
+
+    assert cli.cmd_investigate(SMALL, "offline", limit=1) == 0
+    written = list((tmp_path / "runs").glob("investigate-*.json"))
+    assert len(written) == 1, f"expected one artifact, found {written}"
+    cases = json.loads(written[0].read_text(encoding="utf-8"))["cases"]
+    assert cases, "the run investigated nothing, so this test proves nothing"
+
+    for case in cases:
+        missing = {
+            "case_id",
+            "customer_id",
+            "signal_type",
+            "score",
+            "score_at_open",
+            "threshold",
+            "opened_on_day",
+            "as_of_day",
+            "opened_by_conversation",
+            "evidence",
+            "status",
+            "decision",
+            "trace",
+        } - set(case)
+        assert not missing, f"the reviewer UI cannot render this case from disk: {missing}"
+        assert case["evidence"], "no evidence chain — the middle beat has nothing to show"
+        for row in case["evidence"]:
+            assert {"score_at_write", "score_now", "retro_delta", "load_bearing"} <= set(row), (
+                "an evidence row without its retro fields; the retro re-score beat is dead"
+            )
+        assert [r["day"] for r in case["evidence"]] == sorted(r["day"] for r in case["evidence"])
+
+    leaked = _all_keys(cases) & ANSWER_KEY_FIELDS
+    assert not leaked, f"answer-key fields on a client-facing artifact: {sorted(leaked)}"

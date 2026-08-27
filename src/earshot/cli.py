@@ -24,6 +24,7 @@ from pathlib import Path
 from .agent import InvestigationDecision, InvestigationTrace, ToolContext, investigate
 from .agent.prompts import investigator_prompts
 from .arms import demo_ledger, mechanism_ablations, run_all_arms
+from .case_record import case_record
 from .config import DEFAULT, RunConfig
 from .corpus import generate, smallest_fragment_pool
 from .evals import corpus_diagnostics, evaluate_all, evaluate_arm, extraction_fidelity
@@ -36,7 +37,7 @@ from .llm import (
     cache_mode,
 )
 from .memory import ScoreBreakdown
-from .schema import Outcome, Stratum
+from .schema import Case, Outcome, Stratum
 
 # The review team's capacity, as a share of the portfolio. The investigator works the top of
 # the queue, so this is what defines "crossed the threshold" — the same equal-alert-budget
@@ -440,6 +441,58 @@ def _context(corpus, customer_id: str, breakdown: ScoreBreakdown, threshold: flo
     )
 
 
+def _case_record(
+    ledger,
+    ctx: ToolContext,
+    breakdown: ScoreBreakdown,
+    threshold: float,
+    decision: InvestigationDecision,
+    trace: InvestigationTrace,
+) -> dict:
+    """The case as it is persisted: the reviewer's three beats, plus the agent's verdict.
+
+    Until this existed the artifact carried `decision` and `trace` only, so `ctx.score`,
+    `ctx.signal_type`, `ctx.threshold` and every retro field died with the process — which left
+    all three reviewer-UI beats (ranked list, evidence chain, retro re-score) unrenderable from
+    disk. The tempting shortcut, regenerating the corpus from `manifest.seed` to recover them,
+    is the one thing that must not happen: it puts `stratum`, `outcome` and `latent_risk`
+    behind a client-facing screen. So the record is written here, from primitives, at the one
+    point where they are all in hand.
+
+    `case_record()` is shared with `CaseStore.put_case`, so the artifact and the DynamoDB item
+    are the same shape by construction — the reviewer UI reads either.
+
+`open_case()` supplies the crossing facts (`opened_on_day`, `opened_by_conversation`,
+    `score_at_open`) — the ledger's own definition of when a case opened, not a second one
+    written here. It can return None only if the current score clears the threshold while no
+    point on the timeline ever did; under decay that cannot happen, so the fallback is a guard
+    against a future scoring change, not an expected path.
+    """
+    opened = ledger.open_case(ctx.customer_id, breakdown.signal_type, threshold)
+    if opened is None:
+        opened = Case(
+            customer_id=ctx.customer_id,
+            signal_type=breakdown.signal_type,
+            score=breakdown.score,
+            opened_on_day=breakdown.as_of_day,
+            opened_by_conversation=max(
+                breakdown.entries, key=lambda e: e.signal.day
+            ).signal.conversation_id,
+            evidence=list(breakdown.entries),
+        )
+    # `breakdown` is the customer TODAY — the score `_queue` cut on, and the whole evidence
+    # chain including everything that arrived after the case opened. `opened` contributes only
+    # the crossing facts. Passing `opened.evidence` instead would freeze the retro chain at the
+    # opening day and empty the beat for every customer who kept accumulating.
+    return case_record(
+        opened,
+        threshold=threshold,
+        now=breakdown,
+        decision=decision.model_dump(),
+        trace=trace.to_dict(),
+    )
+
+
 def _provider(name: str, prompt_sha: str):
     """Offline by default and always keyless.
 
@@ -508,7 +561,7 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
         sys.stdout.reconfigure(errors="replace")
 
     started = time.time()
-    corpus, _, cut, threshold = _queue(run)
+    corpus, ledger, cut, threshold = _queue(run)
     system, _, prompt_sha = investigator_prompts()
     provider = _provider(provider_name, prompt_sha)
 
@@ -536,7 +589,9 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
             print(f"\nCASE {i} - {customer_id}: provider unavailable ({exc})")
             return 1
         _print_case(i, decision, trace, ctx)
-        records.append({"decision": decision.model_dump(), "trace": trace.to_dict()})
+        records.append(
+            _case_record(ledger, ctx, breakdown, threshold, decision, trace)
+        )
 
     elapsed = time.time() - started
     total_cost = sum(r["trace"]["cost_usd"] for r in records)

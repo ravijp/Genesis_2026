@@ -5,7 +5,7 @@ in place at each handover. **Keep it under ~60 lines** — it loads into every c
 baton, not a history: next action, live blockers, traps already paid for. History goes in
 `progress.md` or git.
 
-**2026-08-25** · commit `04d6d2d`+ · branch `build/ear-on-every-call` · **312 tests**, guard at 81, ruff clean
+**2026-08-28** · branch `build/ear-on-every-call` · **323 tests**, guard at 84, ruff clean
 
 ## First turn
 
@@ -25,9 +25,10 @@ this is the glue that closes the end-to-end path.
   crossed, enqueue to the investigations queue. **Do not reimplement scoring** — load, delegate,
   persist. That is the one thing this architecture forbids.
 - **`investigate`**: queue consumer running the existing `investigate()` loop unchanged, writing a case
-  through `CaseStore.put_case()`. W1 first, though — `cli.py` still discards `ctx.score`,
-  `ctx.signal_type`, `ctx.threshold` and the retro fields, and **all three reviewer-UI beats are
-  unrenderable from disk until that lands**.
+  through `CaseStore.put_case(case, threshold=…, now=breakdown)`. **W1 landed 2026-08-28** —
+  `case_record.py` is the one serializer for the disk artifact and the DynamoDB item, so pass the
+  CURRENT breakdown as `now=` and the reviewer UI is fed by construction. Passing only the opened
+  case freezes the evidence chain on the crossing day and empties the retro beat.
 - **`api`**: five read endpoints over `CaseStore` + `ReviewStore` for the SPA.
 - Deploy: **zip, passing the existing role** `arn:aws:iam::859430413223:role/zenon-poc-lambda-execution`.
   No new role, no container image (D-024).
@@ -52,7 +53,7 @@ blocked by the same `iam:CreateRole` gap as the Lambda roles — the one role we
 Lambda's trust policy, not CodeBuild's.
 
 `boto3` is installed via the `aws` extra. It stays **optional** in `pyproject.toml` so a fresh clone
-runs all 312 tests keyless — that guarantee is load-bearing, do not promote it to a hard dependency.
+runs all 323 tests keyless — that guarantee is load-bearing, do not promote it to a hard dependency.
 
 ## Traps already paid for
 
