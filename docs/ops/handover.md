@@ -1,11 +1,11 @@
 # Handover
 
 **Imported by `CLAUDE.md`, so every conversation already has this.** Nobody pastes anything. Rewritten
-in place at each handover. **Keep it under ~60 lines** — it loads into every conversation, so length
-here is a tax on all of them. It is a baton, not a history: next action, live blockers, traps already
-paid for. History goes in `progress.md` or git.
+in place at each handover. **Keep it under ~60 lines** — it loads into every conversation. It is a
+baton, not a history: next action, live blockers, traps already paid for. History goes in
+`progress.md` or git.
 
-**2026-08-25** · commit `3e0a80a` · branch `build/ear-on-every-call` · 236 tests, ruff clean
+**2026-08-25** · commit `04d6d2d`+ · branch `build/ear-on-every-call` · **312 tests**, guard at 81, ruff clean
 
 ## First turn
 
@@ -15,54 +15,55 @@ paid for. History goes in `progress.md` or git.
 3. `docs/ops/progress.md` for work-package status and blocker owners. `decisions.md` before arguing
    for anything.
 
-## The one thing to know
+## Next action — the Lambda handlers
 
-**CDK does not work here. Deploy with boto3.** `cdk bootstrap` needs `s3:CreateBucket`,
-`iam:CreateRole`, `ecr:CreateRepository` — all denied, all tested (D-024). Lambdas deploy by passing
-the existing role `arn:aws:iam::859430413223:role/zenon-poc-lambda-execution`; proven by creating and
-deleting a real function. Zip artifacts, not container images. Do not re-litigate.
+`src/earshot/aws/ingest.py`, `investigate.py`, `api.py`. The stores and the provider both exist, so
+this is the glue that closes the end-to-end path.
 
-## Next action — W3, the Bedrock provider
+- **`ingest`**: one SQS record → `Conversation` → `extract()` → `LedgerStore.append()` (conditional,
+  so a redelivery is a no-op) → re-score via the unchanged `SignalLedger` → if the threshold is
+  crossed, enqueue to the investigations queue. **Do not reimplement scoring** — load, delegate,
+  persist. That is the one thing this architecture forbids.
+- **`investigate`**: queue consumer running the existing `investigate()` loop unchanged, writing a case
+  through `CaseStore.put_case()`. W1 first, though — `cli.py` still discards `ctx.score`,
+  `ctx.signal_type`, `ctx.threshold` and the retro fields, and **all three reviewer-UI beats are
+  unrenderable from disk until that lands**.
+- **`api`**: five read endpoints over `CaseStore` + `ReviewStore` for the SPA.
+- Deploy: **zip, passing the existing role** `arn:aws:iam::859430413223:role/zenon-poc-lambda-execution`.
+  No new role, no container image (D-024).
+- **Delegate this to a subagent with `isolation: "worktree"`.** Two agents in one tree already
+  collided here and one wiped the other's untracked files.
 
-`src/earshot/llm/bedrock.py`, beside `openrouter.py`. Everything else waits on it.
+**Ravi's call before anything real is created:** `tools/provision.py --stage dev --no-dry-run` makes
+billed resources. Dry-run is clean — 3 tables, 3 queues, 4 PARKED rows. Do not run it unprompted.
 
-- Same two-method `LLMProvider` protocol (`llm/base.py:101-108`). **Additive** — `openrouter.py` and
-  `resolve_api_key()` stay; they are load-bearing in tests, README and the CFPB protocol.
-- `bedrock-runtime` **Converse**; translate `tools` ⇄ `toolUse`/`toolResult` both ways.
-- Bedrock returns **tokens, not dollars**. Compute from a price table and label every derived figure
-  **"computed from published prices"**, never "charged" (G1).
-- `uv add --optional aws boto3` — the `aws` extra, so a fresh `uv sync` stays boto3-free.
-- Stub-test first, as `test_extract_model.py` does. Zero network.
+## State
 
-Then **W1** (persist case fields) and **W10** (reviewer UI) — neither needs AWS.
+**One model, Haiku 4.5, for reader and investigator** (D-025) — `us.anthropic.claude-haiku-4-5-20251001-v1:0`.
+Nova Lite and Llama 3 8B are the arm-B candidates; arm B is deliberately undecided. Sonnet is dropped,
+which *unblocked* the investigator. Haiku's verdict accuracy on a multi-turn loop is **unmeasured** —
+not a cost win until AT-57 says so.
 
-**One model does both jobs: Haiku 4.5** (D-025). Sonnet is dropped, which *unblocked* the investigator
-— it needed an Anthropic form and Haiku does not.
+**CDK does not work here** (D-024): `cdk bootstrap` needs `s3:CreateBucket`, `iam:CreateRole`,
+`ecr:CreateRepository`, all denied. boto3 scripts instead. Do not re-litigate.
 
-| Model | Id | Use |
-|---|---|---|
-| Haiku 4.5 | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | reader **and** investigator |
-| Nova Lite | `amazon.nova-lite-v1:0` | reader arm B candidate |
-| Llama 3 8B | `meta.llama3-8b-instruct-v1:0` | reader arm B candidate |
+**Only real IT ask left: CodeBuild + CodePipeline.** `buildspec.yml` is written and parked. Note it is
+blocked by the same `iam:CreateRole` gap as the Lambda roles — the one role we can pass is scoped to
+Lambda's trust policy, not CodeBuild's.
 
-Arm B is undecided and that is fine: any second Bedrock family works, ~zero extra work once the
-provider exists. **The brief never required two vendors** — it says "a comparison model runs through
-the same harness" (`docs/sources/submission-ear-on-every-call.md:86-87`).
-
-**Haiku's investigator quality is unmeasured.** It was chosen for the reader because extraction is
-short and schema-constrained; the investigator is a multi-turn tool loop. Do not present one model as a
-cost win until AT-57's groundedness number exists.
+`boto3` is installed via the `aws` extra. It stays **optional** in `pyproject.toml` so a fresh clone
+runs all 312 tests keyless — that guarantee is load-bearing, do not promote it to a hard dependency.
 
 ## Traps already paid for
 
-- **A new IAM grant does nothing until the SSO session is reissued.** Use `--force`. This looked like
-  IT not having applied a change.
-- **Never delete an `__init__.py`.** Drops the separation guard 20 modules → 19 and the suite 75 → 72
-  **with everything still green**. Empty the body if you must.
-- **Reachability is not access.** `s3:HeadBucket` passed while `PutObject` was denied.
-- **Anthropic models need the `us.` inference-profile prefix.** Bare ids fail with "on-demand
-  throughput isn't supported". Nova and Llama take the bare id.
-- **When something reads as AccessDenied, check the error *message*.** Two probe bugs (X-Ray
-  timestamps, a wrong model id) masqueraded as permission problems.
-- **`git ls-remote` on an empty repo returns nothing, exit 0** — same as auth failure. Use
-  `--exit-code`: 2 = authed, no refs; 128 = auth failed.
+- **A new IAM grant does nothing until the SSO session is reissued.** Use `--force`.
+- **Agents that write files need `isolation: "worktree"`.** Untracked files + another agent's
+  `git stash -u` nearly lost three of them, and the only tell was a `reset` in reflog, after the fact.
+- **Never delete an `__init__.py`.** Drops the guard 20 modules → 19 and the suite silently.
+- **Green stub tests are not proof.** Two provisioner bugs lived in the seam between our code and the
+  SDK: SQS's absent-queue wire code differs from botocore's class name, and PITR was probed on a table
+  dry-run never created. Exercise tools against reality.
+- **A test that assumes an optional dep is absent is broken.** The missing-boto3 test flipped to
+  failing the moment `uv sync --extra aws` ran. Simulate absence, never assume it.
+- **When something reads as AccessDenied, read the error *message*.** Two probe bugs and the Anthropic
+  model-id prefix all masqueraded as permission problems.

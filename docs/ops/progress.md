@@ -44,12 +44,12 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 
 | # | What | Status | Notes |
 |---|---|---|---|
-| W3 | Bedrock provider (`llm/bedrock.py`) | **TODO — next** | Unblocked. Converse both ways, price table labelled "computed". Absorbs the dead OpenAI package |
+| W3 | Bedrock provider (`llm/bedrock.py`) | **DONE** | Converse both ways, Haiku 4.5 default, computed-not-charged cost, lazy client. 33 stub tests |
 | W1 | Persist case fields | **TODO — next** | `cli.py` drops `ctx.score`, `signal_type`, `threshold`, retro fields. Blocks all three UI beats |
 | W4 | Spend cap in our own code | TODO | Budgets/Cost Explorer not granted. Put the ceiling next to `COST_CAP_PER_CASE_USD` |
 | W5 | First keyed reader run | TODO | Needs W3. 150 CFPB docs, ~$0.30, both arms |
-| W6 | Ledger + case DynamoDB stores | TODO | Verified creatable |
-| W7 | Ingest path (SQS FIFO → handler) | TODO | Needs W3, W6 |
+| W6 | Ledger + case DynamoDB stores | **DONE (code); tables not created** | `aws/stores.py` + `tools/provision.py`. Conditional writes, no delete path on the ledger, scoring delegated. 39 stub tests. Dry-run verified against the real account |
+| W7 | Ingest path (SQS FIFO → handler) | **TODO — next** | W3 and W6 are done, so this is the glue. `aws/ingest.py` |
 | W8 | Investigate path | **TODO — unblocked** | D-025 moved the investigator to Haiku 4.5, which is invocable. No longer waiting on the Anthropic form |
 | W9 | CI/CD | BLOCKED (IT) | CodeBuild + CodePipeline denied. `buildspec.yml` is written and parked, ready to run |
 | W10 | Reviewer UI, 3 screens | TODO | Needs W1 only. Whole client-facing axis |
@@ -74,6 +74,23 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-25 (late)** · W3 and W6 built by two parallel subagents: `llm/bedrock.py`, `aws/stores.py`,
+`tools/provision.py`, 72 new stub tests. Suite 236 → 312; separation guard 75 → 81 by glob discovery,
+with no edit to the test. Provisioner dry-run verified against the live account: 3 tables, 3 queues
+with DLQ redrive, 4 PARKED rows.
+
+Three defects found by review rather than by the tests, all worth remembering:
+(1) SQS reports an absent queue with a wire code that differs from botocore's exception class name, so
+the most ordinary first-run case crashed; (2) PITR was probed on tables dry-run had not created,
+printing FAILED TableNotFoundException three times — which reads exactly like a permission problem;
+(3) the missing-boto3 test *assumed* boto3 was absent and flipped to failing once `uv sync --extra aws`
+ran. All three lived where stubs are blind.
+
+**Process failure:** the two agents shared one working tree. One ran `git stash -u` for a clean
+baseline and swept the other's three untracked, half-written files back to HEAD. Both recovered, by
+luck. Rule now in CLAUDE.md and working-agreements §8: any agent that writes files gets
+`isolation: "worktree"`.
 
 **2026-08-25** · Branch prepared for the AWS build. Repo reorg (D-023), build scaffolding,
 `.claude/settings.json` approval tiers, duplication and dead-code pass, one-command AWS login.

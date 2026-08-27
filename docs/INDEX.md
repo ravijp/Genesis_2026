@@ -58,8 +58,10 @@ Commands: `earshot sweep` (the only source of quotable numbers) · `earshot demo
 - `__init__.py` (package root, and in `agent/`, `aws/`, `core/`, `llm/`) — package markers, **all on the guarded surface because an `__init__.py` can re-export anything** (`test_separation.py:75-84`). Their re-export bodies are largely unused — every consumer imports from the submodule — but **deleting a file drops the guard from 20 modules to 19 and the suite from 75 tests to 72 with everything still green.** Empty the body if you must; never remove the file `[stable]`
 - `core/accounts.py` — synthetic account state and transactions behind the agent's tools. Derives from `(customer_id, financial_state, seed, as_of_day)` and **never** from a truth object `[stable]`
 - `agent/schemas.py` · `tools.py` · `investigator.py` · `prompts.py` — the investigator: strict decision schema with mandatory evidence, five pure tools, a bounded loop, versioned prompt loading `[stable]`
-- `llm/base.py` · `openrouter.py` · `offline.py` · `cache.py` — provider abstraction, cost and latency capture, content-addressed response cache with record/replay. `LazyOpenRouterProvider` builds its client on first use so replay needs no key `[stable]`
+- `llm/base.py` · `openrouter.py` · `offline.py` · `cache.py` · `bedrock.py` — provider abstraction, cost and latency capture, content-addressed response cache with record/replay. `LazyOpenRouterProvider` builds its client on first use so replay needs no key `[stable]`
 - `aws/__init__.py` — AWS entrypoints. Inside the package **so the separation guard covers the deployed decision path**: adding it took the guard 72 → 75 tests with no edit to the test. Handlers (`ingest`, `investigate`, `api`) and DynamoDB `stores.py` land here `[skeleton]`
+- `llm/bedrock.py` — **the Bedrock provider.** Converse translation both ways, default Haiku 4.5 (D-025), `normalize_model_id()` adds the `us.` inference-profile prefix Anthropic ids require and leaves Nova/Llama bare. Cost is **computed from a dated price table, never charged** (G1); an unpriced id returns 0.0 rather than a guess. Client built on first use, so replay and the tests need no credentials `[stable]`
+- `aws/stores.py` — DynamoDB ledger/cases/reviews. Every ledger write conditional on `attribute_not_exists(sk)`, so a duplicate delivery is a no-op and its failure count is the duplicate metric (A7). **No delete method exists on `LedgerStore`**, and a test scans the class surface for anything delete-shaped (A6). Scoring is delegated to the unchanged `SignalLedger` — a test asserts a round-trip is bit-identical `[stable]`
 
 ## Not created yet — decided, and where they go
 
@@ -72,6 +74,8 @@ content would put a lie in this file. The placement is settled; the first real f
 ## tests/
 
 - `test_separation.py` — **import guard**: nothing on the decision path may import the generator, its lexicon, or a ground-truth type. Discovers its own surface by glob `[stable]`
+- `test_bedrock.py` — 33 tests against a stubbed `converse()`. Passes whether or not boto3 is installed, and that is itself under test `[stable]`
+- `test_stores.py` — 39 tests against a hand-rolled fake table. Duplicate-delivery no-op, Decimal round-trip, the absent delete surface, and score delegation `[stable]`
 - `test_no_answer_key_leak.py` — **data guard**: nothing may receive a value that *encodes* a ground-truth field. The one that would have caught the leak we actually had. Discovers `AccountSnapshot`'s numeric fields rather than listing them — a hand-written list once named a field that did not exist and silently skipped `[stable]`
 - `test_memory.py` — ledger invariants: never-discard, accumulation, retro re-score, decay, determinism `[stable]`
 - `test_tools.py` — every agent tool, in-memory, no network `[stable]`
@@ -109,6 +113,7 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 ## tools/
 
 - `aws-login.ps1` · `aws-login.sh` — **run first, every session.** Login only if the token is dead, then verify every permission. `-Force`/`--force` reissues the SSO session, which is how a new IAM grant actually takes effect `[stable]`
+- `provision.py` — idempotent boto3 provisioning, **dry-run by default**. Three tables, three queues with DLQ redrive. Schema imported from `stores.TABLE_SPECS` so the two cannot drift. Teardown has no code path that can delete the ledger. Known permission gaps print **PARKED** rows naming the gap, the owner and the workaround `[stable]`
 - `aws_probe.py` — 34 probes at build depth, each naming the IAM action and what breaks without it. Creates-then-deletes where a write is the only honest test `[stable]`
 - `aws_check.py` — shorter pre-flight; leads with the two irreversible questions (S3 Object Lock, CloudFormation) `[stable]`
 

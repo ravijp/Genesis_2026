@@ -1,10 +1,11 @@
 """The Bedrock provider's guarantees, proved against a stubbed `converse()` client.
 
-No boto3 and no botocore are installed in this environment (deliberately -- see pyproject.toml's
-`aws` extra), and every test here runs anyway: the client is a hand-written stand-in, never the
-real one, and `_error_code` duck-types the AWS error shape instead of importing botocore's
-exception type. That is the property under test as much as any individual behaviour is -- if a
-test in this file needed boto3 installed, the module would have failed its own contract.
+**Every test here passes whether or not boto3 is installed, and that is itself under test.** The
+client is a hand-written stand-in, never the real one, and `_error_code` duck-types the AWS error
+shape rather than importing botocore's exception type. boto3 is an optional extra
+(pyproject.toml's `aws`), so both states are normal and a test that only passes in one of them is
+broken -- which happened: the missing-boto3 test originally *assumed* absence, and flipped to
+failing the moment `uv sync --extra aws` ran. It now simulates absence via `sys.modules`.
 
 What this buys: Converse translation is correct in both directions, cost is a projection from a
 price table rather than a charged figure, the `us.` inference-profile prefix is applied to the
@@ -17,6 +18,7 @@ keyed run.
 from __future__ import annotations
 
 import ast
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -418,7 +420,17 @@ def test_constructing_and_importing_need_no_boto3() -> None:
     assert provider._boto_client is None
 
 
-def test_using_the_provider_without_boto3_raises_a_clear_error_only_then() -> None:
+def test_using_the_provider_without_boto3_raises_a_clear_error_only_then(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """boto3's absence is SIMULATED, not assumed.
+
+    This test used to just call `complete()` and expect the import to fail, which passed only
+    because the dev venv happened to have no boto3. `uv sync --extra aws` installs it and the
+    test flipped to failing -- an environment-dependent test that proves nothing about the code.
+    Blocking the name in `sys.modules` makes `import boto3` raise ImportError either way.
+    """
+    monkeypatch.setitem(sys.modules, "boto3", None)
     provider = BedrockProvider()  # no injected client -- forces the real boto3 import attempt
     with pytest.raises(MissingBoto3, match="boto3"):
         provider.complete([{"role": "user", "content": "go"}], [], ModelConfig(model=HAIKU))

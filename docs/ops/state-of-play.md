@@ -1,6 +1,6 @@
 # State of play
 
-**Updated 2026-08-25.** Rewritten in place every working session — **never appended to**. Hard cap:
+**Updated 2026-08-25 (late).** Rewritten in place every working session — **never appended to**. Hard cap:
 this file fits on one screen. If something will not fit, it belongs in `decisions.md` (a choice),
 `working-agreements.md` (a rule), or Jira (work). Anything historical belongs in git.
 
@@ -18,7 +18,12 @@ building it. Next gate **2026-09-07**. The 08-10 check-in and the 08-24 combined
 artifact records what 08-24 showed.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-investigator agent producing case files with cited evidence. **236 tests**, ruff clean.
+investigator agent producing case files with cited evidence. **312 tests**, ruff clean.
+
+**The AWS layer now exists in code.** `llm/bedrock.py` (Converse, Haiku 4.5, computed-not-charged cost),
+`aws/stores.py` (DynamoDB ledger/cases/reviews, conditional writes, no delete path on the ledger) and
+`tools/provision.py` (idempotent, dry-run by default). All stub-tested with zero AWS access. **No table
+has been created yet** — that needs Ravi's go-ahead, since it bills.
 
 **AWS is provisioned and reachable.** Account `859430413223`, permission set `agentic-trio`,
 **us-east-1** (confirmed — the CodeCommit host says so), bucket `s3://agentic-trio`, repo
@@ -27,6 +32,9 @@ investigator agent producing case files with cited evidence. **236 tests**, ruff
 **The AWS CLI is not a blocker — that was wrong and is corrected.** boto3, `npx cdk` and
 `git-remote-codecommit` all read credentials from the environment. Only `aws sso login` needs the v2
 CLI. Use the no-`@` CodeCommit URL (`codecommit::us-east-1://agentic-trio`) until SSO exists.
+
+**Deployment is boto3, not CDK** (D-024) — bootstrap needs three permissions we do not have. Lambdas
+deploy by passing the existing `zenon-poc-lambda-execution` role. Zip artifacts, not images.
 
 **Branch is prepared for the build.** `[dependency-groups] infra` (CDK cannot leak into the Lambda
 image), `[project.optional-dependencies] aws` (a fresh clone stays boto3-free), `Dockerfile`,
