@@ -52,7 +52,7 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | W7 | Ingest path (SQS FIFO → handler) | **DONE** | `aws/ingest.py`. Partial batch failure, conditional append, scoring delegated. 18 tests, no AWS |
 | W8 | Investigate path | **DONE (code)** | `aws/investigate.py` + `aws/transcripts.py`. Loop unchanged, score recomputed not trusted, account data labelled synthetic. 29 tests |
 | W9 | CI/CD | BLOCKED (IT) | CodeBuild + CodePipeline denied. `buildspec.yml` is written and parked, ready to run |
-| W10 | Reviewer UI, 3 screens | TODO | Needs W1 only. Whole client-facing axis |
+| W10 | Reviewer UI, 3 screens | **TODO — unblocked, next** | W1 done, and `aws/api.py` now serves the five reads + one write it needs. Whole client-facing axis |
 | W11 | Observability (EMF) | TODO | CloudWatch granted; no SNS, so alarms target EventBridge → Lambda |
 | W12 | Sweep runner | DROPPED for now | Fargate needs VPC subnets; keep the sweep local |
 
@@ -74,6 +74,27 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-28 (end of session)** · **`aws/api.py` — the reviewer API.** Five reads (ranked queue,
+one case, its reviews, a customer's standing ledger, the transcript behind a quote) and one write.
+406 tests (+27), ruff clean. **All three Lambda handlers now exist**; the end-to-end path closes in
+code, with nothing created in AWS.
+
+Four choices the tests hold rather than the prose:
+
+- **The write annotates and cannot mutate evidence.** infrastructure.md Q3 — reduce the score,
+  suppress the customer, or only annotate — is answered "only annotate". A test reads the case
+  before and after a dismissal and compares the evidence chain.
+- **No endpoint contacts anyone, and a test asserts the absence.** HITL here is enforced by there
+  being no outbound surface. If that test ever has to change, the entry's central safety claim has
+  changed with it.
+- **CORS is off unless `EARSHOT_ALLOWED_ORIGIN` is set.** A default of `*` publishes a reviewer's
+  case queue to any page a browser loads, and a default nobody set is a default nobody reviews.
+- **A 500 carries no stack trace.** A traceback in a response body names the tables.
+
+The action set is closed (`approve`/`dismiss`/`route`) because `update_status` writes straight into
+the GSI partition key — a free-text status would silently create a queue nothing lists. A dismissal
+with no reason is refused: those are the rows anyone will actually want to read later.
 
 **2026-08-28 (later still)** · **W8 done — `aws/investigate.py`, plus `aws/transcripts.py`.**
 379 tests (+35), ruff clean. Three things surfaced that the work package did not name:
