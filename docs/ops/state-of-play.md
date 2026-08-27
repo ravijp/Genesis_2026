@@ -39,40 +39,46 @@ deploy by passing the existing `zenon-poc-lambda-execution` role. Zip artifacts,
 **Branch is prepared for the build.** `[dependency-groups] infra` (CDK cannot leak into the Lambda
 image), `[project.optional-dependencies] aws` (a fresh clone stays boto3-free), `Dockerfile`,
 `.dockerignore`, `buildspec.yml`, `src/earshot/aws/`, `infra/`, `ui/`. Adding `earshot/aws/` took the
-separation guard 72 → 75 tests **with no edit to the test** — the deployed decision path is guarded
+separation guard 75 → 81 tests **with no edit to the test** — the deployed decision path is guarded
 by construction.
 
 ## Blocked, and on what
 
-- **Four granted-list gaps, none of them fatal, all needing a substitution.** **CloudFormation** is not
-  granted and CDK deploys through it — verify before the CDK commitment in §3.5 is load-bearing;
-  `cdk bootstrap` also wants its own bucket, ECR repo and IAM roles. **VPC/EC2** is not granted, so
-  ECS Fargate cannot launch (it needs a subnet) — substitute CodeBuild for the sweep, or keep it local.
-  **SNS** is not granted — alarm targets become EventBridge → Lambda. **Budgets/Cost Explorer** are not
-  granted — put the spend ceiling in our own code beside `COST_CAP_PER_CASE_USD`, which is the A9
-  argument applied to cost and lives in the repo a judge reads.
-- **Object Lock on `agentic-trio` is unverified and irreversible.** `aws s3api
-  get-object-lock-configuration --bucket agentic-trio`. If it is off, write-once on the evidence archive
-  is gone permanently. **A6's ledger guarantee is unaffected** — that is DynamoDB, no TTL, no delete
-  permission. Do not conflate them on stage.
-- **Zero model calls have ever been made.** The reader has no accuracy figure, and must not be given one
-  until a keyed run prints it.
+- **CodeBuild + CodePipeline — the only real IT ask left.** `buildspec.yml` is written and parked. It is
+  blocked by the same `iam:CreateRole` gap as the Lambda roles: the one role we can pass is scoped to
+  Lambda's trust policy, not CodeBuild's.
+- **Object Lock on `agentic-trio` is OFF**, verified, and not changeable without an AWS Support case. So
+  write-once on the evidence archive degrades from structural to an IAM convention. **A6's ledger
+  guarantee is unaffected** — that is DynamoDB, no TTL, no delete permission, and `LedgerStore` has no
+  delete method at all. Do not let the two claims merge on stage.
+- **No SNS, no Budgets, no Cost Explorer.** Alarms target EventBridge → Lambda; the spend ceiling goes
+  in our own code beside `COST_CAP_PER_CASE_USD`, which is the A9 argument applied to cost and lives in
+  the repo a judge reads.
+- **No VPC subnets**, so ECS Fargate cannot launch. The sweep stays local, where a judge can reproduce
+  it with no account.
+- **Zero model calls have ever been made against a corpus.** The reader has no accuracy figure and must
+  not be given one until a keyed run prints it. Bedrock connectivity is proven; reader *quality* is not.
 
 ## Next, in order
 
-1. **Bedrock provider** (`src/earshot/llm/bedrock.py`). `uv add --optional aws boto3`; Converse
-   translation both ways; price table labelled "computed from published prices", never "charged" (G1).
-   Absorbs the dead OpenAI package — one provider now serves both reader arms.
-2. **Persist case fields** (W1). `cli.py:531` writes `decision` and `trace` and drops `ctx.score`,
+1. **Persist case fields** (W1). `cli.py:531` writes `decision` and `trace` and drops `ctx.score`,
    `ctx.signal_type`, `ctx.threshold` and the retro fields. **All three reviewer-UI beats are
    unrenderable from disk until this lands.** The dangerous shortcut is regenerating the corpus from
    `manifest.seed` — it puts `stratum`/`outcome`/`latent_risk` behind a client-facing screen.
+2. **The three Lambda handlers** — `aws/ingest.py`, `investigate.py`, `api.py`. The stores and the
+   provider both exist, so this is the glue that closes the end-to-end path. Delegate with
+   `isolation: "worktree"`.
 3. **First keyed run**, both arms, 150 CFPB docs, ~$0.30. Converts four "not measured" deliverables into
    numbers. Commit the response cache and it replays keyless forever.
-4. **Ledger + case stores → ingest → investigate → reviewer UI** (W6 → W7 → W8 → W10).
+4. **Reviewer UI** (W10), which needs only W1 and is the whole client-facing axis of a Track A entry.
 
-**Arm B is deferred, deliberately.** GPT-4o-mini is unreachable; any second Bedrock family works and
-the choice is ~zero incremental work once the provider exists. Candidates: Nova Lite, Llama, Mistral.
+**Not yet done and it bills:** `tools/provision.py --stage dev --no-dry-run` creates the real tables and
+queues. Dry-run is clean. Needs Ravi's go-ahead.
+
+**One model, Haiku 4.5, for reader and investigator** (D-025). Sonnet is dropped, which *unblocked* the
+investigator — it needed an Anthropic use-case form and Haiku does not. **Haiku's verdict accuracy on a
+multi-turn tool loop is unmeasured**; not a cost win until AT-57 says so. Arm B stays deferred:
+Nova Lite and Llama 3 8B are both invocable and the choice is ~zero work now the provider exists.
 **The brief never required two vendors** — it says "a comparison model runs through the same harness"
 (`../sources/submission-ear-on-every-call.md:86-87`). That obligation was self-imposed and is retired.
 
