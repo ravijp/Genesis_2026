@@ -73,13 +73,61 @@ attached policy is `zenon-poc-s3-lambda`; there are no inline policies. So:
 - Bedrock invoke would fail the same way, which is why both handlers are deployed with the
   offline provider.
 
-**D-024 verified deployability, not functionality**, and that distinction was not visible until a
-handler actually had to read a table. The fix is one scoped inline policy on that role —
-`sqs:ReceiveMessage`/`DeleteMessage`/`GetQueueAttributes` on the two `earshot-dev-*` queues,
-DynamoDB `PutItem`/`GetItem`/`Query`/`UpdateItem` (**never `DeleteItem`** — A6) on the three tables
-and the cases GSI, `s3:GetObject`/`PutObject`/`ListBucket` on the `evidence/` and `artifacts/`
-prefixes, and `bedrock:InvokeModel`. We cannot write it ourselves: `iam:SimulatePrincipalPolicy` is
-denied, so even asking "may I?" is denied. **This is a new IT ask, and it is small and precise.**
+**D-024 verified deployability, not functionality**, and the distinction was invisible until a
+handler actually had to read a table.
+
+**We cannot fix it ourselves — attempted and denied, 2026-08-28.** `iam:PutRolePolicy` on that role
+returns AccessDenied, and so does `iam:SimulatePrincipalPolicy`, so even asking "may I?" is denied.
+Nothing was changed by the attempt.
+
+### The ask for IT (Vikash) — one inline policy, copy-pasteable
+
+Attach as an inline policy named `earshot-dev` on role `zenon-poc-lambda-execution`. It grants
+nothing outside `earshot-*` and the two S3 prefixes, and it **deliberately omits
+`dynamodb:DeleteItem`** — A6's never-discard guarantee is that the deployed role *cannot* delete a
+ledger entry, not that our code chooses not to.
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {"Sid": "EarshotQueues", "Effect": "Allow",
+     "Action": ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes",
+                "sqs:SendMessage", "sqs:GetQueueUrl"],
+     "Resource": ["arn:aws:sqs:us-east-1:859430413223:earshot-*"]},
+    {"Sid": "EarshotTablesNoDelete", "Effect": "Allow",
+     "Action": ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:Query",
+                "dynamodb:UpdateItem", "dynamodb:DescribeTable"],
+     "Resource": ["arn:aws:dynamodb:us-east-1:859430413223:table/earshot-*",
+                  "arn:aws:dynamodb:us-east-1:859430413223:table/earshot-*/index/*"]},
+    {"Sid": "EarshotEvidenceArchive", "Effect": "Allow",
+     "Action": ["s3:GetObject", "s3:PutObject"],
+     "Resource": ["arn:aws:s3:::agentic-trio/evidence/*",
+                  "arn:aws:s3:::agentic-trio/artifacts/*"]},
+    {"Sid": "EarshotListPrefixes", "Effect": "Allow",
+     "Action": ["s3:ListBucket"], "Resource": ["arn:aws:s3:::agentic-trio"],
+     "Condition": {"StringLike": {"s3:prefix": ["evidence/*", "artifacts/*"]}}},
+    {"Sid": "EarshotBedrock", "Effect": "Allow",
+     "Action": ["bedrock:InvokeModel"], "Resource": ["*"]}
+  ]
+}
+```
+
+**Two evidence lines for the ticket**, both reproducible:
+
+- `aws lambda create-event-source-mapping ...` → *"The function execution role does not have
+  permissions to call ReceiveMessage on SQS"*
+- Invoking `earshot-dev-api` with `{"rawPath": "/cases"}` → HTTP 500, log line
+  `{"event": "api.error", "path": "/cases", "error": "ClientError"}`. The same function returns 200
+  on `/health`, so the artifact and the code are not in question.
+
+**Once the policy lands**, re-run `uv run --extra aws python tools/deploy.py --stage dev
+--no-dry-run`: it is idempotent and will create the two event source mappings it could not create
+before. Nothing else needs redeploying.
+
+**The alternative we did not ask for:** `iam:CreateRole` scoped to `earshot-*`, which would let us
+build the three least-privilege per-function roles Appendix A.1 actually specifies. A broader grant
+for a better end state; the inline policy above is the smaller ask that unblocks today.
 
 ### Services granted
 
