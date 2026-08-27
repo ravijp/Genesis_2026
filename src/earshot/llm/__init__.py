@@ -18,6 +18,13 @@ from .base import (
     Usage,
     assistant_message,
 )
+from .bedrock import (
+    DEFAULT_BEDROCK_MODEL,
+    BedrockProvider,
+    LazyBedrockProvider,
+    MissingBoto3,
+    normalize_model_id,
+)
 from .cache import CacheMiss, CachingProvider, ResponseCache, cache_mode, cache_path
 from .offline import OfflineProvider
 from .openrouter import (
@@ -28,14 +35,18 @@ from .openrouter import (
 )
 
 __all__ = [
+    "DEFAULT_BEDROCK_MODEL",
     "DEFAULT_MODEL",
+    "BedrockProvider",
     "CacheMiss",
     "CachingProvider",
     "Completion",
     "LLMProvider",
+    "LazyBedrockProvider",
     "LazyOpenRouterProvider",
     "Message",
     "MissingAPIKey",
+    "MissingBoto3",
     "ModelConfig",
     "OfflineProvider",
     "OpenRouterProvider",
@@ -47,5 +58,6 @@ __all__ = [
     "assistant_message",
     "cache_mode",
     "cache_path",
+    "normalize_model_id",
     "resolve_api_key",
 ]
