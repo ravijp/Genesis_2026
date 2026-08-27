@@ -123,9 +123,10 @@ def main() -> int:
           lambda: _make_log_group(b("logs")))
     probe("cloudwatch", "cloudwatch:PutMetricAlarm", "cost + DLQ alarms",
           lambda: _describe_alarms(b("cloudwatch")))
-    probe("xray", "xray:GetTraceSummaries", "tracing",
-          lambda: "accessible" if b("xray").get_service_graph(
-              StartTime=0, EndTime=1) is not None else "?")
+    # GetSamplingRules needs no time window. get_service_graph(StartTime=0) returns
+    # InvalidRequestException, which reads as a denial and is not one.
+    probe("xray", "xray:GetSamplingRules", "tracing",
+          lambda: f"{len(b('xray').get_sampling_rules()['SamplingRuleRecords'])} rules")
     probe("ssm", "ssm:PutParameter", "config store",
           lambda: f"{len(b('ssm').describe_parameters(MaxResults=5)['Parameters'])} params")
     probe("events", "events:ListRules", "nightly batch",

@@ -106,6 +106,12 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 - `README.md` — why 56 new fragments exist, how they were authored blind, and the measurement that parked them `[stable]`
 - `fragments.py` — the 56 fragments, **not** wired into `corpus_lexicon.py`; splicing is blocked on the extractor `[stable]`
 
+## tools/
+
+- `aws-login.ps1` · `aws-login.sh` — **run first, every session.** Login only if the token is dead, then verify every permission. `-Force`/`--force` reissues the SSO session, which is how a new IAM grant actually takes effect `[stable]`
+- `aws_probe.py` — 34 probes at build depth, each naming the IAM action and what breaks without it. Creates-then-deletes where a write is the only honest test `[stable]`
+- `aws_check.py` — shorter pre-flight; leads with the two irreversible questions (S3 Object Lock, CloudFormation) `[stable]`
+
 ## tools/jira/
 
 - `adf.py` — renders a markdown subset into Atlassian Document Format so descriptions are readable `[stable]`

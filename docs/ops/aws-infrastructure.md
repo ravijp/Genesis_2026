@@ -12,6 +12,30 @@ there.
 
 ---
 
+## Start here, every session
+
+```powershell
+pwsh -File tools/aws-login.ps1 -Check      # PowerShell
+```
+```bash
+source tools/aws-login.sh --check          # Git Bash — SOURCE it, or AWS_PROFILE is lost
+```
+
+Logs in only if the current token is dead, prints who you are, then verifies every permission the
+build needs. A browser opens for approval; nothing else is interactive.
+
+**`-Force` / `--force` is the fix when IT grants a permission and you still get `AccessDenied`.**
+SSO bakes grants into the role session, so a new IAM policy does nothing until the session is
+reissued. Re-login is the only way to pick it up, and that has already caused one round of confusion.
+
+The scripts also guard three things that fail confusingly hours later:
+
+- **A static `AWS_ACCESS_KEY_ID` in the environment outranks the SSO profile** and is unset for you.
+- **The CLI is absent from the PATH of shells opened before it was installed**, so the absolute path
+  is used as a fallback.
+- **Region drift** — the console opens on `ap-southeast-2` while every model ARN and price in the
+  design assumes `us-east-1`.
+
 ## Live resources
 
 Region **us-east-1** for everything below.
