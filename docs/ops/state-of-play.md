@@ -18,7 +18,7 @@ building it. Next gate **2026-09-07**. The 08-10 check-in and the 08-24 combined
 artifact records what 08-24 showed.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-investigator agent producing case files with cited evidence. **406 tests**, ruff clean.
+investigator agent producing case files with cited evidence, and a three-screen reviewer UI that opens from disk. **416 tests**, ruff clean.
 
 **The AWS layer now exists in code.** `llm/bedrock.py` (Converse, Haiku 4.5, computed-not-charged cost),
 `aws/stores.py` (DynamoDB ledger/cases/reviews, conditional writes, no delete path on the ledger) and
@@ -50,9 +50,16 @@ Three things to carry:
   no bank core feed; `latent_risk` is a SHA-256 draw from the customer id. That is the seam a real
   feed replaces.
 
-**AWS is provisioned and reachable.** Account `859430413223`, permission set `agentic-trio`,
-**us-east-1** (confirmed — the CodeCommit host says so), bucket `s3://agentic-trio`, repo
-`agentic-trio`. Coordinates and setup: `aws-infrastructure.md`.
+**AWS is real, and the deployment is correct but inert (2026-08-28).** 3 DynamoDB tables with PITR
+on, 3 SQS queues with DLQ redrive, 3 Lambdas on python3.13 from one zip (sha `532a888f9bf4`), and a
+Function URL for the reviewer API at `AuthType=AWS_IAM`. `GET /health` returns 200 in 1.4s cold.
+Everything touching a store returns 500 and neither queue is wired — see the IAM row below.
+Account `859430413223`, permission set `agentic-trio`, **us-east-1**, bucket `s3://agentic-trio`.
+Coordinates, the deployed resource table and the IAM ask: `aws-infrastructure.md`.
+
+**The reviewer UI exists and needs nothing (W10).** `ui/index.html` opens from disk — no npm, no
+bundler, no network. Ranked queue, one case with its evidence chain, and the retro re-score, all
+rendering the same objects the deployed API returns because both come from `case_record()`.
 
 **The AWS CLI is not a blocker — that was wrong and is corrected.** boto3, `npx cdk` and
 `git-remote-codecommit` all read credentials from the environment. Only `aws sso login` needs the v2
@@ -69,7 +76,14 @@ by construction.
 
 ## Blocked, and on what
 
-- **CodeBuild + CodePipeline — the only real IT ask left.** `buildspec.yml` is written and parked. It is
+- **The blocker: `zenon-poc-lambda-execution` has no SQS, DynamoDB or Bedrock permissions.** One
+  attached policy, `zenon-poc-s3-lambda`, no inline ones. So the three deployed Lambdas cannot reach
+  anything and neither event source mapping can be created. `iam:PutRolePolicy` was attempted and
+  denied (nothing changed); `iam:SimulatePrincipalPolicy` is denied too. **The exact policy JSON and
+  the two reproducible error lines are in `aws-infrastructure.md`, written to be pasted into a
+  ticket.** D-024 verified the role could be *passed*, not that it could *do* anything — the gap
+  only surfaced when a handler had to read a table.
+- **CodeBuild + CodePipeline — the other IT ask.** `buildspec.yml` is written and parked. It is
   blocked by the same `iam:CreateRole` gap as the Lambda roles: the one role we can pass is scoped to
   Lambda's trust policy, not CodeBuild's.
 - **Object Lock on `agentic-trio` is OFF**, verified, and not changeable without an AWS Support case. So
@@ -86,19 +100,14 @@ by construction.
 
 ## Next, in order
 
-1. **Reviewer UI** (W10) — the whole client-facing axis of a Track A entry, and now fully unblocked.
-   `aws/api.py` serves the three screens; `earshot investigate`'s artifact has the same shape offline
-   (`case_record()`), so the SPA can be built and demoed with no AWS at all. **Never regenerate the
-   corpus from `manifest.seed` to fill a gap** — that puts `stratum`/`outcome`/`latent_risk` behind a
-   client-facing screen, and tests now scan both the artifact and every API response for those names.
-2. **Deploy the three handlers** — zip, passing `zenon-poc-lambda-execution` (D-024). Needs the
-   tables and queues, which bill: Ravi's call.
-3. **First keyed run**, both arms, 150 CFPB docs, ~$0.30. Converts four "not measured" deliverables
-   into numbers. Commit the response cache and it replays keyless forever.
-4. **Observability** (W11) and the spend ceiling in our own code (W4).
-
-**Not yet done and it bills:** `tools/provision.py --stage dev --no-dry-run` creates the real tables and
-queues. Dry-run is clean. Needs Ravi's go-ahead.
+1. **The IAM policy** (above). One ticket, and the end-to-end path closes on AWS.
+2. **First keyed run**, both arms, 150 CFPB docs, ~$0.30. **Not blocked** — it runs from the laptop.
+   Converts four "not measured" deliverables into numbers, and the committed response cache then
+   replays keyless forever. This is the highest-value unblocked work.
+3. **Observability** (W11, EMF) and the spend ceiling in our own code (W4).
+4. **The UI's write path** (`POST /cases/{id}/reviews`), once the API is reachable from a browser.
+   A static page cannot sign an `AuthType=AWS_IAM` Function URL, so this needs a decision about how
+   the SPA authenticates — not just the IAM fix.
 
 **One model, Haiku 4.5, for reader and investigator** (D-025). Sonnet is dropped, which *unblocked* the
 investigator — it needed an Anthropic use-case form and Haiku does not. **Haiku's verdict accuracy on a
