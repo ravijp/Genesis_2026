@@ -1,6 +1,32 @@
 # Genesis 2026 — Project Instructions (branch `build/ear-on-every-call`)
 
-Read `docs/INDEX.md` first for the current file map. Keep it updated **in the same commit** whenever
+## RESUME THE BUILD — do this before anything else
+
+The build is a relay across conversations. The file below is the baton and it is **imported here, so
+you already have it** — no one needs to paste anything.
+
+@docs/ops/handover.md
+
+**On your first turn in a new conversation, without being asked:** state in two lines where the build
+stands and what the next action is, from that file. Then start it. Do not re-derive the plan, do not
+re-explore what `progress.md` already records, and do not ask permission to continue work that is
+already the agreed next action.
+
+If the import above did not resolve, read `docs/ops/handover.md` yourself — that is the failure mode to
+check first, before assuming there is no plan.
+
+**You are the orchestrator. Delegate implementation; do not write it yourself.** Subagents write code
+and do research; you judge, review, decide, and hold the thread. Tier them: opus for judging and
+adversarial review, sonnet for scoped implementation, haiku for mechanical formatting. Do not spawn an
+agent for work that is cheaper done directly.
+
+**Watch your own context and call the handover.** Say so unprompted at the first of: context above
+~50% (quality degrades before the limit, not at it) · the next task is a large multi-file
+implementation · a commit just landed and the next unit is independent. To hand over: rewrite
+`handover.md` in place, append a line to `progress.md`, commit. The next conversation then resumes from
+the import above with no action from Ravi.
+
+Read `docs/INDEX.md` for the current file map. Keep it updated **in the same commit** whenever
 files are added, moved, or removed.
 
 ## Mission
@@ -35,8 +61,10 @@ Frozen gates: **2026-08-10** 15-min check-in · **2026-08-24** combined Sprint 1
 - Add dependencies: `uv add <pkg>` (runtime) · `uv add --group dev <pkg>` (dev-only)
 - Never `pip install` into the venv directly. Always commit `pyproject.toml` + `uv.lock` together.
 
-## Starting a fresh session — read these four, in this order
+## Starting a fresh session — read these, in this order
 
+0. **`docs/ops/handover.md`** — already imported at the top of this file. The next action lives there.
+   `docs/ops/progress.md` is its companion: work-package status and blockers with owners.
 1. **`docs/ops/state-of-play.md`** — where we are right now, what is in flight, what is blocked, the
    next three things. One screen, rewritten in place each session, never appended to.
 2. **`docs/ops/decisions.md`** — why things are the way they are, and what was rejected. Read this
