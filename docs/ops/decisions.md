@@ -26,6 +26,39 @@ for something listed under "rejected", read the reason first.
 
 ---
 
+### D-028 · 2026-08-28 · There is no bank core feed, so the account tools are synthetic and every case says so `ACCEPTED`
+`core/accounts.py` derives transactions and prior cases from `(customer_id, latent_risk, seed,
+as_of_day)`. Locally `latent_risk` is the corpus's `financial_state`; deployed there is nothing real to
+read, so `aws/investigate.py` draws it from a SHA-256 of the customer id — stable per customer, derived
+from nothing — and stamps `account_data: "synthetic"` on every case so no reviewer screen can present
+it as a bank record. **This is the seam a real feed replaces.** SHA-256 rather than `hash()`, which is
+salted per process and would give a customer a different account on every cold start. **Rejected:** one
+constant for every customer — it makes every account identical, which is a worse thing to put on a
+screen than a labelled synthetic one. **Rejected:** dropping the account tools in deployment — the
+investigator would then reason from different evidence than the one we measured.
+
+### D-027 · 2026-08-28 · The online threshold is a fixed cut, not the budget-derived local one `ACCEPTED`
+`cli.py:_queue` ranks a whole population and cuts at the review team's capacity (top 10%). A streaming
+handler sees one conversation and has no population to rank against, so `aws/ingest.py` uses a constant
+(`EARSHOT_THRESHOLD`, default 0.60). **The two are different quantities and will disagree about whether
+a given customer crossed.** Stated in the module docstring and in the handover's traps, because the
+failure mode is presenting them as one number on stage. **Rejected:** maintaining a rolling population
+percentile online — a second, undertested scoring concept on the deployed path, which is exactly what
+D-009's separation and this architecture's "one scorer" rule exist to prevent. Revisit once a real
+distribution of scores exists; today there is none.
+
+### D-026 · 2026-08-28 · A case carries two moments, and one serializer writes it everywhere `ACCEPTED`
+`case_record.py` builds both the `earshot investigate` artifact and the DynamoDB `CASES` item; the store
+adds only its three key attributes. Two serializers drift, and the drift appears as a blank column on a
+reviewer's screen rather than as a red test. Each case carries `score_at_open`/`opened_on_day` from the
+crossing **and** `score`/`as_of_day`/`evidence` from the customer today, because merging them loses one
+of two things silently: take the score from the crossing and a faded case holds its opening-day seat at
+the top of the queue forever; take the evidence from the crossing and the retro chain freezes on the
+opening day, emptying the "re-read March in light of July" beat for exactly the customers who kept
+accumulating. **Rejected:** letting the reviewer UI regenerate the corpus from `manifest.seed` to
+recover missing fields — it puts `stratum`, `outcome` and `latent_risk` behind a client-facing screen.
+Tests now scan the artifact and every API response for those names.
+
 ### D-025 · 2026-08-25 · Haiku 4.5 everywhere; Sonnet is dropped, which unblocks the investigator `ACCEPTED`
 **One model does both jobs: `us.anthropic.claude-haiku-4-5-20251001-v1:0`.** Reader and investigator.
 Sonnet 4.5 is not used anywhere.
