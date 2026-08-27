@@ -49,7 +49,7 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | W4 | Spend cap in our own code | TODO | Budgets/Cost Explorer not granted. Put the ceiling next to `COST_CAP_PER_CASE_USD` |
 | W5 | First keyed reader run | TODO | Needs W3. 150 CFPB docs, ~$0.30, both arms |
 | W6 | Ledger + case DynamoDB stores | **DONE (code); tables not created** | `aws/stores.py` + `tools/provision.py`. Conditional writes, no delete path on the ledger, scoring delegated. 39 stub tests. Dry-run verified against the real account |
-| W7 | Ingest path (SQS FIFO → handler) | **TODO — next** | W3 and W6 are done, so this is the glue. `aws/ingest.py` |
+| W7 | Ingest path (SQS FIFO → handler) | **DONE** | `aws/ingest.py`. Partial batch failure, conditional append, scoring delegated. 18 tests, no AWS |
 | W8 | Investigate path | **TODO — unblocked** | D-025 moved the investigator to Haiku 4.5, which is invocable. No longer waiting on the Anthropic form |
 | W9 | CI/CD | BLOCKED (IT) | CodeBuild + CodePipeline denied. `buildspec.yml` is written and parked, ready to run |
 | W10 | Reviewer UI, 3 screens | TODO | Needs W1 only. Whole client-facing axis |
@@ -74,6 +74,26 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-28 (later)** · **W7 done — `aws/ingest.py`.** SQS record → `Conversation` → `extract()` →
+conditional append → reload → unchanged `SignalLedger` → threshold → enqueue. 344 tests (+18), ruff
+clean. Three choices worth carrying:
+
+- **`batchItemFailures`, not a raised exception.** A raise redelivers the whole batch and re-runs
+  every extraction in it — with a model reader that is real money spent to punish one malformed
+  neighbour.
+- **The online threshold is a fixed cut (`EARSHOT_THRESHOLD`, default 0.60), not the local one.**
+  `cli.py:_queue` derives its threshold from a review budget over a whole population; a streaming
+  handler has no population snapshot. The two are different quantities and will disagree about
+  whether a given customer crossed. Stated in the module docstring rather than smoothed over.
+- **A crossing that stays crossed re-investigates on every later conversation.** Bounded by
+  conversation volume, one investigation each time. It does not multiply cases — `make_case_id`
+  keys on the first crossing day — but it is a cost the demo should not pretend away.
+
+The tests assert the design claims on the deployed path, not just the plumbing: never-discard
+(a sub-threshold signal is retained and still counts later), accumulation (0.270 and 0.146 alone,
+0.459 together, cut at 0.35), and no second scorer (the handler's number equals an in-memory
+`SignalLedger` over the same signals, bit for bit).
 
 **2026-08-28** · **W1 done.** `src/earshot/case_record.py`: one `case_record()` builds both the
 `earshot investigate` artifact and the DynamoDB `CASES` item, so the reviewer UI renders either and
