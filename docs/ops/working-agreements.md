@@ -244,6 +244,19 @@ off on six of ten seeds and never reproduced. It caught this itself and re-ran e
 Either hold edits until the round lands, or hand reviewers a pinned SHA to extract. The same applies to
 the shared scratchpad — two agents writing `attack.py` collide silently.
 
+**Any agent that writes files gets `isolation: "worktree"`. No exceptions, and this rule was already
+here in weaker form.** On 2026-08-25 two implementation agents ran concurrently in one tree — one
+building the Bedrock provider, one the DynamoDB stores. To establish a test baseline, the second ran
+`git stash -u`, which swept away the first agent's three half-written files back to HEAD. It popped the
+stash and both recovered, so nothing was lost, but only by luck: the collision was invisible to both
+until each reported it independently at the end.
+
+Two things make this worse than an ordinary race. **The files were untracked**, so a stash that
+"restored cleanly" is the only thing standing between the work and permanent loss. And **the tell
+arrives after the damage** — a `reset: moving to HEAD` in `git reflog` that neither agent issued.
+Read-only agents (Explore, research, review) share the tree safely; anything that writes does not.
+**Commit the moment a unit verifies** — uncommitted work is the only work that can be lost.
+
 ---
 
 ## 9. What we do not chase

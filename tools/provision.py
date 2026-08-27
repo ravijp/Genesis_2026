@@ -99,6 +99,10 @@ def _provision_tables(ddb: Any, stage: str, dry_run: bool) -> None:
             _record(f"dynamodb:{name}", "SKIP", "already exists")
         elif dry_run:
             _record(f"dynamodb:{name}", "CREATE", "DRY-RUN -- would create")
+            # Nothing exists to describe, so a PITR check here reports FAILED
+            # TableNotFoundException and reads as a permission problem. State the intent instead.
+            _record(f"dynamodb:{name}:pitr", "ENABLE", "DRY-RUN -- would enable after create")
+            continue
         else:
             try:
                 kwargs: dict[str, Any] = {
@@ -137,11 +141,17 @@ def _teardown_table(ddb: Any, name: str, dry_run: bool) -> None:
 # ---- SQS -----------------------------------------------------------------------------------
 
 
+# SQS reports a missing queue with the wire code `AWS.SimpleQueueService.NonExistentQueue`, while
+# botocore names the exception class `QueueDoesNotExist`. Matching only the class name let a
+# perfectly normal "not created yet" escape as a crash on the first real dry-run.
+_QUEUE_ABSENT = frozenset({"AWS.SimpleQueueService.NonExistentQueue", "QueueDoesNotExist"})
+
+
 def _queue_url(sqs: Any, name: str) -> str | None:
     try:
         return sqs.get_queue_url(QueueName=name)["QueueUrl"]
     except Exception as exc:  # noqa: BLE001 - re-raised unless it is "does not exist"
-        if _error_code(exc) == "QueueDoesNotExist":
+        if _error_code(exc) in _QUEUE_ABSENT or type(exc).__name__ in _QUEUE_ABSENT:
             return None
         raise
 

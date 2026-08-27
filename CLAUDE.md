@@ -20,6 +20,15 @@ and do research; you judge, review, decide, and hold the thread. Tier them: opus
 adversarial review, sonnet for scoped implementation, haiku for mechanical formatting. Do not spawn an
 agent for work that is cheaper done directly.
 
+**Any agent that WRITES FILES must get `isolation: "worktree"`.** Two agents sharing one tree is a
+corruption hazard, not a theoretical one: on 2026-08-25 two implementation agents ran concurrently
+here, one ran `git stash -u` to get a clean test baseline, and it wiped the other's three
+half-written files back to HEAD. Both happened to recover. Read-only agents (Explore, research,
+review) can share the tree safely. After a worktree agent finishes, review its diff before merging —
+isolation prevents collisions, it does not make the work correct.
+
+**Commit as soon as a unit of work verifies.** Uncommitted work is the only work that can be lost.
+
 **Watch your own context and call the handover.** Say so unprompted at the first of: context above
 ~50% (quality degrades before the limit, not at it) · the next task is a large multi-file
 implementation · a commit just landed and the next unit is independent. To hand over: rewrite
