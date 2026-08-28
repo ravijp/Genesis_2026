@@ -26,6 +26,34 @@ for something listed under "rejected", read the reason first.
 
 ---
 
+### D-030 · 2026-08-28 · The console's primary user is the specialist reviewer, not the agent on the call `ACCEPTED`
+Accumulation across conversations is the product, and a live-call panel structurally cannot show it —
+the agent on the call has one conversation and no standing ledger to re-read. The four teams our routes
+name (retention, collections, vulnerability, complaints) work case queues, not calls. And EU AI Act
+Art. 14(4)(b) names automation bias for exactly the mid-call-nudge shape: a prompt beside a live
+customer is the hardest place to expect independent judgement. So `#/desk` is the product screen and
+its user is a reviewer working a queue. **The live-call view ships anyway** — it is the most striking
+thing we own — carrying *"Illustrative … nobody decides here"* on the screen, not in a caption.
+Consequences that are not style choices: confidence is always a **number**; sub-threshold ledger rows
+render at **full contrast**, because dimming them draws the incumbent behaviour this product inverts;
+nothing is preselected and the primary button is not focused on load; and the decision buttons print
+the `POST /cases/{id}/reviews` body they would send and state that they did not send it. **Rejected:**
+leading the demo with the live-call panel — it is the screen a judge remembers and the one that argues
+for a product we did not build.
+
+### D-029 · 2026-08-28 · A tenant is a configuration, and its team map is display-only `ACCEPTED`
+`tenants.py` makes a deployment one `RunConfig`, one fixed alert threshold, one map from the four
+canonical `OwningTeam` slots onto that client's own team names, and a nine-stage `Seam` list naming who
+owns each. **The team map renders labels and never reaches the model.** Widening `agent.schemas
+.OwningTeam` per client would put a client's string inside the model's decision contract, and the
+closed `Literal` is precisely what stops a model inventing a destination no queue drains — the routing
+vocabulary has to stay four slots wide for `tools/routing_accuracy.py` to be able to grade it at all.
+**One profile ships (Northwind)**, and the machinery stays general because that machinery *is* the seam
+a second client arrives through. **Rejected:** a portfolio of three invented banks — it demonstrated
+the configuration layer and nothing else, and three fake logos is a weaker claim than one deployment
+described honestly. **Rejected:** asserting "this is a platform layer" in prose; the deployment screen
+counts the seams instead, and five of the nine stages are systems the client already runs.
+
 ### D-028 · 2026-08-28 · There is no bank core feed, so the account tools are synthetic and every case says so `ACCEPTED`
 `core/accounts.py` derives transactions and prior cases from `(customer_id, latent_risk, seed,
 as_of_day)`. Locally `latent_risk` is the corpus's `financial_state`; deployed there is nothing real to
