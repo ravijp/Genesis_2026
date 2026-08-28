@@ -52,9 +52,10 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | W7 | Ingest path (SQS FIFO → handler) | **DONE** | `aws/ingest.py`. Partial batch failure, conditional append, scoring delegated. 18 tests, no AWS |
 | W8 | Investigate path | **DONE (code)** | `aws/investigate.py` + `aws/transcripts.py`. Loop unchanged, score recomputed not trusted, account data labelled synthetic. 29 tests |
 | W9 | CI/CD | BLOCKED (IT) | CodeBuild + CodePipeline denied. `buildspec.yml` is written and parked, ready to run |
-| W10 | Reviewer UI, 3 screens | **DONE (read-only)** | `ui/`, no build step. All three beats render from a committed artifact with zero AWS. The write path waits on the API being reachable |
+| W10 | Reviewer UI, 3 screens | **DONE (read-only)** | `ui/`, no build step. All three beats render from a committed artifact with zero AWS. The write path waits on the API being reachable. Extended to five screens by W13; same renderers, new routes |
 | W11 | Observability (EMF) | **DONE (emit side)** | `aws/metrics.py`, wired into all three handlers. Alarms/dashboard still to create; no SNS, so they target EventBridge → Lambda |
 | W12 | Sweep runner | DROPPED for now | Fargate needs VPC subnets; keep the sweep local |
+| W13 | Live-stream demo, multi-deployment | **DONE** | `stream.py` + `tenants.py` + `ui/live.js`. Three synthetic enterprises, 460 conversations read by Haiku 4.5 on Bedrock, 12 crossings worked. `--serve` streams a genuinely-live run over SSE on localhost. 51 tests |
 
 ## Blocked, and who owns it
 
@@ -75,6 +76,36 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-28 (late)** · **The demo layer, and real Bedrock behind all of it** (`1275f95`).
+`earshot stream` walks a book in **global day order across all customers** and emits one frame per
+conversation — what the reader found, the score before and after, the re-ranked board, per-call cost
+and latency. `tenants.py` turns that into three deployments: **a tenant is a configuration**, never
+a fork — own corpus, own half-lives, own fixed threshold, own names for the four canonical
+`OwningTeam` slots, with the team map display-only so the model's decision contract stays a closed
+`Literal`. Two new UI screens (`#/portfolio`, `#/stream/<tenant>`) plus `--serve`, which runs the
+same `run_stream()` over SSE on 127.0.0.1 so a stage demo makes real calls while a room watches.
+
+**Measured, keyed:** Haiku 4.5 read all 460 conversations for **$0.653** (p50 ~1.1 s, **0 unparsable
+replies, 0 dropped quotes**) and worked 12 of 33 crossings for **$0.412**. Cached per provider, so a
+fresh clone replays every screen with no key. 539 tests (was 479), guard at 114, ruff clean.
+
+**The ASR question, answered honestly rather than faked.** There is no speech recognition in this
+system. What the stream reproduces is the *arrival pattern*, and at 1× each frame is held for the
+reader's own measured latency on that conversation — so "real time" is a number from the run.
+`manifest.asr` is `"none"`, every screen prints it, and `smoke.mjs` fails the build if it changes.
+
+**Four things bought the hard way and now pinned:** a second threshold exists (fixed cut for the
+stream, budget-derived for `investigate`) and they disagree on purpose; `stream.py` stays on the
+separation-guarded surface only because `cli.stream_inputs()` hands it the corpus and the context
+factory; a warm reader cache turns a "live" run into a replay, so the LIVE badge names the cache
+mode; and a case id contains `#`, so every link now percent-encodes it.
+
+**One doc claim corrected within the hour it was written.** `ui/README.md` said neither fixture
+ships the seed. It does — in `manifest.seed`, as provenance, exactly as `data.js` always has. The
+narrower true guarantee (no answer-key field present, no code path regenerates anything) is what
+the docs now say.
+
 
 **2026-08-28 (evening)** · **Redeployed** (zip sha `8323ff7cd3ca`) and **six CloudWatch alarms
 created for real**. `cloudwatch:PutMetricAlarm` turned out to be granted, which the permission probe

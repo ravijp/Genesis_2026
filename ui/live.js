@@ -560,8 +560,11 @@ window.EARSHOT_LIVE = (function () {
       .map(function (c) {
         var d = c.decision || {};
         return (
+          // encodeURIComponent, because `make_case_id` joins its triple with "#" and a raw one
+          // inside a hash route is legal-but-browser-dependent. `app.js` decodes every path part,
+          // so an encoded id round-trips exactly and the question stops being interesting.
           '<li><a class="plain" href="#/stream/' + U.esc(block.tenant.tenant_id) +
-          "/case/" + U.esc(c.case_id) + '">' +
+          "/case/" + U.esc(encodeURIComponent(c.case_id)) + '">' +
           '<span class="badge ' + U.verdictClass(d.verdict) + '">' +
           U.esc(U.words(d.verdict)) + "</span>" +
           '<span class="cid">' + U.esc(c.customer_id) + "</span>" +

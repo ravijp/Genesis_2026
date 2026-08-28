@@ -154,7 +154,10 @@
       "streaming rather than a bug.</p></div>";
 
     Array.prototype.forEach.call(view.querySelectorAll("tr[data-case]"), function (tr) {
-      function open() { location.hash = "#/case/" + tr.getAttribute("data-case"); }
+      // Encoded for the same reason as every other case link: a case id contains "#".
+      function open() {
+        location.hash = "#/case/" + encodeURIComponent(tr.getAttribute("data-case"));
+      }
       tr.addEventListener("click", open);
       tr.addEventListener("keydown", function (e) {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }

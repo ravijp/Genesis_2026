@@ -27,7 +27,12 @@ uv run earshot sweep --seeds 10 --customers 1500        # the numbers below (~30
 uv run earshot demo --customers 400                     # the accumulation moment, narrated
 uv run earshot investigate --customers 200 --limit 3    # the agent working three cases
 uv run earshot run --customers 400                      # one dataset, for debugging only
+uv run earshot stream --tenant all                      # three deployments, conversations arriving
 ```
+
+**The demo opens from disk.** `open ui/index.html` — no npm, no server, no network. Three
+enterprises on one engine, a live arrival stream, the reviewer queue, and every case with the
+quotes behind it. Details in [ui/README.md](ui/README.md).
 
 **Every command above runs with no API keys and no network.** The offline provider is rule-based and
 deliberately weaker than a model; its miss rate is measured and published. To use real models instead,
@@ -270,6 +275,38 @@ EARSHOT_CACHE_MODE=replay EARSHOT_OPENROUTER_API_KEY=invalid \
 The cache holds those **two** investigations only. Asking for a third, or for a different corpus size,
 is a cache miss — which reports itself as `provider_error` rather than reaching the network.
 
+### The streamed demo, measured 2026-08-28
+
+Three synthetic deployments, read end to end by Claude Haiku 4.5 on Bedrock. Every figure below is
+counted from the run, and the whole thing replays from the committed cache with no key.
+
+| Deployment | Book | Cut | Conversations | Signals | Crossings | Worked | Reader | Agent |
+|---|---|---|---|---|---|---|---|---|
+| Northwind Retail Bank | retail banking | 0.60 | 133 / 44 customers | 63 | 9 | 4 | $0.187 | $0.132 |
+| Meridian Card Services | card issuing | 0.52 | 212 / 52 customers | 107 | 17 | 4 | $0.298 | $0.138 |
+| Harborline Lending | mortgage servicing | 0.68 | 115 / 38 customers | 77 | 7 | 4 | $0.168 | $0.142 |
+
+460 conversations read for **$0.653**, p50 ~1.1 s per conversation, **0 unparsable replies and 0
+dropped quotes** across all three. Twelve investigations for **$0.412**. $1.065 in total.
+
+Four things that must be said next to that table, not after it:
+
+- **The threshold is a fixed cut, not the budget-derived one** the rows above this section use. A
+  streaming consumer sees one conversation at a time and has no population to rank against, so it
+  cannot take the top 10% of anything. This mirrors `aws/ingest.py`, the deployed path. The two
+  numbers disagree about who crossed; they are labelled apart on every screen.
+- **Only 12 of 33 crossings were investigated**, four per deployment, to bound the cost of a
+  re-record. The other 21 are listed as unworked with the reason — visible on the screen, not
+  inferable from it.
+- **Routing is still not accuracy-measured, and what it shows is not flattering.** Haiku sent 3 of
+  Northwind's 4 cases to one team and left 2 of Meridian's 4 **unrouted** (`owning_team: "none"`).
+  That is on the dashboard because it is a finding, and it is consistent with AT-57: the agent
+  escalates rather than discriminates.
+- **There is no speech recognition anywhere in this system.** The transcripts are generated text.
+  What the stream replays faithfully is the *arrival pattern*, and at 1× each frame is held for the
+  reader's own measured latency on that conversation. `manifest.asr` says `none`, every screen
+  prints it, and the UI smoke test fails the build if it ever says anything else.
+
 ---
 
 ## Model access
@@ -305,6 +342,11 @@ The four things worth knowing before you read any of it:
   editing the test.
 - **`prompts/`** — versioned files, so a prompt change is a reviewable diff. Their sha goes into the
   response-cache key, which is what makes "this recorded answer came from this prompt" checkable.
+- **`ui/`** — five static screens, no build step, and the demo runs from `file://`. `stream.py` and
+  `tenants.py` behind them add a *streaming* view and a *multi-deployment* view of the same engine —
+  a tenant is a configuration (own corpus, own half-lives, own threshold, own team names), never a
+  fork. `earshot stream --serve` runs the same loop over SSE on localhost so the model calls happen
+  while a room watches.
 
 ---
 

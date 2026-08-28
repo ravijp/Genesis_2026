@@ -18,7 +18,7 @@ building it. Next gate **2026-09-07**. The 08-10 check-in and the 08-24 combined
 artifact records what 08-24 showed.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-investigator agent producing case files with cited evidence, and a three-screen reviewer UI that opens from disk. **479 tests**, ruff clean.
+investigator agent producing case files with cited evidence, and a five-screen UI that opens from disk. **539 tests**, ruff clean.
 
 **The AWS layer now exists in code.** `llm/bedrock.py` (Converse, Haiku 4.5, computed-not-charged cost),
 `aws/stores.py` (DynamoDB ledger/cases/reviews, conditional writes, no delete path on the ledger) and
@@ -56,6 +56,29 @@ Function URL for the reviewer API at `AuthType=AWS_IAM`. `GET /health` returns 2
 Everything touching a store returns 500 and neither queue is wired — see the IAM row below.
 Account `859430413223`, permission set `agentic-trio`, **us-east-1**, bucket `s3://agentic-trio`.
 Coordinates, the deployed resource table and the IAM ask: `aws-infrastructure.md`.
+
+**The demo layer is built and paid for (2026-08-28).** `earshot stream` walks a book in **global
+day order across all customers** — the arrival pattern, not a batch with a clock on it — and emits a
+frame per conversation carrying what the reader found, the score before and after, the re-ranked
+board, and the per-call cost and latency. `tenants.py` makes that three deployments: **a tenant is a
+configuration** (own corpus, own half-lives, own fixed threshold, own names for the four canonical
+`OwningTeam` slots), never a fork, and the team map is display-only so the model's decision contract
+stays a closed `Literal`. Haiku 4.5 on Bedrock read all 460 conversations ($0.653, p50 ~1.1s, zero
+unparsable) and worked 12 crossings ($0.412). Both are cached, so a fresh clone replays every screen
+keyless. `--serve` runs the same loop over SSE on 127.0.0.1 for a genuinely-live stage demo.
+
+Four things to carry about it, all of them on screen rather than in a caption:
+
+- **No speech recognition exists in this system.** What replays is the arrival pattern; at 1× each
+  frame is held for the reader's own measured latency. `manifest.asr` is `"none"` and the smoke test
+  fails the build if it changes.
+- **The stream threshold is a fixed cut**, mirroring `aws/ingest.py`. It is *not* the budget-derived
+  one `earshot investigate` reports. They disagree about who crossed. Do not merge them on stage.
+- **12 of 33 crossings were investigated**, four per tenant, to bound a re-record. The other 21 are
+  listed unworked with the reason.
+- **`stream.py` sits on the separation-guarded surface** because `cli.stream_inputs()` hands it the
+  conversations and the `ToolContext` factory. It never holds a `Corpus`. The exemption list stayed
+  at three.
 
 **The reviewer UI exists and needs nothing (W10).** `ui/index.html` opens from disk — no npm, no
 bundler, no network. Ranked queue, one case with its evidence chain, and the retro re-score, all
@@ -112,7 +135,11 @@ by construction.
 3. **Observability** (W11, EMF) and the spend ceiling in our own code (W4).
 4. **The UI's write path** (`POST /cases/{id}/reviews`), once the API is reachable from a browser.
    A static page cannot sign an `AuthType=AWS_IAM` Function URL, so this needs a decision about how
-   the SPA authenticates — not just the IAM fix.
+   the SPA authenticates — not just the IAM fix. `--serve` does **not** close this: it serves a demo
+   stream from local state and has no write route by design.
+5. **Routing accuracy**, now that there is data to measure it against. The streamed run shows Haiku
+   sending 3 of Northwind's 4 cases to one team and leaving 2 of Meridian's 4 `unrouted`. That is a
+   direction, not an estimate, and `verdict_accuracy.py` already collects `owning_team`.
 
 **One model, Haiku 4.5, for reader and investigator** (D-025). Sonnet is dropped, which *unblocked* the
 investigator — it needed an Anthropic use-case form and Haiku does not. **Haiku's verdict accuracy on a

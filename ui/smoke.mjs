@@ -130,8 +130,11 @@ const routes = [
   "#/",
   "#/portfolio",
   "#/queue",
+  // Encoded and raw, because `make_case_id` joins its triple with "#": the links now emit the
+  // encoded form and a bookmark from before this change carries the raw one. Both must resolve.
+  `#/case/${encodeURIComponent(caseId)}`,
   `#/case/${caseId}`,
-  `#/case/${caseId}/retro`,
+  `#/case/${encodeURIComponent(caseId)}/retro`,
   `#/conversation/${evidence.conversation_id}?case=${caseId}&turn=${evidence.turn_index}`,
   "#/case/NO-SUCH-CASE",
   "#/conversation/NO-SUCH-CONVERSATION",
@@ -146,8 +149,9 @@ for (const block of stream.tenants) {
   const streamCaseId = Object.keys(block.cases)[0];
   if (streamCaseId) {
     const row = (block.cases[streamCaseId].evidence || [])[0];
+    routes.push(`#/stream/${tid}/case/${encodeURIComponent(streamCaseId)}`);
     routes.push(`#/stream/${tid}/case/${streamCaseId}`);
-    routes.push(`#/stream/${tid}/case/${streamCaseId}/retro`);
+    routes.push(`#/stream/${tid}/case/${encodeURIComponent(streamCaseId)}/retro`);
     if (row) {
       routes.push(
         `#/stream/${tid}/conversation/${row.conversation_id}` +

@@ -5,7 +5,7 @@ in place at each handover. **Keep it under ~60 lines** — it loads into every c
 baton, not a history: next action, live blockers, traps already paid for. History goes in
 `progress.md` or git.
 
-**2026-08-28** · commit `5da1518` · branch `build/ear-on-every-call` · **479 tests**, guard at 105, ruff clean
+**2026-08-28** · commit `1275f95` · branch `build/ear-on-every-call` · **539 tests**, guard at 114, ruff clean
 
 ## First turn
 
@@ -16,7 +16,13 @@ baton, not a history: next action, live blockers, traps already paid for. Histor
 
 ## Next action — the IT ask, then a bigger sample
 
-**Everything buildable is built.** W1, W4, W7, W8, W10, W11 and the reviewer API are done; AWS is
+**The demo layer landed 2026-08-28** (`1275f95`): `earshot stream` + `tenants.py` + two new UI
+screens. Three synthetic deployments, conversations arriving in global day order, the queue
+re-ranking live, cases opening. Haiku 4.5 on Bedrock read all 460 conversations ($0.653) and worked
+12 crossings ($0.412) — cached, so it replays keyless. `earshot stream --serve` runs the same loop
+over SSE on localhost for a genuinely-live stage demo. `ui/README.md` is the operator's guide.
+
+**Everything else buildable is built.** W1, W4, W7, W8, W10, W11 and the reviewer API are done; AWS is
 provisioned, all three Lambdas are deployed (zip sha `8323ff7cd3ca`), six CloudWatch alarms exist,
 and the first keyed runs have produced real numbers. What is left needs either IT or more money.
 
@@ -82,6 +88,18 @@ a fresh clone runs all 416 tests keyless, and that is load-bearing.
 - **When something reads as AccessDenied, read the error *message*.** Two probe bugs, the Anthropic
   model-id prefix and the SQS mapping failure all masqueraded as permission problems — and one of
   them actually was. Also: a new IAM grant does nothing until the SSO session is reissued (`--force`).
+- **There are now two thresholds and they disagree on purpose.** The stream and `aws/ingest.py`
+  use a fixed cut; `earshot investigate` uses a budget-derived top-K. A streaming consumer has no
+  population to rank against. Both are labelled on their own screen — never merge them on stage.
+- **`stream.py` stays on the separation-guarded surface only because `cli.stream_inputs()` hands
+  it the conversations and the `ToolContext` factory.** Re-add `generate()` there and the guard
+  fails, correctly. The exemption list is at three and `test_evaluation_exemptions_stay_small`
+  caps it.
+- **A warm reader cache makes a "live" run a replay.** `--serve` names the cache mode in the LIVE
+  badge for exactly this reason; `EARSHOT_CACHE_MODE=off` forces new calls. A live badge over
+  cached completions is the one dishonest pixel the demo could have had.
+- **A case id contains `#`** (`make_case_id` joins its triple with it). Every UI link now
+  percent-encodes it and `smoke.mjs` renders both forms.
 - **Agents that write files need `isolation: "worktree"`.** Untracked files + another agent's
   `git stash -u` nearly lost three of them.
 - **Never delete an `__init__.py`.** Drops the guard and the suite silently.
