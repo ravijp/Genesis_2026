@@ -87,6 +87,91 @@ only "to create applications with the Salesforce Lightning Design System that ru
 proprietary, and no vendor brand hex appears anywhere. Type is a system stack and the marks are
 text glyphs.
 
+## The design system, and the gate that keeps it honest
+
+Three stylesheets, one system. `styles.css` holds the tokens and the document screens, `demo.css`
+the stream, `console.css` the reviewer console. **`demo.css` and `console.css` define no colour, no
+size and no spacing value of their own** — they index tokens declared once.
+
+**The neutral ramp is generated, not chosen.** Sixteen steps at a fixed hue (255°) and a low, near
+constant chroma (0.012, tapered to zero at pure white), with OKLCH lightness stepping evenly from
+0.150 to 1.000: `L(i) = 0.15 + i × 0.85/15`. Even steps in OKLCH are even steps to the eye, which
+arbitrary greys are not — `#171b21` beside `#1e242c`, which is what this file used to hold, is two
+colours picked on two different afternoons and it reads that way. **Both themes index the same
+ramp**: light takes 15/14/13 for surfaces and 01/05/06 for inks, dark takes 00/01/02 and 14/11/09.
+That is what makes them one design rather than a design and its inversion. The hexes are emitted
+rather than left as `oklch()` because this page opens from `file://` on a laptop nobody controls.
+
+**Semantic colours are generated the same way** and share one lightness per theme — 0.475 light,
+0.780 dark — across all four hues (accent 255°, ok 155°, warn 72°, bad 27°), so no state shouts
+over another. `--x-soft` is the same hue at L 0.960 / 0.262.
+
+**Elevation is surface, not outline.** Three surfaces one ramp step apart, plus `--edge`: an inset
+one-pixel top highlight in dark (a raised thing in a dark room catches light on its lip), a
+barely-there shadow in light. Cards lost their borders. Hairlines separate rows *inside* one
+surface; they are not how a box proves it is a box.
+
+| Token family | What it is |
+|---|---|
+| `--n-00 … --n-15` | the ramp. Nothing else defines a neutral |
+| `--bg` `--panel` `--panel-2` `--hi` | the three surfaces plus the hover/selection fill |
+| `--ink` `--ink-2` `--ink-3` | three text strengths, all ≥ 4.5:1 on every surface they land on |
+| `--line` / `--line-strong` | a rule between rows of one surface / a boundary that identifies something |
+| `--fs-1 … --fs-10` | one type scale, both halves. 13px console body, 13.5px document body, 10.5px floor |
+| `--s-0 … --s-8` | one 4px rhythm. There are no ad-hoc pixel paddings left |
+| `--radius-sm/--radius/--radius-lg` | 2 / 4 / 6px, shared — `--c-radius` is an alias, not a fork |
+| `--tr-tight` `--tr-caps` | large text pulls in, small caps open out |
+
+**`--accent` and `--accent-ink` are two different things, and the split is load-bearing.**
+`console.js` and `live.js` re-point `--accent` per deployment with the tenant's own hex, so it can
+be any colour a client hands us. It therefore never carries a word: it is identity, drawn as seams,
+stripes, fills and marks. `--accent-ink` is ours, defined per theme, and is every accent-coloured
+word on the screen. `--accent-edge` is the tenant colour pushed 80% toward black in light and
+toward white in dark — a *monotone* correction, always away from the ground, so it works for any
+hex — and it draws every boundary and every graphical mark rendered in the client's colour. The
+raw tenant hex clears 3:1 against white and fails it against the workspace grey; a client's brand
+colour cannot be asked to be accessible, so the system corrects it instead of hoping.
+
+The host chrome is now **entirely neutral**. Painting a stand-in of someone else's product in our
+accent was what made the seam hard to see: if the whole desktop is blue, a blue rectangle inside it
+is not a boundary. The only saturated edge in the client's console is ours.
+
+### `node ui/contrast.mjs` — the gate
+
+"Sophisticated" is unfalsifiable, so it is not what gets checked. This script renders every screen
+against the same stub DOM `smoke.mjs` uses, parses the three real stylesheets, runs a small cascade
+of one over the other, and computes a WCAG ratio for **every foreground/background pair the markup
+actually produces** — in both themes, with the tenant's inline `--accent` override in place.
+
+    node ui/contrast.mjs          # the table, non-zero exit on any failure
+    node ui/contrast.mjs --all    # include the pairs it reports but does not gate
+
+    text   >= 4.5:1   body copy (WCAG 2.2 AA, 1.4.3)
+    large  >= 3.0:1   >= 24px, or >= 18.66px bold
+    ui     >= 3.0:1   a border or a graphical mark that identifies a control, a region or a state
+    decor  reported   a hairline between rows of ONE surface, which identifies nothing
+
+**Nothing in it is listed.** The routes come from the fixtures, the markup from running the
+application, the rules from parsing the stylesheets, and the pairs fall out of the cascade — so it
+cannot be one forgotten line away from a hole (working-agreements §6). That cuts both ways, so the
+discovery is asserted: the run fails if it finds no pairs, if either theme produces none, if the
+two themes resolve identically, if the tenant's corrected accent never reaches a `--c-seam` pair,
+or if any of nine sentinel classes — the stand-in label, the illustrative banner, the decision
+buttons, the confidence number, the ledger, both provenance strips, a queue row, a board row —
+stops appearing.
+
+It also enforces one rule that is ours rather than WCAG's: **a sub-threshold ledger cell must be
+inked with the panel's primary ink**, discovered as whichever ink reaches the highest contrast on
+`--c-panel` anywhere in the run. Holding a retained row back one step is the natural way someone
+would "de-emphasise a secondary row", it would still clear 4.5:1 on its own, and it fails here —
+because dimming retained evidence draws exactly the incumbent behaviour this product inverts
+(D-030). `opacity` below 1 on anything carrying text fails for the same reason.
+
+Three attacks were run against it on 2026-08-28 and all three were caught: dimming the
+sub-threshold ledger row, cutting the tenant override out of the seam, and lightening the console's
+secondary ink. `tests/test_ui.py` runs the gate, so it is part of `uv run pytest` when node is on
+PATH.
+
 ## Why the reviewer, and not the person on the phone
 
 The primary surface is the specialist reviewer's case triage. Three reasons, in order of weight:
@@ -176,6 +261,7 @@ uv run earshot stream                                   # the console and the st
 uv run python tools/stream_fixture.py
 
 node ui/smoke.mjs        # renders every route against a stub DOM; also run by uv run pytest
+node ui/contrast.mjs     # WCAG ratios for every colour pair on screen; also run by uv run pytest
 ```
 
 Both fixtures reformat and never compute: queue rows come from `api._queue_row`, the same function

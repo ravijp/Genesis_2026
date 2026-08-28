@@ -120,6 +120,26 @@ def test_every_screen_renders() -> None:
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_every_colour_pair_on_screen_is_readable() -> None:
+    """`ui/contrast.mjs`: the same screens, cascaded through the real stylesheets, with a WCAG
+    ratio computed for every foreground/background pair the markup actually produces — in both
+    themes, and with the tenant's inline accent override in place.
+
+    It is a build gate rather than a review note because "sophisticated" is unfalsifiable and
+    "4.5:1" is not. It also carries one rule that is ours rather than WCAG's: a sub-threshold
+    ledger row renders at the panel's primary ink, because dimming retained evidence would draw
+    the incumbent behaviour this product inverts (D-030)."""
+    result = subprocess.run(
+        [shutil.which("node"), str(ROOT / "ui" / "contrast.mjs")],
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "contrast OK" in result.stdout
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_the_committed_data_file_is_in_step_with_the_page() -> None:
     """`ui/data.js` is committed so the demo works from a fresh clone with no Python run. That only
     holds if it stays loadable and non-empty; a stale or truncated one fails the smoke test above,

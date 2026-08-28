@@ -9,45 +9,76 @@
  * What is deliberately NOT here: any vendor logo, wordmark, brand hex or icon set. Salesforce Sans
  * is licensed only for use inside Salesforce; SLDS icon SVGs are CC BY-ND, so recolouring one is
  * plausibly a derivative; Amazon Ember is proprietary. Type is a system stack, marks are text
- * glyphs we drew ourselves, and the accent comes from the tenant profile.
+ * glyphs we drew ourselves, and the seam colour comes from the tenant profile.
  *
  * Density is the point. 13px body, 12px floor (a documented accessibility minimum in Cloudscape),
- * tabular numerals wherever a number appears so columns line up, 4px corner radii rather than the
- * 10px that reads consumer-SaaS, and hairlines rather than shadows to separate regions.
- */
+ * tabular numerals wherever a number appears so columns line up, one 4px corner radius rather
+ * than the 10px that reads consumer-SaaS.
+ *
+ * ---------------------------------------------------------------------------------------------
+ * NO TOKEN IS INVENTED HERE. Every colour below indexes the ramp and the semantic set defined in
+ * `styles.css`, which is what makes the two halves one design system rather than two stylesheets
+ * that happen to agree. The `--c-*` names remain, because they carry the console's own *roles* —
+ * chrome is not a panel, a frame surface is not a page background — and scoping them to `.cns`
+ * is what keeps the explanatory screens from inheriting a desktop's density.
+ *
+ * TWO ACCENTS, AND THE SPLIT IS THE POINT.
+ *   `--c-seam`  = `var(--accent)`, which `console.js` overrides inline with the tenant's own hex.
+ *                 It draws the boundary of our panel and nothing else. A client brand colour is
+ *                 whatever the client says it is, so it is never asked to carry text — it is
+ *                 gated only as a UI boundary, at 3:1.
+ *   `--accent-ink` = ours, per theme, contrast-checked. Every accent-coloured word on the screen.
+ *
+ * The host chrome is now entirely neutral. Colouring a stand-in of someone else's product with
+ * OUR accent was the thing that made the seam hard to see: if the whole desktop is blue, a blue
+ * rectangle inside it is not a boundary. The only saturated thing in the client's console is the
+ * edge of our panel, which is exactly the claim the screen is making.
+ * --------------------------------------------------------------------------------------------- */
 
 .cns {
-  /* Console-local tokens. Scoped to `.cns` so the explanatory screens keep the document palette
-     and the two halves of the demo stay visually distinct — which is the point of the split. */
-  --c-chrome: #10151c;
-  --c-chrome-2: #1a212b;
-  --c-surface: #f4f6f9;
-  --c-panel: #ffffff;
-  --c-ink: #10151c;
-  --c-ink-2: #4a5464;
-  --c-ink-3: #78828f;
-  --c-line: #d8dde5;
-  --c-line-strong: #b9c1cc;
-  --c-hi: #e8eef7;
-  --c-radius: 4px;
-  --c-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
+  /* Console-local ROLES over the shared ramp. Scoped to `.cns` so the explanatory screens keep
+     the document density and the two halves of the demo stay visually distinct. */
+  --c-chrome: var(--n-01);        /* the host's app bar and utility bar */
+  --c-chrome-2: var(--n-02);      /* the host's second nav row */
+  --c-chrome-3: var(--n-03);      /* inset controls inside the chrome */
+  --c-chrome-line: var(--n-03);   /* a separator between items on the chrome, identifying nothing */
+  --c-chrome-ink: var(--n-14);
+  --c-chrome-ink-2: var(--n-10);
+  /* The chrome strips are dark in BOTH themes, so a theme-swapped `--bad` goes near-maroon on
+     them in light mode. These two are fixed: same hue as `--bad`, at a lightness that reads on a
+     dark bar and still carries a white label. */
+  --c-chrome-bad: #c54e45;
+  --c-chrome-live: #f19f95;
+  --c-surface: var(--n-14);       /* the workspace ground the record region sits on */
+  --c-panel: var(--n-15);         /* a card, a list, a record */
+  --c-hi: var(--n-14);            /* hover and selection */
+  --c-ink: var(--n-01);
+  --c-ink-2: var(--n-05);
+  --c-ink-3: var(--n-06);
+  --c-line: var(--n-12);          /* a rule between rows of one surface */
+  --c-line-strong: var(--n-08);   /* a boundary that identifies a control or a region */
+  --c-seam: var(--accent-edge);   /* tenant identity — boundaries only, never text */
+  --c-radius: var(--radius);      /* one radius across both halves */
+  --c-mono: var(--mono);
 
-  font-size: 13px;
+  font-size: var(--fs-4);
   line-height: 1.5;
 }
 
 @media (prefers-color-scheme: dark) {
   .cns {
-    --c-chrome: #0a0d12;
-    --c-chrome-2: #141a22;
-    --c-surface: #12171f;
-    --c-panel: #171e27;
-    --c-ink: #e6ebf2;
-    --c-ink-2: #a9b3c1;
-    --c-ink-3: #7b8593;
-    --c-line: #262e39;
-    --c-line-strong: #38424f;
-    --c-hi: #1b2431;
+    --c-chrome: var(--n-00);
+    --c-chrome-2: var(--n-01);
+    --c-chrome-3: var(--n-02);
+    --c-chrome-line: var(--n-02);
+    --c-surface: var(--n-00);
+    --c-panel: var(--n-01);
+    --c-hi: var(--n-02);
+    --c-ink: var(--n-14);
+    --c-ink-2: var(--n-11);
+    --c-ink-3: var(--n-09);
+    --c-line: var(--n-03);
+    --c-line-strong: var(--n-07);
   }
 }
 
@@ -56,16 +87,28 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Anywhere a column of numbers has to line up, whether or not the markup remembered `.num`. */
+.cns table,
+.cns .cns-qscore,
+.cns .cns-teamn,
+.cns .op-big,
+.cns .op-conf,
+.cns .cns-timer {
+  font-variant-numeric: tabular-nums;
+}
+
 /* The stand-in label. Above the chrome, not inside it, and never collapsible: a screenshot of
-   this page ends up in someone else's deck without whatever was said out loud beside it. */
+   this page ends up in someone else's deck without whatever was said out loud beside it. The
+   left rule is 4px so a crop that keeps the frame keeps the label with it. */
 .cns-standin {
   background: var(--warn-soft);
   color: var(--warn);
-  border: 1px solid var(--line);
+  border: 1px solid var(--warn);
+  border-left-width: 4px;
   border-radius: var(--c-radius);
-  padding: 9px 14px;
-  font-size: 12.5px;
-  margin-bottom: 12px;
+  padding: var(--s-2) var(--s-3);
+  font-size: var(--fs-3);
+  margin-bottom: var(--s-3);
 }
 
 .cns-frame {
@@ -85,60 +128,58 @@
   height: 48px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 0 14px;
+  gap: var(--s-3);
+  padding: 0 var(--s-3);
   background: var(--c-chrome);
-  color: #e6ebf2;
-  border-bottom: 1px solid #000;
+  color: var(--c-chrome-ink);
 }
-.cns-appswitch { font-size: 17px; opacity: 0.75; }
-.cns-app { font-size: 14px; font-weight: 600; }
-.cns-appsub { font-weight: 400; opacity: 0.6; }
+.cns-appswitch { font-size: var(--fs-7); color: var(--c-chrome-ink-2); }
+.cns-app { font-size: var(--fs-5); font-weight: 600; letter-spacing: var(--tr-tight); }
+.cns-appsub { font-weight: 400; color: var(--c-chrome-ink-2); }
 .cns-search {
   width: 380px; height: 30px; display: flex; align-items: center;
-  padding: 0 10px; margin-left: 12px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0 var(--s-2); margin-left: var(--s-3);
+  background: var(--c-chrome-3);
+  border: 1px solid var(--c-chrome-ink-2);
   border-radius: var(--c-radius);
-  color: rgba(255, 255, 255, 0.45); font-size: 12.5px;
+  color: var(--c-chrome-ink-2); font-size: var(--fs-3);
 }
-.cns-globalright { margin-left: auto; display: flex; align-items: center; gap: 14px; }
-.cns-bell { position: relative; opacity: 0.8; }
+.cns-globalright { margin-left: auto; display: flex; align-items: center; gap: var(--s-3); }
+.cns-bell { position: relative; color: var(--c-chrome-ink-2); }
 .cns-avatar {
   width: 28px; height: 28px; border-radius: 50%;
-  background: var(--accent); color: #fff;
-  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+  background: var(--c-chrome-3); color: var(--c-chrome-ink);
+  display: grid; place-items: center; font-size: var(--fs-2); font-weight: 700;
 }
 .cns-badge {
   display: inline-grid; place-items: center; min-width: 16px; height: 16px;
-  padding: 0 4px; margin-left: 5px;
-  border-radius: 8px; background: var(--bad); color: #fff;
-  font-size: 10px; font-style: normal; font-weight: 700;
-  font-family: var(--c-mono);
+  padding: 0 var(--s-1); margin-left: var(--s-1);
+  border-radius: var(--radius-lg); background: var(--bad); color: var(--on-state);
+  font-size: var(--fs-1); font-style: normal; font-weight: 700;
+  font-family: var(--c-mono); font-variant-numeric: tabular-nums;
 }
-.cns-bell .cns-badge { position: absolute; top: -6px; left: 8px; margin: 0; }
+.cns-bell .cns-badge { position: absolute; top: -6px; left: var(--s-2); margin: 0; }
 
 .cns-nav {
-  height: 38px; display: flex; align-items: stretch; gap: 2px; padding: 0 10px;
+  height: 38px; display: flex; align-items: stretch; gap: var(--s-0); padding: 0 var(--s-2);
   background: var(--c-chrome-2);
-  border-bottom: 1px solid var(--c-line);
 }
 .cns-navitem {
-  display: flex; align-items: center; padding: 0 12px;
-  font-size: 12.5px; color: rgba(230, 235, 242, 0.62);
+  display: flex; align-items: center; padding: 0 var(--s-3);
+  font-size: var(--fs-3); color: var(--c-chrome-ink-2);
   border-bottom: 2px solid transparent;
 }
-.cns-navitem.on { color: #fff; border-bottom-color: var(--accent); }
+.cns-navitem.on { color: var(--c-chrome-ink); border-bottom-color: var(--c-chrome-ink); }
 
 /* Workspace tabs: one per open work item, the pinned one first and un-closable. */
 .cns-tabs {
   height: 34px; display: flex; align-items: stretch;
   background: var(--c-surface); border-bottom: 1px solid var(--c-line);
-  padding-left: 6px;
+  padding-left: var(--s-1);
 }
 .cns-tab {
-  display: flex; align-items: center; gap: 7px;
-  padding: 0 12px; font-size: 12.5px; text-decoration: none;
+  display: flex; align-items: center; gap: var(--s-1);
+  padding: 0 var(--s-3); font-size: var(--fs-3); text-decoration: none;
   color: var(--c-ink-2);
   border-right: 1px solid var(--c-line);
   border-top: 2px solid transparent;
@@ -146,10 +187,10 @@
 }
 .cns-tab.on {
   background: var(--c-panel); color: var(--c-ink);
-  border-top-color: var(--accent); font-weight: 600;
+  border-top-color: var(--c-line-strong); font-weight: 600;
 }
-.cns-pin { font-size: 10px; }
-.cns-x { opacity: 0.4; }
+.cns-pin { font-size: var(--fs-1); }
+.cns-x { color: var(--c-ink-3); }
 .cns-tabadd { display: grid; place-items: center; width: 30px; color: var(--c-ink-3); }
 
 .cns-body { display: grid; grid-template-columns: 320px 1fr; flex: 1; min-height: 0; }
@@ -164,12 +205,12 @@
 }
 .cns-splithead {
   display: flex; align-items: baseline; justify-content: space-between;
-  padding: 10px 12px; border-bottom: 1px solid var(--c-line); font-size: 13px;
+  padding: var(--s-2) var(--s-3); border-bottom: 1px solid var(--c-line); font-size: var(--fs-4);
 }
 .cns-qlist { overflow-y: auto; flex: 1; }
 .cns-qrow {
-  display: grid; gap: 3px;
-  padding: 9px 12px 9px 10px;
+  display: grid; gap: var(--s-0);
+  padding: var(--s-2) var(--s-3) var(--s-2) var(--s-2);
   border-bottom: 1px solid var(--c-line);
   border-left: 4px solid transparent;   /* severity stripe: the alert-queue genre marker */
   text-decoration: none; color: inherit;
@@ -177,15 +218,18 @@
 .cns-qrow.high { border-left-color: var(--bad); }
 .cns-qrow.mid { border-left-color: var(--warn); }
 .cns-qrow:hover { background: var(--c-hi); }
-.cns-qrow.on { background: var(--c-hi); border-left-width: 4px; }
+/* Selection is a rule and a weight, not a lighter box. A selected-row fill light enough to see
+   is also light enough to drag the secondary line under 4.5:1, and the secondary line is where
+   the customer's name is. */
+.cns-qrow.on { background: var(--c-hi); box-shadow: inset 3px 0 0 var(--c-seam); }
 .cns-qtop { display: flex; justify-content: space-between; align-items: baseline; }
-.cns-qid { font-family: var(--c-mono); font-size: 12px; }
-.cns-qscore { font-size: 14px; font-weight: 700; }
-.cns-qmid { font-size: 11.5px; color: var(--c-ink-3); }
-.cns-qbot { display: flex; gap: 8px; align-items: center; margin-top: 2px; }
-.cns-qteam { font-size: 11px; color: var(--c-ink-2); }
+.cns-qid { font-family: var(--c-mono); font-size: var(--fs-3); }
+.cns-qscore { font-size: var(--fs-5); font-weight: 700; }
+.cns-qmid { font-size: var(--fs-2); color: var(--c-ink-3); }
+.cns-qbot { display: flex; gap: var(--s-2); align-items: center; margin-top: var(--s-0); }
+.cns-qteam { font-size: var(--fs-2); color: var(--c-ink-2); }
 .cns-splitnote {
-  margin: 0; padding: 10px 12px; font-size: 11.5px; color: var(--c-ink-3);
+  margin: 0; padding: var(--s-2) var(--s-3); font-size: var(--fs-2); color: var(--c-ink-3);
   border-top: 1px solid var(--c-line);
 }
 
@@ -200,102 +244,119 @@
   border-bottom: 1px solid var(--c-line);
 }
 .cns-team {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
-  padding: 6px 12px 6px 10px;
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2);
+  padding: var(--s-1) var(--s-3) var(--s-1) var(--s-2);
   border-left: 3px solid transparent;
   text-decoration: none; color: var(--c-ink-2);
-  font-size: 12px;
+  font-size: var(--fs-3);
 }
 .cns-team:hover { background: var(--c-hi); }
 .cns-team.on {
   background: var(--c-hi); color: var(--c-ink);
-  border-left-color: var(--accent); font-weight: 600;
+  border-left-color: var(--c-seam); font-weight: 600;
 }
 .cns-team.all { border-bottom: 1px solid var(--c-line); }
 /* Not a team. Marked apart so "the agent would not choose" does not read as a fifth destination,
    and never dimmed: a declined route is the row a reviewer most needs to see. */
 .cns-team.unrouted { border-top: 1px solid var(--c-line); font-style: italic; }
 .cns-teamname { min-width: 0; }
-.cns-teamn { font-size: 11px; color: var(--c-ink-3); white-space: nowrap; }
+.cns-teamn { font-size: var(--fs-2); color: var(--c-ink-3); white-space: nowrap; }
 .cns-team.on .cns-teamn { color: var(--c-ink-2); }
 .cns-teamnote {
-  margin: 0; padding: 8px 12px; font-size: 11px; line-height: 1.45; color: var(--c-ink-3);
-  border-bottom: 1px solid var(--c-line);
+  margin: 0; padding: var(--s-2) var(--s-3); font-size: var(--fs-2); line-height: 1.45;
+  color: var(--c-ink-3); border-bottom: 1px solid var(--c-line);
 }
-.cns-qempty { margin: 0; padding: 14px 12px; font-size: 12px; color: var(--c-ink-3); }
+.cns-qempty { margin: 0; padding: var(--s-3); font-size: var(--fs-3); color: var(--c-ink-3); }
 
 /* The record region when a team has no cases. Same weight as a case, because "nothing routed
    here" is a finding and should not look like a loading state. */
 .cns-void {
-  margin: 16px; padding: 16px;
-  background: var(--c-panel); border: 1px solid var(--c-line); border-radius: var(--c-radius);
+  margin: var(--s-4); padding: var(--s-4);
+  background: var(--c-panel); border-radius: var(--c-radius);
+  box-shadow: var(--edge);
   max-width: 62ch;
 }
-.cns-void h2 { margin: 0 0 8px; font-size: 15px; }
-.cns-void p { margin: 0 0 8px; font-size: 12.5px; color: var(--c-ink-2); }
+.cns-void h2 { margin: 0 0 var(--s-2); font-size: var(--fs-6); }
+.cns-void p { margin: 0 0 var(--s-2); font-size: var(--fs-3); color: var(--c-ink-2); }
 
 /* ---- record region --------------------------------------------------------------------------- */
 
-.cns-record { overflow-y: auto; padding: 0 0 16px; min-height: 0; }
+.cns-record { overflow-y: auto; padding: 0 0 var(--s-4); min-height: 0; }
 
 .cns-hl {
-  display: flex; align-items: center; gap: 14px;
-  padding: 12px 16px; background: var(--c-panel);
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-3) var(--s-4); background: var(--c-panel);
   border-bottom: 1px solid var(--c-line);
 }
 .cns-hlicon {
-  width: 34px; height: 34px; border-radius: 5px;
-  background: var(--accent); color: #fff;
-  display: grid; place-items: center; font-size: 15px; flex: none;
+  width: 34px; height: 34px; border-radius: var(--radius);
+  background: var(--c-hi); color: var(--c-ink-2);
+  display: grid; place-items: center; font-size: var(--fs-6); flex: none;
 }
-.cns-hlmain h2 { margin: 0; font-size: 15px; }
-.cns-hlfields { display: flex; gap: 22px; margin: 0 0 0 auto; }
+.cns-hlmain h2 { margin: 0; font-size: var(--fs-6); }
+.cns-hlfields { display: flex; gap: var(--s-6); margin: 0 0 0 auto; }
 .cns-hlfields div { display: grid; gap: 1px; }
-.cns-hlfields dt { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--c-ink-3); }
-.cns-hlfields dd { margin: 0; font-size: 13px; }
-.cns-hlactions { display: flex; gap: 6px; }
+.cns-hlfields dt {
+  font-size: var(--fs-1); text-transform: uppercase;
+  letter-spacing: var(--tr-caps-2); color: var(--c-ink-3);
+}
+.cns-hlfields dd { margin: 0; font-size: var(--fs-4); }
+.cns-hlactions { display: flex; gap: var(--s-1); }
 .cns-hbtn {
-  padding: 4px 10px; border: 1px solid var(--c-line-strong);
-  border-radius: var(--c-radius); font-size: 12px; color: var(--c-ink-2);
+  padding: var(--s-1) var(--s-2); border: 1px solid var(--c-line-strong);
+  border-radius: var(--c-radius); font-size: var(--fs-3); color: var(--c-ink-2);
 }
 
-.cns-cols { display: grid; grid-template-columns: 1fr 340px; gap: 14px; padding: 14px 16px; }
+.cns-cols { display: grid; grid-template-columns: 1fr 340px; gap: var(--s-3); padding: var(--s-3) var(--s-4); }
 @media (max-width: 1240px) { .cns-cols { grid-template-columns: 1fr; } }
 
+/* A card is a raised surface with a lit edge, not a boxed one. Dropping the outline is what lets
+   our panel's seam read as the only drawn boundary in the region. */
 .cns-card {
   background: var(--c-panel);
-  border: 1px solid var(--c-line);
   border-radius: var(--c-radius);
-  padding: 12px 14px; margin-bottom: 14px;
+  box-shadow: var(--edge);
+  padding: var(--s-3); margin-bottom: var(--s-3);
 }
-.cns-card h4 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--c-ink-3); }
-.cns-kv div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; border-bottom: 1px solid var(--c-line); }
+.cns-card h4 {
+  margin: 0 0 var(--s-2); font-size: var(--fs-2); text-transform: uppercase;
+  letter-spacing: var(--tr-caps); color: var(--c-ink-3); font-weight: 600;
+}
+.cns-kv div {
+  display: flex; justify-content: space-between; gap: var(--s-3);
+  padding: var(--s-0) 0; border-bottom: 1px solid var(--c-line);
+}
 .cns-kv div:last-child { border-bottom: 0; }
-.cns-kv dt { color: var(--c-ink-2); font-size: 12.5px; }
-.cns-kv dd { margin: 0; font-size: 12.5px; }
-.cns-synth { margin: 10px 0 0; font-size: 11.5px; color: var(--c-ink-3); }
-.cns-priors { list-style: none; margin: 0; padding: 0; font-size: 12px; }
-.cns-priors li { display: grid; gap: 1px; padding: 5px 0; border-bottom: 1px solid var(--c-line); }
+.cns-kv dt { color: var(--c-ink-2); font-size: var(--fs-3); }
+.cns-kv dd { margin: 0; font-size: var(--fs-3); }
+.cns-synth { margin: var(--s-2) 0 0; font-size: var(--fs-2); color: var(--c-ink-3); }
+.cns-priors { list-style: none; margin: 0; padding: 0; font-size: var(--fs-3); }
+.cns-priors li { display: grid; gap: 1px; padding: var(--s-1) 0; border-bottom: 1px solid var(--c-line); }
 .cns-priors li:last-child { border-bottom: 0; }
-.cns-host { opacity: 0.62; }
-.cns-hosttabs { display: flex; gap: 16px; border-bottom: 1px solid var(--c-line); margin-bottom: 8px; }
-.cns-hosttabs span { padding-bottom: 6px; font-size: 12.5px; color: var(--c-ink-3); }
-.cns-hosttabs span.on { color: var(--c-ink); border-bottom: 2px solid var(--accent); }
+/* The host's own components, stood in for. Held back by one ink step rather than by opacity:
+   `opacity` would take the borders and the numbers with it, and this repo does not dim evidence. */
+.cns-host { color: var(--c-ink-2); }
+.cns-hosttabs { display: flex; gap: var(--s-4); border-bottom: 1px solid var(--c-line); margin-bottom: var(--s-2); }
+.cns-hosttabs span { padding-bottom: var(--s-1); font-size: var(--fs-3); color: var(--c-ink-3); }
+.cns-hosttabs span.on { color: var(--c-ink); border-bottom: 2px solid var(--c-line-strong); }
 
 /* ---- utility bar ---------------------------------------------------------------------------- */
 
 .cns-utility {
   height: 32px; display: flex; align-items: stretch; gap: 0;
-  background: var(--c-chrome); border-top: 1px solid #000; padding-left: 6px;
+  background: var(--c-chrome); padding-left: var(--s-1);
 }
 .cns-util {
-  display: flex; align-items: center; gap: 6px; padding: 0 12px;
-  font-size: 12px; color: rgba(230, 235, 242, 0.7);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex; align-items: center; gap: var(--s-1); padding: 0 var(--s-3);
+  font-size: var(--fs-3); color: var(--c-chrome-ink-2);
+  border-right: 1px solid var(--c-chrome-line);
 }
-.cns-util.on { background: rgba(255, 255, 255, 0.09); color: #fff; }
-.cns-util.ours { margin-left: auto; border-right: 0; border-left: 2px solid var(--accent); color: #fff; }
-.cns-uticon { opacity: 0.85; }
+.cns-util.on { background: var(--c-chrome-3); color: var(--c-chrome-ink); }
+.cns-util.ours {
+  margin-left: auto; border-right: 0;
+  border-left: 2px solid var(--c-seam); color: var(--c-chrome-ink);
+}
+.cns-uticon { color: var(--c-chrome-ink-2); }
 
 /* ---- OUR PANEL: the embedded component, with a visible seam ------------------------------------
  *
@@ -305,173 +366,198 @@
  */
 
 .op {
-  border: 1px solid var(--accent);
+  border: 1px solid var(--c-seam);
   border-radius: var(--c-radius);
   background: var(--c-panel);
-  margin-bottom: 14px;
+  margin-bottom: var(--s-3);
   position: relative;
 }
 .op::before {
   content: "";
   position: absolute; inset: 3px;
-  border: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent);
-  border-radius: 2px; pointer-events: none;
+  border: 1px dashed color-mix(in srgb, var(--c-seam) 40%, transparent);
+  border-radius: var(--radius-sm); pointer-events: none;
 }
 .op-head {
-  display: flex; align-items: center; gap: 9px;
-  padding: 10px 14px; border-bottom: 1px solid var(--c-line);
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  display: flex; align-items: center; gap: var(--s-2);
+  padding: var(--s-2) var(--s-3); border-bottom: 1px solid var(--c-line);
+  background: color-mix(in srgb, var(--c-seam) 7%, transparent);
 }
-.op-head h3 { margin: 0; font-size: 13.5px; }
-.op-mark { color: var(--accent); font-size: 14px; }
+.op-head h3 { margin: 0; font-size: var(--fs-5); text-transform: none; letter-spacing: var(--tr-tight); color: var(--c-ink); }
+.op-mark { color: var(--accent-ink); font-size: var(--fs-5); }
 .op-3p {
-  margin-left: auto; font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em;
-  color: var(--accent);
+  margin-left: auto; font-size: var(--fs-1); text-transform: uppercase;
+  letter-spacing: var(--tr-caps); color: var(--accent-ink);
 }
-.op-row { padding: 12px 14px; border-bottom: 1px solid var(--c-line); }
+.op-row { padding: var(--s-3); border-bottom: 1px solid var(--c-line); }
 .op-row:last-of-type { border-bottom: 0; }
-.op-h { margin: 0 0 6px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--c-ink-3); }
+.op-h {
+  margin: 0 0 var(--s-1); font-size: var(--fs-2); text-transform: uppercase;
+  letter-spacing: var(--tr-caps); color: var(--c-ink-3);
+}
 
-.op-score { display: flex; gap: 18px; align-items: center; }
-.op-big { font-size: 34px; line-height: 1; font-weight: 700; }
+.op-score { display: flex; gap: var(--s-5); align-items: center; }
+.op-big { font-size: var(--fs-10); line-height: 1; font-weight: 700; letter-spacing: var(--tr-tight); }
 .op-scoremeta { flex: 1; }
-.op-delta { font-size: 12px; color: var(--c-ink-3); margin-bottom: 6px; }
-.op-track { position: relative; height: 8px; border-radius: 2px; background: var(--c-hi); }
-.op-track > i { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
+.op-delta { font-size: var(--fs-3); color: var(--c-ink-3); margin-bottom: var(--s-1); }
+.op-track { position: relative; height: 8px; border-radius: var(--radius-sm); background: var(--c-hi); }
+.op-track > i { display: block; height: 100%; border-radius: var(--radius-sm); background: var(--c-seam); }
 .op-track > b { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--bad); }
-.op-trackfoot { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11.5px; color: var(--c-ink-3); }
+.op-trackfoot {
+  display: flex; justify-content: space-between; margin-top: var(--s-1);
+  font-size: var(--fs-2); color: var(--c-ink-3); font-variant-numeric: tabular-nums;
+}
 
 .op-why {
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
-  border-left: 4px solid var(--accent);
-  font-size: 12.5px;
+  background: color-mix(in srgb, var(--c-seam) 5%, transparent);
+  border-left: 4px solid var(--c-seam);
+  font-size: var(--fs-3);
 }
 
-.op-verdict { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.pill {
-  padding: 3px 10px; border-radius: var(--c-radius);
-  font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+.op-verdict { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+/* Scoped: `demo.css` owns the unqualified `.pill`, which is a nav control on the stream screen
+   and a completely different object from a verdict chip. */
+.cns .pill {
+  display: inline-block;
+  padding: var(--s-0) var(--s-2); border-radius: var(--c-radius);
+  font-size: var(--fs-2); font-weight: 700; text-transform: uppercase; letter-spacing: var(--tr-caps-2);
 }
-.pill.bad { background: var(--bad-soft); color: var(--bad); }
-.pill.ok { background: var(--ok-soft); color: var(--ok); }
-.pill.warn { background: var(--warn-soft); color: var(--warn); }
-.op-conf b { font-size: 15px; }
-.op-route b { color: var(--accent); }
-.op-action { flex-basis: 100%; margin: 4px 0 0; font-size: 12.5px; color: var(--c-ink-2); }
+.cns .pill.bad { background: var(--bad-soft); color: var(--bad); }
+.cns .pill.ok { background: var(--ok-soft); color: var(--ok); }
+.cns .pill.warn { background: var(--warn-soft); color: var(--warn); }
+/* Confidence is a NUMBER, always. A bar may sit beside it; nothing replaces it. */
+.op-conf b { font-size: var(--fs-6); }
+.op-route b { color: var(--accent-ink); }
+.op-action { flex-basis: 100%; margin: var(--s-1) 0 0; font-size: var(--fs-3); color: var(--c-ink-2); }
 
 .op-cites { list-style: none; margin: 0; padding: 0; }
-.op-cite { padding: 7px 0; border-bottom: 1px solid var(--c-line); }
+.op-cite { padding: var(--s-1) 0; border-bottom: 1px solid var(--c-line); }
 .op-cite:last-child { border-bottom: 0; }
 .op-cite blockquote {
-  margin: 0 0 3px; padding-left: 10px;
+  margin: 0 0 var(--s-0); padding-left: var(--s-2);
   border-left: 2px solid var(--c-line-strong);
-  font-size: 13px;
+  font-size: var(--fs-4);
 }
-.op-coord { font-family: var(--c-mono); font-size: 11px; color: var(--c-ink-3); }
+.op-coord { font-family: var(--c-mono); font-size: var(--fs-2); color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
 
-.op-ledger summary { cursor: pointer; font-size: 12.5px; color: var(--c-ink-2); }
-.op-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 9px; }
+.op-ledger summary { cursor: pointer; font-size: var(--fs-3); color: var(--c-ink-2); }
+.op-table {
+  width: 100%; border-collapse: collapse; font-size: var(--fs-3);
+  margin-top: var(--s-2); font-variant-numeric: tabular-nums;
+}
 .op-table th {
-  position: sticky; top: 0; text-align: left; padding: 5px 7px;
+  position: sticky; top: 0; text-align: left; padding: var(--s-1) var(--s-1);
   border-bottom: 1px solid var(--c-line-strong);
-  font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--c-ink-3);
+  font-size: var(--fs-1); text-transform: uppercase; letter-spacing: var(--tr-caps-2);
+  color: var(--c-ink-3);
   background: var(--c-panel);
 }
-.op-table td { padding: 5px 7px; border-bottom: 1px solid var(--c-line); }
+.op-table td { padding: var(--s-1); border-bottom: 1px solid var(--c-line); }
 .op-table th.num, .op-table td.num { text-align: right; }
 /* Sub-threshold rows are NOT dimmed. Greying them would draw exactly the incumbent behaviour
-   this product inverts: they are retained, and they still count. */
-.op-table tr.lb td { background: color-mix(in srgb, var(--bad) 6%, transparent); }
+   this product inverts: they are retained, and they still count. The tint marks the row; the
+   text on it stays `--c-ink` at full strength, and `contrast.mjs` checks it on the tinted ground
+   rather than on the untinted one. */
+.op-table tr.lb td { background: color-mix(in srgb, var(--bad) 6%, transparent); color: var(--c-ink); }
 .op-star { color: var(--bad); }
 .op-q { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.op-note { margin: 9px 0 0; font-size: 11.5px; color: var(--c-ink-3); }
+.op-note { margin: var(--s-2) 0 0; font-size: var(--fs-2); color: var(--c-ink-3); }
 
-.op-change { background: var(--c-hi); font-size: 12.5px; }
+.op-change { background: var(--c-hi); font-size: var(--fs-3); }
 .op-change p { margin: 0; }
 
-.op-decide { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.op-decide { display: flex; gap: var(--s-2); flex-wrap: wrap; align-items: center; }
 .op-btn {
-  font: inherit; font-size: 12.5px; padding: 7px 14px;
+  font: inherit; font-size: var(--fs-3); padding: var(--s-1) var(--s-3);
   border-radius: var(--c-radius); cursor: pointer;
   border: 1px solid var(--c-line-strong); background: var(--c-panel); color: var(--c-ink);
 }
-.op-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+/* Primary is `--accent-ink`, not the tenant seam: this control carries a word, and a client hex
+   cannot be asked to clear 4.5:1 against its own label. Nothing here is preselected and nothing
+   is focused on load — the friction is deliberate (D-030). */
+.op-btn.primary {
+  background: var(--accent-ink); border-color: var(--accent-ink);
+  color: var(--on-accent); font-weight: 600;
+}
 .op-btn.ghost { border-color: transparent; color: var(--c-ink-2); }
-.op-btn:hover { filter: brightness(1.06); }
+.op-btn:hover { background: var(--c-hi); }
+.op-btn.primary:hover { background: var(--accent-ink); filter: brightness(1.08); }
 .op-decidenote { flex-basis: 100%; }
 .op-req {
-  margin-top: 10px; padding: 10px 12px;
+  margin-top: var(--s-2); padding: var(--s-2) var(--s-3);
   border: 1px solid var(--warn); border-radius: var(--c-radius);
-  background: var(--warn-soft); color: var(--warn); font-size: 12px;
+  background: var(--warn-soft); color: var(--warn); font-size: var(--fs-3);
 }
 .op-req pre {
-  margin: 7px 0; padding: 8px; border-radius: 3px;
-  background: rgba(0, 0, 0, 0.06); font-family: var(--c-mono); font-size: 11.5px;
+  margin: var(--s-1) 0; padding: var(--s-2); border-radius: var(--radius-sm);
+  background: var(--c-panel); color: var(--c-ink);
+  font-family: var(--c-mono); font-size: var(--fs-2);
   white-space: pre-wrap;
 }
-.op-req p { margin: 6px 0 0; }
+.op-req p { margin: var(--s-1) 0 0; }
 
 .op-prov {
-  padding: 9px 14px; border-top: 1px solid var(--c-line);
-  font-family: var(--c-mono); font-size: 10.5px; line-height: 1.65;
-  color: var(--c-ink-3);
-  background: color-mix(in srgb, var(--accent) 4%, transparent);
+  padding: var(--s-2) var(--s-3); border-top: 1px solid var(--c-line);
+  font-family: var(--c-mono); font-size: var(--fs-1); line-height: 1.65;
+  color: var(--c-ink-2);
+  background: color-mix(in srgb, var(--c-seam) 4%, transparent);
 }
 
 /* ---- live-call view -------------------------------------------------------------------------- */
 
 .cns-softphone {
-  display: flex; align-items: center; gap: 14px;
-  padding: 10px 16px; background: var(--c-chrome-2); color: #e6ebf2;
-  border-bottom: 1px solid var(--c-line);
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-2) var(--s-4); background: var(--c-chrome-2); color: var(--c-chrome-ink);
 }
-.cns-live { color: #ff6b6b; font-weight: 700; font-size: 12px; letter-spacing: .06em; }
-.cns-callwho { font-size: 13px; }
-.cns-timer { margin-left: auto; font-size: 15px; }
-.cns-callbtns { display: flex; gap: 6px; }
+/* A fixed red, because this strip is dark in BOTH themes and a theme-swapped `--bad` would go
+   near-maroon on it in light mode. Same hue as `--bad`, at the dark theme's lightness. */
+.cns-live { color: var(--c-chrome-live); font-weight: 700; font-size: var(--fs-3); letter-spacing: var(--tr-caps); }
+.cns-callwho { font-size: var(--fs-4); }
+.cns-timer { margin-left: auto; font-size: var(--fs-6); }
+.cns-callbtns { display: flex; gap: var(--s-1); }
 .cns-cb {
-  padding: 4px 11px; border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: var(--c-radius); font-size: 12px;
+  padding: var(--s-1) var(--s-2); border: 1px solid var(--c-chrome-ink-2);
+  border-radius: var(--c-radius); font-size: var(--fs-3); color: var(--c-chrome-ink);
 }
-.cns-cb.end { background: var(--bad); border-color: var(--bad); color: #fff; }
+.cns-cb.end { background: var(--c-chrome-bad); border-color: var(--c-chrome-bad); color: #ffffff; }
 
 .cns-illus {
-  margin: 14px 16px 0; padding: 10px 13px;
-  border: 1px solid var(--warn); border-radius: var(--c-radius);
-  background: var(--warn-soft); color: var(--warn); font-size: 12.5px;
+  margin: var(--s-3) var(--s-4) 0; padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--warn); border-left-width: 4px; border-radius: var(--c-radius);
+  background: var(--warn-soft); color: var(--warn); font-size: var(--fs-3);
 }
 
 .lc-list { list-style: none; margin: 0; padding: 0; }
 .lc-turn {
-  display: grid; grid-template-columns: 74px 1fr; gap: 12px;
-  padding: 6px 8px; border-radius: 3px; font-size: 13px;
+  display: grid; grid-template-columns: 74px 1fr; gap: var(--s-3);
+  padding: var(--s-1) var(--s-2); border-radius: var(--radius-sm); font-size: var(--fs-4);
   animation: lc-in .3s ease both; animation-delay: calc(var(--k) * 45ms);
 }
 .lc-turn.customer { background: var(--c-hi); }
 .lc-who {
-  font-family: var(--c-mono); font-size: 10.5px; text-transform: uppercase;
-  letter-spacing: .05em; color: var(--c-ink-3);
+  font-family: var(--c-mono); font-size: var(--fs-1); text-transform: uppercase;
+  letter-spacing: var(--tr-caps-2); color: var(--c-ink-3);
 }
 /* The reader's rows read as a different KIND of thing from human speech: machine annotation,
    indented, monospaced, accent-ruled. */
 .lc-read {
-  margin: 3px 0 7px 74px; padding: 7px 10px;
-  border-left: 2px solid var(--accent);
-  background: color-mix(in srgb, var(--accent) 6%, transparent);
-  font-family: var(--c-mono); font-size: 11.5px;
+  margin: var(--s-0) 0 var(--s-1) 74px; padding: var(--s-1) var(--s-2);
+  border-left: 2px solid var(--accent-ink);
+  background: color-mix(in srgb, var(--accent-ink) 6%, transparent);
+  font-family: var(--c-mono); font-size: var(--fs-2);
   animation: lc-in .3s ease both; animation-delay: calc(var(--k) * 45ms + 120ms);
 }
 .lc-read.changed { border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 7%, transparent); }
-.lc-tick { display: block; color: var(--c-ink-3); margin-bottom: 3px; }
-.lc-beliefs { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.lc-tick { display: block; color: var(--c-ink-3); margin-bottom: var(--s-0); }
+.lc-beliefs { display: flex; gap: var(--s-2); flex-wrap: wrap; align-items: center; }
 .lc-belief { color: var(--c-ink); }
-.lc-belief.none { color: var(--c-ink-3); font-style: italic; }
-.lc-belief b { font-size: 12.5px; }
+.lc-belief.none { color: var(--c-ink-2); font-style: italic; }
+.lc-belief b { font-size: var(--fs-3); }
 .lc-move {
-  font-style: normal; font-size: 10px; text-transform: uppercase; letter-spacing: .07em;
-  padding: 1px 6px; border-radius: 2px;
+  font-style: normal; font-size: var(--fs-1); text-transform: uppercase; letter-spacing: var(--tr-caps);
+  padding: 1px var(--s-1); border-radius: var(--radius-sm);
 }
-.lc-move.appeared { background: var(--bad); color: #fff; }
+.lc-move.appeared { background: var(--bad); color: var(--on-state); }
 .lc-move.firmed { background: var(--bad-soft); color: var(--bad); }
 .lc-move.faded, .lc-move.withdrawn { background: var(--ok-soft); color: var(--ok); }
 .lc-move.requoted { background: var(--warn-soft); color: var(--warn); }

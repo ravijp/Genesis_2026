@@ -2,112 +2,120 @@
  *
  * Three stylesheets, and the split is not filing. `console.css` is the *product* — our panel
  * inside a stand-in of the client's desktop, dense chrome someone works in all day. `styles.css`
- * holds the shared tokens and the document screens. This file holds the stream, which is the one
- * screen that deliberately MOVES: rows slide when the queue re-ranks and transcript turns reveal
- * as they arrive, because the motion is the argument. Nothing in the console animates, and
- * keeping the two in one file is how a transition ends up on a table nobody wanted one on.
+ * holds the design system (ramp, semantic colours, type scale, spacing rhythm, radii) and the
+ * document screens. This file holds the stream, which is the one screen that deliberately MOVES:
+ * rows slide when the queue re-ranks and transcript turns reveal as they arrive, because the
+ * motion is the argument. Nothing in the console animates, and keeping the two in one file is how
+ * a transition ends up on a table nobody wanted one on.
  *
- * Tokens come from `styles.css`, which loads first. Nothing here redefines a colour; `--accent`
- * is re-pointed per deployment by an inline style.
+ * Every token comes from `styles.css`, which loads first. Nothing here defines a colour, a size
+ * or a spacing value of its own. `--accent` is re-pointed per deployment by an inline style, so
+ * it is used for fills, marks and identity bands only; accent-coloured TEXT is `--accent-ink`,
+ * which is ours and contrast-checked. See the header of `styles.css`.
  */
 
-.mainnav { display: flex; gap: 4px; }
+.mainnav { display: flex; gap: var(--s-1); }
 .navlink {
-  padding: 5px 11px;
-  border-radius: 3px;
-  font-size: 13px;
+  padding: var(--s-1) var(--s-3);
+  border-radius: var(--radius);
+  font-size: var(--fs-4);
   text-decoration: none;
   color: var(--ink-2);
   border: 1px solid transparent;
 }
-.navlink:hover { background: var(--panel-2); }
-.navlink.on { background: var(--accent-soft); color: var(--accent); border-color: var(--line); }
+.navlink:hover { background: var(--hi); }
+.navlink.on { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent-ink); }
 
 .muted { color: var(--ink-3); }
-.small { font-size: 12.5px; }
+.small { font-size: var(--fs-3); }
 .mini {
-  font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
-  color: var(--ink-3); margin: 16px 0 8px;
+  font-size: var(--fs-2); text-transform: uppercase; letter-spacing: var(--tr-caps);
+  color: var(--ink-3); margin: var(--s-4) 0 var(--s-2);
 }
-.kv.tight dt, .kv.tight dd { padding: 3px 0; }
+.kv.tight dt, .kv.tight dd { padding: var(--s-0) 0; }
 
 /* ---- portfolio -------------------------------------------------------------------- */
 
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
-.tenant-card { border-top: 3px solid var(--accent); }
-.tenant-head { display: flex; gap: 12px; align-items: flex-start; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--s-4); }
+/* The one place a tenant's own colour appears in the document half: an identity band, no text. */
+.tenant-card { border-top: 3px solid var(--accent-edge); }
+.tenant-head { display: flex; gap: var(--s-3); align-items: flex-start; }
 .tenant-head h3 { margin: 0; }
 .tenant-card .dot,
 .pill .dot {
   width: 10px; height: 10px; border-radius: 50%;
-  background: var(--accent); flex: none; margin-top: 6px;
+  background: var(--accent-edge); flex: none; margin-top: var(--s-1);
 }
-.book { color: var(--ink-2); font-size: 13.5px; margin: 10px 0 14px; }
+.book { color: var(--ink-2); font-size: var(--fs-5); margin: var(--s-2) 0 var(--s-3); }
 
 .teams { list-style: none; margin: 0; padding: 0; }
 .teams li {
   display: grid; grid-template-columns: 1fr 90px 28px;
-  gap: 10px; align-items: center; padding: 4px 0; font-size: 13px;
+  gap: var(--s-2); align-items: center; padding: var(--s-1) 0; font-size: var(--fs-4);
 }
-.team-bar { height: 6px; border-radius: 3px; background: var(--panel-2); overflow: hidden; }
-.team-bar > i { display: block; height: 100%; background: var(--accent); }
+.team-bar { height: 6px; border-radius: var(--radius-sm); background: var(--panel-2); overflow: hidden; }
+.team-bar > i { display: block; height: 100%; background: var(--accent-edge); }
 .teams .num { text-align: right; color: var(--ink-2); }
 
 /* ---- the stream ------------------------------------------------------------------- */
 
-.stream { display: flex; flex-direction: column; gap: 14px; }
-.stream-head h2 { margin: 0 0 4px; }
+.stream { display: flex; flex-direction: column; gap: var(--s-3); }
+.stream-head h2 { margin: 0 0 var(--s-1); }
 
-.pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pills { display: flex; gap: var(--s-2); flex-wrap: wrap; }
 .pill {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 14px; border-radius: 3px;
-  border: 1px solid var(--line); background: var(--panel);
-  text-decoration: none; color: var(--ink-2); font-size: 13px;
+  display: flex; align-items: center; gap: var(--s-2);
+  padding: var(--s-2) var(--s-3); border-radius: var(--radius);
+  border: 1px solid var(--line-strong); background: var(--panel);
+  text-decoration: none; color: var(--ink-2); font-size: var(--fs-4);
 }
-.pill.on { border-color: var(--accent); background: var(--panel-2); color: var(--ink); }
-.pill-sub { color: var(--ink-3); font-size: 12px; }
+.pill.on { border-color: var(--accent-ink); background: var(--accent-soft); color: var(--ink); }
+.pill-sub { color: var(--ink-3); font-size: var(--fs-3); }
 
 /* Provenance for the stream sits inside the screen as well as in the page banner. A screenshot
-   of the stage is what ends up in someone else's deck, and it has to carry its own caveats. */
+   of the stage is what ends up in someone else's deck, and it has to carry its own caveats — so
+   it is bordered in its own colour rather than in a hairline that a crop can lose. */
 .prov-inline {
   background: var(--warn-soft);
   color: var(--warn);
-  border: 1px solid var(--line);
+  border: 1px solid var(--warn);
+  border-left-width: 4px;
   border-radius: var(--radius);
-  padding: 10px 14px;
-  font-size: 12.5px;
+  padding: var(--s-2) var(--s-3);
+  font-size: var(--fs-3);
   font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   line-height: 1.7;
 }
-.prov-inline code { font-size: 12px; }
+.prov-inline code { font-size: var(--fs-3); }
 
 .transport {
-  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center;
   background: var(--panel); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 10px 14px;
+  border-radius: var(--radius); padding: var(--s-2) var(--s-3);
+  box-shadow: var(--edge);
 }
 .tbtn {
-  font: inherit; font-size: 13px;
-  padding: 6px 12px; border-radius: 3px;
-  border: 1px solid var(--line); background: var(--panel-2);
+  font: inherit; font-size: var(--fs-4);
+  padding: var(--s-1) var(--s-3); border-radius: var(--radius);
+  border: 1px solid var(--line-strong); background: var(--panel);
   color: var(--ink); cursor: pointer;
 }
-.tbtn:hover { border-color: var(--accent); }
-.tbtn.small { font-size: 12px; padding: 4px 9px; }
-.tbtn.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.tbtn:hover { background: var(--hi); border-color: var(--accent-ink); }
+.tbtn.small { font-size: var(--fs-3); padding: var(--s-0) var(--s-2); }
+.tbtn.on { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent-ink); }
 .tbtn.live-btn {
   margin-left: auto; background: var(--bad-soft);
   color: var(--bad); border-color: var(--bad);
 }
-.speeds { display: flex; gap: 4px; }
-.scrub { flex: 1 1 220px; min-width: 160px; accent-color: var(--accent); }
-.pos { font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); }
+.speeds { display: flex; gap: var(--s-1); }
+.scrub { flex: 1 1 220px; min-width: 160px; accent-color: var(--accent-ink); }
+.pos { font-family: var(--mono); font-size: var(--fs-3); color: var(--ink-3); font-variant-numeric: tabular-nums; }
 .badge.live { animation: pulse 1.4s ease-in-out infinite; }
 
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 
-.stage { display: grid; grid-template-columns: 1.15fr 1fr 1.1fr; gap: 14px; align-items: start; }
+.stage { display: grid; grid-template-columns: 1.15fr 1fr 1.1fr; gap: var(--s-3); align-items: start; }
 @media (max-width: 1100px) { .stage { grid-template-columns: 1fr; } }
 
 /* The call panel. Turns reveal on a staggered CSS delay rather than a JS timer: it restarts
@@ -118,15 +126,15 @@
   position: relative;
   animation: rise .32s ease both;
   animation-delay: calc(var(--k) * 55ms);
-  font-size: 13.5px;
+  font-size: var(--fs-5);
   grid-template-columns: 72px 1fr;
 }
 .call .turns.live li.hit { background: var(--bad-soft); }
 .call .flag {
   grid-column: 2;
-  font-family: var(--mono); font-size: 11.5px;
-  color: var(--bad); text-transform: uppercase; letter-spacing: .05em;
-  margin-top: 4px;
+  font-family: var(--mono); font-size: var(--fs-2);
+  color: var(--bad); text-transform: uppercase; letter-spacing: var(--tr-caps-2);
+  margin-top: var(--s-1);
 }
 @keyframes rise {
   from { opacity: 0; transform: translateY(6px); }
@@ -134,41 +142,43 @@
 }
 
 .readbar {
-  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line);
-  font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+  display: flex; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap;
+  margin-top: var(--s-3); padding-top: var(--s-2); border-top: 1px solid var(--line);
+  font-family: var(--mono); font-size: var(--fs-3); color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
 }
 
 /* The ledger panel: one meter, two marks -- what the customer scored before this conversation
    landed and what they score after it -- with the threshold drawn on the same axis. "Crossed"
    is then something a viewer sees rather than something a caption asserts. */
-.scoremeter { margin: 14px 0 10px; }
+.scoremeter { margin: var(--s-3) 0 var(--s-2); }
 .meter {
-  position: relative; height: 20px; border-radius: 3px;
+  position: relative; height: 20px; border-radius: var(--radius-sm);
   background: var(--panel-2); overflow: hidden;
 }
 .meter > .fill {
-  position: absolute; inset: 0 auto 0 0; background: var(--accent);
+  position: absolute; inset: 0 auto 0 0; background: var(--accent-edge);
   transition: width .5s cubic-bezier(.2,.7,.2,1);
 }
-.meter > .was { position: absolute; inset: 0 auto 0 0; background: var(--ink-3); opacity: .45; }
+.meter > .was { position: absolute; inset: 0 auto 0 0; background: var(--ink-3); }
 .meter > .cut { position: absolute; top: -2px; width: 3px; height: 26px; background: var(--bad); }
 .meterlabels {
-  display: flex; justify-content: space-between; gap: 10px; margin-top: 6px;
-  font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+  display: flex; justify-content: space-between; gap: var(--s-2); margin-top: var(--s-1);
+  font-family: var(--mono); font-size: var(--fs-3); color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
 }
-.meterlabels .big { font-size: 17px; color: var(--ink); font-weight: 700; }
+.meterlabels .big { font-size: var(--fs-7); color: var(--ink); font-weight: 700; }
 .meterlabels .delta.up { color: var(--ok); }
 
 .crossbanner {
-  margin: 14px 0 4px; padding: 12px 14px;
+  margin: var(--s-3) 0 var(--s-1); padding: var(--s-3);
   border-radius: var(--radius);
   background: var(--bad-soft); color: var(--bad);
-  border: 1px solid var(--bad);
-  font-weight: 700; font-size: 13.5px;
+  border: 1px solid var(--bad); border-left-width: 4px;
+  font-weight: 700; font-size: var(--fs-5);
   animation: flash .5s ease;
 }
-.crossbanner .sub { display: block; margin-top: 6px; font-weight: 400; font-size: 12.5px; }
+.crossbanner .sub { display: block; margin-top: var(--s-1); font-weight: 400; font-size: var(--fs-3); }
 @keyframes flash {
   from { transform: scale(.985); opacity: .3; }
   to { transform: none; opacity: 1; }
@@ -180,9 +190,9 @@
 .boardrow {
   position: absolute; left: 0; right: 0; height: 40px;
   display: grid; grid-template-columns: 88px 1fr 90px 52px 68px;
-  gap: 10px; align-items: center;
-  padding: 0 8px; border-radius: 3px;
-  font-size: 12.5px;
+  gap: var(--s-2); align-items: center;
+  padding: 0 var(--s-2); border-radius: var(--radius);
+  font-size: var(--fs-3); font-variant-numeric: tabular-nums;
   transition: transform .45s cubic-bezier(.2,.7,.2,1), background .3s;
 }
 .boardrow .cid, .boardrow .num { font-family: var(--mono); }
@@ -191,8 +201,8 @@
   text-overflow: ellipsis; white-space: nowrap;
 }
 .boardrow .state {
-  font-size: 11px; color: var(--ink-3); text-align: right;
-  text-transform: uppercase; letter-spacing: .04em;
+  font-size: var(--fs-2); color: var(--ink-3); text-align: right;
+  text-transform: uppercase; letter-spacing: var(--tr-caps-2);
 }
 .boardrow .bar { position: relative; width: 100%; height: 7px; }
 .boardrow .bar > i { transition: width .45s ease; }
@@ -205,34 +215,38 @@
 .boardrow.open .state { color: var(--bad); }
 
 .ticker {
-  display: flex; flex-wrap: wrap; gap: 22px;
+  display: flex; flex-wrap: wrap; gap: var(--s-6);
   background: var(--panel); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 12px 16px;
-  font-size: 12.5px; color: var(--ink-3);
+  border-radius: var(--radius); padding: var(--s-3) var(--s-4);
+  font-size: var(--fs-3); color: var(--ink-3);
+  box-shadow: var(--edge);
 }
-.ticker b { font-family: var(--mono); font-size: 16px; color: var(--ink); margin-right: 6px; }
+.ticker b {
+  font-family: var(--mono); font-size: var(--fs-6); color: var(--ink);
+  margin-right: var(--s-1); font-variant-numeric: tabular-nums;
+}
 
 .decided { list-style: none; margin: 0; padding: 0; }
 .decided li { border-bottom: 1px solid var(--line); }
 .decided li:last-child { border-bottom: 0; }
 .decided a, .decided li.livecase {
-  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
-  padding: 10px 4px; text-decoration: none; color: inherit;
+  display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center;
+  padding: var(--s-2) var(--s-1); text-decoration: none; color: inherit;
 }
-.decided a:hover { background: var(--panel-2); }
+.decided a:hover { background: var(--hi); }
 .decided .cid { font-family: var(--mono); }
-.decided .team { color: var(--accent); font-size: 13px; }
-.decided .muted { font-size: 12px; font-family: var(--mono); }
+.decided .team { color: var(--accent-ink); font-size: var(--fs-4); }
+.decided .muted { font-size: var(--fs-3); font-family: var(--mono); }
 
 /* The two-group nav: "In use", then "How it works". The group label is what makes the split
    legible -- without it the four links read as one undifferentiated menu, and the framing of the
    whole demo (this is the product; this is why it is true) is lost. */
 .navgroup {
   align-self: center;
-  margin: 0 4px 0 12px;
-  font-size: 10px;
+  margin: 0 var(--s-1) 0 var(--s-3);
+  font-size: var(--fs-1);
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: var(--tr-caps);
   color: var(--ink-3);
 }
 .navgroup:first-child { margin-left: 0; }
