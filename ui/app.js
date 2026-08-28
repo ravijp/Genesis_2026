@@ -26,6 +26,7 @@
 
   var U = window.EARSHOT_UI;
   var LIVE = window.EARSHOT_LIVE || null;
+  var CONSOLE = window.EARSHOT_CONSOLE || null;
   var DATA = window.EARSHOT_DATA || null;
   var view = document.getElementById("view");
   var crumbs = document.getElementById("crumbs");
@@ -90,15 +91,23 @@
   function renderNav(active) {
     var el = document.getElementById("mainnav");
     if (!el) return;
+    // Two halves, named as such. The console is what a bank sees; the explanatory screens are
+    // why it is true. Keeping them apart in the nav is the whole framing of the demo.
     var items = [
-      { href: "#/deployment", label: "Deployment", key: "deployment" },
-      { href: "#/stream", label: "Live stream", key: "stream" },
-      { href: "#/queue", label: "Reviewer queue", key: "queue" },
+      { href: "#/desk", label: "Reviewer desk", key: "desk", group: "In use" },
+      { href: "#/desk/call", label: "During a call", key: "call", group: "In use" },
+      { href: "#/stream", label: "The stream", key: "stream", group: "How it works" },
+      { href: "#/deployment", label: "Where it plugs in", key: "deployment", group: "How it works" },
     ];
+    var group = "";
     el.innerHTML = items
       .map(function (item) {
-        if (item.key !== "queue" && (!LIVE || !LIVE.hasData())) return "";
+        if (!LIVE || !LIVE.hasData()) return "";
+        var lead = item.group === group ? "" :
+          '<span class="navgroup">' + U.esc(item.group) + "</span>";
+        group = item.group;
         return (
+          lead +
           '<a class="navlink' + (item.key === active ? " on" : "") + '" href="' +
           U.esc(item.href) + '">' + U.esc(item.label) + "</a>"
         );
@@ -420,6 +429,32 @@
     // The portfolio is the front door when there is a demo to show, and the queue is the front
     // door when there is not. Rendered directly rather than redirected: a `location.replace` here
     // would put a second entry in the router's own history and make Back leave the page.
+    // -- the console: our panel inside the client's desktop ---------------------------------
+    if (parts[0] === "desk" && CONSOLE && CONSOLE.hasData()) {
+      renderNav(parts[1] === "call" ? "call" : "desk");
+      document.getElementById("provenance").innerHTML =
+        "<strong>This is the product surface.</strong> The desktop chrome is a stand-in for the " +
+        "client's own case-management console; only the outlined panel is ours. Customer data " +
+        "is synthetic and there is no speech recognition anywhere in this system.";
+      var ok = parts[1] === "call"
+        ? CONSOLE.renderCall(view, crumbs, parts[2] || null)
+        : parts[1] === "case"
+          ? CONSOLE.renderCase(view, crumbs, parts[2] || null)
+          : CONSOLE.renderQueue(view, crumbs);
+      if (ok) return;
+      return renderMissing(null, "The console has no recorded run to show.");
+    }
+
+    if (!parts.length && CONSOLE && CONSOLE.hasData()) {
+      // The front door is the product in use, not an explanation of it.
+      renderNav("desk");
+      document.getElementById("provenance").innerHTML =
+        "<strong>This is the product surface.</strong> The desktop chrome is a stand-in for the " +
+        "client's own case-management console; only the outlined panel is ours. Customer data " +
+        "is synthetic and there is no speech recognition anywhere in this system.";
+      if (CONSOLE.renderQueue(view, crumbs)) return;
+    }
+
     var wantsDeployment =
       parts[0] === "deployment" ||
       parts[0] === "portfolio" ||  // the old name; bookmarks from before the rename still land

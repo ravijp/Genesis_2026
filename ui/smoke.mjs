@@ -80,6 +80,15 @@ const context = {
     createElement() {
       return element();
     },
+    // The console wires its decision buttons through a document-level query. Returning nothing
+    // is the honest stub: the buttons exist in the markup, and what this harness checks is that
+    // the wiring does not throw, not that a click does something.
+    querySelectorAll() {
+      return [];
+    },
+    querySelector() {
+      return null;
+    },
   },
   location: { hash: "", protocol: "file:", replace(h) { context.location.hash = h; } },
   URLSearchParams,
@@ -96,7 +105,7 @@ context.window.location = context.location;
 context.globalThis = context;
 
 vm.createContext(context);
-for (const file of ["util.js", "data.js", "stream.js", "live.js"]) {
+for (const file of ["util.js", "data.js", "stream.js", "live.js", "console.js"]) {
   const path = join(UI, file);
   if (!existsSync(path)) {
     console.error(`smoke: ui/${file} is missing. Build it:`);
@@ -128,6 +137,8 @@ const caseId = data.queue.cases[0].case_id;
 const evidence = data.cases[caseId].evidence[0];
 const routes = [
   "#/",
+  "#/desk",
+  "#/desk/call",
   "#/deployment",
   "#/portfolio",
   "#/queue",
@@ -149,6 +160,7 @@ for (const block of stream.tenants) {
   routes.push(`#/stream/${tid}`);
   const streamCaseId = Object.keys(block.cases)[0];
   if (streamCaseId) {
+    routes.push(`#/desk/case/${encodeURIComponent(streamCaseId)}`);
     const row = (block.cases[streamCaseId].evidence || [])[0];
     routes.push(`#/stream/${tid}/case/${encodeURIComponent(streamCaseId)}`);
     routes.push(`#/stream/${tid}/case/${streamCaseId}`);

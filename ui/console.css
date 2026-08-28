@@ -1,0 +1,440 @@
+/* The reviewer console: stand-in chrome, and our panel inside it.
+ *
+ * Every convention here was found documented by two or more enterprise vendors independently,
+ * which is what makes it category convention rather than anyone's trade dress: a workspace tab
+ * strip for open work items, a split-view list beside a record region, a docked bottom utility
+ * bar whose items pop panels upward and persist across tabs, status pills coloured by state, and
+ * a 4px coloured left border marking severity on alert rows.
+ *
+ * What is deliberately NOT here: any vendor logo, wordmark, brand hex or icon set. Salesforce Sans
+ * is licensed only for use inside Salesforce; SLDS icon SVGs are CC BY-ND, so recolouring one is
+ * plausibly a derivative; Amazon Ember is proprietary. Type is a system stack, marks are text
+ * glyphs we drew ourselves, and the accent comes from the tenant profile.
+ *
+ * Density is the point. 13px body, 12px floor (a documented accessibility minimum in Cloudscape),
+ * tabular numerals wherever a number appears so columns line up, 4px corner radii rather than the
+ * 10px that reads consumer-SaaS, and hairlines rather than shadows to separate regions.
+ */
+
+.cns {
+  /* Console-local tokens. Scoped to `.cns` so the explanatory screens keep the document palette
+     and the two halves of the demo stay visually distinct — which is the point of the split. */
+  --c-chrome: #10151c;
+  --c-chrome-2: #1a212b;
+  --c-surface: #f4f6f9;
+  --c-panel: #ffffff;
+  --c-ink: #10151c;
+  --c-ink-2: #4a5464;
+  --c-ink-3: #78828f;
+  --c-line: #d8dde5;
+  --c-line-strong: #b9c1cc;
+  --c-hi: #e8eef7;
+  --c-radius: 4px;
+  --c-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cns {
+    --c-chrome: #0a0d12;
+    --c-chrome-2: #141a22;
+    --c-surface: #12171f;
+    --c-panel: #171e27;
+    --c-ink: #e6ebf2;
+    --c-ink-2: #a9b3c1;
+    --c-ink-3: #7b8593;
+    --c-line: #262e39;
+    --c-line-strong: #38424f;
+    --c-hi: #1b2431;
+  }
+}
+
+.cns .num {
+  font-family: var(--c-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The stand-in label. Above the chrome, not inside it, and never collapsible: a screenshot of
+   this page ends up in someone else's deck without whatever was said out loud beside it. */
+.cns-standin {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border: 1px solid var(--line);
+  border-radius: var(--c-radius);
+  padding: 9px 14px;
+  font-size: 12.5px;
+  margin-bottom: 12px;
+}
+
+.cns-frame {
+  border: 1px solid var(--c-line-strong);
+  border-radius: var(--c-radius);
+  overflow: hidden;
+  background: var(--c-surface);
+  color: var(--c-ink);
+  display: flex;
+  flex-direction: column;
+  min-height: 760px;
+}
+
+/* ---- chrome ------------------------------------------------------------------------------- */
+
+.cns-global {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px;
+  background: var(--c-chrome);
+  color: #e6ebf2;
+  border-bottom: 1px solid #000;
+}
+.cns-appswitch { font-size: 17px; opacity: 0.75; }
+.cns-app { font-size: 14px; font-weight: 600; }
+.cns-appsub { font-weight: 400; opacity: 0.6; }
+.cns-search {
+  width: 380px; height: 30px; display: flex; align-items: center;
+  padding: 0 10px; margin-left: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--c-radius);
+  color: rgba(255, 255, 255, 0.45); font-size: 12.5px;
+}
+.cns-globalright { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.cns-bell { position: relative; opacity: 0.8; }
+.cns-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+}
+.cns-badge {
+  display: inline-grid; place-items: center; min-width: 16px; height: 16px;
+  padding: 0 4px; margin-left: 5px;
+  border-radius: 8px; background: var(--bad); color: #fff;
+  font-size: 10px; font-style: normal; font-weight: 700;
+  font-family: var(--c-mono);
+}
+.cns-bell .cns-badge { position: absolute; top: -6px; left: 8px; margin: 0; }
+
+.cns-nav {
+  height: 38px; display: flex; align-items: stretch; gap: 2px; padding: 0 10px;
+  background: var(--c-chrome-2);
+  border-bottom: 1px solid var(--c-line);
+}
+.cns-navitem {
+  display: flex; align-items: center; padding: 0 12px;
+  font-size: 12.5px; color: rgba(230, 235, 242, 0.62);
+  border-bottom: 2px solid transparent;
+}
+.cns-navitem.on { color: #fff; border-bottom-color: var(--accent); }
+
+/* Workspace tabs: one per open work item, the pinned one first and un-closable. */
+.cns-tabs {
+  height: 34px; display: flex; align-items: stretch;
+  background: var(--c-surface); border-bottom: 1px solid var(--c-line);
+  padding-left: 6px;
+}
+.cns-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 0 12px; font-size: 12.5px; text-decoration: none;
+  color: var(--c-ink-2);
+  border-right: 1px solid var(--c-line);
+  border-top: 2px solid transparent;
+  max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cns-tab.on {
+  background: var(--c-panel); color: var(--c-ink);
+  border-top-color: var(--accent); font-weight: 600;
+}
+.cns-pin { font-size: 10px; }
+.cns-x { opacity: 0.4; }
+.cns-tabadd { display: grid; place-items: center; width: 30px; color: var(--c-ink-3); }
+
+.cns-body { display: grid; grid-template-columns: 320px 1fr; flex: 1; min-height: 0; }
+@media (max-width: 1080px) { .cns-body { grid-template-columns: 1fr; } }
+
+/* ---- split-view queue ---------------------------------------------------------------------- */
+
+.cns-split {
+  border-right: 1px solid var(--c-line);
+  background: var(--c-panel);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.cns-splithead {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 10px 12px; border-bottom: 1px solid var(--c-line); font-size: 13px;
+}
+.cns-qlist { overflow-y: auto; flex: 1; }
+.cns-qrow {
+  display: grid; gap: 3px;
+  padding: 9px 12px 9px 10px;
+  border-bottom: 1px solid var(--c-line);
+  border-left: 4px solid transparent;   /* severity stripe: the alert-queue genre marker */
+  text-decoration: none; color: inherit;
+}
+.cns-qrow.high { border-left-color: var(--bad); }
+.cns-qrow.mid { border-left-color: var(--warn); }
+.cns-qrow:hover { background: var(--c-hi); }
+.cns-qrow.on { background: var(--c-hi); border-left-width: 4px; }
+.cns-qtop { display: flex; justify-content: space-between; align-items: baseline; }
+.cns-qid { font-family: var(--c-mono); font-size: 12px; }
+.cns-qscore { font-size: 14px; font-weight: 700; }
+.cns-qmid { font-size: 11.5px; color: var(--c-ink-3); }
+.cns-qbot { display: flex; gap: 8px; align-items: center; margin-top: 2px; }
+.cns-qteam { font-size: 11px; color: var(--c-ink-2); }
+.cns-splitnote {
+  margin: 0; padding: 10px 12px; font-size: 11.5px; color: var(--c-ink-3);
+  border-top: 1px solid var(--c-line);
+}
+
+/* ---- record region --------------------------------------------------------------------------- */
+
+.cns-record { overflow-y: auto; padding: 0 0 16px; min-height: 0; }
+
+.cns-hl {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px; background: var(--c-panel);
+  border-bottom: 1px solid var(--c-line);
+}
+.cns-hlicon {
+  width: 34px; height: 34px; border-radius: 5px;
+  background: var(--accent); color: #fff;
+  display: grid; place-items: center; font-size: 15px; flex: none;
+}
+.cns-hlmain h2 { margin: 0; font-size: 15px; }
+.cns-hlfields { display: flex; gap: 22px; margin: 0 0 0 auto; }
+.cns-hlfields div { display: grid; gap: 1px; }
+.cns-hlfields dt { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--c-ink-3); }
+.cns-hlfields dd { margin: 0; font-size: 13px; }
+.cns-hlactions { display: flex; gap: 6px; }
+.cns-hbtn {
+  padding: 4px 10px; border: 1px solid var(--c-line-strong);
+  border-radius: var(--c-radius); font-size: 12px; color: var(--c-ink-2);
+}
+
+.cns-cols { display: grid; grid-template-columns: 1fr 340px; gap: 14px; padding: 14px 16px; }
+@media (max-width: 1240px) { .cns-cols { grid-template-columns: 1fr; } }
+
+.cns-card {
+  background: var(--c-panel);
+  border: 1px solid var(--c-line);
+  border-radius: var(--c-radius);
+  padding: 12px 14px; margin-bottom: 14px;
+}
+.cns-card h4 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--c-ink-3); }
+.cns-kv div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; border-bottom: 1px solid var(--c-line); }
+.cns-kv div:last-child { border-bottom: 0; }
+.cns-kv dt { color: var(--c-ink-2); font-size: 12.5px; }
+.cns-kv dd { margin: 0; font-size: 12.5px; }
+.cns-synth { margin: 10px 0 0; font-size: 11.5px; color: var(--c-ink-3); }
+.cns-priors { list-style: none; margin: 0; padding: 0; font-size: 12px; }
+.cns-priors li { display: grid; gap: 1px; padding: 5px 0; border-bottom: 1px solid var(--c-line); }
+.cns-priors li:last-child { border-bottom: 0; }
+.cns-host { opacity: 0.62; }
+.cns-hosttabs { display: flex; gap: 16px; border-bottom: 1px solid var(--c-line); margin-bottom: 8px; }
+.cns-hosttabs span { padding-bottom: 6px; font-size: 12.5px; color: var(--c-ink-3); }
+.cns-hosttabs span.on { color: var(--c-ink); border-bottom: 2px solid var(--accent); }
+
+/* ---- utility bar ---------------------------------------------------------------------------- */
+
+.cns-utility {
+  height: 32px; display: flex; align-items: stretch; gap: 0;
+  background: var(--c-chrome); border-top: 1px solid #000; padding-left: 6px;
+}
+.cns-util {
+  display: flex; align-items: center; gap: 6px; padding: 0 12px;
+  font-size: 12px; color: rgba(230, 235, 242, 0.7);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+.cns-util.on { background: rgba(255, 255, 255, 0.09); color: #fff; }
+.cns-util.ours { margin-left: auto; border-right: 0; border-left: 2px solid var(--accent); color: #fff; }
+.cns-uticon { opacity: 0.85; }
+
+/* ---- OUR PANEL: the embedded component, with a visible seam ------------------------------------
+ *
+ * The seam is the argument. Third-party UI ships into these consoles as a sandboxed iframe scoped
+ * to a case id, so a bounded rectangle with its own header and its own provenance footer is the
+ * literally accurate depiction — not a stylistic choice.
+ */
+
+.op {
+  border: 1px solid var(--accent);
+  border-radius: var(--c-radius);
+  background: var(--c-panel);
+  margin-bottom: 14px;
+  position: relative;
+}
+.op::before {
+  content: "";
+  position: absolute; inset: 3px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 2px; pointer-events: none;
+}
+.op-head {
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 14px; border-bottom: 1px solid var(--c-line);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.op-head h3 { margin: 0; font-size: 13.5px; }
+.op-mark { color: var(--accent); font-size: 14px; }
+.op-3p {
+  margin-left: auto; font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--accent);
+}
+.op-row { padding: 12px 14px; border-bottom: 1px solid var(--c-line); }
+.op-row:last-of-type { border-bottom: 0; }
+.op-h { margin: 0 0 6px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--c-ink-3); }
+
+.op-score { display: flex; gap: 18px; align-items: center; }
+.op-big { font-size: 34px; line-height: 1; font-weight: 700; }
+.op-scoremeta { flex: 1; }
+.op-delta { font-size: 12px; color: var(--c-ink-3); margin-bottom: 6px; }
+.op-track { position: relative; height: 8px; border-radius: 2px; background: var(--c-hi); }
+.op-track > i { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
+.op-track > b { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--bad); }
+.op-trackfoot { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11.5px; color: var(--c-ink-3); }
+
+.op-why {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  border-left: 4px solid var(--accent);
+  font-size: 12.5px;
+}
+
+.op-verdict { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.pill {
+  padding: 3px 10px; border-radius: var(--c-radius);
+  font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+}
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.op-conf b { font-size: 15px; }
+.op-route b { color: var(--accent); }
+.op-action { flex-basis: 100%; margin: 4px 0 0; font-size: 12.5px; color: var(--c-ink-2); }
+
+.op-cites { list-style: none; margin: 0; padding: 0; }
+.op-cite { padding: 7px 0; border-bottom: 1px solid var(--c-line); }
+.op-cite:last-child { border-bottom: 0; }
+.op-cite blockquote {
+  margin: 0 0 3px; padding-left: 10px;
+  border-left: 2px solid var(--c-line-strong);
+  font-size: 13px;
+}
+.op-coord { font-family: var(--c-mono); font-size: 11px; color: var(--c-ink-3); }
+
+.op-ledger summary { cursor: pointer; font-size: 12.5px; color: var(--c-ink-2); }
+.op-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 9px; }
+.op-table th {
+  position: sticky; top: 0; text-align: left; padding: 5px 7px;
+  border-bottom: 1px solid var(--c-line-strong);
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--c-ink-3);
+  background: var(--c-panel);
+}
+.op-table td { padding: 5px 7px; border-bottom: 1px solid var(--c-line); }
+.op-table th.num, .op-table td.num { text-align: right; }
+/* Sub-threshold rows are NOT dimmed. Greying them would draw exactly the incumbent behaviour
+   this product inverts: they are retained, and they still count. */
+.op-table tr.lb td { background: color-mix(in srgb, var(--bad) 6%, transparent); }
+.op-star { color: var(--bad); }
+.op-q { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.op-note { margin: 9px 0 0; font-size: 11.5px; color: var(--c-ink-3); }
+
+.op-change { background: var(--c-hi); font-size: 12.5px; }
+.op-change p { margin: 0; }
+
+.op-decide { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.op-btn {
+  font: inherit; font-size: 12.5px; padding: 7px 14px;
+  border-radius: var(--c-radius); cursor: pointer;
+  border: 1px solid var(--c-line-strong); background: var(--c-panel); color: var(--c-ink);
+}
+.op-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.op-btn.ghost { border-color: transparent; color: var(--c-ink-2); }
+.op-btn:hover { filter: brightness(1.06); }
+.op-decidenote { flex-basis: 100%; }
+.op-req {
+  margin-top: 10px; padding: 10px 12px;
+  border: 1px solid var(--warn); border-radius: var(--c-radius);
+  background: var(--warn-soft); color: var(--warn); font-size: 12px;
+}
+.op-req pre {
+  margin: 7px 0; padding: 8px; border-radius: 3px;
+  background: rgba(0, 0, 0, 0.06); font-family: var(--c-mono); font-size: 11.5px;
+  white-space: pre-wrap;
+}
+.op-req p { margin: 6px 0 0; }
+
+.op-prov {
+  padding: 9px 14px; border-top: 1px solid var(--c-line);
+  font-family: var(--c-mono); font-size: 10.5px; line-height: 1.65;
+  color: var(--c-ink-3);
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+/* ---- live-call view -------------------------------------------------------------------------- */
+
+.cns-softphone {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 16px; background: var(--c-chrome-2); color: #e6ebf2;
+  border-bottom: 1px solid var(--c-line);
+}
+.cns-live { color: #ff6b6b; font-weight: 700; font-size: 12px; letter-spacing: .06em; }
+.cns-callwho { font-size: 13px; }
+.cns-timer { margin-left: auto; font-size: 15px; }
+.cns-callbtns { display: flex; gap: 6px; }
+.cns-cb {
+  padding: 4px 11px; border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--c-radius); font-size: 12px;
+}
+.cns-cb.end { background: var(--bad); border-color: var(--bad); color: #fff; }
+
+.cns-illus {
+  margin: 14px 16px 0; padding: 10px 13px;
+  border: 1px solid var(--warn); border-radius: var(--c-radius);
+  background: var(--warn-soft); color: var(--warn); font-size: 12.5px;
+}
+
+.lc-list { list-style: none; margin: 0; padding: 0; }
+.lc-turn {
+  display: grid; grid-template-columns: 74px 1fr; gap: 12px;
+  padding: 6px 8px; border-radius: 3px; font-size: 13px;
+  animation: lc-in .3s ease both; animation-delay: calc(var(--k) * 45ms);
+}
+.lc-turn.customer { background: var(--c-hi); }
+.lc-who {
+  font-family: var(--c-mono); font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--c-ink-3);
+}
+/* The reader's rows read as a different KIND of thing from human speech: machine annotation,
+   indented, monospaced, accent-ruled. */
+.lc-read {
+  margin: 3px 0 7px 74px; padding: 7px 10px;
+  border-left: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  font-family: var(--c-mono); font-size: 11.5px;
+  animation: lc-in .3s ease both; animation-delay: calc(var(--k) * 45ms + 120ms);
+}
+.lc-read.changed { border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 7%, transparent); }
+.lc-tick { display: block; color: var(--c-ink-3); margin-bottom: 3px; }
+.lc-beliefs { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.lc-belief { color: var(--c-ink); }
+.lc-belief.none { color: var(--c-ink-3); font-style: italic; }
+.lc-belief b { font-size: 12.5px; }
+.lc-move {
+  font-style: normal; font-size: 10px; text-transform: uppercase; letter-spacing: .07em;
+  padding: 1px 6px; border-radius: 2px;
+}
+.lc-move.appeared { background: var(--bad); color: #fff; }
+.lc-move.firmed { background: var(--bad-soft); color: var(--bad); }
+.lc-move.faded, .lc-move.withdrawn { background: var(--ok-soft); color: var(--ok); }
+.lc-move.requoted { background: var(--warn-soft); color: var(--warn); }
+
+@keyframes lc-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* Motion here is functional — it reproduces arrival order and nothing else. Someone who has asked
+   their system not to animate should still see every row. */
+@media (prefers-reduced-motion: reduce) {
+  .lc-turn, .lc-read { animation: none; }
+}
