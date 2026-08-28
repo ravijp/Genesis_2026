@@ -18,7 +18,7 @@ building it. Next gate **2026-09-07**. The 08-10 check-in and the 08-24 combined
 artifact records what 08-24 showed.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-investigator agent producing case files with cited evidence, and a five-screen UI that opens from disk. **557 tests**, ruff clean.
+investigator agent producing case files with cited evidence, and a UI that opens from disk. **559 tests**, ruff clean.
 
 **The AWS layer now exists in code.** `llm/bedrock.py` (Converse, Haiku 4.5, computed-not-charged cost),
 `aws/stores.py` (DynamoDB ledger/cases/reviews, conditional writes, no delete path on the ledger) and
@@ -90,6 +90,31 @@ Five things to carry, all of them on screen rather than in a caption:
   `ExtractionTelemetry.conversations` would divide the same money by nine times the work.
 - **`stream.py` sits on the separation-guarded surface** because `cli.stream_inputs()` hands it the
   conversations and the `ToolContext` factory. It never holds a `Corpus`. Exemption list stayed at 3.
+
+**The UI is now the product in use, not a dashboard of it (2026-08-28, W14).** `#/desk` renders
+our panel **inside a stand-in of the client's case-management console** — global header, workspace
+tab strip, split-view queue, record region, docked utility bar with a badged item of ours. Research
+into how third-party UI actually ships into Salesforce / Amazon Connect / Genesys / Dynamics / NICE
+found one mechanism in four of five: **a sandboxed iframe scoped to a conversation or case id**. So
+a bounded rectangle with a visible seam is the accurate depiction, not a stylistic choice, and it
+makes the integration argument without a slide.
+
+**The primary user is the specialist reviewer, not the agent on the call.** Accumulation across
+conversations is the product and a live-call panel structurally cannot show it; the people owning
+our four routes work case queues; and EU AI Act Art. 14(4)(b) names automation bias for exactly the
+mid-call-nudge shape. The live-call view ships anyway — it is the most striking thing we own — with
+*"Illustrative … nobody decides here"* on the screen.
+
+Four choices in the panel that are defensible under questioning: confidence is always a **number**;
+**sub-threshold ledger rows render at full contrast** (dimming them would draw the incumbent
+behaviour this product inverts); **nothing is preselected and the primary button is not focused on
+load**; and the decision buttons are **honest about being inert** — they print the
+`POST /cases/{id}/reviews` body that would be sent and say it was not.
+
+**No vendor logo, wordmark, brand hex or icon set anywhere.** Salesforce Sans is licensed only for
+use inside Salesforce, SLDS icons are CC BY-ND, Amazon Ember is proprietary. Every borrowed
+convention is documented by two or more vendors independently. The stand-in carries a permanent,
+non-collapsible label.
 
 **The reviewer UI exists and needs nothing (W10).** `ui/index.html` opens from disk — no npm, no
 bundler, no network. Ranked queue, one case with its evidence chain, and the retro re-score, all

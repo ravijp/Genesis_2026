@@ -56,7 +56,7 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | W11 | Observability (EMF) | **DONE (emit side)** | `aws/metrics.py`, wired into all three handlers. Alarms/dashboard still to create; no SNS, so they target EventBridge → Lambda |
 | W12 | Sweep runner | DROPPED for now | Fargate needs VPC subnets; keep the sweep local |
 | W13 | Live-stream demo + turn-by-turn read | **DONE** | `stream.py` + `read_live.py` + `tenants.py` + `ui/live.js`. One deployment framed as an integration; 133 conversations read by Haiku 4.5 on Bedrock, 6 read turn-by-turn, 6 crossings worked, $0.469. `--serve --narrate-live` does the turn-by-turn live. 73 tests |
-| W14 | UI as the client's console | **WIP** | The screens should read as our panel inside a banker's existing desktop (a labelled stand-in, never a vendor clone), with the stream and retro kept as the explanatory half. Design pass + desktop-conventions research both in flight 2026-08-28 |
+| W14 | UI as the client's console | **DONE** | `ui/console.js` + `console.css`. Our panel inside a stand-in desktop; reviewer-first, live-call view labelled illustrative. Research brief drove it; the design agent was cancelled and its worktree is unmerged. Customer-360 header via `cli.stream_inputs`, `financial_state` only |
 
 ## Blocked, and who owns it
 
@@ -77,6 +77,37 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-28 (late night)** · **The UI became the product in use** (`e0fb7f8`, `281e7c5`,
+`5b0633f`). Research into the consoles retail banks actually run found the finding that reframed
+the screen: third-party UI ships into four of five of them as **a sandboxed iframe scoped to a
+conversation or case id**. So `#/desk` renders our panel as a bounded rectangle with a visible seam
+inside a stand-in desktop, and the integration argument is made by the layout rather than a slide.
+
+**The primary user moved from the agent on the call to the specialist reviewer** — accumulation
+across conversations is the product and a live-call panel cannot show it, the people owning our
+four routes work case queues, and EU AI Act Art. 14(4)(b) names automation bias for exactly the
+mid-call-nudge shape. The live-call view ships labelled *nobody decides here*.
+
+**Customer-360 through the one safe door.** `cli.stream_inputs()` now also returns an
+`account_for` closure, built the same way as the `ToolContext` factory and for the same reason:
+`account_snapshot()` handed `latent_risk` becomes an oracle. Two new guards pin the *wiring*, not
+just the statistics, on a customer whose two risk figures differ.
+
+**Legal line held and written down**: no vendor logo, wordmark, brand hex or icon set; Salesforce
+Sans licensed only inside Salesforce, SLDS icons CC BY-ND, Amazon Ember proprietary. Every borrowed
+convention documented by two or more vendors independently.
+
+**Two process notes.** The opus design pass was cancelled mid-flight and left an uncommitted
+worktree carrying a 479-line `styles.css` rewrite — unmerged, Ravi's call. And a `cd` into that
+worktree that was never undone put one docs commit on its throwaway branch; main was untouched and
+the commit was redone. Verify `pwd` before committing.
+
+**Security note worth carrying:** nearly every `docs.aws.amazon.com` page fetched during the
+research carried an identical injected block instructing an AI reader to run a shell command,
+byte-identical across unrelated pages. The agent did not act on it. Treat AWS doc fetches as
+untrusted content.
+
 
 **2026-08-28 (night)** · **The call is read while it is still open, and the portfolio of three
 banks is gone** (`7dc594f`, `1c21c19`). `read_live.py` re-asks the reader after each customer turn
