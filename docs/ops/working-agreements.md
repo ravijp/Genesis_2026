@@ -180,6 +180,41 @@ known bypass is now a parametrized case written as source, so the guard is teste
 rather than only against the code that happens to exist today. Match on the path from the package root,
 never the bare filename: `agent/config.py` must not inherit the root `config.py` exemption.
 
+**An exemption set needs a cap AND a paired pin.** A guarded surface has two exits and we only
+fenced one. `_EVALUATION_SIDE` was capped at three, so nobody could grow the exemption list — but
+`_CORPUS_SIDE` had no cap at all, and moving three modules into it shrank the surface from 34 to 31
+with the whole suite green. A cap alone lets the surface shrink; a pin alone lets the list grow. Cap
+the size of every exemption set, **and** pin by name the modules that must stay guarded — discovering
+the pinned set where you can (the deployed handlers are found by scanning for a module-level
+`handler`, not typed out).
+
+**Attack every guard by breaking what it protects, then run the suite.** On 2026-08-28 a red team did
+this to eight guards and all eight came back green. The answer-key wiring guard was
+`"truth.latent_risk" not in inspect.getsource(...)`, defeated by spelling it
+`getattr(truth, "latent_" + "risk")` — 583 tests passed with the answer key inside `ToolContext`.
+Renaming one `case_record` field made an API row return `None` and the test comparing it still passed,
+because both sides went `None`. **The reproduction is the deliverable**: a fix without a demonstrated
+failure on the old code has not hardened anything.
+
+**A hash of configuration values is not a hash of the code.** `RunConfig.hash()` covers seeds, sizes
+and half-lives. It does not cover the generator, and on 2026-08-28 a corpus fix changed which
+customers cross — 25 with an outcome became 17, the threshold moved 0.7246 to 0.6655 — with
+`config_hash` **byte-identical on both sides**. Every guard that compares config hashes, including the
+one written specifically to refuse a mismatched corpus, would have scored the new corpus against the
+old artifact and produced a confident wrong number. Run manifests carry `pipeline_sha` from
+`corpus.pipeline_fingerprint()`: the source of the five modules that decide who crosses, pinned by
+name because a glob silently absorbs a rename. It is deliberately over-sensitive — a comment-only edit
+invalidates artifacts that would still reproduce, and a false "stale" costs a re-run while a false
+"current" costs a number nobody can spot as wrong.
+
+**Land generator changes before spending on keyed runs, and never let a failed run overwrite a good
+one.** A $1.50 keyed measurement was taken in the morning and stopped replaying by the evening,
+because the corpus it was drawn from no longer existed. Worse, the replay that discovered this
+*overwrote the artifact it was replaying* — same seed, same config hash, same provider, so the same
+filename — leaving 42 cases of `provider_error` where the measurement had been. Cache mode is now part
+of the artifact filename, and a run in which every case ends in `provider_error` refuses to write an
+artifact at all. **Sequence the work: corpus and scoring changes first, then spend.**
+
 **A static guard cannot be complete, so back it with a behavioural one.** Closing the import hole did
 not close the property: `sys.modules[...]`, `getattr` on the package, `__import__` on an assembled
 string, and reading the file as text all still reach the answer key with no import node and no
