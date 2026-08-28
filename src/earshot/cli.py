@@ -27,6 +27,7 @@ from .arms import demo_ledger, mechanism_ablations, run_all_arms
 from .aws.transcripts import to_payload
 from .case_record import case_record
 from .config import DEFAULT, RunConfig
+from .core.accounts import account_snapshot, synthesize_prior_cases
 from .corpus import generate, smallest_fragment_pool
 from .evals import corpus_diagnostics, evaluate_all, evaluate_arm, extraction_fidelity
 from .extract import Extractor, OfflineLexiconExtractor, extract_all
@@ -670,7 +671,7 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
 
 
 def stream_inputs(t: Tenant):
-    """One tenant's corpus, as `(conversations, context_for)`.
+    """One tenant's corpus, as `(conversations, context_for, account_for)`.
 
     **This function is why `stream.py` can stay on the separation-guarded surface.** Generating a
     corpus and assembling a `ToolContext` both need the truth objects, and `cli.py` is the one
@@ -681,8 +682,17 @@ def stream_inputs(t: Tenant):
 
     Cut at `breakdown.as_of_day`, which for a crossing is the day it happened, so the agent sees
     what a live consumer would have handed it and nothing that arrived afterwards.
+
+    `account_for` is the same seam again, for the reviewer console's customer-360 header. It
+    returns exactly what `agent/tools.py` already gives the investigator — no more — and it is
+    built here for the same reason `context_for` is: `account_snapshot()` takes a risk figure, and
+    the ONLY value that may cross is `financial_state`. The corpus-side `latent_risk` is a
+    function of how much evidence was planted, so anything given it recovers the stratum without
+    reading a word. `tests/test_no_answer_key_leak.py` proves the snapshot's numeric fields cannot
+    recover the label; that proof holds only while this keeps passing `financial_state`.
     """
     corpus = generate(t.run)
+    truth_by_id = {c.customer_id: c for c in corpus.customers}
 
     def context_for(customer_id: str, breakdown: ScoreBreakdown, threshold: float):
         return _context(
@@ -694,7 +704,23 @@ def stream_inputs(t: Tenant):
             cutoff_day=breakdown.as_of_day,
         )
 
-    return corpus.conversations, context_for
+    def account_for(customer_id: str, as_of_day: int) -> dict | None:
+        truth = truth_by_id.get(customer_id)
+        if truth is None:
+            return None
+        risk = truth.financial_state  # never truth.latent_risk. See the docstring.
+        snapshot = account_snapshot(customer_id, risk, t.run.seed, as_of_day)
+        priors = synthesize_prior_cases(customer_id, risk, t.run.seed, as_of_day)
+        return {
+            "snapshot": asdict(snapshot),
+            "prior_cases": [asdict(p) for p in priors],
+            # Stamped on the object, not left to a caption. The account figures are derived from
+            # the customer id and a seed; there is no bank core feed behind them, and a console
+            # header is exactly where someone would read them as a record.
+            "source": "synthetic",
+        }
+
+    return corpus.conversations, context_for, account_for
 
 
 def _stream_manifest(t: Tenant, extractor, provider, provider_name: str) -> dict:
@@ -793,7 +819,7 @@ def cmd_stream(
     for t in tenants:
         extractor = build_extractor(extractor_name, t.run)
         provider = _provider(provider_name, prompt_sha)
-        conversations, context_for = stream_inputs(t)
+        conversations, context_for, account_for = stream_inputs(t)
         try:
             run = run_stream(
                 t,
@@ -812,8 +838,22 @@ def cmd_stream(
             by_id = {c.conversation_id: c for c in conversations}
             reads = narrate(narrator, [by_id[cid] for cid in targets if cid in by_id])
             run.narration_cost_usd = narration_totals(reads)["narration_cost_usd"]
+            # Customer-360 headers, only for the customers a reviewer can actually open: the ones
+            # with a case, plus the ones whose calls were narrated. Snapshotting the whole book
+            # would put 44 account profiles in a browser to render at most a dozen.
+            wanted = {c.customer_id for c in run.crossings} | {
+                by_id[cid].customer_id for cid in reads if cid in by_id
+            }
+            accounts = {
+                cid: account_for(cid, run.final_day)
+                for cid in sorted(wanted)
+                if account_for(cid, run.final_day) is not None
+            }
             payload = stream_payload(
-                run, _stream_manifest(t, extractor, provider, provider_name), reads
+                run,
+                _stream_manifest(t, extractor, provider, provider_name),
+                reads,
+                accounts,
             )
         except (ProviderError, StreamError) as exc:
             print(f"\n{t.name}: {exc}", file=sys.stderr)

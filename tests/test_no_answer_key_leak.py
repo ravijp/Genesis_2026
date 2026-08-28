@@ -155,3 +155,64 @@ def test_outcome_is_not_recoverable_from_financial_state() -> None:
         f"financial_state separates outcomes too cleanly: means differ by {gap:.3f} against a "
         f"spread of {spread:.3f}"
     )
+
+
+def test_the_reviewer_consoles_account_header_uses_financial_state_not_latent_risk() -> None:
+    """The console's customer-360 header is a second door onto the account tools. Pin which key
+    opens it.
+
+    `account_snapshot()` takes a risk figure and derives a whole account profile from it. Handed
+    `latent_risk` it becomes an oracle: that value is a function of how much evidence was planted
+    in the customer's conversations, so a reader of the header recovers `Stratum` without reading
+    a word. Handed `financial_state` it does not, and the tests above are what prove that.
+
+    This asserts the wiring rather than the statistics, because the statistics are already proved
+    above and would pass either way on a small sample. It is a behavioural pin: `stream_inputs`'
+    `account_for` must produce exactly what `financial_state` produces and exactly not what
+    `latent_risk` produces. That distinction is the one this repo has already got wrong once.
+    """
+    from earshot.cli import stream_inputs
+    from earshot.core.accounts import account_snapshot
+    from earshot.tenants import DEFAULT_TENANT
+
+    t = DEFAULT_TENANT
+    corpus = generate(t.run)
+    _conversations, _context_for, account_for = stream_inputs(t)
+
+    # A customer whose two risk figures actually differ, or the test cannot tell them apart.
+    subject = next(
+        c for c in corpus.customers if abs(c.financial_state - c.latent_risk) > 0.05
+    )
+    as_of = 170
+    got = account_for(subject.customer_id, as_of)
+    assert got is not None
+    assert got["source"] == "synthetic", "the header must stamp itself as synthetic"
+
+    from_financial = account_snapshot(
+        subject.customer_id, subject.financial_state, t.run.seed, as_of
+    )
+    from_latent = account_snapshot(
+        subject.customer_id, subject.latent_risk, t.run.seed, as_of
+    )
+    assert got["snapshot"]["current_balance"] == from_financial.current_balance, (
+        "the console header is not derived from financial_state"
+    )
+    assert from_financial != from_latent, (
+        "the two risk figures produced an identical snapshot for this customer, so this test "
+        "cannot distinguish them -- pick a customer whose figures differ more"
+    )
+    assert got["snapshot"]["current_balance"] != from_latent.current_balance, (
+        "the console header is derived from latent_risk, which encodes the answer key"
+    )
+
+
+def test_the_account_header_carries_no_answer_key_field() -> None:
+    """A structural check on top of the statistical one: no field is even named after the key."""
+    from earshot.cli import stream_inputs
+    from earshot.stream import ANSWER_KEY_FIELDS, _all_keys
+    from earshot.tenants import DEFAULT_TENANT
+
+    _conversations, _context_for, account_for = stream_inputs(DEFAULT_TENANT)
+    payload = account_for("CUST-0000", 170)
+    leaked = _all_keys(payload) & ANSWER_KEY_FIELDS
+    assert not leaked, f"the console header carries {sorted(leaked)}"

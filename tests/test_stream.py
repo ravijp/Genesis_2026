@@ -36,7 +36,7 @@ def run():
     provider-dependent for no gain.
     """
     t = NORTHWIND
-    conversations, context_for = stream_inputs(t)
+    conversations, context_for, _ = stream_inputs(t)
     extractor = OfflineLexiconExtractor(
         miss_rate=t.run.offline_miss_rate, false_fire_rate=t.run.offline_false_fire_rate
     )
@@ -201,7 +201,7 @@ def test_empty_book_is_refused_not_streamed() -> None:
 
 def test_arrival_order_is_stable() -> None:
     """Two conversations on the same day must not shuffle between runs: a demo is rehearsed."""
-    conversations, _ = stream_inputs(TENANTS[0])
+    conversations, _, _ = stream_inputs(TENANTS[0])
     first = [c.conversation_id for c in arrival_order(conversations)]
     second = [c.conversation_id for c in arrival_order(list(reversed(list(conversations))))]
     assert first == second

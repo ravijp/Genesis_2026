@@ -42,6 +42,7 @@ ARTIFACT_GLOB = "artifacts/runs/stream-*.json"
 # stage reads as "the product has nothing to show" rather than "the fixture is stale".
 REQUIRED = (
     "manifest", "tenant", "frames", "cases", "conversations", "teams", "totals", "reads",
+    "accounts",
 )
 
 

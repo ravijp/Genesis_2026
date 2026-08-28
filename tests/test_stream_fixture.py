@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def artifact() -> dict:
     """One offline stream artifact. Keyless, so this file needs no credentials and no network."""
     t = NORTHWIND
-    conversations, context_for = stream_inputs(t)
+    conversations, context_for, _ = stream_inputs(t)
     run = run_stream(
         t,
         conversations,

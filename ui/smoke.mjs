@@ -265,6 +265,16 @@ for (const block of stream.tenants) {
       );
     }
   }
+  // Every case a reviewer can open must have a customer-360 header behind it, or the console
+  // renders an empty panel where the bank's own record component would be.
+  for (const one of Object.values(block.cases)) {
+    const acct = (block.accounts || {})[one.customer_id];
+    if (!acct) {
+      failures.push(`${tid}: case ${one.case_id} has no account header for ${one.customer_id}`);
+    } else if (acct.source !== "synthetic") {
+      failures.push(`${tid}: ${one.customer_id} account header is not stamped synthetic`);
+    }
+  }
   // At least one belief must actually move somewhere in the run. If nothing ever changes, the
   // turn-by-turn cadence is decoration and the screen should not imply otherwise.
   const moved = narrated.some((cid) => block.reads[cid].some((s) => s.changed));

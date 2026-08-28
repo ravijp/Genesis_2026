@@ -181,7 +181,7 @@ def serve_stream(
     )
     # Built before the socket opens, not on the first connection: generating a corpus takes long
     # enough to look like a hang if it happens after someone has already clicked.
-    conversations, context_for = stream_inputs(t)
+    conversations, context_for, _account_for = stream_inputs(t)
     # A SECOND extractor, for the turn-by-turn reads. Prefix reads landing in the ledger
     # reader's telemetry would divide the same money by many times the work and report a
     # cost-per-conversation that is fiction.

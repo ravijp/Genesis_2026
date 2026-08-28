@@ -443,6 +443,7 @@ def stream_payload(
     run: StreamRun,
     manifest: dict[str, Any],
     reads: dict[str, list[dict[str, Any]]] | None = None,
+    accounts: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """The whole run, in the shape the browser reads. Refuses to leak the answer key.
 
@@ -461,6 +462,10 @@ def stream_payload(
         "tenant": t.public(),
         "frames": run.frames,
         "reads": reads,
+        # The customer-360 header the reviewer console shows. Exactly what the investigator's own
+        # tools already see and no more, built by `cli.stream_inputs` so the only risk figure that
+        # crosses is `financial_state`. Every entry carries `source: "synthetic"`.
+        "accounts": accounts or {},
         "cases": records,
         "conversations": run.conversations,
         "teams": _team_rollup(records, t),
