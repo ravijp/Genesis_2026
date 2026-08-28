@@ -101,3 +101,118 @@ Not a new measurement. `05_score.py` was refactored so a reader can be passed in
   date it was published on; nothing in it is re-dated by a regression run.
 - The model arm has **not** been run. It needs a key, there is none in this environment, and no
   figure for it exists anywhere.
+
+### 05_score (model arm) — 2026-08-28
+- **a second reader arm, PROTOCOL.md section 9** — no published figure was touched, and `out/results.json` was not rewritten. Wrapping: sentence.
+- offline-lexicon: **strict recall 0.0357 (4 / 112)**
+- offline-lexicon: any-type recall 0.0964 (8 / 83)
+- offline-lexicon: false-positive rate 0.0205 (10 / 488)
+- offline-lexicon: per type — churn_intent: recall 0.3077 (4 / 13), fp 0.0292 (4 / 137)
+- offline-lexicon: per type — financial_distress: recall 0.0 (0 / 21), fp 0.0465 (6 / 129)
+- offline-lexicon: per type — complaint_escalation: recall 0.0 (0 / 67), fp 0.0 (0 / 83)
+- offline-lexicon: per type — life_event: recall 0.0 (0 / 11), fp 0.0 (0 / 139)
+- offline-lexicon: per panel — A: recall 0.0244 (2 / 82) over 100 docs
+- offline-lexicon: per panel — B/churn_intent: recall 0.0833 (1 / 12) over 17 docs
+- offline-lexicon: per panel — B/complaint_escalation: recall 0.125 (1 / 8) over 16 docs
+- offline-lexicon: per panel — B/financial_distress: recall 0.0 (0 / 10) over 17 docs
+- model:anthropic/claude-sonnet-4.5@extractor/v1: **strict recall 0.8214 (92 / 112)**
+- model:anthropic/claude-sonnet-4.5@extractor/v1: any-type recall 0.9759 (81 / 83)
+- model:anthropic/claude-sonnet-4.5@extractor/v1: false-positive rate 0.1598 (78 / 488)
+- model:anthropic/claude-sonnet-4.5@extractor/v1: per type — churn_intent: recall 0.3846 (5 / 13), fp 0.0146 (2 / 137)
+- model:anthropic/claude-sonnet-4.5@extractor/v1: per type — financial_distress: recall 0.8571 (18 / 21), fp 0.0543 (7 / 129)
+- model:anthropic/claude-sonnet-4.5@extractor/v1: per type — complaint_escalation: recall 0.9701 (65 / 67), fp 0.8072 (67 / 83)
+- model:anthropic/claude-sonnet-4.5@extractor/v1: per type — life_event: recall 0.3636 (4 / 11), fp 0.0144 (2 / 139)
+- model:anthropic/claude-sonnet-4.5@extractor/v1: per panel — A: recall 0.8293 (68 / 82) over 100 docs
+- model:anthropic/claude-sonnet-4.5@extractor/v1: per panel — B/churn_intent: recall 0.8333 (10 / 12) over 17 docs
+- model:anthropic/claude-sonnet-4.5@extractor/v1: per panel — B/complaint_escalation: recall 0.75 (6 / 8) over 16 docs
+- model:anthropic/claude-sonnet-4.5@extractor/v1: per panel — B/financial_distress: recall 0.8 (8 / 10) over 17 docs
+- model telemetry — conversations: 150
+- model telemetry — model_calls: 150
+- model telemetry — prompt_tokens: 188710
+- model telemetry — completion_tokens: 11948
+- model telemetry — cost_usd: 0.24845
+- model telemetry — cost_per_1000_conversations: 1.6563
+- model telemetry — p50_latency_ms: 1244.4
+- model telemetry — p95_latency_ms: 2212.0
+- model telemetry — emitted_signals: 170
+- model telemetry — unparsable_replies: 0
+- model telemetry — dropped_unknown_type: 0
+- model telemetry — dropped_not_verbatim: 5
+- model telemetry — dropped_quote_too_short: 1
+- model telemetry — dropped_not_customer_turn: 0
+- model telemetry — dropped_below_floor: 0
+- model telemetry — relocated_quotes: 4
+- `out/results-model.json` sha256 `6daf4923974c073714d1d3880d704ea92615cc6678772b423b7707904cd535f8`
+
+### 05_score (model arm) — 2026-08-28
+- **a second reader arm, PROTOCOL.md section 9** — no published figure was touched, and `out/results.json` was not rewritten. Wrapping: sentence.
+- offline-lexicon: **strict recall 0.0357 (4 / 112)**
+- offline-lexicon: any-type recall 0.0964 (8 / 83)
+- offline-lexicon: false-positive rate 0.0205 (10 / 488)
+- offline-lexicon: per type — churn_intent: recall 0.3077 (4 / 13), fp 0.0292 (4 / 137)
+- offline-lexicon: per type — financial_distress: recall 0.0 (0 / 21), fp 0.0465 (6 / 129)
+- offline-lexicon: per type — complaint_escalation: recall 0.0 (0 / 67), fp 0.0 (0 / 83)
+- offline-lexicon: per type — life_event: recall 0.0 (0 / 11), fp 0.0 (0 / 139)
+- offline-lexicon: per panel — A: recall 0.0244 (2 / 82) over 100 docs
+- offline-lexicon: per panel — B/churn_intent: recall 0.0833 (1 / 12) over 17 docs
+- offline-lexicon: per panel — B/complaint_escalation: recall 0.125 (1 / 8) over 16 docs
+- offline-lexicon: per panel — B/financial_distress: recall 0.0 (0 / 10) over 17 docs
+- model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1: **strict recall 0.8214 (92 / 112)**
+- model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1: any-type recall 0.9759 (81 / 83)
+- model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1: false-positive rate 0.1598 (78 / 488)
+- model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1: per type — churn_intent: recall 0.3846 (5 / 13), fp 0.0146 (2 / 137)
+- model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1: per type — financial_distress: recall 0.8571 (18 / 21), fp 0.0543 (7 / 129)
+- model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1: per type — complaint_escalation: recall 0.9701 (65 / 67), fp 0.8072 (67 / 83)
+- model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1: per type — life_event: recall 0.3636 (4 / 11), fp 0.0144 (2 / 139)
+- model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1: per panel — A: recall 0.8293 (68 / 82) over 100 docs
+- model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1: per panel — B/churn_intent: recall 0.8333 (10 / 12) over 17 docs
+- model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1: per panel — B/complaint_escalation: recall 0.75 (6 / 8) over 16 docs
+- model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1: per panel — B/financial_distress: recall 0.8 (8 / 10) over 17 docs
+- model telemetry — conversations: 150
+- model telemetry — model_calls: 150
+- model telemetry — served_model: us.anthropic.claude-haiku-4-5-20251001-v1:0
+- model telemetry — prompt_tokens: 188710
+- model telemetry — completion_tokens: 11948
+- model telemetry — cost_usd: 0.24845
+- model telemetry — cost_per_1000_conversations: 1.6563
+- model telemetry — p50_latency_ms: 1244.4
+- model telemetry — p95_latency_ms: 2212.0
+- model telemetry — emitted_signals: 170
+- model telemetry — unparsable_replies: 0
+- model telemetry — dropped_unknown_type: 0
+- model telemetry — dropped_not_verbatim: 5
+- model telemetry — dropped_quote_too_short: 1
+- model telemetry — dropped_not_customer_turn: 0
+- model telemetry — dropped_below_floor: 0
+- model telemetry — relocated_quotes: 4
+- `out/results-model.json` sha256 `1770692e08e86db6fa364ac882bff261d56b306257d823e18b1de225ce65b9a7`
+
+### correction to the two 05_score (model arm) entries above — 2026-08-28
+
+This log is append-only, so both entries stand as written and are corrected here instead.
+
+- **The first entry names the wrong model.** It says
+  `model:anthropic/claude-sonnet-4.5@extractor/v1`. Every one of its 150 calls was served by
+  `us.anthropic.claude-haiku-4-5-20251001-v1:0`. `ModelExtractor.name` was built from the
+  *requested* `model_cfg.model`, and `bedrock.py` substitutes its own default for
+  `base.DEFAULT_MODEL` — an OpenRouter slash-form id meaningless to Converse — by design and
+  documented in that module. Nothing between the two noticed. Fixed at the source: the reader is
+  now named after the model that answered (`ExtractionTelemetry.served_model`), which is recorded
+  per call and would show `a+b` if a run ever changed model halfway.
+- **The measurement itself is unaffected, and this is checkable rather than asserted.** The second
+  entry is the identical run replayed from `artifacts/cache/extractor.jsonl` with
+  `EARSHOT_CACHE_MODE=replay` and no credentials. Every figure is identical to the first —
+  0.8214 (92 / 112) strict, 0.9759 (81 / 83) any-type, 0.1598 (78 / 488) false positive,
+  $0.24845 over 150 conversations, p50 1244.4 ms, p95 2212.0 ms. Only the arm label and the new
+  `served_model` field differ, which is exactly what a labelling fix should change.
+- **The corrected artifact is `out/results-model.json` sha256
+  `1770692e08e86db6fa364ac882bff261d56b306257d823e18b1de225ce65b9a7`.** The first run's artifact
+  (`6daf4923...`) was overwritten by the replay; its content is recoverable from this log and from
+  git, and it differed only in the two fields named above.
+- **Nothing published moved.** `out/results.json` — PROTOCOL.md section 8's offline figure — was
+  not rewritten by either run, and the offline arm reproduced 0.0357 (4 / 112) both times.
+
+**Why this is written down rather than quietly fixed.** A published number carrying the wrong model
+name is the defect `docs/ops/working-agreements.md` section 1 exists for: two figures that sound
+comparable and are not. The first keyed run in this project's history got the number right and the
+label wrong, and the label is half of what makes a number mean anything.

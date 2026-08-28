@@ -1,0 +1,228 @@
+{
+  "arms": {
+    "model": {
+      "any_type_recall": 0.9759,
+      "any_type_recall_integers": "81 / 83",
+      "by_panel": {
+        "A": {
+          "docs": 100,
+          "fn": 14,
+          "fp": 45,
+          "recall": 0.8293,
+          "recall_integers": "68 / 82",
+          "tn": 273,
+          "tp": 68
+        },
+        "B/churn_intent": {
+          "docs": 17,
+          "fn": 2,
+          "fp": 13,
+          "recall": 0.8333,
+          "recall_integers": "10 / 12",
+          "tn": 43,
+          "tp": 10
+        },
+        "B/complaint_escalation": {
+          "docs": 16,
+          "fn": 2,
+          "fp": 9,
+          "recall": 0.75,
+          "recall_integers": "6 / 8",
+          "tn": 47,
+          "tp": 6
+        },
+        "B/financial_distress": {
+          "docs": 17,
+          "fn": 2,
+          "fp": 11,
+          "recall": 0.8,
+          "recall_integers": "8 / 10",
+          "tn": 47,
+          "tp": 8
+        }
+      },
+      "by_type": {
+        "churn_intent": {
+          "fn": 8,
+          "fp": 2,
+          "fp_rate": 0.0146,
+          "fp_rate_integers": "2 / 137",
+          "recall": 0.3846,
+          "recall_integers": "5 / 13",
+          "tn": 135,
+          "tp": 5
+        },
+        "complaint_escalation": {
+          "fn": 2,
+          "fp": 67,
+          "fp_rate": 0.8072,
+          "fp_rate_integers": "67 / 83",
+          "recall": 0.9701,
+          "recall_integers": "65 / 67",
+          "tn": 16,
+          "tp": 65
+        },
+        "financial_distress": {
+          "fn": 3,
+          "fp": 7,
+          "fp_rate": 0.0543,
+          "fp_rate_integers": "7 / 129",
+          "recall": 0.8571,
+          "recall_integers": "18 / 21",
+          "tn": 122,
+          "tp": 18
+        },
+        "life_event": {
+          "fn": 7,
+          "fp": 2,
+          "fp_rate": 0.0144,
+          "fp_rate_integers": "2 / 139",
+          "recall": 0.3636,
+          "recall_integers": "4 / 11",
+          "tn": 137,
+          "tp": 4
+        }
+      },
+      "cue_fires": {
+        "extractor/v1:churn_intent": 7,
+        "extractor/v1:complaint_escalation": 132,
+        "extractor/v1:financial_distress": 25,
+        "extractor/v1:life_event": 6
+      },
+      "documents": 150,
+      "fp_rate": 0.1598,
+      "fp_rate_integers": "78 / 488",
+      "prompt_sha": "b22d4ec2f3bce4f0a41164a72f143af27e837f679288593eb17407bb6d92f1c1",
+      "rates": "n/a",
+      "reader": "model:us.anthropic.claude-haiku-4-5-20251001-v1:0@extractor/v1",
+      "strict_recall": 0.8214,
+      "strict_recall_integers": "92 / 112",
+      "wrapping": "sentence"
+    },
+    "offline-lexicon": {
+      "any_type_recall": 0.0964,
+      "any_type_recall_integers": "8 / 83",
+      "by_panel": {
+        "A": {
+          "docs": 100,
+          "fn": 80,
+          "fp": 4,
+          "recall": 0.0244,
+          "recall_integers": "2 / 82",
+          "tn": 314,
+          "tp": 2
+        },
+        "B/churn_intent": {
+          "docs": 17,
+          "fn": 11,
+          "fp": 2,
+          "recall": 0.0833,
+          "recall_integers": "1 / 12",
+          "tn": 54,
+          "tp": 1
+        },
+        "B/complaint_escalation": {
+          "docs": 16,
+          "fn": 7,
+          "fp": 2,
+          "recall": 0.125,
+          "recall_integers": "1 / 8",
+          "tn": 54,
+          "tp": 1
+        },
+        "B/financial_distress": {
+          "docs": 17,
+          "fn": 10,
+          "fp": 2,
+          "recall": 0.0,
+          "recall_integers": "0 / 10",
+          "tn": 56,
+          "tp": 0
+        }
+      },
+      "by_type": {
+        "churn_intent": {
+          "fn": 9,
+          "fp": 4,
+          "fp_rate": 0.0292,
+          "fp_rate_integers": "4 / 137",
+          "recall": 0.3077,
+          "recall_integers": "4 / 13",
+          "tn": 133,
+          "tp": 4
+        },
+        "complaint_escalation": {
+          "fn": 67,
+          "fp": 0,
+          "fp_rate": 0.0,
+          "fp_rate_integers": "0 / 83",
+          "recall": 0.0,
+          "recall_integers": "0 / 67",
+          "tn": 83,
+          "tp": 0
+        },
+        "financial_distress": {
+          "fn": 21,
+          "fp": 6,
+          "fp_rate": 0.0465,
+          "fp_rate_integers": "6 / 129",
+          "recall": 0.0,
+          "recall_integers": "0 / 21",
+          "tn": 123,
+          "tp": 0
+        },
+        "life_event": {
+          "fn": 11,
+          "fp": 0,
+          "fp_rate": 0.0,
+          "fp_rate_integers": "0 / 139",
+          "recall": 0.0,
+          "recall_integers": "0 / 11",
+          "tn": 139,
+          "tp": 0
+        }
+      },
+      "cue_fires": {
+        "c-close": 6,
+        "c-rival": 1,
+        "c-rival:false-fire": 1,
+        "f-cant-pay:false-fire": 1,
+        "f-credit:false-fire": 1,
+        "f-date:false-fire": 1,
+        "f-job:false-fire": 1,
+        "f-late:false-fire": 1,
+        "f-tight:false-fire": 1
+      },
+      "documents": 150,
+      "fp_rate": 0.0205,
+      "fp_rate_integers": "10 / 488",
+      "rates": "configured",
+      "reader": "offline-lexicon",
+      "strict_recall": 0.0357,
+      "strict_recall_integers": "4 / 112",
+      "wrapping": "sentence"
+    }
+  },
+  "grain": "(document, signal_type), identical to PROTOCOL.md section 1",
+  "model_telemetry": {
+    "completion_tokens": 11948,
+    "conversations": 150,
+    "cost_per_1000_conversations": 1.6563,
+    "cost_usd": 0.24845,
+    "dropped_below_floor": 0,
+    "dropped_not_customer_turn": 0,
+    "dropped_not_verbatim": 5,
+    "dropped_quote_too_short": 1,
+    "dropped_unknown_type": 0,
+    "emitted_signals": 170,
+    "model_calls": 150,
+    "p50_latency_ms": 1244.4,
+    "p95_latency_ms": 2212.0,
+    "prompt_tokens": 188710,
+    "relocated_quotes": 4,
+    "served_model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "unparsable_replies": 0
+  },
+  "run_date": "2026-08-28",
+  "wrapping": "sentence"
+}

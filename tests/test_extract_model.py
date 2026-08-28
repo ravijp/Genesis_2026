@@ -53,10 +53,21 @@ class StubProvider:
 
     name = "stub"
 
-    def __init__(self, replies: list[str], *, cost: float = 0.0, latency: float = 0.0) -> None:
+    def __init__(
+        self,
+        replies: list[str],
+        *,
+        cost: float = 0.0,
+        latency: float = 0.0,
+        model: str = "stub-model",
+    ) -> None:
         self.replies = list(replies)
         self.cost = cost
         self.latency = latency
+        # Settable, because the served model is a property of the ANSWER: a provider is free to
+        # substitute one (bedrock.py does), and a run that changed model halfway has to be able
+        # to say so.
+        self.model = model
         self.requests: list[list[dict]] = []
 
     def complete(self, messages, tools, model_cfg) -> Completion:
@@ -67,7 +78,7 @@ class StubProvider:
             usage=Usage(prompt_tokens=100, completion_tokens=20),
             latency_ms=self.latency,
             cost_usd=self.cost,
-            model="stub-model",
+            model=self.model,
         )
 
 
@@ -404,6 +415,36 @@ def test_replay_needs_no_key_and_reports_a_miss_instead_of_reaching_the_network(
     extractor = model_extractor(cache=ResponseCache(tmp_path / "cache.jsonl", "replay"))
     with pytest.raises(CacheMiss):
         extractor.extract(conversation())
+
+
+# --- the model that actually answered -----------------------------------------------------------
+
+
+def test_the_reader_is_named_after_the_model_that_answered() -> None:
+    """The first keyed CFPB run was logged as `anthropic/claude-sonnet-4.5` when all 150 of its
+    calls were served by Haiku 4.5: `bedrock.py` substitutes its own default for the OpenRouter
+    slash-form id, by design, and the name was built from the request. A published number carrying
+    the wrong model name is worse than one carrying no name at all."""
+    reader = ModelExtractor(StubProvider([json.dumps({"signals": []})], model="served-model-9"))
+    assert "served-model-9" not in reader.name, "named after a call that has not happened yet"
+
+    reader.extract(conversation())
+    assert reader.name == "model:served-model-9@extractor/v1"
+    assert reader.telemetry.to_dict()["served_model"] == "served-model-9"
+
+
+def test_a_run_that_changed_model_halfway_says_so_rather_than_averaging_it_away() -> None:
+    """Two models behind one recall figure is a finding, not a formatting problem."""
+    provider = StubProvider(
+        [json.dumps({"signals": []}), json.dumps({"signals": []})], model="first"
+    )
+    reader = ModelExtractor(provider)
+    reader.extract(conversation())
+    provider.model = "second"
+    reader.extract(conversation())
+
+    assert reader.telemetry.served_model == "first+second"
+    assert reader.name == "model:first+second@extractor/v1"
 
 
 # --- which provider the reader actually reaches for -------------------------------------------

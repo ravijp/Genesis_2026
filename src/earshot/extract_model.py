@@ -77,6 +77,12 @@ class ExtractionTelemetry:
 
     conversations: int = 0
     model_calls: int = 0
+    # Every DISTINCT model id the provider actually returned. A list, not a single field, because
+    # a run that silently changed model halfway is exactly the thing worth surfacing rather than
+    # averaging away -- and because the requested id and the served id are routinely different:
+    # `bedrock.py` substitutes its own default for `base.DEFAULT_MODEL`, which is an OpenRouter
+    # slash-form id meaningless to Converse.
+    served_models: list[str] = field(default_factory=list)
     prompt_tokens: int = 0
     completion_tokens: int = 0
     cost_usd: float = 0.0
@@ -108,6 +114,16 @@ class ExtractionTelemetry:
         return self._percentile(0.95)
 
     @property
+    def served_model(self) -> str:
+        """What actually answered. Empty before the first call; `a+b` if a run used more than
+        one, which is a finding and not a formatting problem."""
+        return "+".join(self.served_models)
+
+    def record_model(self, model: str) -> None:
+        if model and model not in self.served_models:
+            self.served_models.append(model)
+
+    @property
     def cost_per_1000_conversations(self) -> float:
         """Measured spend scaled to 1,000 conversations. Zero when nothing was paid for --
         a cache replay reports the cost of the ORIGINAL calls, and a stub reports nothing."""
@@ -119,6 +135,7 @@ class ExtractionTelemetry:
         return {
             "conversations": self.conversations,
             "model_calls": self.model_calls,
+            "served_model": self.served_model,
             "prompt_tokens": self.prompt_tokens,
             "completion_tokens": self.completion_tokens,
             "cost_usd": round(self.cost_usd, 6),
@@ -157,8 +174,23 @@ class ModelExtractor:
         # Names the reader AND the prompt behind it. Two runs of the same model under different
         # prompt versions are different readers, and a manifest that cannot tell them apart
         # cannot support a comparison.
-        self.name = f"model:{self.model_cfg.model}@{FAMILY}/{self.prompt_version}"
+        self.requested_model = self.model_cfg.model
         self.telemetry = ExtractionTelemetry()
+
+    @property
+    def name(self) -> str:
+        """Named after the model that ANSWERED, falling back to the one requested before any call
+        has been made.
+
+        This was `model_cfg.model` until 2026-08-28, and the first keyed CFPB run was therefore
+        logged as `anthropic/claude-sonnet-4.5` when all 150 of its calls were served by Haiku
+        4.5 -- `bedrock.py` substitutes its own default for the OpenRouter-form id, by design and
+        documented, and nothing downstream noticed. A published number carrying the wrong model
+        name is the defect `working-agreements.md` section 1 is about, so the name follows the
+        provider's answer now.
+        """
+        served = self.telemetry.served_model
+        return f"model:{served or self.requested_model}@{FAMILY}/{self.prompt_version}"
 
     # -- the protocol ---------------------------------------------------------------
 
@@ -176,6 +208,7 @@ class ModelExtractor:
         self.telemetry.conversations += 1
         if isinstance(completion, Completion):
             self.telemetry.model_calls += 1
+            self.telemetry.record_model(completion.model)
             self.telemetry.prompt_tokens += completion.usage.prompt_tokens
             self.telemetry.completion_tokens += completion.usage.completion_tokens
             if math.isfinite(completion.cost_usd):
