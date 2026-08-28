@@ -111,25 +111,27 @@ content would put a lie in this file. The placement is settled; the first real f
 - `test_cli.py` — the commands, and the demo's internal consistency: its narration may not contradict the claim it selected on, and its denominator must count customers. Also that the `investigate` artifact is **sufficient on its own** — the reviewer UI must never regenerate the corpus from `manifest.seed` to fill in missing fields `[stable]`
 - `test_extract_model.py` — the model reader against a stub provider: statelessness (no customer id in the prompt), verbatim quotes or nothing, the offline path's grain and floor, record-then-replay, and that the default reader stays keyless `[stable]`
 
-## ui/ — the reviewer SPA plus the demo screens, no build step
+## ui/ — two halves, no build step
 
 Open `ui/index.html`. No npm, no bundler, no dev server, no network — static files plus two
 generated, committed data files, so a judging room with no wifi still sees the product (D-004), and
 `aws s3 sync` deploys it today while CodeBuild is blocked (W9). Details in `ui/README.md`.
 
-Five screens over two data sources. The **reviewer** screens (queue, case, retro, transcript) render
-the recorded `earshot investigate` run; the **demo** screens (deployments, stream) render the
-recorded `earshot stream` runs. `renderCase`/`renderRetro`/`renderConversation` take a *source* and
-serve both, because `case_record()` builds both — adding the demo added routes, not renderers.
+**In use:** `#/desk` (the reviewer's console) and `#/desk/call` (the same console during a call).
+**How it works:** `#/stream` (the whole book arriving) and `#/deployment` (the nine seams). The
+console is dense chrome that never animates; the stream deliberately moves, because the motion is
+the argument. `case_record()` builds a streamed case and a recorded one identically, so the
+document screens serve both sources through one set of renderers.
 
-- `index.html` — the page and the script order, which is load-bearing: `util.js` first, the two data files, `live.js`, then `app.js` last because it renders on evaluation `[stable]`
+- `index.html` — the page and the script order, which is load-bearing: `util.js` first, the two data files, `live.js`, `console.js`, then `app.js` last because it renders on evaluation `[stable]`
 - `util.js` — escaping and number formatting, shared. There is **one `esc()` in this UI**; the day two copies diverge is the day one screen escapes a quote and the other does not `[stable]`
-- `app.js` — the router and the four reviewer screens. Computes nothing; escapes all customer speech `[stable]`
-- `live.js` — the two demo screens: `#/portfolio` (three deployments side by side, what differs between them, where cases were routed) and `#/stream/<tenant>` (the arrival player). **Steps an index through pre-computed frames and paints.** Board rows are moved by `transform` rather than re-rendered, because re-ranking is the beat and an innerHTML swap makes it invisible. Also holds live mode: served from `--serve` it attaches an EventSource to localhost `[stable]`
-- `styles.css` · `demo.css` — the product and the demo, split because the product screens deliberately do not animate and the stream deliberately does `[stable]`
+- `app.js` — the router and the document screens (queue, case, retro, transcript). Computes nothing; escapes all customer speech `[stable]`
+- `console.js` — **the product surface**: our panel inside a stand-in of the client's case-management desktop. Shaped by what third-party UI actually is in these consoles — a sandboxed iframe scoped to a case id in four of five vendors — so it renders as **a bounded rectangle with a visible seam and its own provenance footer**, which is the integration argument made visible. Primary user is the specialist reviewer, not the agent on the call: accumulation across conversations is what the product is for and a live-call panel structurally cannot show it, and EU AI Act Art. 14(4)(b) names automation bias for exactly the mid-call-nudge shape. The live-call view ships anyway, labelled *nobody decides here*. Decision buttons are honest about being inert — they print the `POST /cases/{id}/reviews` body that would be sent and say it was not `[stable]`
+- `live.js` — the explanatory screens: the arrival player and the deployment map. **Steps an index through pre-computed frames and paints.** Board rows move by `transform` rather than re-render, because re-ranking is the beat and an innerHTML swap makes it invisible. Also holds live mode: served from `--serve` it attaches an EventSource to localhost `[stable]`
+- `styles.css` · `demo.css` · `console.css` — shared tokens and document screens · the stream (the one screen that animates) · the console. One type scale and one 4px radius across all three; `prefers-reduced-motion` honoured wherever something moves. **No vendor logo, wordmark, brand hex or icon set anywhere**: Salesforce Sans is licensed only for use inside Salesforce, SLDS icons are CC BY-ND so recolouring one is plausibly a derivative, Amazon Ember is proprietary `[stable]`
 - `data.js` — **generated and committed** by `tools/ui_fixture.py` so a fresh clone works with no Python run. A `<script src>` rather than a JSON fetch, which is what makes `file://` work `[generated]`
-- `stream.js` — **generated and committed** by `tools/stream_fixture.py`: three tenants, 460 frames, every transcript behind them, and 12 worked cases. ~1.4 MB, which is the price of a demo that needs no server `[generated]`
-- `smoke.mjs` — renders all 23 routes against a stub DOM in node, checks both fixtures for answer-key fields, and asserts `manifest.asr` is `"none"` on every tenant. Catches what `node --check` cannot: a route that throws, a field renamed in `case_record()` that the page still reads, a placeholder leaking into the markup. Run by `uv run pytest` when node is on PATH `[stable]`
+- `stream.js` — **generated and committed** by `tools/stream_fixture.py`: 133 frames, every transcript behind them, 6 worked cases, 6 turn-by-turn read series, and 9 customer-360 headers `[generated]`
+- `smoke.mjs` — renders all 21 routes against a stub DOM, checks both fixtures for answer-key fields, and asserts `manifest.asr` is `"none"`, that narration is non-empty and in transcript order, that the final read saw the whole transcript, that at least one belief moves, and that every case has a synthetic-stamped account header. Run by `uv run pytest` when node is on PATH `[stable]`
 
 ## benchmarks/cfpb/ — AT-43, the extractor on real complaint narratives
 
