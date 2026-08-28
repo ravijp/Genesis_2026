@@ -372,3 +372,55 @@ def smallest_fragment_pool() -> tuple[SignalType, int]:
     """
     signal_type, pool = min(BY_TYPE.items(), key=lambda kv: len(kv[1]))
     return signal_type, len(pool)
+
+
+# Pinned by name rather than globbed. A glob would quietly absorb a new module into the
+# fingerprint (harmless) and, worse, quietly drop one that was renamed (not harmless) -- the
+# fingerprint would keep matching while the pipeline it claims to describe had changed.
+PIPELINE_MODULES = (
+    "corpus.py",  # the planter: who gets which signal, how loud, on what day
+    "corpus_lexicon.py",  # authoring pass A: the utterances planted
+    "extract.py",  # the offline reader `_queue` always uses, whichever model investigates
+    "extract_lexicon.py",  # authoring pass B: the cues that fire
+    "memory.py",  # accumulation, decay and the score the queue is ranked on
+)
+
+
+def fingerprint_paths(paths) -> str:
+    """sha256 over the bytes of `paths`, in the order given, truncated to 12 hex chars.
+
+    Order matters and is the caller's: two different pipelines that happen to hold the same
+    bytes in a different arrangement are different pipelines.
+    """
+    import hashlib
+
+    digest = hashlib.sha256()
+    for path in paths:
+        digest.update(path.read_bytes())
+    return digest.hexdigest()[:12]
+
+
+def pipeline_fingerprint() -> str:
+    """A short hash of the CODE that turns a seed into a queue of crossings.
+
+    `RunConfig.hash()` covers configuration *values* — seed, customer count, decay half-lives,
+    thresholds. It does not cover the generator, and on 2026-08-28 that gap cost a $1.50 keyed
+    run. Fixing the fragment re-plant defect changed which customers cross (25 with an outcome
+    became 17, threshold 0.7246 became 0.6655) while `config_hash` stayed `3ebd9fb57097` on
+    both sides. Every guard that compares config hashes — `tools/routing_accuracy.py`'s
+    included, which exists precisely to refuse a mismatched corpus — would have scored the new
+    corpus against the old artifact and reported a confident wrong number.
+
+    So this hashes the source of every module whose behaviour decides the sample: the corpus
+    planner and its lexicon, the offline reader and its lexicon, and the ledger that scores and
+    ranks. Written into run manifests and checked when an artifact is re-read.
+
+    **Deliberately over-sensitive.** A comment-only edit changes it and invalidates artifacts
+    that would in fact still reproduce. That is the correct direction to be wrong in: a false
+    "this artifact is stale" costs a re-run, and a false "this artifact is current" costs a
+    number nobody can trust and nobody can spot.
+    """
+    from pathlib import Path
+
+    here = Path(__file__).resolve().parent
+    return fingerprint_paths([here / name for name in PIPELINE_MODULES])

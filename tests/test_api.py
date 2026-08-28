@@ -99,6 +99,59 @@ def test_the_queue_returns_rows_not_whole_cases(api) -> None:
     assert "evidence" not in row and "trace" not in row
 
 
+def test_every_queue_row_field_comes_from_the_case_record_by_that_name() -> None:
+    """`_queue_row` is the one consumer that spells the case field names a second time, so this
+    pins each row field to the record field it claims to be showing.
+
+    `test_ui.py::test_the_queue_rows_are_the_apis_own_rows` cannot do this job: it compares the
+    fixture's rows against `_queue_row`'s rows, and both sides read the same case dict, so a
+    field that has gone missing agrees with itself. The comparison here is against the record,
+    which is where the name is authored.
+    """
+    from earshot.aws.api import _ROW_CASE_FIELDS, _ROW_DECISION_FIELDS
+    from earshot.case_record import case_record
+    from earshot.memory import Case
+
+    ledger = SignalLedger()
+    ledger.extend(signals())
+    opened = ledger.open_case("C1", SignalType.FINANCIAL_DISTRESS, 0.3)
+    assert isinstance(opened, Case)
+    decision = {"verdict": "genuine", "owning_team": "collections", "confidence": 0.7}
+    record = case_record(
+        opened,
+        threshold=0.3,
+        now=ledger.score("C1", SignalType.FINANCIAL_DISTRESS, 70),
+        decision=decision,
+        trace={"cost_usd": 0.01},
+    )
+    row = api_mod._queue_row(record)
+
+    assert set(row) == set(_ROW_CASE_FIELDS) | set(_ROW_DECISION_FIELDS) | {"n_evidence"}
+    for field in _ROW_CASE_FIELDS:
+        # Indexing the record, deliberately: a renamed field must KeyError here rather than
+        # compare None to None.
+        assert row[field] == record[field], f"{field} is not the record's {field}"
+    for field in _ROW_DECISION_FIELDS:
+        assert row[field] == record["decision"][field]
+    assert row["n_evidence"] == len(record["evidence"])
+
+
+@pytest.mark.parametrize("field", api_mod._ROW_CASE_FIELDS)
+def test_a_queue_row_refuses_a_case_that_has_lost_a_field(api, field: str) -> None:
+    """A renamed or dropped case field must fail loudly, not render a blank column.
+
+    This is the working agreement on indexed reads, applied to the one place it had been
+    dropped: with `.get()` the row came back carrying `None` for a field the reviewer's ranked
+    list has a column for, the fixture built the same `None` from the same missing key, and
+    every test stayed green while the screen showed nothing.
+    """
+    built, case_id = api
+    case = built.get_case(case_id)
+    broken = {k: v for k, v in case.items() if k != field}
+    with pytest.raises(KeyError):
+        api_mod._queue_row(broken)
+
+
 def test_the_queue_says_when_it_is_truncated(api) -> None:
     """A page that returned exactly `limit` rows must not read as "that is all of them"."""
     built, _ = api

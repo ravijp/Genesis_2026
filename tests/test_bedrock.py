@@ -24,6 +24,7 @@ from typing import Any
 
 import pytest
 
+import earshot
 from earshot.llm.base import Completion, ModelConfig, ProviderError, ToolCall, Usage
 from earshot.llm.bedrock import (
     DEFAULT_BEDROCK_MODEL,
@@ -414,8 +415,17 @@ def test_a_lazy_provider_builds_its_inner_only_on_first_complete() -> None:
 
 
 def test_constructing_and_importing_need_no_boto3() -> None:
-    """This environment genuinely has no boto3 installed (pyproject.toml's `aws` extra) -- this
-    is the real path, not a simulation of it."""
+    """Construction is free: no client, no credentials, no import of the optional extra.
+
+    This says nothing about whether boto3 is installed here, because it cannot: `uv sync --extra
+    aws` installs it and a plain `uv sync` does not, so both states are normal and an assertion
+    about which one is running is an assertion about the machine. The docstring here used to
+    claim the environment had no boto3, which was false in any venv synced with the extra -- and
+    a test that states a fact about its own environment states it in the one place nothing checks.
+
+    What makes the keyless claim true is two tests further down: the AST scan over every module
+    in the package, and the import of every module with boto3 blocked outright.
+    """
     provider = BedrockProvider()  # must not raise
     assert provider._boto_client is None
 
@@ -436,20 +446,96 @@ def test_using_the_provider_without_boto3_raises_a_clear_error_only_then(
         provider.complete([{"role": "user", "content": "go"}], [], ModelConfig(model=HAIKU))
 
 
-def test_boto3_is_never_imported_at_module_level() -> None:
-    """Regression guard for the module docstring's promise. Checked by AST, over `sys.modules`,
-    so it also catches the regression in a dev environment that happens to have boto3 installed
-    -- where an import-succeeded check would prove nothing."""
-    import earshot.llm.bedrock as bedrock_module
+# --- the keyless guarantee, over the WHOLE package ---------------------------------------------
+#
+# Discovered, not listed. This started as two hand-written checks, one for `llm/bedrock.py` and
+# one for `aws/stores.py`, while `aws/ingest.py`, `aws/transcripts.py` and `llm/select.py` were
+# lazy by care alone -- a module-level `import boto3` in any of the three breaks a fresh keyless
+# clone with every test green in a dev venv that happens to have the extra installed.
 
-    tree = ast.parse(Path(bedrock_module.__file__).read_text(encoding="utf-8"))
+EAR = Path(earshot.__file__).resolve().parent
+PACKAGE_MODULES = sorted(p.relative_to(EAR).as_posix() for p in EAR.rglob("*.py"))
+OPTIONAL_EXTRAS = {"boto3", "botocore"}
+
+
+def test_the_package_module_discovery_is_not_empty() -> None:
+    """If the glob stops matching, both guards below pass by scanning nothing."""
+    assert len(PACKAGE_MODULES) >= 20, (
+        f"discovery found only {PACKAGE_MODULES} — the keyless guard covers nothing"
+    )
+
+
+@pytest.mark.parametrize("module", PACKAGE_MODULES)
+def test_boto3_is_never_imported_at_module_level(module: str) -> None:
+    """The static half. Checked by AST rather than by `sys.modules`, so it catches the regression
+    in a dev environment that happens to have boto3 installed -- where an import-succeeded check
+    would prove nothing. A deferred import inside a function is the supported pattern and passes.
+    """
+    tree = ast.parse((EAR / module).read_text(encoding="utf-8"))
     for node in tree.body:  # module top level only; a deferred import inside a function is fine
         if isinstance(node, ast.Import):
             names = {alias.name.split(".")[0] for alias in node.names}
-            assert not names & {"boto3", "botocore"}, "boto3/botocore imported at module level"
+            assert not names & OPTIONAL_EXTRAS, f"{module} imports boto3/botocore at module level"
         if isinstance(node, ast.ImportFrom):
             root = (node.module or "").split(".")[0]
-            assert root not in {"boto3", "botocore"}, "boto3/botocore imported at module level"
+            assert root not in OPTIONAL_EXTRAS, f"{module} imports boto3/botocore at module level"
+
+
+def test_every_module_imports_with_boto3_blocked() -> None:
+    """The behavioural half, and the one that actually holds (A6).
+
+    The AST scan sees import statements. It does not see `importlib.import_module("boto3")` at
+    module scope, a module-level call into a helper that imports it, or a package `__init__`
+    pulling in a submodule that does. So this blocks `boto3` and `botocore` at `sys.meta_path`
+    -- they raise ImportError however they are reached -- and imports every module in the
+    package. That is the fresh-clone claim executed rather than asserted.
+
+    Run in a subprocess because a meta_path blocker and a torn-down `sys.modules` are not state
+    to hand back to the rest of the session.
+    """
+    import json
+    import subprocess
+
+    script = """
+import importlib, json, sys
+from pathlib import Path
+
+
+class Blocker:
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname.split(".")[0] in {"boto3", "botocore"}:
+            raise ImportError(f"{fullname} is not installed on a fresh clone")
+        return None
+
+
+for name in [m for m in sys.modules if m.split(".")[0] in {"boto3", "botocore"}]:
+    del sys.modules[name]
+sys.meta_path.insert(0, Blocker())
+
+import earshot
+
+root = Path(earshot.__file__).resolve().parent
+failures = {}
+for path in sorted(root.rglob("*.py")):
+    parts = path.relative_to(root).with_suffix("").parts
+    if parts[-1] == "__init__":
+        parts = parts[:-1]
+    name = ".".join(("earshot",) + parts)
+    try:
+        importlib.import_module(name)
+    except Exception as exc:
+        failures[name] = f"{type(exc).__name__}: {exc}"
+print(json.dumps(failures))
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", script], capture_output=True, text=True, check=True
+    )
+    failures = json.loads(completed.stdout.strip().splitlines()[-1])
+    assert not failures, (
+        f"these modules cannot be imported without boto3 installed: {failures}. "
+        f"`earshot[aws]` is optional and must stay optional -- a fresh clone runs every test "
+        f"keyless, and that is only true while every boto3 import is deferred to first use."
+    )
 
 
 # --- region -----------------------------------------------------------------------------------

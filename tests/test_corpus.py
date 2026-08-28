@@ -18,10 +18,12 @@ from __future__ import annotations
 import collections
 import warnings
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
 from earshot.config import DEFAULT, CorpusConfig, RunConfig
+from earshot import corpus
 from earshot.corpus import ArcCeilingWarning, generate, smallest_fragment_pool
 from earshot.corpus_lexicon import BY_TYPE
 from earshot.schema import Stratum
@@ -164,3 +166,67 @@ def test_the_shipped_default_warns_rather_than_raising() -> None:
     assert any(issubclass(w.category, ArcCeilingWarning) for w in caught), (
         "generate() did not warn about the fragment-pool ceiling at the shipped default"
     )
+
+
+# --- the pipeline fingerprint ------------------------------------------------------------
+#
+# `config_hash` covers configuration VALUES. On 2026-08-28 the fragment re-plant fix changed
+# which customers cross -- 25 with an outcome became 17, the threshold moved 0.7246 -> 0.6655 --
+# while the config hash stayed `3ebd9fb57097` on both sides, because the generator is code. A
+# $1.50 keyed artifact was scored against the wrong corpus before anyone noticed. These tests
+# pin the guard that closed it.
+
+
+def test_the_fingerprint_changes_when_a_covered_file_changes(tmp_path):
+    """The whole point: same bytes -> same hash, one byte different -> different hash.
+
+    Written against `fingerprint_paths` on temporary files rather than the real modules,
+    because a test that edited `corpus.py` to prove the hash moves would be editing the file
+    the suite is running from.
+    """
+    a, b = tmp_path / "a.py", tmp_path / "b.py"
+    a.write_text("PLANT = 1\n", encoding="utf-8")
+    b.write_text("SCORE = 2\n", encoding="utf-8")
+
+    before = corpus.fingerprint_paths([a, b])
+    assert corpus.fingerprint_paths([a, b]) == before, "the same bytes must hash the same"
+
+    b.write_text("SCORE = 3\n", encoding="utf-8")
+    assert corpus.fingerprint_paths([a, b]) != before, (
+        "a changed module left the fingerprint unmoved -- the guard would bless a stale artifact"
+    )
+
+
+def test_the_fingerprint_depends_on_the_order_it_is_given(tmp_path):
+    """Two pipelines holding the same bytes in a different arrangement are different
+    pipelines, so the digest is order-sensitive by construction rather than by accident."""
+    a, b = tmp_path / "a.py", tmp_path / "b.py"
+    a.write_text("X = 1\n", encoding="utf-8")
+    b.write_text("Y = 2\n", encoding="utf-8")
+    assert corpus.fingerprint_paths([a, b]) != corpus.fingerprint_paths([b, a])
+
+
+def test_every_module_that_decides_the_sample_is_in_the_fingerprint():
+    """Pinned by name, not globbed. A rename that drops a module from the list leaves the
+    fingerprint matching while the pipeline it describes has changed -- the exact failure the
+    fingerprint exists to catch, reintroduced one level up.
+
+    If you add a module that changes who crosses the threshold, add it here.
+    """
+    here = Path(corpus.__file__).resolve().parent
+    assert set(corpus.PIPELINE_MODULES) == {
+        "corpus.py",
+        "corpus_lexicon.py",
+        "extract.py",
+        "extract_lexicon.py",
+        "memory.py",
+    }
+    for name in corpus.PIPELINE_MODULES:
+        assert (here / name).is_file(), f"{name} is in the fingerprint but not on disk"
+
+
+def test_the_fingerprint_is_stable_across_calls():
+    """It is written into run manifests and compared against later. A fingerprint that moved
+    between two calls in one process would fail every artifact it had just stamped."""
+    assert corpus.pipeline_fingerprint() == corpus.pipeline_fingerprint()
+    assert len(corpus.pipeline_fingerprint()) == 12

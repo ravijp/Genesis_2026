@@ -63,8 +63,14 @@ Full picture, with diagrams: **[docs/architecture/architecture.md](docs/architec
 ## The honest state of the numbers
 
 The harness was built to *test* the claim, not illustrate it. Figures below are from **10 seeds ×
-1,500 customers — 1,945 outcome customers in total** — with every arm paired seed by seed and compared
-with a two-sided sign test.
+1,500 customers — 1,904 outcome customers in total** — with every arm paired seed by seed and compared
+with a two-sided sign test. The 30-seed records quoted alongside come from **5,760 outcome customers**.
+
+**Regenerated 2026-08-28** after a corpus defect was fixed (commit `08b20cc`): the planter re-used an
+already-planted fragment once a trajectory's pool ran out, so the same sentence appeared in two
+conversations and the ledger paid a cross-conversation corroboration bonus for one utterance copied
+twice. It hit 120 / 822 arc customers at this corpus size. Every figure below is post-fix, and the
+headline moved — see the pre-registered bullet.
 
 Recall at a **10% review budget**, since a review team's capacity is the real constraint. Both arc
 strata are shown, because the result is a **trade** and reporting only one side of it would be picking
@@ -82,14 +88,14 @@ is the memory mechanism, not the evidence it is fed.
 
 | Arm | Recall | Hits / outcomes | **Diffuse arcs** | hits / n | **Concentrated arcs** | hits / n |
 |---|---|---|---|---|---|---|
-| window3-top2 *(last 3 conversations, keep the best 2)* | 0.134 | 261 / 1945 | **0.195** | **152 / 780** | 0.173 | 109 / 629 |
-| stateless-top2 *(sum the two loudest calls)* | 0.132 | 256 / 1945 | 0.188 | 147 / 780 | 0.173 | 109 / 629 |
-| dumb-ledger *(unweighted count)* | 0.129 | 250 / 1945 | 0.177 | 138 / 780 | 0.175 | 110 / 629 |
-| full-ledger *(decay, corroboration, channel, escalation)* | 0.131 | 254 / 1945 | 0.172 | 134 / 780 | 0.189 | 119 / 629 |
-| stateless-top3 *(sum the three loudest calls)* | 0.136 | 265 / 1945 | 0.149 | 116 / 780 | 0.235 | 148 / 629 |
-| long-context-3 *(last 3 conversations pooled)* | 0.135 | 262 / 1945 | 0.144 | 112 / 780 | 0.237 | 149 / 629 |
-| hybrid *(rank-combined)* | 0.140 | 272 / 1945 | 0.126 | 98 / 780 | 0.277 | 174 / 629 |
-| stateless-max *(score each call, forget)* | 0.142 | 276 / 1945 | 0.123 | 96 / 780 | **0.286** | **180 / 629** |
+| window3-top2 *(last 3 conversations, keep the best 2)* | 0.139 | 265 / 1904 | **0.205** | **150 / 730** | 0.183 | 115 / 628 |
+| stateless-top2 *(sum the two loudest calls)* | 0.138 | 263 / 1904 | 0.201 | 147 / 730 | 0.185 | 116 / 628 |
+| dumb-ledger *(unweighted count)* | 0.120 | 229 / 1904 | 0.164 | 120 / 730 | 0.170 | 107 / 628 |
+| full-ledger *(decay, corroboration, channel, escalation)* | 0.124 | 236 / 1904 | 0.160 | 117 / 730 | 0.188 | 118 / 628 |
+| long-context-3 *(last 3 conversations pooled)* | 0.124 | 237 / 1904 | 0.145 | 106 / 730 | 0.205 | 129 / 628 |
+| stateless-top3 *(sum the three loudest calls)* | 0.123 | 235 / 1904 | 0.134 | 98 / 730 | 0.215 | 135 / 628 |
+| hybrid *(rank-combined)* | 0.129 | 246 / 1904 | 0.108 | 79 / 730 | 0.266 | 167 / 628 |
+| stateless-max *(score each call, forget)* | 0.143 | 273 / 1904 | 0.114 | 83 / 730 | **0.303** | **190 / 628** |
 
 Read the two stratum columns together and the shape is a **trade, not a winner**: arms that aggregate
 across conversations do better on thin evidence and worse on a single loud call, and `stateless-max` —
@@ -103,16 +109,21 @@ row order below is specific to the 10% budget, which is the only operating point
 
 What survives a paired test:
 
-- **Memory wins on the arcs it exists for, and it is significant.** On diffuse arcs — evidence spread
-  thin, nothing alarming in any single conversation — the full ledger catches **134 of 780** against
-  **96 of 780** for scoring-and-forgetting, winning **8 seeds of 10 with 2 ties and zero losses**
-  (`p=0.008`). This is the entry's pre-registered headline, and `earshot sweep` prints it first. It is
-  the one comparison declared before the run; at `--seeds 30` it strengthens to **27–0–3**.
-- **And memory loses on concentrated arcs, by a comparable margin.** **119 of 629** against
-  **180 of 629**, losing 8 seeds of 10 (`p=0.039`; at 30 seeds, **3–25–2**). Accumulation dilutes a
-  single decisive signal. We publish this because it is the same size as the win and comes from the
-  same run — and because it is the actual argument for running a memory *alongside* per-call detection
-  rather than instead of it.
+- **Memory wins on the arcs it exists for — at 30 seeds, and not at 10.** On diffuse arcs — evidence
+  spread thin, nothing alarming in any single conversation — the full ledger catches **390 of 2,252**
+  against **226 of 2,252** for scoring-and-forgetting, winning **26 seeds of 30 with 2 ties and 2
+  losses** (`p=0.000`). This is the entry's pre-registered headline, the one comparison declared before
+  the run, and `earshot sweep` prints it first.
+  **At 10 seeds the same comparison is `7–2–1`, `p=0.180` — it does not clear 0.05.** Before the
+  corpus fix of 2026-08-28 the 10-seed record read `8–0–2`, `p=0.008`, and part of that margin was the
+  duplicated-fragment artefact. The effect itself did not shrink — the 30-seed diffuse gap widened from
+  0.068 to 0.073 — but **ten seeds is no longer enough to see it**, and any claim from this page should
+  be quoted at 30.
+- **And memory loses on concentrated arcs, by a comparable margin.** **118 of 628** against
+  **190 of 628** at 10 seeds, losing 9 of 10 (`p=0.021`; at 30 seeds, **2–28–0**, `p=0.000`).
+  Accumulation dilutes a single decisive signal. We publish this because it is the same size as the win
+  and comes from the same run — and because it is the actual argument for running a memory *alongside*
+  per-call detection rather than instead of it.
 - **Two much cheaper arms beat the whole ledger on the stratum the entry is built on.** This is the
   most important thing on this page and it goes against us.
 
@@ -122,15 +133,23 @@ What survives a paired test:
 
   | comparison (diffuse, 30 seeds) | record | p |
   |---|---|---|
-  | full-ledger vs `stateless-top2` | **7–21–2** (ledger loses) | **0.013** |
-  | full-ledger vs `window3-top2` | **7–21–2** (ledger loses) | **0.013** |
-  | full-ledger vs `stateless-max` *(pre-registered)* | 27–0–3 (ledger wins) | 0.000 |
+  | full-ledger vs `stateless-top2` | **6–18–6** (ledger loses) | **0.023** |
+  | full-ledger vs `window3-top2` | **5–21–4** (ledger loses) | **0.002** |
+  | full-ledger vs `stateless-max` *(pre-registered)* | 26–2–2 (ledger wins) | 0.000 |
 
-  On concentrated arcs the ledger beats `stateless-top2` (`17–5–8`, `p=0.017`) but **not**
-  `window3-top2` (`16–8–6`, `p=0.152`). So `window3-top2` is not a trade against us — it matches the
-  ledger where the ledger is strong and beats it where the ledger is supposed to be strongest. All of
-  these are exploratory among 84 uncorrected tests; only the `stateless-max` row was declared in
-  advance. We are not going to soften them.
+  On concentrated arcs the ledger now beats **neither**: `stateless-top2` `16–9–5` (`p=0.230`) and
+  `window3-top2` `17–9–4` (`p=0.169`). Before the corpus fix it beat `stateless-top2` at `p=0.017`;
+  that win did not survive, and the loss to `window3-top2` on diffuse got *worse* (`p=0.013` → `0.002`).
+  So `window3-top2` is not a trade against us — it matches the ledger where the ledger is strong and
+  beats it where the ledger is supposed to be strongest. All of these are exploratory among 84
+  uncorrected tests; only the `stateless-max` row was declared in advance. We are not going to soften
+  them.
+
+  What the ledger *does* beat on diffuse arcs, at 30 seeds, is every arm that pools a window without
+  ranking inside it: `long-context-3` **20–8–2** (`p=0.036`) and `stateless-top3` **22–7–1**
+  (`p=0.008`). Both became significant only after the corpus fix. The pattern across all of it is that
+  **selectivity beats volume** — the arms that beat us keep the best two of what they see, and the arms
+  we beat keep everything they see. That is a finding about ranking, not about memory.
 
   So the honest reading of the pre-registered headline is **aggregating a few conversations beats
   aggregating one**, not *memory beats detection*. Our diffuse customers average about 2.5 extracted
@@ -243,37 +262,58 @@ keyless replay.
 |---|---|
 | Reader, cost per 1,000 conversations | **$1.66** ($0.24845 over 150) |
 | Reader latency | p50 **1,244 ms**, p95 **2,212 ms** |
-| Investigation, cost per case | **$0.0289** (10 cases, $0.2893) |
-| Investigation latency, model time | p50 **17.6 s**, p95 **32.6 s** |
-| Evidence repairs (first-attempt groundedness) | **0 / 10** |
-| Loop exits | `decided` 10 / 10 — no `cost_cap`, no `max_steps` |
+| Investigation, cost per case | **$0.0301** (50 cases, $1.5032; p95 $0.0351, max $0.0388) |
+| Investigation latency, model time | p50 **18.4 s**, p95 **21.7 s** |
+| Evidence repairs (first-attempt groundedness) | **0 / 50** |
+| Loop exits | `decided` 50 / 50 — no `cost_cap`, no `max_steps`; 4–6 model calls per case |
 
-**The agent does not discriminate, and this is the headline result of AT-57.** Ten crossings, five
-with a real outcome and five without, sampled deliberately because the top of the queue is nearly
+**The agent does not discriminate, and this is the headline result of AT-57.** Fifty crossings —
+25 with a real outcome and 25 without — sampled deliberately, because the top of the queue is nearly
 all true positives and a run drawn from it cannot be wrong in the direction that matters:
 
-| | verdict `genuine` | verdict `false_alarm` |
-|---|---|---|
-| outcome present (5) | **4** | 1 |
-| outcome absent (5) | **5** | **0** |
+| | verdict `genuine` | verdict `false_alarm` | abstained |
+|---|---|---|---|
+| outcome present (25) | **19** | 5 | 1 |
+| outcome absent (25) | **22** | **3** | 0 |
 
-It caught 4 of 5 real cases and dismissed **none** of the 5 false alarms, at a mean confidence of
-0.90 on the wrong answers. It abstained zero times. **Overall 4 / 10.** Reproduce it with
-`EARSHOT_CACHE_MODE=replay uv run python tools/verdict_accuracy.py --provider bedrock --per-arm 5`
-— no credentials, no network.
+It caught 19 of 25 real cases and dismissed **3 of 25** false alarms, at a mean confidence of 0.92 on
+the wrong answers. **Overall 22 / 50.** An earlier 10-case run read 4 / 10; five times the sample
+moved the number and not the conclusion.
+
+**Provenance, stated because it is a real limitation.** This run was measured on 2026-08-28 against
+the corpus as it stood at commit `47a2be8`, hours before the fragment re-plant fix (`08b20cc`) changed
+which customers cross. **It therefore no longer replays**, and the re-run on the fixed corpus is
+pending an expired SSO session, not a design problem. Two things were built out of that: run manifests
+now carry a `pipeline_sha` covering the *code* that turns a seed into a queue — `config_hash` covers
+configuration values only, and it was byte-identical across both corpora — and a run in which every
+case ends in `provider_error` refuses to write an artifact at all, because a failed replay silently
+overwrote this very measurement once.
 
 So the D-025 cost argument for Haiku is **not yet earned**: it is cheap and it is fast, and on this
 sample it escalates everything. Whether a stronger model, a better prompt or a false-alarm-aware
 loop fixes it is open, and the honest position until then is that the investigator adds routing and
 an audit trail, not filtering.
 
-**One more number the recall table never reports:** of the 40 customers the ledger surfaces at a 10%
-review budget, **9 have a real outcome and 31 do not**. That is the ledger's own precision at the
-cut, and it is what makes the agent's job hard — it is being handed a queue that is 78% false alarm
-by construction and asked to sort it.
+**Routing accuracy, measured for the first time on 2026-08-28 — and it is the good news.** Each
+customer carries a seeded `trajectory`, so a correct owning team exists; `tools/routing_accuracy.py`
+grades the `owning_team` the investigator already recorded, making **zero further model calls**. On
+the same 50 cases: **41 of 49 routed to the right team, 0 wrong, 8 declined** (`owning_team="none"`).
+**When it commits to a team it is never wrong**; its failure mode is refusing to route, and the
+declines concentrate in `complaints` (5 of 12) and `collections` (2 of 7). The 50th case is a
+decoy-accumulator customer with no seeded trajectory — no correct team exists for it, so it is
+reported separately and never enters the denominator. `retention` never appears as a truth team in
+this sample, so nothing here speaks to churn routing at all.
 
-**Still not measured:** routing accuracy (which team a case is sent to), and any of this at a sample
-size worth a confidence interval — 10 cases is a direction, not an estimate.
+Read together, the two results say the investigator is a **router and an audit trail, not a filter**:
+it addresses the case correctly and escalates almost everything.
+
+**One more number the recall table never reports:** of the 240 customers the ledger surfaces at a 10%
+review budget over 2,400, **25 have a real outcome and 215 do not**. That is the ledger's own
+precision at the cut, and it is what makes the agent's job hard — it is handed a queue that is **90%
+false alarm by construction** and asked to sort it.
+
+**Still not measured:** any of this at a sample size worth a confidence interval — 50 cases on one
+dataset is a result, not an interval — and a second model through the same harness.
 
 **Provider-historical, superseded by D-025 (2026-08-25):** two live Claude Sonnet 4.5 investigations,
 recorded via OpenRouter on 2026-08-09, cost **$0.089 and $0.097** and took 30.3s and 33.4s — the only

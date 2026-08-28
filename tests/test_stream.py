@@ -180,6 +180,93 @@ def test_every_crossing_is_accounted_for(run) -> None:
         assert row["reason"], f"{row['customer_id']} was not worked and no reason was recorded"
 
 
+# The stream's case record is `case_record()` plus these three, and nothing else.
+#
+# Declared here rather than derived from the code, so a fourth one has to be added deliberately
+# -- to this set, in a commit someone reads -- rather than appearing in a browser payload nobody
+# diffed. `case_record.py` exists because two serializers drift silently; `stream.py` is the
+# third producer of that record, and the drift it can cause is additive, which is exactly the
+# kind no equality test between the other two would ever see.
+STREAM_CASE_EXTRAS = {"tenant_id", "team_label", "frame_index"}
+
+
+def test_the_stream_case_record_is_case_record_plus_a_bounded_set_of_extras(run) -> None:
+    """`_case_records` mutates the canonical record after building it, and until this existed
+    nothing bounded what it could add.
+
+    A field added here reaches `ui/stream.js` and nothing else in the suite notices -- the
+    payload's answer-key scan matches field names exactly, so `latent_risk_band` walks straight
+    past `latent_risk`. And the investigate screens in `ui/app.js` already read `team_label`, a
+    field only this producer writes, so the page is being written against the union of two record
+    shapes. That union is the state `case_record.py` was created to prevent.
+
+    The fixture runs with `investigate_limit=0`, so a decision is attached here on a COPY: the
+    module-scoped run is shared, and a guard test that corrupts its own fixture reports its
+    failures somewhere else.
+    """
+    from dataclasses import replace as dc_replace
+
+    from earshot.agent.investigator import InvestigationTrace
+    from earshot.agent.schemas import EvidenceRef, InvestigationDecision
+    from earshot.case_record import case_record
+    from earshot.memory import Case
+    from earshot.schema import SignalType
+
+    crossing = run.crossings[0]
+    decision = InvestigationDecision(
+        customer_id=crossing.customer_id,
+        verdict="genuine",
+        owning_team="collections",
+        confidence=0.7,
+        rationale="three conversations, one arc",
+        recommended_action="call the customer",
+        what_would_change_my_mind="a salary credit landing next month",
+        evidence=[EvidenceRef(conversation_id=crossing.conversation_id, turn_index=0, quote="x")],
+    )
+    trace = InvestigationTrace(
+        customer_id=crossing.customer_id,
+        provider="offline-rules",
+        model="none",
+        prompt_version="v1",
+        prompt_sha="0" * 8,
+    )
+    streamed = dc_replace(
+        run, crossings=[dc_replace(crossing, decision=decision, trace=trace)]
+    )
+
+    records = stream_mod._case_records(streamed)
+    assert len(records) == 1
+    record = next(iter(records.values()))
+
+    # The canonical key set, taken from `case_record()` itself rather than written out here --
+    # a field added or renamed over there must not need this test edited to keep passing.
+    canonical = set(
+        case_record(
+            Case(
+                customer_id=crossing.customer_id,
+                signal_type=SignalType.FINANCIAL_DISTRESS,
+                score=crossing.score_at_cross,
+                opened_on_day=crossing.day,
+                opened_by_conversation=crossing.conversation_id,
+                evidence=[],
+            ),
+            threshold=run.tenant.threshold,
+            decision=decision.model_dump(),
+            trace=trace.to_dict(),
+        )
+    )
+
+    assert not canonical - set(record), (
+        f"the stream record is missing {sorted(canonical - set(record))} that every other "
+        f"case_record() producer writes -- the reviewer screens read one shape, not two"
+    )
+    assert set(record) - canonical == STREAM_CASE_EXTRAS, (
+        f"the stream record carries {sorted(set(record) - canonical - STREAM_CASE_EXTRAS)} on "
+        f"top of case_record() and nothing declares them. Add them to STREAM_CASE_EXTRAS and say "
+        f"why, or put them in case_record() so all three producers write them."
+    )
+
+
 def test_team_rollup_lists_every_slot_even_at_zero(run) -> None:
     """A rollup that hides empty teams reads as "this tenant has three teams"."""
     payload = stream_payload(run, {"asr": "none"})

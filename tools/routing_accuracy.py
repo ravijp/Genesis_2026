@@ -62,6 +62,7 @@ from typing import Any
 
 from earshot.cli import ARTIFACTS, _git_sha, _queue
 from earshot.config import DEFAULT
+from earshot.corpus import pipeline_fingerprint
 from earshot.schema import TRAJECTORY_TEAM
 from earshot.tenants import CANONICAL_TEAMS
 
@@ -110,6 +111,27 @@ def rebuild_queue(manifest: dict[str, Any]):
             f"number against it. Likely cause: DEFAULT RunConfig (seed, corpus, scoring, "
             f"offline_miss_rate/offline_false_fire_rate in config.py) has changed since the "
             f"artifact was written."
+        )
+    # The config hash is necessary and NOT sufficient, learned the expensive way on 2026-08-28.
+    # Fixing the corpus fragment re-plant defect changed which customers cross — 25 with an
+    # outcome became 17, the threshold moved 0.7246 -> 0.6655 — while `config_hash` stayed
+    # `3ebd9fb57097` on both sides, because it hashes configuration VALUES and the generator is
+    # code. The check above would have passed and this tool would have scored the new corpus
+    # against the old artifact's verdicts: a wrong number with a guard's blessing on it.
+    stamped = manifest.get("pipeline_sha")
+    current = pipeline_fingerprint()
+    if stamped is None:
+        print(
+            f"  WARNING: this artifact predates `pipeline_sha` (current {current}). Its config "
+            f"hash matches, but nothing here can tell whether the corpus GENERATOR moved since "
+            f"it was written. Treat the numbers below as unverified provenance."
+        )
+    elif stamped != current:
+        raise SystemExit(
+            f"pipeline fingerprint mismatch: code is {current!r}, artifact recorded {stamped!r}. "
+            f"The corpus this would rebuild is not the corpus the artifact's investigations saw, "
+            f"even though the config hash matches — see `corpus.pipeline_fingerprint`. Re-run "
+            f"tools/verdict_accuracy.py against the current code rather than scoring this."
         )
     # `_queue` also used the offline extractor when the artifact's OWN investigations ran on
     # `--provider bedrock` -- `cli._pipeline` always builds signals with the offline extractor

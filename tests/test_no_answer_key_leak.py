@@ -91,6 +91,80 @@ def test_tool_context_is_not_constructed_from_latent_risk() -> None:
     assert "truth.latent_risk" not in source, "latent_risk is being passed into ToolContext"
 
 
+def test_the_agents_tools_are_fed_financial_state_not_latent_risk() -> None:
+    """The behavioural counterpart to the string check above, and the one that actually holds.
+
+    A string match on `_context`'s source is a tripwire, not a guarantee. `getattr(truth,
+    "latent_" + "risk")` hands the agent the answer key while leaving both spellings the check
+    looks for exactly as they were, and the whole suite stays green -- which is the state A6
+    ("a static guard cannot be complete, so back it with a behavioural one") exists to forbid.
+
+    What cannot be spelled around is the tool output. So this builds a real `ToolContext`
+    through `cli._context` and asks `get_account_state` -- the tool that turns the risk figure
+    into a whole account profile -- what it returns.
+
+    The counterfactual is built by poisoning the CORPUS, not the context: a copy in which the
+    subject's `financial_state` has been overwritten with their `latent_risk`, run through the
+    same `_context`. If `_context` reads `financial_state`, the two snapshots differ. If it
+    reaches for `latent_risk` by any spelling, they are byte-identical, because the poisoned
+    copy left that field alone. The first assertion pins which value crosses; the second is
+    what fails when the answer key does.
+    """
+    from dataclasses import replace as dc_replace
+
+    from earshot.agent.tools import AccountStateArgs, get_account_state
+    from earshot.cli import _context
+    from earshot.core.accounts import account_snapshot
+    from earshot.memory import ScoreBreakdown
+    from earshot.schema import SignalType
+
+    # A customer whose two risk figures are far enough apart that the synthetic account
+    # generator draws visibly different histories from them -- otherwise the test cannot tell
+    # the two wirings apart and would pass either way.
+    subject = next(
+        c
+        for c in CORPUS.customers
+        if abs(c.financial_state - c.latent_risk) > 0.2
+        and CORPUS.conversations_for(c.customer_id)
+    )
+    as_of = max(c.day for c in CORPUS.conversations_for(subject.customer_id))
+    breakdown = ScoreBreakdown(
+        customer_id=subject.customer_id,
+        signal_type=SignalType.FINANCIAL_DISTRESS,
+        score=0.7,
+        as_of_day=as_of,
+    )
+    args = AccountStateArgs()
+
+    honest = get_account_state(
+        _context(CORPUS, subject.customer_id, breakdown, 0.5, CORPUS.seed), args
+    )
+    expected = account_snapshot(
+        subject.customer_id, subject.financial_state, CORPUS.seed, as_of, args.window_days
+    )
+    assert honest.current_balance == expected.current_balance, (
+        "the account tool is not deriving its state from financial_state"
+    )
+
+    poisoned_corpus = dc_replace(
+        CORPUS,
+        customers=tuple(
+            dc_replace(c, financial_state=c.latent_risk)
+            if c.customer_id == subject.customer_id
+            else c
+            for c in CORPUS.customers
+        ),
+    )
+    leaked = get_account_state(
+        _context(poisoned_corpus, subject.customer_id, breakdown, 0.5, CORPUS.seed), args
+    )
+    assert honest != leaked, (
+        "the agent's account tool returns the same state whether the customer's financial_state "
+        "is their own or their latent_risk -- so _context is reaching for latent_risk, and the "
+        "tools can recover Stratum without reading a word"
+    )
+
+
 def _snapshot_fields() -> list[str]:
     """Discovered, not listed. A hand-written list can name a field that does not exist on
     `AccountSnapshot`; `getattr(..., default)` then returns a constant, the check below skips

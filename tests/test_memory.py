@@ -4,7 +4,9 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import FrozenInstanceError, replace
+
+import pytest
 
 from earshot.config import ScoringConfig
 from earshot.memory import SignalLedger
@@ -42,6 +44,59 @@ def test_ledger_never_discards() -> None:
     ledger.append(sig(day=200, conversation="K9", confidence=0.95))
     assert len(ledger.signals("C1")) == 6
     assert any(s.confidence == 0.3 for s in ledger.signals("C1"))
+
+
+def test_the_ledger_has_no_discard_shaped_method() -> None:
+    """Never-discard must be structural, not conventional -- the same check `LedgerStore` has.
+
+    `test_ledger_never_discards` above proves that `append` does not evict. It would go on
+    passing the day someone adds `forget()`, because it never asks whether a discard path
+    exists; it only exercises the one path it knows about. So this bans the shape: no method on
+    the in-memory ledger may be named after deletion, expiry, eviction or supersession.
+
+    The design inversion this entry rests on is that a sub-threshold signal is retained and
+    stays summable. A ledger with a discard method is a ledger that reconciles to current
+    truth, which is the incumbent behaviour we exist to be different from.
+    """
+    surface = {name for name in dir(SignalLedger) if not name.startswith("__")}
+    banned = (
+        "delete", "expire", "archive", "ttl", "forget", "discard", "drop", "remove",
+        "purge", "prune", "evict", "supersede", "clear", "reset", "truncate",
+    )
+    offenders = sorted(
+        name for name in surface for word in banned if word in name.lower()
+    )
+    assert not offenders, (
+        f"SignalLedger exposes a discard-shaped method: {offenders}. Nothing in this codebase "
+        f"may delete or supersede a ledger entry."
+    )
+
+
+def test_extracted_signal_is_frozen_so_scoring_copies_rather_than_aliases() -> None:
+    """`score()` hands out `replace(e)` copies of each `LedgerEntry`, and `replace` is SHALLOW:
+    the copy and the stored entry point at the same `ExtractedSignal`.
+
+    That is safe only while the signal cannot be mutated. Unfreeze the dataclass and the copy
+    silently becomes an alias -- a caller adjusting a confidence on a breakdown it was handed
+    edits the ledger's own record of what was said on the call, retroactively, with no write
+    path involved and nothing in the suite noticing.
+
+    Both halves are asserted deliberately. The `raises` is the mechanism (A6: a label); the
+    unchanged stored confidence is the property, and it is what would still fail if the freeze
+    were replaced by some other scheme that did not actually copy.
+    """
+    ledger = SignalLedger()
+    ledger.extend([sig(0, "A"), sig(30, "B")])
+    before = [s.confidence for s in ledger.signals("C1")]
+
+    breakdown = ledger.score("C1", SignalType.FINANCIAL_DISTRESS, 30)
+    with pytest.raises(FrozenInstanceError):
+        breakdown.entries[0].signal.confidence = 0.99
+
+    assert [s.confidence for s in ledger.signals("C1")] == before, (
+        "a breakdown handed to a caller reaches back into the stored ledger -- ExtractedSignal "
+        "is no longer frozen, so replace() aliases instead of copying"
+    )
 
 
 def test_weak_signals_accumulate_across_conversations() -> None:

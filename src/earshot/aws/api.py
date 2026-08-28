@@ -187,25 +187,40 @@ class ReviewerApi:
         return {"case_id": case_id, "status": ACTIONS[action], "review": review}
 
 
+# The case fields a row is built from. `case_record()` writes every one of them
+# unconditionally, so they are indexed below rather than fetched with `.get()`.
+_ROW_CASE_FIELDS = (
+    "case_id",
+    "customer_id",
+    "signal_type",
+    "score",
+    "score_at_open",
+    "threshold",
+    "opened_on_day",
+    "as_of_day",
+    "status",
+)
+
+# The verdict fields, which live one level down in `decision`. Genuinely optional: a case is
+# persisted at the crossing and may be read back before anything has investigated it.
+_ROW_DECISION_FIELDS = ("verdict", "owning_team", "confidence")
+
+
 def _queue_row(case: dict[str, Any]) -> dict[str, Any]:
     """The ranked list shows a row, not a whole case: a queue of 200 cases each carrying its full
-    evidence chain and model trace is megabytes of JSON to render a table."""
+    evidence chain and model trace is megabytes of JSON to render a table.
+
+    Indexed, not `.get()`: this function spells the `case_record()` field names a second time,
+    and a `.get()` turns a rename over there into `None` over here -- a blank column on the
+    reviewer's ranked list, with every test still green because the fixture and the API degrade
+    together. A rename must raise. `decision` is the one part that is legitimately absent, so it
+    is the only thing defaulted.
+    """
     decision = case.get("decision") or {}
-    return {
-        "case_id": case.get("case_id"),
-        "customer_id": case.get("customer_id"),
-        "signal_type": case.get("signal_type"),
-        "score": case.get("score"),
-        "score_at_open": case.get("score_at_open"),
-        "threshold": case.get("threshold"),
-        "opened_on_day": case.get("opened_on_day"),
-        "as_of_day": case.get("as_of_day"),
-        "status": case.get("status"),
-        "n_evidence": len(case.get("evidence") or []),
-        "verdict": decision.get("verdict"),
-        "owning_team": decision.get("owning_team"),
-        "confidence": decision.get("confidence"),
-    }
+    row: dict[str, Any] = {field: case[field] for field in _ROW_CASE_FIELDS}
+    row["n_evidence"] = len(case["evidence"])
+    row.update({field: decision.get(field) for field in _ROW_DECISION_FIELDS})
+    return row
 
 
 # ---- routing -------------------------------------------------------------------------------------

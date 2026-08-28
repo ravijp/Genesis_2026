@@ -49,6 +49,7 @@ from earshot.agent import investigate
 from earshot.agent.prompts import investigator_prompts
 from earshot.cli import ARTIFACTS, COST_CAP_PER_CASE_USD, _context, _git_sha, _queue
 from earshot.config import DEFAULT, RunConfig
+from earshot.corpus import pipeline_fingerprint
 from earshot.evals import _outcome_customers
 from earshot.llm import build_provider, cache_mode
 from earshot.llm.base import ProviderError
@@ -198,14 +199,33 @@ def main() -> int:
     print(f"  stopped: {dict((k, sum(1 for r in rows if r['stopped_because'] == k)) for k in {r['stopped_because'] for r in rows})}")
     print(f"  evidence repairs {sum(r['evidence_repairs'] for r in rows)}/{len(rows)}")
 
+    # A replay that missed every key used to overwrite the keyed run it was replaying: same
+    # seed, same config hash, same provider, so the same filename. On 2026-08-28 a $1.50
+    # measured artifact was replaced by a file whose 42 cases all read `provider_error`.
+    # Two independent stops, because either alone still loses the run:
+    if all(r["stopped_because"] == "provider_error" for r in rows):
+        print("\n  NOT WRITING AN ARTIFACT: every case ended in provider_error, so this run "
+              "measured nothing. In replay mode that means the cache does not cover this "
+              "sample -- most likely the corpus moved under it (see pipeline_sha).")
+        return 1
+
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
-    out = ARTIFACTS / f"verdict-accuracy-{run.seed}-{run.hash()}-{args.provider}.json"
+    # The cache mode is part of the identity of the measurement, not a detail: a recorded run
+    # and a replayed one are different evidence and must not share a path.
+    out = (
+        ARTIFACTS
+        / f"verdict-accuracy-{run.seed}-{run.hash()}-{args.provider}-{cache_mode()}.json"
+    )
     out.write_text(
         json.dumps(
             {
                 "manifest": {
                     "seed": run.seed,
                     "config_hash": run.hash(),
+                    # `config_hash` covers configuration values only. This covers the code that
+                    # turns them into a queue, so a later reader can tell a stale artifact from
+                    # a current one -- see `corpus.pipeline_fingerprint`.
+                    "pipeline_sha": pipeline_fingerprint(),
                     "git_sha": _git_sha(),
                     "provider": getattr(provider, "name", args.provider),
                     "prompt_version": system.version,
