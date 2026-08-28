@@ -28,25 +28,21 @@ lines are in `aws-infrastructure.md`, written to be pasted into a ticket.** Once
    `genuine` nine times out of ten and dismissed none of five false alarms. 30–50 cases at ~$0.03.
 2. **Routing accuracy.** Never measured; `verdict_accuracy.py` already collects `owning_team`. The
    streamed run shows the agent concentrating routing and sometimes returning `"none"`.
-3. **`decisions.md` is owed two entries** (ask Ravi first): a tenant is a configuration and the
-   team map is display-only so `OwningTeam` stays closed; and the console's primary user is the
-   reviewer, not the agent on the call.
-4. **A stopped design agent left an uncommitted worktree** at
-   `.claude/worktrees/agent-ade2e23d7e6368e38` with a 479-line `ui/styles.css` rewrite — a
-   coherent dark-first token system. Ravi's call whether to lift the palette or discard it.
+3. **`decisions.md` is owed two entries** (ask first): a tenant is a configuration with a
+   display-only team map; the console's primary user is the reviewer, not the agent on the call.
+4. **An unmerged worktree** at `.claude/worktrees/agent-ade2e23d7e6368e38` holds a cancelled design
+   agent's 479-line `styles.css` rewrite. Ravi's call: lift the palette, or discard.
 
 **Delegate file-writing work with `isolation: "worktree"`.**
 
 ## State
 
-One deployment (Northwind), framed as an integration: nine pipeline seams, six of them the
-client's own systems. **One model, Haiku 4.5, for reader and investigator** (D-025); its verdict
-accuracy on a multi-turn loop is **unmeasured**, so D-025's cost argument is not yet earned. Both
-Lambdas run the **offline** provider today; `deploy.py --provider bedrock` flips it.
-
-**CDK does not work here** (D-024). `tools/provision.py` and `tools/deploy.py` are the path, both
-idempotent and dry-run by default. Do not re-litigate. CodeBuild stays blocked on the same
-`iam:CreateRole` gap. `boto3` stays **optional** — a fresh clone runs every test keyless.
+One deployment (Northwind), framed as an integration: nine seams, six of them the client's own
+systems. **One model, Haiku 4.5, for reader and investigator** (D-025) — its verdict accuracy on a
+multi-turn loop is **unmeasured**, so that cost argument is not yet earned. Deployed Lambdas run
+the offline provider; `deploy.py --provider bedrock` flips it. **CDK does not work here** (D-024);
+`provision.py` and `deploy.py` are the path, idempotent and dry-run by default — do not
+re-litigate. `boto3` stays **optional**: a fresh clone runs every test keyless.
 
 ## Traps already paid for
 
@@ -65,16 +61,15 @@ idempotent and dry-run by default. Do not re-litigate. CodeBuild stays blocked o
   animated belief the belief that was appended.
 - **A warm reader cache makes a "live" run a replay.** `--serve` names the cache mode in the LIVE
   badge; `EARSHOT_CACHE_MODE=off` forces new calls.
-- **One response cache per provider.** A keyed Bedrock run once appended Haiku completions into the
-  pinned Sonnet demo cache the README quotes.
-- **The reader is named after the model that ANSWERED**, not the one requested.
+- **One response cache per provider**, and **the reader is named after the model that ANSWERED**.
+  A keyed run once appended Haiku completions into the pinned Sonnet cache the README quotes.
 - **`outcome is not None` is always true.** `Outcome.NONE` is the no-outcome value.
-- **A measurement drawn from the top of the queue cannot be wrong in the direction that matters.**
-- **Anything verified against a stub is unverified.** Exercise tools against reality.
-- **A Windows-built zip cannot run on Lambda** — the build cross-compiles; do not simplify it.
-- **PITR does not enable immediately after `create_table`**; without the retry it lands DISABLED.
-- **When something reads as AccessDenied, read the error *message*.** Several were not.
+- **A measurement drawn from the top of the queue cannot be wrong in the direction that matters**,
+  and **anything verified against a stub is unverified.** Exercise tools against reality.
 - **A case id contains `#`.** Every UI link percent-encodes it.
 - **Never delete an `__init__.py`.** Drops the guard and the suite silently.
-- **Agents that write files need `isolation: "worktree"`**, and `cd` into one and stay there and
-  your next commit lands on its throwaway branch. Verify `pwd` before committing.
+- **Agents that write files need `isolation: "worktree"`** — and if you `cd` into one and stay
+  there, your next commit lands on its throwaway branch. Verify `pwd` before committing.
+- **The AWS/deploy traps live in `aws-infrastructure.md`** and are not copied here: the Windows
+  zip cross-compile, the PITR retry, and reading the error *message* when something says
+  AccessDenied. Read that file before touching provisioning or deployment.
