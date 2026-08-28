@@ -81,13 +81,16 @@ _EVALUATION_SIDE = {
                   # tests/test_no_answer_key_leak.py, which checks it passes financial_state)
 }
 
-# The same exemption, for the `tools/` tree. These two are measurement harnesses, not payload
-# builders: they read the seeded key because comparing an agent's verdict or its routing slot
-# to the truth is the whole job (D-009). Nothing they write reaches a browser. Capped for the
-# same reason — a blanket pass for `tools/` would re-open the hole this discovery closes.
+# The same exemption, for the `tools/` tree. These are measurement harnesses, not payload
+# builders: they read the seeded key because comparing an agent's verdict, its routing slot or a
+# reader's coverage to the truth is the whole job (D-009). Nothing they write reaches a browser.
+# Capped for the same reason — a blanket pass for `tools/` would re-open the hole this discovery
+# closes. The test that owns each one is named, because an exemption whose scorer nobody tests
+# is an exemption with nothing behind it.
 _TOOLS_EVALUATION_SIDE = {
     "verdict_accuracy.py",   # scores the agent's genuine/false-alarm verdict against truth
     "routing_accuracy.py",   # scores owning_team against the seeded trajectory
+    "reader_coverage.py",    # scores a reader's coverage against what was planted
 }
 
 
@@ -117,10 +120,30 @@ def test_evaluation_exemptions_stay_small() -> None:
 
 
 def test_tools_evaluation_exemptions_stay_small() -> None:
-    """A second exemption set needs a second cap, or it becomes the way around the first."""
-    assert len(_TOOLS_EVALUATION_SIDE) <= 2, (
+    """A second exemption set needs a second cap, or it becomes the way around the first.
+
+    A `tools/` script earns a place here only if reading the seeded key IS its job — scoring
+    something against what was planted — and only if nothing it writes reaches a browser. A
+    script that merely finds the corpus convenient does not qualify; it goes on the surface and
+    gets scanned. The paired pin is `test_the_two_ui_fixtures_can_never_be_exempted`.
+    """
+    assert len(_TOOLS_EVALUATION_SIDE) <= 3, (
         f"the tools exemption list has grown to {sorted(_TOOLS_EVALUATION_SIDE)} — a script in "
         f"here may read the answer key, so each one needs a reason"
+    )
+
+
+def test_the_two_ui_fixtures_can_never_be_exempted() -> None:
+    """The cap alone lets the list grow to its limit with the wrong files in it.
+
+    `ui_fixture.py` and `stream_fixture.py` build the exact JSON that ships to a browser, so a
+    corpus import in either puts `stratum` and `latent_risk` one object away from a viewer.
+    They are the reason the `tools/` tree is scanned at all, and no cap raise may quietly move
+    one of them across.
+    """
+    exempted = _TOOLS_EVALUATION_SIDE & {"ui_fixture.py", "stream_fixture.py"}
+    assert not exempted, (
+        f"{sorted(exempted)} build a browser payload and have been exempted from the scans"
     )
 
 
