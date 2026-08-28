@@ -18,7 +18,7 @@ building it. Next gate **2026-09-07**. The 08-10 check-in and the 08-24 combined
 artifact records what 08-24 showed.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-investigator agent producing case files with cited evidence, and a three-screen reviewer UI that opens from disk. **416 tests**, ruff clean.
+investigator agent producing case files with cited evidence, and a three-screen reviewer UI that opens from disk. **479 tests**, ruff clean.
 
 **The AWS layer now exists in code.** `llm/bedrock.py` (Converse, Haiku 4.5, computed-not-charged cost),
 `aws/stores.py` (DynamoDB ledger/cases/reviews, conditional writes, no delete path on the ledger) and
@@ -95,8 +95,13 @@ by construction.
   the repo a judge reads.
 - **No VPC subnets**, so ECS Fargate cannot launch. The sweep stays local, where a judge can reproduce
   it with no account.
-- **Zero model calls have ever been made against a corpus.** The reader has no accuracy figure and must
-  not be given one until a keyed run prints it. Bedrock connectivity is proven; reader *quality* is not.
+- **The agent does not discriminate (AT-57, measured 2026-08-28).** Ten crossings, five with a real
+  outcome and five without: it called `genuine` nine times, caught 4 / 5 real cases and dismissed
+  **0 / 5** false alarms, at mean confidence 0.90 on the wrong answers. **Overall 4 / 10.** So
+  D-025's cost argument for Haiku is not yet earned — it is cheap and fast and it escalates
+  everything. Until that changes the investigator adds routing and an audit trail, not filtering.
+- **The ledger hands the agent a queue that is 78% false alarm.** Of 40 crossings at a 10% review
+  budget, 9 have a real outcome and 31 do not. The recall table never reports this.
 
 ## Next, in order
 
@@ -118,11 +123,15 @@ Nova Lite and Llama 3 8B are both invocable and the choice is ~zero work now the
 
 ## Known-weak, stated rather than hidden
 
-- **The extractor barely works on language it did not write.** 0.0357 strict recall (4 / 112) on real
-  CFPB narratives against 0.681 (496 / 728) on ours; three of four signal types exactly zero. Blind
-  -authored synthetic fragments give 0.0353 (22 / 624) — the same number from two directions, which
-  closes the genre-mismatch escape route. **The published 0.681 measures how much pass A and pass B were
-  co-developed, not what the extractor can read.**
+- **The LEXICON barely works on language it did not write** — 0.0357 strict recall (4 / 112) on real
+  CFPB narratives; three of four signal types exactly zero. The **model reader** scores 0.8214
+  (92 / 112) on the identical gold set (measured 2026-08-28), so this is a fallback limitation, not
+  a system one. It costs 8x the false-positive rate to get there: 0.1598 (78 / 488) against 0.0205,
+  almost all of it `complaint_escalation` at 0.8072 (67 / 83).
+- **The published 0.681 (496 / 728) on our own prose still measures how much pass A and pass B were
+  co-developed, not what a reader can read.** Nothing in the keyed run touches that. Blind-authored
+  synthetic fragments give 0.0353 (22 / 624) for the lexicon — the same number from two directions,
+  which closes the genre-mismatch escape route.
 - **Two cheaper arms beat us on the pre-registered stratum at 30 seeds**: `stateless-top2` and
   `window3-top2`, both `7-21-2`, `p=0.013`. `window3-top2` also holds us to a tie on concentrated arcs.
   What never-discard buys over a three-conversation window is **unproven**. The honest claim is
@@ -133,7 +142,10 @@ Nova Lite and Llama 3 8B are both invocable and the choice is ~zero work now the
 - **Two of four trajectories can never carry more than 4 signals**, bounding every published number —
   fragments are planted without replacement and the scarcest pool holds 4 while arcs run to 5.
 - The cost cap bounds cumulative spend, not a single anomalous call. Documented, with a test.
-- Agent verdict accuracy, cost per 1,000 conversations and p50/p95 latency are not measured.
+- **Measured 2026-08-28:** reader $1.66 per 1,000 conversations (p50 1,244 ms / p95 2,212 ms);
+  investigation $0.0289 per case (p50 17.6 s / p95 32.6 s); 0 / 10 evidence repairs; 10 / 10 loop
+  exits `decided`. **Routing accuracy is still not measured**, and 10 cases is a direction rather
+  than an estimate.
 - **Cost model has two known errors**: `B.3:655` says $1.24 where the arithmetic gives $1.12, and §1.2
   ("55–80×") contradicts B.4 ("55–140×") where B.3's own totals give **82–144×**. Both understate the
   strongest feasibility number in the entry.

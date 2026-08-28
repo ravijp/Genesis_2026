@@ -35,7 +35,7 @@ import os
 
 from .base import LLMProvider
 from .budget import CappedProvider, SpendCeiling, spend_cap_usd
-from .cache import CachingProvider, ResponseCache, cache_mode
+from .cache import CachingProvider, ResponseCache, cache_mode, cache_path
 
 # Bedrock, because D-022 retired the OpenRouter key and every arm now runs through Bedrock. A
 # caller that still wants OpenRouter has to say so, which is the right way round: the default
@@ -78,6 +78,12 @@ def build_provider(
         budget = ceiling if ceiling is not None else SpendCeiling(spend_cap_usd(cap_usd))
         return provider if budget.cap_usd is None else CappedProvider(provider, budget)
 
+    def recorded(inner: LLMProvider) -> LLMProvider:
+        # A cache file per provider. Sharing one is how a Bedrock run appended Haiku completions
+        # into the pinned Sonnet demo cache on 2026-08-28 -- caught by a test, not by review.
+        store = cache if cache is not None else ResponseCache(path=cache_path(resolved))
+        return CachingProvider(inner, prompt_sha, cache=store)
+
     if resolved == "bedrock":
         from .bedrock import BedrockProvider, LazyBedrockProvider  # noqa: PLC0415
 
@@ -87,7 +93,7 @@ def build_provider(
         # actually misses. Record builds it eagerly: failing on conversation zero beats failing on
         # conversation one, halfway through a run that has already spent money.
         inner = LazyBedrockProvider() if mode == "replay" else BedrockProvider()
-        return capped(CachingProvider(inner, prompt_sha, cache=cache))
+        return capped(recorded(inner))
 
     if resolved == "openrouter":
         from .openrouter import LazyOpenRouterProvider, OpenRouterProvider  # noqa: PLC0415
@@ -95,6 +101,6 @@ def build_provider(
         if mode == "off":
             return capped(OpenRouterProvider())
         inner = LazyOpenRouterProvider() if mode == "replay" else OpenRouterProvider()
-        return capped(CachingProvider(inner, prompt_sha, cache=cache))
+        return capped(recorded(inner))
 
     raise ValueError(f"unknown provider {resolved!r}; known: {', '.join(PROVIDERS)}")

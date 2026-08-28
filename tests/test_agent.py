@@ -346,6 +346,30 @@ def test_replay_reports_a_miss_instead_of_falling_through_to_the_network(tmp_pat
         )
 
 
+def test_the_bedrock_cache_holds_only_bedrock_completions() -> None:
+    """One cache file per provider, and this is what enforces it.
+
+    Until 2026-08-28 every provider shared `investigator-demo.jsonl`, and the first keyed Bedrock
+    runs appended Haiku 4.5 completions into the file holding the two pinned Sonnet investigations
+    the README quotes. The test above caught it. This is the same guard from the other side: a
+    stray OpenRouter or offline run must not land here either.
+    """
+    import json
+
+    from earshot.llm.cache import cache_path
+
+    path = cache_path("bedrock")
+    if not path.is_file():
+        pytest.skip("no Bedrock cache recorded in this checkout")
+    entries = [
+        json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
+    models = {e.get("completion", e).get("model") for e in entries}
+    assert models == {"us.anthropic.claude-haiku-4-5-20251001-v1:0"}, (
+        f"the Bedrock cache carries completions from {sorted(models)}"
+    )
+
+
 def test_the_committed_cache_is_exactly_the_two_live_investigations() -> None:
     """The cache is committed evidence, so its contents are pinned rather than assumed.
 

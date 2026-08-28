@@ -24,6 +24,7 @@ from typing import Any
 from .base import Completion, LLMProvider, Message, ModelConfig, ProviderError, ToolSpec, env
 
 DEFAULT_CACHE_PATH = Path("artifacts/cache/investigator-demo.jsonl")
+CACHE_DIR = DEFAULT_CACHE_PATH.parent
 MODES = ("record", "replay", "off")
 
 
@@ -36,8 +37,29 @@ def cache_mode(default: str = "record") -> str:
     return mode if mode in MODES else default
 
 
-def cache_path() -> Path:
-    return Path(env("CACHE_PATH") or DEFAULT_CACHE_PATH)
+def cache_path(provider: str | None = None) -> Path:
+    """Where a provider's recorded responses live.
+
+    **One file per provider, and that is a correctness boundary rather than tidiness.**
+    `investigator-demo.jsonl` holds the two live Sonnet 4.5 investigations whose cost and latency
+    the README quotes, and `tests/test_agent.py` asserts it contains those and nothing else. On
+    2026-08-28 the first keyed Bedrock runs appended Haiku 4.5 completions straight into it and
+    that test caught them. A shared file means any run of any model is one command away from
+    editing a pinned artifact.
+
+    `$EARSHOT_CACHE_PATH` still wins outright, so an explicit path is never second-guessed.
+    """
+    explicit = env("CACHE_PATH")
+    if explicit:
+        return Path(explicit)
+    if not provider or provider.startswith("openrouter"):
+        # The historical default. The two pinned investigations were recorded through OpenRouter,
+        # so it keeps the filename they were committed under.
+        return DEFAULT_CACHE_PATH
+    # `bedrock+cache:record+cap:$5.00` -> `bedrock`. The decorations describe this process, not
+    # the recording, and putting them in a filename would fragment the cache by cache mode.
+    stem = provider.split("+")[0].replace("/", "-")
+    return CACHE_DIR / f"investigator-{stem}.jsonl"
 
 
 class ResponseCache:

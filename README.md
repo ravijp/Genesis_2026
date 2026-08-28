@@ -190,15 +190,27 @@ over-accumulate them — it does not, their flag rate at the 10% budget is 0.000
 than waiting to be asked.** Read the provider label before the number: this is
 `OfflineLexiconExtractor`, the keyless 26-regex fallback that exists so everything runs with no API
 keys and no network. **It is not the production reader.** `Extractor` in
-[extract.py](src/earshot/extract.py) is a protocol, and its model implementation now exists —
-[extract_model.py](src/earshot/extract_model.py), stateless per conversation, quotes verified
-verbatim, cost and latency captured per call. **It has never been run against a real model**, so
-there is no accuracy figure for it anywhere in this repository and every extraction number on this
-page still describes the fallback. One keyed run of `benchmarks/cfpb/steps/05_score.py --extractor
-model` produces the comparison and commits its cache for keyless replay. Against 150
-hand-marked real CFPB complaint narratives (public domain, CC0) the offline reader scores **0.0357
-strict recall — 4 / 112** — versus **0.681** above on our own prose. `financial_distress`, `complaint_escalation` and `life_event` each scored **exactly zero**, and
-24 of its 26 cues never fired on any of the 150 documents. The sampling frame, the marking guide, the
+[extract.py](src/earshot/extract.py) is a protocol with two implementations, and **both have now
+been scored against the same 150 hand-marked real CFPB complaint narratives** (public domain, CC0),
+on the same committed gold marks, at the same `(document, signal_type)` grain, by one scorer in one
+execution.
+
+| reader | strict recall | any-type recall | false-positive rate |
+|---|---|---|---|
+| offline lexicon, 26 regexes | 0.0357 (4 / 112) | 0.0964 (8 / 83) | **0.0205 (10 / 488)** |
+| Claude Haiku 4.5 on Bedrock | **0.8214 (92 / 112)** | **0.9759 (81 / 83)** | 0.1598 (78 / 488) |
+
+**Read the third column before the first two.** The model is roughly 8× worse on false positives,
+and almost all of it is one signal type: `complaint_escalation` fires on **0.8072 (67 / 83)** of the
+documents that should not carry it. It marks nearly every complaint as an escalation. Per type its
+strict recall is complaint_escalation 0.9701 (65 / 67), financial_distress 0.8571 (18 / 21),
+life_event 0.3636 (4 / 11), churn_intent 0.3846 (5 / 13) — so two of the four types are still weak.
+
+**What this changes and what it does not.** The 0.0357 above measures the **26-regex fallback**, not
+the system: on real language the lexicon misses 96% of what a model catches, `financial_distress`,
+`complaint_escalation` and `life_event` each scored **exactly zero**, and 24 of its 26 cues never
+fired on any of the 150 documents. It does **not** rescue the 0.681 on our own prose — that number
+still measures how much pass A and pass B were co-developed, and nothing here touches it. The sampling frame, the marking guide, the
 gold set and the interpretation thresholds were all committed **before** any narrative was read, and
 two failures of our own — a contaminated inter-marker comparison and a defect in the marking guide —
 are disclosed in the write-up rather than smoothed over. Everything is in
@@ -207,12 +219,46 @@ reproduces every figure offline with no network. This is the reason the cue voca
 regrounded (D-019). It measures the **reader**, not the ledger, and it left the numbers above
 untouched.
 
-**Not yet measured:** verdict and routing accuracy for the agent, cost per 1,000 conversations, and
-p50/p95 latency. The last two are now *instrumented* rather than measured — the model reader
-accumulates real spend and per-call latency and prints both, including cost per 1,000
-conversations, but no run has produced them. Evidence groundedness is reported as a first-attempt repair rate by `earshot
-investigate`, but is structurally zero on the offline provider (it copies quotes out of the ledger),
-so only a model provider exercises it — measuring it against a known answer at volume is AT-57. The two live Claude Sonnet 4.5 investigations in
+### What the agent actually costs, and where it fails
+
+All from keyed runs on 2026-08-28, Claude Haiku 4.5 through Bedrock, every response committed for
+keyless replay.
+
+| | measured |
+|---|---|
+| Reader, cost per 1,000 conversations | **$1.66** ($0.24845 over 150) |
+| Reader latency | p50 **1,244 ms**, p95 **2,212 ms** |
+| Investigation, cost per case | **$0.0289** (10 cases, $0.2893) |
+| Investigation latency, model time | p50 **17.6 s**, p95 **32.6 s** |
+| Evidence repairs (first-attempt groundedness) | **0 / 10** |
+| Loop exits | `decided` 10 / 10 — no `cost_cap`, no `max_steps` |
+
+**The agent does not discriminate, and this is the headline result of AT-57.** Ten crossings, five
+with a real outcome and five without, sampled deliberately because the top of the queue is nearly
+all true positives and a run drawn from it cannot be wrong in the direction that matters:
+
+| | verdict `genuine` | verdict `false_alarm` |
+|---|---|---|
+| outcome present (5) | **4** | 1 |
+| outcome absent (5) | **5** | **0** |
+
+It caught 4 of 5 real cases and dismissed **none** of the 5 false alarms, at a mean confidence of
+0.90 on the wrong answers. It abstained zero times. **Overall 4 / 10.** Reproduce it with
+`EARSHOT_CACHE_MODE=replay uv run python tools/verdict_accuracy.py --provider bedrock --per-arm 5`
+— no credentials, no network.
+
+So the D-025 cost argument for Haiku is **not yet earned**: it is cheap and it is fast, and on this
+sample it escalates everything. Whether a stronger model, a better prompt or a false-alarm-aware
+loop fixes it is open, and the honest position until then is that the investigator adds routing and
+an audit trail, not filtering.
+
+**One more number the recall table never reports:** of the 40 customers the ledger surfaces at a 10%
+review budget, **9 have a real outcome and 31 do not**. That is the ledger's own precision at the
+cut, and it is what makes the agent's job hard — it is being handed a queue that is 78% false alarm
+by construction and asked to sort it.
+
+**Still not measured:** routing accuracy (which team a case is sent to), and any of this at a sample
+size worth a confidence interval — 10 cases is a direction, not an estimate. The two live Claude Sonnet 4.5 investigations in
 `artifacts/cache/` cost **$0.089 and $0.097** and took 30.3s and 33.4s. They are committed, and this
 exact command replays them with no network and a deliberately invalid key:
 
