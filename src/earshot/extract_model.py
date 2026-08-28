@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+import re
 from pathlib import Path
 from typing import Any
 
@@ -367,14 +368,58 @@ def _as_confidence(value: Any) -> float:
 DEFAULT_EXTRACTOR_CACHE = Path("artifacts/cache/extractor.jsonl")
 
 
-def extractor_cache_path() -> Path:
-    """Where model reads are recorded. Deliberately NOT the investigator's cache file.
+def extractor_cache_path(model_id: str | None = None) -> Path:
+    """Where model reads are recorded. Deliberately NOT the investigator's cache file, and
+    deliberately NOT one file for every model.
 
     `artifacts/cache/investigator-demo.jsonl` is pinned by a test to the two committed live
     investigations and the exact dollars they cost; appending extraction traffic to it would
     break that pin and blur two different measurements into one file.
+
+    **One file per model, for the same reason `llm.cache.cache_path` keeps one per provider.**
+    The committed `extractor.jsonl` holds the Haiku 4.5 reads behind this repo's published
+    reader numbers -- 0.8214 strict recall (92 / 112), $1.6563 per 1,000, p50 1,244 ms -- and a
+    judge replays them from it with no key. A second reader arm (Nova Lite, Llama 3 8B) run
+    through the same default path would append a different model's completions into that file:
+    the keys would not collide, so nothing would break loudly, and the cache behind a published
+    figure would quietly hold two models. That is the failure that already happened once on the
+    investigator side, when the first keyed Bedrock run appended Haiku completions into the
+    pinned Sonnet file.
+
+    The default model keeps the historical filename, because that file is committed and the
+    published numbers replay from it -- renaming it would break reproduction for a reader who
+    has done nothing wrong. Every other model gets its own.
+
+    `$EARSHOT_EXTRACTOR_CACHE_PATH` still wins outright, so an explicit path is never
+    second-guessed.
     """
-    return Path(env("EXTRACTOR_CACHE_PATH") or DEFAULT_EXTRACTOR_CACHE)
+    explicit = env("EXTRACTOR_CACHE_PATH")
+    if explicit:
+        return Path(explicit)
+    from .llm.bedrock import DEFAULT_BEDROCK_MODEL, normalize_model_id
+
+    requested = model_id or env("BEDROCK_MODEL")
+    if not requested or normalize_model_id(requested) == DEFAULT_BEDROCK_MODEL:
+        return DEFAULT_EXTRACTOR_CACHE
+    # `amazon.nova-lite-v1:0` -> `extractor-amazon-nova-lite-v1-0.jsonl`. Slugged because `:` is
+    # not a legal Windows filename character -- a lesson this repo paid for on 2026-08-28, when
+    # an artifact write raised OSError after a $1.50 run had already printed its results.
+    slug = re.sub(r"-+", "-", re.sub(r"[^A-Za-z0-9]+", "-", requested)).strip("-")
+    return DEFAULT_EXTRACTOR_CACHE.with_name(f"extractor-{slug}.jsonl")
+
+
+def _requested_model(model_cfg: ModelConfig | None) -> str | None:
+    """The model this reader will actually ask for, or None to mean "whatever the default is".
+
+    `ModelConfig.model` carries OpenRouter's slash-form default when nothing was chosen, which
+    Bedrock treats as "no model requested" (`bedrock._model_id`). Passing that through as if it
+    were a real selection would give the default model a cache file named after a model it is
+    not, so the same "is this actually a choice?" test is applied here.
+    """
+    from .llm.base import DEFAULT_MODEL
+
+    requested = getattr(model_cfg, "model", None)
+    return None if not requested or requested == DEFAULT_MODEL else requested
 
 
 def model_extractor(
@@ -409,7 +454,11 @@ def model_extractor(
         cache=(
             None
             if cache_mode() == "off"
-            else (ResponseCache(path=extractor_cache_path()) if cache is None else cache)
+            else (
+                ResponseCache(path=extractor_cache_path(_requested_model(model_cfg)))
+                if cache is None
+                else cache
+            )
         ),
     )
     return ModelExtractor(provider, model_cfg=model_cfg, prompt_version=prompt_version)

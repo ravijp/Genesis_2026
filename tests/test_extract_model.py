@@ -509,6 +509,54 @@ def test_the_reader_does_not_record_into_the_investigators_committed_cache() -> 
     assert extractor_cache_path() != DEFAULT_CACHE_PATH
 
 
+def test_a_second_reader_arm_gets_its_own_cache_file() -> None:
+    """The property that stops a comparison arm editing a published figure.
+
+    `extractor.jsonl` is committed and holds the Haiku 4.5 reads behind 0.8214 strict recall
+    (92 / 112), $1.6563 per 1,000 and p50 1,244 ms. Arm B (Nova Lite, Llama 3 8B) reading the
+    same documents through one shared path would append a different model's completions into
+    that file. The keys would not collide, so nothing would fail — the cache behind a published
+    number would just quietly hold two models. That exact failure already happened once on the
+    investigator side.
+    """
+    default = extractor_cache_path()
+    nova = extractor_cache_path("amazon.nova-lite-v1:0")
+    llama = extractor_cache_path("meta.llama3-8b-instruct-v1:0")
+    assert len({default, nova, llama}) == 3, "two reader arms are sharing a cache file"
+
+
+def test_the_default_model_keeps_the_committed_filename_under_either_spelling() -> None:
+    """A judge replays the published reader numbers from the committed `extractor.jsonl` with no
+    key. Renaming it for them would break reproduction for someone who did nothing wrong — so
+    the default keeps its historical path, and both the bare and the `us.`-prefixed spellings of
+    the same model resolve to it (`bedrock.normalize_model_id` treats them as one model, and a
+    cache that disagreed would replay as a miss)."""
+    from earshot.extract_model import DEFAULT_EXTRACTOR_CACHE
+    from earshot.llm.bedrock import DEFAULT_BEDROCK_MODEL
+
+    assert extractor_cache_path() == DEFAULT_EXTRACTOR_CACHE
+    assert extractor_cache_path(DEFAULT_BEDROCK_MODEL) == DEFAULT_EXTRACTOR_CACHE
+    assert extractor_cache_path(DEFAULT_BEDROCK_MODEL.removeprefix("us.")) == DEFAULT_EXTRACTOR_CACHE
+
+
+def test_a_derived_cache_filename_is_legal_on_windows() -> None:
+    """Model ids carry `:` and `.`, and `:` is not a legal Windows filename character. An
+    artifact write raised OSError here on 2026-08-28 *after* a $1.50 run had printed its
+    results, which is the most expensive moment to discover it."""
+    name = extractor_cache_path("amazon.nova-lite-v1:0").name
+    assert not set(name) & set('<>:"/\|?*'), f"illegal character in {name!r}"
+    assert name.endswith(".jsonl")
+
+
+def test_an_explicit_cache_path_is_never_second_guessed(monkeypatch, tmp_path) -> None:
+    """`$EARSHOT_EXTRACTOR_CACHE_PATH` wins outright, whatever model is named — a caller who
+    states a path has already made the decision this function otherwise makes for them."""
+    chosen = tmp_path / "somewhere.jsonl"
+    monkeypatch.setenv("EARSHOT_EXTRACTOR_CACHE_PATH", str(chosen))
+    assert extractor_cache_path() == chosen
+    assert extractor_cache_path("amazon.nova-lite-v1:0") == chosen
+
+
 # --- prompts ------------------------------------------------------------------------------
 
 
