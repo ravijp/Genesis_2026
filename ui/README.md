@@ -12,6 +12,7 @@ ui/ s3://agentic-trio/ui/` needs nothing we do not have.
 | | Route | What it is |
 |---|---|---|
 | **In use** | `#/desk` | The reviewer's console: a ranked queue, a case, and a disposition — **our panel inside a stand-in of the client's own case-management desktop** |
+| **In use** | `#/desk/team/<slot>` | The same queue scoped to one routing destination, plus `none` for the cases the agent declined to route. The slot is in the route, so a team view is a link you can send |
 | **In use** | `#/desk/call` | The same console during a live call, with the reader's turn-by-turn output. Labelled illustrative |
 | **How it works** | `#/stream` | The whole book arriving in day order: the ledger accumulating, the queue re-ranking, cases opening |
 | **How it works** | `#/deployment` | The nine pipeline stages and who owns each. Five of nine are the client's existing systems |
@@ -24,6 +25,41 @@ framing: one is the product, the other is why its numbers are true.
 `earshot investigate` run as standalone documents — the retro re-score in particular stays a full
 screen rather than a panel row, because it is the proof and the panel's ledger table is only the
 teaser.
+
+## The team-scoped queue
+
+The submitted brief promises that **three teams read the same feed**
+(`docs/sources/submission-ear-on-every-call.md:75-79`, and `:124` makes it a Sprint 3
+deliverable). The shipped set is four and different, so `#/desk/team/<slot>` is a filter over
+`owning_team` — a field every case row already carries, graded at **41 / 49 correct, 0 wrong, 8
+declined** on 2026-08-28 (`tools/routing_accuracy.py`). It is a view over a measured field, not
+new inference.
+
+Four things about it are load-bearing:
+
+- **The filter is in the route**, `#/desk/team/retention` and `#/desk/team/<slot>/case/<id>`, so
+  it survives a reload and a team view is a link someone sends a colleague. The **slot** is what
+  goes in the URL — it is the model's stable vocabulary; the **label** a reviewer reads comes from
+  the tenant's display-only map (D-029) and never the other way round.
+- **Every count carries its denominator** on the control itself: "Retention Desk — 1 of 6 cases".
+- **`none` is a bucket, not an empty state.** It means the agent declined to choose, not that no
+  team exists, and the control says so. It is listed at zero for the same reason
+  `stream._team_rollup` lists it: a dashboard that drops the row reads as "the agent always picks
+  a team", and a declined route is the case a reviewer most needs to see.
+- **A team with zero cases still appears and still opens.** Hiding it would tell a reviewer their
+  queue is complete when it is not, and an empty destination is a finding — it is how a model
+  that escalates instead of discriminating shows up.
+
+The buckets are counted in the browser from `block.cases`, the same array the rows below the
+control come from, rather than read off the recorded `block.teams` rollup. Two sources is how a
+control ends up printing a number the visible rows contradict. Counting an array is not scoring
+one; `memory.py` is still the only scorer here.
+
+**What the brief promised and what shipped** is on the screen, in two sentences under the filter:
+Retention survives by name, Risk and Compliance splits across Collections, the Vulnerable Customer
+Unit and Complaints, and **Commercial has no equivalent** — the ledger never modelled an upsell or
+value read, and inventing a team to match the brief would be worse than saying so. Logged as delta
+7 in `docs/architecture/build-plan.md` §8.
 
 ## The console, and exactly what is a mock
 

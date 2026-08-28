@@ -189,6 +189,51 @@
   border-top: 1px solid var(--c-line);
 }
 
+/* ---- the team filter ------------------------------------------------------------------------
+ *
+ * A stack rather than a row of pills: the labels are the client's own team names and they are as
+ * long as they are ("Vulnerable Customer Unit"), so wrapping them into chips would either
+ * truncate a name or reflow the column. Name left, count right, tabular so the denominators line
+ * up and an empty team is visibly a zero rather than a gap. */
+.cns-teams {
+  display: flex; flex-direction: column;
+  border-bottom: 1px solid var(--c-line);
+}
+.cns-team {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  padding: 6px 12px 6px 10px;
+  border-left: 3px solid transparent;
+  text-decoration: none; color: var(--c-ink-2);
+  font-size: 12px;
+}
+.cns-team:hover { background: var(--c-hi); }
+.cns-team.on {
+  background: var(--c-hi); color: var(--c-ink);
+  border-left-color: var(--accent); font-weight: 600;
+}
+.cns-team.all { border-bottom: 1px solid var(--c-line); }
+/* Not a team. Marked apart so "the agent would not choose" does not read as a fifth destination,
+   and never dimmed: a declined route is the row a reviewer most needs to see. */
+.cns-team.unrouted { border-top: 1px solid var(--c-line); font-style: italic; }
+.cns-teamname { min-width: 0; }
+.cns-teamn { font-size: 11px; color: var(--c-ink-3); white-space: nowrap; }
+.cns-team.on .cns-teamn { color: var(--c-ink-2); }
+.cns-teamnote {
+  margin: 0; padding: 8px 12px; font-size: 11px; line-height: 1.45; color: var(--c-ink-3);
+  border-bottom: 1px solid var(--c-line);
+}
+.cns-qempty { margin: 0; padding: 14px 12px; font-size: 12px; color: var(--c-ink-3); }
+
+/* The record region when a team has no cases. Same weight as a case, because "nothing routed
+   here" is a finding and should not look like a loading state. */
+.cns-void {
+  margin: 16px; padding: 16px;
+  background: var(--c-panel); border: 1px solid var(--c-line); border-radius: var(--c-radius);
+  max-width: 62ch;
+}
+.cns-void h2 { margin: 0 0 8px; font-size: 15px; }
+.cns-void p { margin: 0 0 8px; font-size: 12.5px; color: var(--c-ink-2); }
+
 /* ---- record region --------------------------------------------------------------------------- */
 
 .cns-record { overflow-y: auto; padding: 0 0 16px; min-height: 0; }

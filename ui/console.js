@@ -66,6 +66,64 @@ window.EARSHOT_CONSOLE = (function () {
     return (b.accounts || {})[customerId] || null;
   }
 
+  /* ---- the team-scoped queue ----------------------------------------------------------------
+   *
+   * Three teams reading one feed is the horizontal claim in the submitted brief. `owning_team` is
+   * already on every case row, and routing was measured at 41 / 49 correct, 0 wrong, 8 declined
+   * on 2026-08-28 (`tools/routing_accuracy.py`), so this is a view over a graded field rather
+   * than new inference.
+   *
+   * **The buckets are a partition.** Every worked case lands in exactly one, and `none` catches
+   * anything the tenant profile does not map — the same `else: unrouted` branch
+   * `stream._team_rollup` takes, so the filter and the deployment screen's rollup cannot end up
+   * disagreeing about who is where.
+   *
+   * **Counted here rather than read off `block.teams`.** That rollup was computed when the run
+   * was recorded; the rows underneath this control come from `block.cases`. Two sources means a
+   * control that one day prints a number the visible rows contradict, and a count that disagrees
+   * with what is on screen is worse than no count. Counting an array is not scoring one —
+   * `memory.py` is still the only scorer and nothing here derives a score, a share or a rank.
+   *
+   * **Labels are the tenant's, never the model's slots.** `tenant.teams` is `Tenant.public()`'s
+   * copy of the display-only map, the same dict `Tenant.team_label()` reads. Widening the model's
+   * `OwningTeam` per client would put a client string inside its decision contract (D-029), so
+   * the slot is a route segment and a label is what a reviewer sees.
+   */
+  function teamLabel(b, slot) {
+    var map = ((b || {}).tenant || {}).teams || {};
+    return map[slot] || slot;
+  }
+
+  function teamBuckets(b) {
+    var map = (b.tenant || {}).teams || {};
+    var buckets = Object.keys(map).map(function (slot) {
+      return { slot: slot, label: map[slot], cases: [], unrouted: false };
+    });
+    // Not a team. The agent declining to choose one, which is a different fact and gets its own
+    // label for that reason.
+    buckets.push({ slot: "none", label: "Not routed", cases: [], unrouted: true });
+    var bySlot = {};
+    buckets.forEach(function (bucket) { bySlot[bucket.slot] = bucket; });
+    cases(b).forEach(function (c) {
+      var slot = (c.decision || {}).owning_team;
+      (bySlot[slot] || bySlot.none).cases.push(c);
+    });
+    return buckets;
+  }
+
+  function bucketFor(b, slot) {
+    if (!slot) return null;
+    var found = teamBuckets(b).filter(function (bucket) { return bucket.slot === slot; });
+    return found.length ? found[0] : null;
+  }
+
+  /* Every link site percent-encodes the case id, because `make_case_id` joins its triple with
+   * "#" and a raw one truncates the hash at the fragment. */
+  function deskHref(teamSlot, caseId) {
+    var base = teamSlot ? "#/desk/team/" + encodeURIComponent(teamSlot) : "#/desk";
+    return caseId ? base + "/case/" + encodeURIComponent(caseId) : base;
+  }
+
   /* ---- chrome ------------------------------------------------------------------------------ */
 
   function shell(b, parts) {
@@ -108,15 +166,22 @@ window.EARSHOT_CONSOLE = (function () {
     );
   }
 
-  function tabStrip(active, openCase) {
+  function tabStrip(active, openCase, team) {
+    // A filtered queue is a different work item, so the pinned tab names the team and keeps the
+    // filter. That is also what makes the tab a link someone can send: the route is the state.
     var tabs = [
-      { key: "queue", label: "Queue: Conversation risk", href: "#/desk", pinned: true },
+      {
+        key: "queue",
+        label: "Queue: " + (team ? team.label : "Conversation risk"),
+        href: deskHref(team ? team.slot : null, null),
+        pinned: true,
+      },
     ];
     if (openCase) {
       tabs.push({
         key: "case",
         label: openCase.customer_id + " · " + U.words(openCase.signal_type),
-        href: "#/desk/case/" + encodeURIComponent(openCase.case_id),
+        href: deskHref(team ? team.slot : null, openCase.case_id),
       });
     }
     if (active === "call") {
@@ -172,14 +237,59 @@ window.EARSHOT_CONSOLE = (function () {
 
   /* ---- the split-view queue ---------------------------------------------------------------- */
 
-  function splitView(b, selectedId) {
-    var rows = cases(b)
+  /* One filter chip. The count carries its denominator, always: "1 of 6 cases" is a fact a
+   * reviewer can act on and "1 case" is a number they have to go and check. */
+  function teamChip(bucket, total, on) {
+    return (
+      '<a class="cns-team' + (on ? " on" : "") + (bucket.unrouted ? " unrouted" : "") +
+      '" href="' + U.esc(deskHref(bucket.slot, null)) + '"' +
+      (on ? ' aria-current="page"' : "") + ">" +
+      '<span class="cns-teamname">' + U.esc(bucket.label) + "</span>" +
+      '<span class="cns-teamn num">' + U.esc(bucket.cases.length) + " of " + U.esc(total) +
+      " cases</span></a>"
+    );
+  }
+
+  function teamFilter(b, teamSlot) {
+    var all = cases(b);
+    var total = all.length;
+    var chips = teamBuckets(b)
+      .map(function (bucket) { return teamChip(bucket, total, bucket.slot === teamSlot); })
+      .join("");
+    return (
+      '<div class="cns-teams" role="group" aria-label="Filter this queue by owning team">' +
+      '<a class="cns-team all' + (teamSlot ? "" : " on") + '" href="#/desk"' +
+      (teamSlot ? "" : ' aria-current="page"') + ">" +
+      '<span class="cns-teamname">All teams</span>' +
+      '<span class="cns-teamn num">' + U.esc(total) + " of " + U.esc(total) + " cases</span></a>" +
+      chips +
+      "</div>" +
+      // Two facts a reviewer needs before they trust the filter, in the order they need them:
+      // what the empty bucket means, and which of the brief's promised views this set is.
+      '<p class="cns-teamnote"><strong>Not routed</strong> is the agent declining to choose a ' +
+      "team, not a team that does not exist. It declined 8 of 49 times when routing was measured " +
+      "(2026-08-28), so the bucket is listed even at zero — those are the cases a reviewer must " +
+      "not lose.</p>" +
+      '<p class="cns-teamnote">The submitted brief promised three views; these four are the ' +
+      "destinations the ledger models. Retention survives by name, Risk and Compliance splits " +
+      "across " + U.esc(teamLabel(b, "collections")) + ", " +
+      U.esc(teamLabel(b, "vulnerability")) + " and " + U.esc(teamLabel(b, "complaints")) +
+      ", and <strong>Commercial has no equivalent here</strong> — that use case was never " +
+      "modelled, and inventing a team to match the brief would be worse than saying so.</p>"
+    );
+  }
+
+  function splitView(b, selectedId, teamSlot) {
+    var all = cases(b);
+    var team = bucketFor(b, teamSlot);
+    var shown = team ? team.cases : all;
+    var rows = shown
       .map(function (c) {
         var d = c.decision || {};
         var sev = c.score >= c.threshold ? "high" : "mid";
         return (
           '<a class="cns-qrow ' + sev + (c.case_id === selectedId ? " on" : "") +
-          '" href="#/desk/case/' + U.esc(encodeURIComponent(c.case_id)) + '">' +
+          '" href="' + U.esc(deskHref(teamSlot, c.case_id)) + '">' +
           '<span class="cns-qtop">' +
             '<span class="cns-qid">' + U.esc(c.case_id.split("#")[0]) + "</span>" +
             '<span class="cns-qscore num">' + U.n2(c.score) + "</span>" +
@@ -195,7 +305,7 @@ window.EARSHOT_CONSOLE = (function () {
       })
       .join("");
 
-    var n = cases(b).length;
+    var n = all.length;
     var unworked = (b.unworked || []).length;
     return (
       '<aside class="cns-split">' +
@@ -203,9 +313,24 @@ window.EARSHOT_CONSOLE = (function () {
         "<strong>Conversation risk</strong>" +
         '<span class="muted small">' + n + " worked · " + unworked + " awaiting</span>" +
       "</div>" +
-      '<div class="cns-qlist">' + rows + "</div>" +
-      '<p class="cns-splitnote">' + n + " of " + (n + unworked) + " threshold crossings have " +
-      "been investigated. The rest are listed with their reason rather than dropped.</p>" +
+      teamFilter(b, team ? team.slot : null) +
+      '<div class="cns-qlist">' +
+      (rows ||
+        '<p class="cns-qempty">' +
+        (team && team.unrouted
+          ? "The agent named a team on every case it worked in this run — nothing was left " +
+            "unrouted."
+          : "No case in this run routed to <strong>" +
+            U.esc(team ? team.label : "any team") + "</strong>.") +
+        "</p>") +
+      "</div>" +
+      '<p class="cns-splitnote">' +
+      (team
+        ? U.esc(team.cases.length) + " of " + n + " worked cases are on this team's queue. "
+        : "") +
+      n + " of " + (n + unworked) + " threshold crossings have " +
+      "been investigated. The rest are listed with their reason rather than dropped — a crossing " +
+      "with no verdict has no route, so it is in no team's bucket above.</p>" +
       "</aside>"
     );
   }
@@ -461,20 +586,26 @@ window.EARSHOT_CONSOLE = (function () {
 
   /* ---- views -------------------------------------------------------------------------------- */
 
-  function renderCase(view, crumbs, caseId) {
+  function renderCase(view, crumbs, caseId, teamSlot) {
     var b = block();
     if (!b) return false;
-    var list = cases(b);
-    var c = (caseId && caseById(b, caseId)) || list[0];
-    if (!c) return false;
-    U.setCrumbs(crumbs, [
-      { label: "Reviewer desk", href: "#/desk" },
-      { label: c.customer_id },
-    ]);
+    var team = bucketFor(b, teamSlot);
+    // An unknown slot is a dead link, not an empty queue. Say so rather than quietly showing the
+    // unfiltered list under a team's name.
+    if (teamSlot && !team) return false;
+    var list = team ? team.cases : cases(b);
+    var c = (caseId && caseById(b, caseId)) || list[0] || null;
+    // A case reached through a team route but routed elsewhere would make the filter lie about
+    // what is on screen. Fall back to the top of the filtered list instead.
+    if (c && team && list.indexOf(c) < 0) c = list[0] || null;
+    if (!c) return team ? renderEmptyTeam(view, crumbs, b, team) : false;
+    U.setCrumbs(crumbs, [{ label: "Reviewer desk", href: "#/desk" }]
+      .concat(team ? [{ label: team.label, href: deskHref(team.slot, null) }] : [])
+      .concat([{ label: c.customer_id }]));
 
     view.innerHTML = shell(b, {
-      tabs: tabStrip("case", c),
-      split: splitView(b, c.case_id),
+      tabs: tabStrip("case", c, team),
+      split: splitView(b, c.case_id, team ? team.slot : null),
       record:
         '<main class="cns-record">' +
         highlights(b, c) +
@@ -496,8 +627,40 @@ window.EARSHOT_CONSOLE = (function () {
     return true;
   }
 
-  function renderQueue(view, crumbs) {
-    return renderCase(view, crumbs, null);
+  function renderQueue(view, crumbs, teamSlot) {
+    return renderCase(view, crumbs, null, teamSlot || null);
+  }
+
+  /* A team with nothing in it. It still renders, with the filter and its zero, because a filter
+   * that hides an empty team tells a reviewer their queue is complete when it is not — and an
+   * empty destination is itself a finding: `retention` never appeared as a truth team in the
+   * routing sample at all (AT-58, 2026-08-28). */
+  function renderEmptyTeam(view, crumbs, b, team) {
+    U.setCrumbs(crumbs, [
+      { label: "Reviewer desk", href: "#/desk" },
+      { label: team.label },
+    ]);
+    view.innerHTML = shell(b, {
+      tabs: tabStrip("queue", null, team),
+      split: splitView(b, null, team.slot),
+      record:
+        '<main class="cns-record"><div class="cns-void">' +
+        "<h2>" + U.esc(team.label) + " — 0 of " + U.esc(cases(b).length) + " cases</h2>" +
+        "<p>" +
+        (team.unrouted
+          ? "The agent named a team on every case it worked in this run. This bucket is shown " +
+            "anyway because it is where a declined routing call lands, and a queue that hides it " +
+            "reads as though the agent always chooses."
+          : "No case in this run routed here. The bucket is shown anyway: hiding an empty team " +
+            "tells a reviewer their queue is complete when it is not, and an empty destination " +
+            "is a finding rather than a gap — it is how a model that escalates instead of " +
+            "discriminating shows up.") +
+        "</p>" +
+        '<p><a class="plain" href="#/desk">Back to all teams</a></p>' +
+        "</div></main>",
+      utility: utilityBar(b, "ours"),
+    });
+    return true;
   }
 
   /* The live-call view. Deliberately labelled illustrative: this is where our reader's
@@ -564,8 +727,8 @@ window.EARSHOT_CONSOLE = (function () {
     });
 
     view.innerHTML = shell(b, {
-      tabs: tabStrip("call", cases(b)[0]),
-      split: splitView(b, null),
+      tabs: tabStrip("call", cases(b)[0], null),
+      split: splitView(b, null, null),
       record:
         '<main class="cns-record">' +
         '<div class="cns-softphone">' +
@@ -607,6 +770,13 @@ window.EARSHOT_CONSOLE = (function () {
 
   return {
     hasData: function () { return !!block(); },
+    // The router asks before rendering, so an unknown slot becomes a named "not found" rather
+    // than a console that silently drops the filter it was asked for.
+    hasTeam: function (slot) { var b = block(); return !!(b && bucketFor(b, slot)); },
+    teamSlots: function () {
+      var b = block();
+      return b ? teamBuckets(b).map(function (bucket) { return bucket.slot; }) : [];
+    },
     renderQueue: renderQueue,
     renderCase: renderCase,
     renderCall: renderCall,

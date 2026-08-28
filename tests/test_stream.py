@@ -20,11 +20,12 @@ from earshot.memory import SignalLedger
 from earshot.stream import (
     ANSWER_KEY_FIELDS,
     StreamError,
+    _team_rollup,
     arrival_order,
     run_stream,
     stream_payload,
 )
-from earshot.tenants import NORTHWIND, TENANTS
+from earshot.tenants import CANONICAL_TEAMS, NORTHWIND, TENANTS
 
 
 @pytest.fixture(scope="module")
@@ -272,6 +273,65 @@ def test_team_rollup_lists_every_slot_even_at_zero(run) -> None:
     payload = stream_payload(run, {"asr": "none"})
     labels = {row["team"] for row in payload["teams"]}
     assert {"retention", "collections", "vulnerability", "complaints"} <= labels
+
+
+def test_team_rollup_lists_the_unrouted_bucket_even_at_zero(run) -> None:
+    """`none` is not a team; it is the agent declining to pick one, and it is listed at zero.
+
+    Dropping the row when it is empty makes "the agent always picks a team" the default reading
+    of every dashboard that has not yet seen a declined case. It declined 8 of 49 times when
+    routing was measured on 2026-08-28, so that reading is wrong, and those are the cases a
+    reviewer must not lose.
+    """
+    payload = stream_payload(run, {"asr": "none"})
+    rows = [row for row in payload["teams"] if row["team"] == "none"]
+    assert len(rows) == 1, "the unrouted bucket must appear exactly once, at zero or not"
+    assert rows[0]["cases"] == 0
+
+
+def _record(slot: str | None) -> dict:
+    """A case record as far as the rollup is concerned: a decision with a routing slot."""
+    return {"decision": {} if slot is None else {"owning_team": slot}}
+
+
+def test_team_rollup_is_a_partition_of_the_cases() -> None:
+    """Every case counts in exactly one bucket, and the buckets sum to the whole queue.
+
+    Property, not a pinned table: the team-scoped queue in `ui/console.js` filters the same
+    records, so a rollup that double-counts or drops one makes the filter's denominator disagree
+    with the rows a reviewer can see. The unmapped and missing slots are here on purpose — both
+    must land in `none` rather than vanishing.
+    """
+    records = {
+        "a": _record("retention"),
+        "b": _record("vulnerability"),
+        "c": _record("vulnerability"),
+        "d": _record("none"),
+        "e": _record(None),
+        "f": _record("commercial"),  # not a canonical slot: the brief's fourth view, never built
+    }
+    rows = _team_rollup(records, NORTHWIND)
+
+    assert [row["team"] for row in rows] == [*CANONICAL_TEAMS, "none"]
+    assert sum(row["cases"] for row in rows) == len(records)
+    counts = {row["team"]: row["cases"] for row in rows}
+    assert counts["retention"] == 1
+    assert counts["vulnerability"] == 2
+    assert counts["collections"] == 0
+    # A declined route, a decision with no slot, and a slot no queue drains all read the same way
+    # to a reviewer: the agent did not choose a destination.
+    assert counts["none"] == 3
+
+
+def test_team_rollup_labels_are_the_tenants_names_not_the_models_slots() -> None:
+    """D-029: the team map is display-only. The slot is the model's vocabulary and stays out of
+    anything a reviewer reads, or a client string ends up inside the decision contract."""
+    rows = _team_rollup({"a": _record("retention")}, NORTHWIND)
+    by_slot = {row["team"]: row["label"] for row in rows}
+    for slot in CANONICAL_TEAMS:
+        assert by_slot[slot] == NORTHWIND.teams[slot]
+    assert by_slot["none"] == NORTHWIND.team_label(None)
+    assert by_slot["none"] != "none"
 
 
 def test_empty_book_is_refused_not_streamed() -> None:

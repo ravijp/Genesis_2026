@@ -153,7 +153,27 @@ const routes = [
   "#/stream",
   "#/stream/NO-SUCH-TENANT",
   "#/no-such-screen",
+  // A team route with no team, and one naming a slot this deployment does not have. Both must
+  // degrade to a named "not found" rather than silently dropping the filter and showing the
+  // whole queue under a team's name.
+  "#/desk/team",
+  "#/desk/team/NO-SUCH-TEAM",
 ];
+
+/* The team-scoped queue. Every canonical slot the tenant maps, plus `none`, is a route -- a team
+ * with zero cases still has to render, because a filter that 404s on an empty team hides exactly
+ * the routing concentration worth seeing. Built from the tenant's own map so adding a slot to
+ * `CANONICAL_TEAMS` puts it in this list without anyone remembering to.
+ *
+ * From `tenants[0]` because that is the block the console renders -- `#/desk` is one deployment's
+ * desk, not a portfolio, and a second tenant arrives at `#/stream/<id>` rather than here. */
+const teamSlots = [
+  ...Object.keys(stream.tenants[0].tenant.teams || {}),
+  "none",
+];
+for (const slot of teamSlots) {
+  routes.push(`#/desk/team/${slot}`);
+}
 
 for (const block of stream.tenants) {
   const tid = block.tenant.tenant_id;
@@ -161,6 +181,12 @@ for (const block of stream.tenants) {
   const streamCaseId = Object.keys(block.cases)[0];
   if (streamCaseId) {
     routes.push(`#/desk/case/${encodeURIComponent(streamCaseId)}`);
+    // A case opened from inside a team view keeps the filter in the route, and the encoding
+    // matters here for the same reason it does everywhere else: a case id contains "#".
+    const slot = (block.cases[streamCaseId].decision || {}).owning_team || "none";
+    routes.push(`#/desk/team/${slot}/case/${encodeURIComponent(streamCaseId)}`);
+    // A case reached through the wrong team's route must not render under that team's name.
+    routes.push(`#/desk/team/none/case/${encodeURIComponent(streamCaseId)}`);
     const row = (block.cases[streamCaseId].evidence || [])[0];
     routes.push(`#/stream/${tid}/case/${encodeURIComponent(streamCaseId)}`);
     routes.push(`#/stream/${tid}/case/${streamCaseId}`);
@@ -199,6 +225,48 @@ for (const hash of routes) {
     const hit = html.match(/.{0,60}(undefined|\[object Object\]|NaN).{0,60}/)[0];
     failures.push(`${hash}: rendered a placeholder value -> ...${hit}...`);
   }
+}
+
+/* The team filter has to be a partition of the queue, and the control has to list every bucket.
+ *
+ * Two failures this catches. A case routed to a slot the tenant map does not name would be filed
+ * silently under "Not routed", which is the one bucket that must mean "the agent declined" and
+ * nothing else. And a control that drops an empty team tells a reviewer their queue is complete
+ * when it is not -- so the rendered markup is checked for a link per slot, at zero or not. */
+for (const block of stream.tenants) {
+  const tid = block.tenant.tenant_id;
+  const mapped = Object.keys(block.tenant.teams || {});
+  const counts = Object.fromEntries([...mapped, "none"].map((slot) => [slot, 0]));
+  for (const one of Object.values(block.cases)) {
+    const slot = (one.decision || {}).owning_team;
+    if (slot && slot !== "none" && !mapped.includes(slot)) {
+      failures.push(
+        `${tid}: case ${one.case_id} routed to "${slot}", which this deployment's team map does ` +
+          `not name -- the filter would file it under Not routed`
+      );
+    }
+    counts[mapped.includes(slot) ? slot : "none"] += 1;
+  }
+  const summed = Object.values(counts).reduce((a, b) => a + b, 0);
+  if (summed !== Object.keys(block.cases).length) {
+    failures.push(
+      `${tid}: team buckets hold ${summed} cases, the queue holds ` +
+        `${Object.keys(block.cases).length} -- the filter is not a partition`
+    );
+  }
+}
+
+context.location.hash = "#/desk";
+for (const id of Object.keys(nodes)) nodes[id].innerHTML = "";
+vm.runInContext(readFileSync(join(UI, "app.js"), "utf8"), context);
+const desk = nodes.view.innerHTML;
+for (const slot of teamSlots) {
+  if (!desk.includes(`href="#/desk/team/${slot}"`)) {
+    failures.push(`#/desk does not offer a filter for "${slot}"; an empty team must still show`);
+  }
+}
+if (!/ of \d+ cases/.test(desk)) {
+  failures.push("#/desk team filter prints a count with no denominator");
 }
 
 // Answer-key discipline, checked at the last possible moment: what is actually in the browser.

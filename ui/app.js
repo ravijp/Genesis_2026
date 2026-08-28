@@ -436,13 +436,34 @@
         "<strong>This is the product surface.</strong> The desktop chrome is a stand-in for the " +
         "client's own case-management console; only the outlined panel is ours. Customer data " +
         "is synthetic and there is no speech recognition anywhere in this system.";
+      // `#/desk/team/<slot>` and `#/desk/team/<slot>/case/<id>`: a team view is a link someone
+      // sends a colleague, so the filter lives in the route rather than in a variable, and it
+      // survives a reload. The slot is the model's canonical `OwningTeam` value — stable, and the
+      // only part of the mapping that belongs in a URL; the label a reviewer reads comes from the
+      // tenant profile (D-029).
+      var deskHome = { backHref: "#/desk", backLabel: "Reviewer desk" };
+      if (parts[1] === "team") {
+        var slot = parts[2] || null;
+        if (!slot || !CONSOLE.hasTeam(slot)) {
+          return renderMissing(
+            deskHome,
+            'No team view for "' + (slot || "") + '". This deployment routes to: ' +
+              CONSOLE.teamSlots().join(", ") + "."
+          );
+        }
+        var teamOk = parts[3] === "case"
+          ? CONSOLE.renderCase(view, crumbs, parts[4] || null, slot)
+          : CONSOLE.renderQueue(view, crumbs, slot);
+        if (teamOk) return;
+        return renderMissing(deskHome, "The console has no recorded run to show.");
+      }
       var ok = parts[1] === "call"
         ? CONSOLE.renderCall(view, crumbs, parts[2] || null)
         : parts[1] === "case"
           ? CONSOLE.renderCase(view, crumbs, parts[2] || null)
           : CONSOLE.renderQueue(view, crumbs);
       if (ok) return;
-      return renderMissing(null, "The console has no recorded run to show.");
+      return renderMissing(deskHome, "The console has no recorded run to show.");
     }
 
     if (!parts.length && CONSOLE && CONSOLE.hasData()) {

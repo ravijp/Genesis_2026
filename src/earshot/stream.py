@@ -395,6 +395,14 @@ def _team_rollup(records: dict[str, dict[str, Any]], t: Tenant) -> list[dict[str
     Every canonical slot is listed even at zero. A rollup that hides empty teams reads as "this
     tenant has three teams", and the absence of routing to one of them is itself a finding: it is
     how AT-57's non-discrimination shows up on a dashboard.
+
+    **`none` is listed at zero for the same reason, and it is not the same reason.** It is not a
+    team; it is the agent declining to choose one, which it did 41 / 49 correct, 0 wrong, 8
+    declined on 2026-08-28 (`tools/routing_accuracy.py`). Dropping the row when it is empty makes
+    "the agent always picks a team" the default reading of every dashboard that has not yet seen a
+    declined case, and those cases are precisely the ones a reviewer must not lose.
+
+    The rows partition `records`: every case counts once, and the counts sum to `len(records)`.
     """
     counts: dict[str, int] = {slot: 0 for slot in CANONICAL_TEAMS}
     unrouted = 0
@@ -408,8 +416,7 @@ def _team_rollup(records: dict[str, dict[str, Any]], t: Tenant) -> list[dict[str
         {"team": slot, "label": t.team_label(slot), "cases": counts[slot]}
         for slot in CANONICAL_TEAMS
     ]
-    if unrouted:
-        rows.append({"team": "none", "label": t.team_label(None), "cases": unrouted})
+    rows.append({"team": "none", "label": t.team_label(None), "cases": unrouted})
     return rows
 
 
