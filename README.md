@@ -263,10 +263,10 @@ keyless replay.
 |---|---|
 | Reader, cost per 1,000 conversations | **$1.66** ($0.24845 over 150) |
 | Reader latency | p50 **1,244 ms**, p95 **2,212 ms** |
-| Investigation, cost per case | **$0.0301** (50 cases, $1.5032; p95 $0.0351, max $0.0388) |
-| Investigation latency, model time | p50 **18.4 s**, p95 **21.7 s** |
+| Investigation, cost per case | **$0.0295** (50 cases, $1.4733; p95 $0.0357, max $0.0368) |
+| Investigation latency, model time | p50 **19.8 s**, p95 **24.7 s** |
 | Evidence repairs (first-attempt groundedness) | **0 / 50** |
-| Loop exits | `decided` 50 / 50 — no `cost_cap`, no `max_steps`; 4–6 model calls per case |
+| Loop exits | `decided` 50 / 50 — no `cost_cap`, no `max_steps`; 4–5 model calls per case |
 
 **The agent does not discriminate, and this is the headline result of AT-57.** Fifty crossings —
 25 with a real outcome and 25 without — sampled deliberately, because the top of the queue is nearly
@@ -274,21 +274,25 @@ all true positives and a run drawn from it cannot be wrong in the direction that
 
 | | verdict `genuine` | verdict `false_alarm` | abstained |
 |---|---|---|---|
-| outcome present (25) | **19** | 5 | 1 |
-| outcome absent (25) | **22** | **3** | 0 |
+| outcome present (25) | **18** | 6 | 1 |
+| outcome absent (25) | **21** | **4** | 0 |
 
-It caught 19 of 25 real cases and dismissed **3 of 25** false alarms, at a mean confidence of 0.92 on
-the wrong answers. **Overall 22 / 50.** An earlier 10-case run read 4 / 10; five times the sample
-moved the number and not the conclusion.
+It caught 18 of 25 real cases and dismissed **4 of 25** false alarms, at a mean confidence of 0.86 on
+the wrong answers. **Overall 22 / 50.** An earlier 10-case run read 4 / 10, and a 50-case run on the
+pre-fix corpus also read 22 / 50 — five times the sample and a regenerated corpus moved the number by
+one case in each direction and did not move the conclusion.
 
-**Provenance, stated because it is a real limitation.** This run was measured on 2026-08-28 against
-the corpus as it stood at commit `47a2be8`, hours before the fragment re-plant fix (`08b20cc`) changed
-which customers cross. **It therefore no longer replays**, and the re-run on the fixed corpus is
-pending an expired SSO session, not a design problem. Two things were built out of that: run manifests
-now carry a `pipeline_sha` covering the *code* that turns a seed into a queue — `config_hash` covers
-configuration values only, and it was byte-identical across both corpora — and a run in which every
-case ends in `provider_error` refuses to write an artifact at all, because a failed replay silently
-overwrote this very measurement once.
+Replay it with no credentials and no network:
+
+```bash
+EARSHOT_CACHE_MODE=replay uv run python tools/verdict_accuracy.py   --provider bedrock --per-arm 25 --customers 2400
+```
+
+That reproduces 22 / 50 and $1.4733 from the committed cache, and it writes to a **separate**
+`-replay` artifact rather than over the recorded one. Both of those are scar tissue: a failed replay
+once overwrote the keyed run it was replaying — same seed, same config hash, same provider, same
+filename — and `config_hash` turned out not to cover the *code* that turns a seed into a queue, so
+manifests now also carry a `pipeline_sha`.
 
 So the D-025 cost argument for Haiku is **not yet earned**: it is cheap and it is fast, and on this
 sample it escalates everything. Whether a stronger model, a better prompt or a false-alarm-aware
@@ -298,15 +302,56 @@ an audit trail, not filtering.
 **Routing accuracy, measured for the first time on 2026-08-28 — and it is the good news.** Each
 customer carries a seeded `trajectory`, so a correct owning team exists; `tools/routing_accuracy.py`
 grades the `owning_team` the investigator already recorded, making **zero further model calls**. On
-the same 50 cases: **41 of 49 routed to the right team, 0 wrong, 8 declined** (`owning_team="none"`).
-**When it commits to a team it is never wrong**; its failure mode is refusing to route, and the
-declines concentrate in `complaints` (5 of 12) and `collections` (2 of 7). The 50th case is a
-decoy-accumulator customer with no seeded trajectory — no correct team exists for it, so it is
-reported separately and never enters the denominator. `retention` never appears as a truth team in
-this sample, so nothing here speaks to churn routing at all.
+the same 50 cases: **36 of 49 routed to the right team, 2 wrong, 11 declined**
+(`owning_team="none"`). Its dominant failure mode is refusing to route rather than misrouting, and
+the declines concentrate in `collections` (8 of 22). Both wrong routes are the bad kind — neither
+matched the ledger's own dominant signal at the crossing, so they are unmoored from the evidence on
+hand rather than defensible near-misses. The 50th case is a decoy-accumulator customer with no seeded
+trajectory: no correct team exists for it, so it is reported separately and never enters the
+denominator.
+
+**`retention` has no row in that table at all, and that is not sampling.** See the next section — the
+route is structurally unreachable under the offline reader, so this figure is really measured on three
+teams out of four.
 
 Read together, the two results say the investigator is a **router and an audit trail, not a filter**:
 it addresses the case correctly and escalates almost everything.
+
+### The retention route is dead under the offline reader
+
+Measured 2026-08-29, and it is the sharpest thing on this page.
+
+The corpus plants four signal families evenly. The offline lexicon finds churn evidence in **1.35 of
+3.42** planted conversations — a coverage ratio of **0.40**, against 0.71 / 0.76 / 0.77 for the other
+three families. Corroboration in the ledger is *cross-conversation*, so a customer whose evidence
+lands in one conversation never corroborates with anything:
+
+| trajectory | conversations planted | conversations found | ratio | best score reached | crossings |
+|---|---|---|---|---|---|
+| `churn_intent` -> retention | 3.42 | 1.35 | **0.40** | **0.646** | **0 / 325** |
+| `complaint_escalation` -> complaints | 3.24 | 2.28 | 0.71 | 0.903 | 55 / 304 |
+| `life_event` -> vulnerability | 3.29 | 2.49 | 0.76 | 0.960 | 109 / 358 |
+| `financial_distress` -> collections | 3.56 | 2.73 | 0.77 | 0.955 | 85 / 323 |
+
+At a threshold of **0.675**, churn customers top out at **0.646**. Not one of 325 can cross. **The
+Retention desk never receives a case** — and Retention is the *lead* team in the submitted brief. It
+is also why `retention` has no row in the routing table above: the agent has never been handed a churn
+case to route.
+
+This is not the corpus favouring some families over others. Fragment strengths are comparable across
+all four and churn's are the strongest (max 0.95). It is a **pass-B gap**: the extractor cues for
+churn fire in fewer of the conversations where churn was planted. Pass A and pass B are authored
+without reference to each other on purpose — that independence is what makes the miss rate honest —
+and widening the churn cues now to close a gap we discovered by measuring the answer key is precisely
+the tuning that rule exists to prevent. So it is published rather than fixed.
+
+**What it is evidence for.** The lexicon is the keyless fallback, not the reader the deployed system
+runs. The model reader scores 0.8214 (92 / 112) against the lexicon's 0.0357 (4 / 112) on real CFPB
+language, and whether it closes *this* gap is being measured rather than assumed —
+`tools/reader_coverage.py` runs both readers over the same sampled conversations and reports the same
+table. A route that is dead under the fallback and alive under the model is the strongest argument
+this repo has for the model reader; a route that is dead under both is a finding about the corpus we
+would have to publish instead. Either way the number goes on this page.
 
 **One more number the recall table never reports:** of the 240 customers the ledger surfaces at a 10%
 review budget over 2,400, **25 have a real outcome and 215 do not**. That is the ledger's own
