@@ -5,7 +5,7 @@ in place at each handover. **Keep it under ~60 lines** — it loads into every c
 baton, not a history: next action, live blockers, traps already paid for. History goes in
 `progress.md` or git.
 
-**2026-08-28** · commit `1275f95` · branch `build/ear-on-every-call` · **539 tests**, guard at 114, ruff clean
+**2026-08-28** · commit `1c21c19` · branch `build/ear-on-every-call` · **557 tests**, guard at 114, ruff clean
 
 ## First turn
 
@@ -16,13 +16,20 @@ baton, not a history: next action, live blockers, traps already paid for. Histor
 
 ## Next action — the IT ask, then a bigger sample
 
-**The demo layer landed 2026-08-28** (`1275f95`): `earshot stream` + `tenants.py` + two new UI
-screens. Three synthetic deployments, conversations arriving in global day order, the queue
-re-ranking live, cases opening. Haiku 4.5 on Bedrock read all 460 conversations ($0.653) and worked
-12 crossings ($0.412) — cached, so it replays keyless. `earshot stream --serve` runs the same loop
-over SSE on localhost for a genuinely-live stage demo. `ui/README.md` is the operator's guide.
+**The demo layer landed 2026-08-28** (`1275f95` → `1c21c19`): `earshot stream`, `read_live.py`,
+`tenants.py`, and the demo UI screens. Conversations arrive in global day order; the reader is
+re-asked after each customer turn so a belief is watched forming (3 withdrawn, 1 requoted in real
+output); one deployment, framed as an integration into a client's stack with six of nine pipeline
+stages marked as theirs. Keyed on Bedrock: $0.469 total, cached so it replays keyless.
+`--serve --narrate-live` does the turn-by-turn live. `ui/README.md` is the operator's guide.
 
-**Everything else buildable is built.** W1, W4, W7, W8, W10, W11 and the reviewer API are done; AWS is
+**Two agents were in flight at this handover** — an opus UI design pass (worktree) and research into
+retail-banker desktop conventions. The intent: product screens should read as *our panel inside the
+client's console*, a labelled stand-in and never a clone of a real vendor's branding, with the
+stream and retro screens kept as the demo's explanatory half. If neither landed, that is the
+next action.
+
+**Everything else buildable is built.****Everything else buildable is built.** W1, W4, W7, W8, W10, W11 and the reviewer API are done; AWS is
 provisioned, all three Lambdas are deployed (zip sha `8323ff7cd3ca`), six CloudWatch alarms exist,
 and the first keyed runs have produced real numbers. What is left needs either IT or more money.
 
@@ -98,6 +105,13 @@ a fresh clone runs all 416 tests keyless, and that is load-bearing.
 - **A warm reader cache makes a "live" run a replay.** `--serve` names the cache mode in the LIVE
   badge for exactly this reason; `EARSHOT_CACHE_MODE=off` forces new calls. A live badge over
   cached completions is the one dishonest pixel the demo could have had.
+- **Narration must never run on the ledger's extractor.** `ExtractionTelemetry.conversations` is
+  the denominator of the published cost-per-1,000 figure; 54 prefix reads counted as 54
+  conversations divides the same money by nine times the work. Both narration paths build a
+  second extractor instance for this reason.
+- **The final turn-by-turn read must equal the batch read.** Byte-identical messages, so under a
+  content-addressed cache they are one entry — that is the guarantee the animated belief is the
+  belief that got appended. `test_read_live.py` pins it.
 - **A case id contains `#`** (`make_case_id` joins its triple with it). Every UI link now
   percent-encodes it and `smoke.mjs` renders both forms.
 - **Agents that write files need `isolation: "worktree"`.** Untracked files + another agent's

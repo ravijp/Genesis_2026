@@ -18,7 +18,7 @@ building it. Next gate **2026-09-07**. The 08-10 check-in and the 08-24 combined
 artifact records what 08-24 showed.
 
 The system runs end to end with zero API keys: dataset generation → extraction → per-customer ledger →
-investigator agent producing case files with cited evidence, and a five-screen UI that opens from disk. **539 tests**, ruff clean.
+investigator agent producing case files with cited evidence, and a five-screen UI that opens from disk. **557 tests**, ruff clean.
 
 **The AWS layer now exists in code.** `llm/bedrock.py` (Converse, Haiku 4.5, computed-not-charged cost),
 `aws/stores.py` (DynamoDB ledger/cases/reviews, conditional writes, no delete path on the ledger) and
@@ -57,28 +57,39 @@ Everything touching a store returns 500 and neither queue is wired — see the I
 Account `859430413223`, permission set `agentic-trio`, **us-east-1**, bucket `s3://agentic-trio`.
 Coordinates, the deployed resource table and the IAM ask: `aws-infrastructure.md`.
 
-**The demo layer is built and paid for (2026-08-28).** `earshot stream` walks a book in **global
+**The demo layer is built and paid for (2026-08-28).** `earshot stream` walks the book in **global
 day order across all customers** — the arrival pattern, not a batch with a clock on it — and emits a
 frame per conversation carrying what the reader found, the score before and after, the re-ranked
-board, and the per-call cost and latency. `tenants.py` makes that three deployments: **a tenant is a
-configuration** (own corpus, own half-lives, own fixed threshold, own names for the four canonical
-`OwningTeam` slots), never a fork, and the team map is display-only so the model's decision contract
-stays a closed `Literal`. Haiku 4.5 on Bedrock read all 460 conversations ($0.653, p50 ~1.1s, zero
-unparsable) and worked 12 crossings ($0.412). Both are cached, so a fresh clone replays every screen
-keyless. `--serve` runs the same loop over SSE on 127.0.0.1 for a genuinely-live stage demo.
+board, and the per-call cost and latency.
 
-Four things to carry about it, all of them on screen rather than in a caption:
+**`read_live.py` reads a call while it is still open**: the reader is re-asked after each customer
+turn on the transcript heard *so far*, so a belief is watched forming instead of arriving finished.
+Real movement in real output across six narrated conversations — 9 appeared, 7 firmed, 1 faded, **3
+withdrawn** (the model retracts after hearing more), **1 requoted** (it moves its citation to better
+evidence). `--serve` does it inline so it happens live on stage; verified with
+`EARSHOT_CACHE_MODE=off`.
 
-- **No speech recognition exists in this system.** What replays is the arrival pattern; at 1× each
-  frame is held for the reader's own measured latency. `manifest.asr` is `"none"` and the smoke test
-  fails the build if it changes.
-- **The stream threshold is a fixed cut**, mirroring `aws/ingest.py`. It is *not* the budget-derived
-  one `earshot investigate` reports. They disagree about who crossed. Do not merge them on stage.
-- **12 of 33 crossings were investigated**, four per tenant, to bound a re-record. The other 21 are
-  listed unworked with the reason.
+**One deployment, framed as an integration.** A portfolio of three invented banks briefly shipped and
+was cut: it demonstrated the configuration layer and nothing else, and three fake logos is a weaker
+claim than one deployment described honestly. `tenants.py` keeps the machinery — that machinery *is*
+the per-client seam — and adds a `Seam` list of the nine pipeline stages with who owns each. **Six of
+nine are the client's existing systems**, and the screen counts them rather than asserting it.
+
+**Measured, keyed:** 133 conversations for $0.187 (p50 1,101 ms, **0 unparsable, 0 dropped quotes**),
+54 narration calls for $0.073, 6 investigations for $0.209. **$0.469 total**, cached so a fresh clone
+replays keyless.
+
+Five things to carry, all of them on screen rather than in a caption:
+
+- **No speech recognition exists in this system**, and the deployment screen marks that seam as the
+  *client's*. `manifest.asr` is `"none"` and the smoke test fails the build if it changes.
+- **The stream threshold is a fixed cut**, mirroring `aws/ingest.py`, *not* the budget-derived one
+  `earshot investigate` reports. They disagree about who crossed. Do not merge them on stage.
+- **6 of 9 crossings investigated; 6 of 133 conversations narrated.** Both denominators are printed.
+- **Narration runs on its own extractor instance.** Prefix reads landing in
+  `ExtractionTelemetry.conversations` would divide the same money by nine times the work.
 - **`stream.py` sits on the separation-guarded surface** because `cli.stream_inputs()` hands it the
-  conversations and the `ToolContext` factory. It never holds a `Corpus`. The exemption list stayed
-  at three.
+  conversations and the `ToolContext` factory. It never holds a `Corpus`. Exemption list stayed at 3.
 
 **The reviewer UI exists and needs nothing (W10).** `ui/index.html` opens from disk — no npm, no
 bundler, no network. Ranked queue, one case with its evidence chain, and the retro re-score, all
@@ -137,9 +148,15 @@ by construction.
    A static page cannot sign an `AuthType=AWS_IAM` Function URL, so this needs a decision about how
    the SPA authenticates — not just the IAM fix. `--serve` does **not** close this: it serves a demo
    stream from local state and has no write route by design.
-5. **Routing accuracy**, now that there is data to measure it against. The streamed run shows Haiku
-   sending 3 of Northwind's 4 cases to one team and leaving 2 of Meridian's 4 `unrouted`. That is a
-   direction, not an estimate, and `verdict_accuracy.py` already collects `owning_team`.
+5. **Routing accuracy**, now that there is data to measure it against. The streamed run shows the
+   agent concentrating its routing and sometimes returning `owning_team: "none"`. A direction, not
+   an estimate; `verdict_accuracy.py` already collects `owning_team`.
+6. **The UI's host framing.** Two agents are running as of this entry: an opus design pass on the
+   existing screens, and research into what a retail banker's desktop actually looks like
+   (Salesforce FSC / Service Cloud Voice, Amazon Connect, Genesys, Pega). The intent is that the
+   product screens read as *our panel inside the client's console* — a clearly-labelled stand-in,
+   never a clone of a real vendor's branding — with the stream and retro screens kept as the
+   demo's explanatory half.
 
 **One model, Haiku 4.5, for reader and investigator** (D-025). Sonnet is dropped, which *unblocked* the
 investigator — it needed an Anthropic use-case form and Haiku does not. **Haiku's verdict accuracy on a

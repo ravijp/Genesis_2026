@@ -55,7 +55,8 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | W10 | Reviewer UI, 3 screens | **DONE (read-only)** | `ui/`, no build step. All three beats render from a committed artifact with zero AWS. The write path waits on the API being reachable. Extended to five screens by W13; same renderers, new routes |
 | W11 | Observability (EMF) | **DONE (emit side)** | `aws/metrics.py`, wired into all three handlers. Alarms/dashboard still to create; no SNS, so they target EventBridge → Lambda |
 | W12 | Sweep runner | DROPPED for now | Fargate needs VPC subnets; keep the sweep local |
-| W13 | Live-stream demo, multi-deployment | **DONE** | `stream.py` + `tenants.py` + `ui/live.js`. Three synthetic enterprises, 460 conversations read by Haiku 4.5 on Bedrock, 12 crossings worked. `--serve` streams a genuinely-live run over SSE on localhost. 51 tests |
+| W13 | Live-stream demo + turn-by-turn read | **DONE** | `stream.py` + `read_live.py` + `tenants.py` + `ui/live.js`. One deployment framed as an integration; 133 conversations read by Haiku 4.5 on Bedrock, 6 read turn-by-turn, 6 crossings worked, $0.469. `--serve --narrate-live` does the turn-by-turn live. 73 tests |
+| W14 | UI as the client's console | **WIP** | The screens should read as our panel inside a banker's existing desktop (a labelled stand-in, never a vendor clone), with the stream and retro kept as the explanatory half. Design pass + desktop-conventions research both in flight 2026-08-28 |
 
 ## Blocked, and who owns it
 
@@ -76,6 +77,39 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-28 (night)** · **The call is read while it is still open, and the portfolio of three
+banks is gone** (`7dc594f`, `1c21c19`). `read_live.py` re-asks the reader after each customer turn
+on the transcript heard *so far*. Across six narrated conversations every movement occurs in real
+Bedrock output: 9 appeared, 7 firmed, 1 faded, **3 withdrawn** (the model retracts a signal after
+hearing more) and **1 requoted** (it moves its citation to better evidence). `_diff()` decides all
+of that in Python; the browser only animates it.
+
+Two properties keep it a measurement rather than theatre, both tested: the model is handed a
+genuine **prefix** — `RecordingExtractor` pins that prefixes grow, never repeat and never reorder —
+and the **final step's request is byte-identical to the batch read**, so under a content-addressed
+cache they are one entry. That second one is the guarantee that the belief at the end of the
+animation is the belief that was appended to the ledger.
+
+Narration runs on its **own extractor instance**, in both the batch and the live path.
+`ExtractionTelemetry.conversations` is the denominator of the published cost-per-1,000 figure and
+54 prefix reads counted as 54 conversations divides the same money by nine times the work. Reported
+apart everywhere: reader $0.187 + narration $0.073 + agent $0.209 = **$0.469**.
+
+**Three invented banks cut to one, reframed as an integration.** The portfolio demonstrated the
+configuration layer and nothing else. `tenants.py` keeps the machinery — it *is* the per-client
+seam — and adds a `Seam` list of the nine pipeline stages with who owns each. Six of nine are the
+client's existing systems and the screen counts them rather than asserting it. `test_tenants.py`
+now builds a second deployment in-test to prove the layer varies what it claims to, and pins that
+the speech-to-text seam is marked **theirs** — the single most tempting thing to fudge on a stage.
+
+`--serve --narrate-live` narrates inline, verified against real Bedrock with
+`EARSHOT_CACHE_MODE=off`: `churn_intent` 0.60 surfacing at six turns heard, three genuinely new
+calls while the HTTP request was open.
+
+**Open:** `handover.md` is at 119 lines against its own ~60-line cap and needs a trim at the next
+handover. Two agents in flight: a UI design pass and desktop-conventions research (W14).
+
 
 **2026-08-28 (late)** · **The demo layer, and real Bedrock behind all of it** (`1275f95`).
 `earshot stream` walks a book in **global day order across all customers** and emits one frame per
