@@ -345,13 +345,31 @@ without reference to each other on purpose — that independence is what makes t
 and widening the churn cues now to close a gap we discovered by measuring the answer key is precisely
 the tuning that rule exists to prevent. So it is published rather than fixed.
 
-**What it is evidence for.** The lexicon is the keyless fallback, not the reader the deployed system
-runs. The model reader scores 0.8214 (92 / 112) against the lexicon's 0.0357 (4 / 112) on real CFPB
-language, and whether it closes *this* gap is being measured rather than assumed —
-`tools/reader_coverage.py` runs both readers over the same sampled conversations and reports the same
-table. A route that is dead under the fallback and alive under the model is the strongest argument
-this repo has for the model reader; a route that is dead under both is a finding about the corpus we
-would have to publish instead. Either way the number goes on this page.
+**Measured 2026-08-29: the model reader revives retention and loses collections.** Both readers over
+the identical 288 sampled conversations (20 customers per trajectory), $0.4260, `tools/
+reader_coverage.py`. Coverage is against what was **planted**, and the second pair of columns is what
+a reviewer actually gets — the same signals through the same ledger at the same 0.6747 cut:
+
+| trajectory -> desk | lexicon coverage | model coverage | lexicon crossings | model crossings |
+|---|---|---|---|---|
+| `churn_intent` -> **Retention** | 30 / 70 (0.43) | **55 / 70 (0.79)** | **0 / 20** | **9 / 20** |
+| `financial_distress` -> Collections | 56 / 76 (0.74) | **32 / 76 (0.42)** | 4 / 20 | **1 / 20** |
+| `complaint_escalation` -> Complaints | 41 / 61 (0.67) | 42 / 61 (0.69) | 3 / 20 | 3 / 20 |
+| `life_event` -> Vulnerability | 60 / 70 (0.86) | 64 / 70 (0.91) | 10 / 20 | 16 / 20 |
+
+**The dead route comes alive**: churn peaks at 0.8509 under the model against 0.4899 under the
+lexicon, and 9 of 20 churn customers now reach the Retention desk that had never received a case.
+
+**And it costs us collections.** The model reader finds *less* planted distress evidence than 26
+regexes do — 0.42 against 0.74 — and Collections crossings fall from 4 to 1. It is not a uniformly
+better reader; it is a differently-shaped one, and swapping readers moves work between desks. We
+publish that because it is the same size as the win and comes from the same run.
+
+Two caveats stated rather than buried. **The threshold is a top-K cut derived from the *offline*
+reader's ranking of the whole portfolio**, held fixed across both arms because deriving the model's
+own cut means reading all 8,359 conversations at $13.85. A better reader raises every score, so a
+real 10% budget would settle higher — the model crossings above are an **upper bound**. And this is
+**one dataset at n=20 per trajectory**; it is a direction with denominators, not a sweep.
 
 **One more number the recall table never reports:** of the 240 customers the ledger surfaces at a 10%
 review budget over 2,400, **25 have a real outcome and 215 do not**. That is the ledger's own
