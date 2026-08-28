@@ -65,12 +65,10 @@ investigator is a **router and an audit trail, not a filter**. **CDK does not wo
   conversations.** Re-add `generate()` and the guard fails, correctly.
 - **The account header must take `financial_state`, never `latent_risk`** — and that wiring now
   has a behavioural pin, not just a source-string match, because the string match was defeatable.
-- **Narration must never share the ledger reader's extractor**, and **the final turn-by-turn read
-  must equal the batch read byte for byte**.
-- **A warm reader cache makes a "live" run a replay.** `EARSHOT_CACHE_MODE=off` forces new calls.
-- **One response cache per provider**, and **the reader is named after the model that ANSWERED**.
-- **`outcome is not None` is always true.** `Outcome.NONE` is the no-outcome value.
-- **A case id contains `#`.** Every UI link percent-encodes it.
-- **Never delete an `__init__.py`.** Drops the guard and the suite silently.
-- **Verify `pwd` before committing** — a `cd` into a worktree persists across tool calls.
+- **Narration must never share the ledger reader's extractor**; the final turn-by-turn read must
+  equal the batch read byte for byte; a warm cache makes a "live" run a replay
+  (`EARSHOT_CACHE_MODE=off`); one response cache per provider, named after the model that ANSWERED.
+- **`outcome is not None` is always true** (`Outcome.NONE`) · **a case id contains `#`**, every UI
+  link percent-encodes it · **never delete an `__init__.py`**, it drops the guard and the suite
+  silently · **verify `pwd` before committing**, a `cd` into a worktree persists across tool calls.
 - **The AWS/deploy traps live in `aws-infrastructure.md`** and are not copied here.
