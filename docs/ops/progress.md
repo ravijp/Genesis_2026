@@ -78,6 +78,48 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 
 ## Log
 
+**2026-08-29 (small hours)** · **A four-agent red team, and the numbers it moved** (`d46bf02`,
+`40e5f7f`, `a03c02b`, `08b20cc`, `660dca4`, `dd3c50e`, `4430f8b`, `0a7c2e4`). Four reviewers ran
+against code correctness, architecture invariants, story-versus-evidence, and demo/UI/AWS honesty.
+Every finding below was reproduced by executing something, not by reading.
+
+**One defect was manufacturing the mechanism the entry is scored on.** `_nearest_fragment` re-used an
+already-planted fragment once a trajectory's pool ran out, so the same sentence landed in two
+conversations and the ledger paid a cross-conversation corroboration bonus for one utterance copied
+twice — 120 / 822 arc customers at sweep size, at the shipped default. Fixed; **every published number
+regenerated**. The pre-registered diffuse win survives at 30 seeds (26–2–2, `p=0.000`) and **stops
+clearing 0.05 at 10** (was 8–0–2 `p=0.008`, now 7–2–1 `p=0.180`). The loss to `window3-top2` got
+worse. The guard that should have caught it only ran when a CLI flag was passed; it lives in
+`generate()` now.
+
+**Eight guards were green while the thing they guard was broken.** The answer-key wiring guard was a
+source-string match, defeated by `getattr(truth, "latent_" + "risk")` with 583 tests passing and the
+answer key inside `ToolContext`. The separation guard missed `from .schema import *` and
+`import earshot` + attribute walk. `_CORPUS_SIDE` was an uncapped second exemption set. `tools/` was
+outside discovery entirely while two files there build the browser payload. Each fix ships with a test
+proven to fail on the attacked code. Suite 559 → **774**, guarded surface 34 → **44 modules**.
+
+**Two numbers stopped being directions.** AT-57 re-run keyed at n=50 balanced: **22 / 50** (caught
+19/25, dismissed 3/25, one abstention, $1.50, p50 18.4s). AT-58 routing measured for the first time and
+free, by scoring the artifact AT-57 already wrote: **41 / 49 correct, 0 wrong, 8 declined** — when it
+commits to a team it is never wrong. Together: the investigator is a **router and an audit trail, not
+a filter**.
+
+**`config_hash` does not cover the code, and it cost $1.50.** The corpus fix changed who crosses with
+the hash identical on both sides. Manifests carry `pipeline_sha` now, a failed run refuses to write an
+artifact, and cache mode is in the filename — a replay had already overwritten the keyed AT-57
+artifact with 42 empty cases.
+
+**Six document statements were false**, including a README paragraph inviting a judge to run a replay
+command that had been failing for 19 days, and a sweep table that never named the reader producing its
+numbers. `infrastructure.md` was repriced off Sonnet: monthly $878 → **$721**, ASR multiple ~100×, both
+known arithmetic errors fixed with the corrections left visible. Three brief deliverables logged as
+deltas rather than quietly dropped.
+
+**Owed to the next session:** the AT-57 re-run on the fixed corpus is **BLOCKED (Ravi)** on an expired
+SSO session — the published 22 / 50 was measured pre-fix and no longer replays, which the README states
+rather than hides.
+
 **2026-08-28 (late night)** · **The UI became the product in use** (`e0fb7f8`, `281e7c5`,
 `5b0633f`). Research into the consoles retail banks actually run found the finding that reframed
 the screen: third-party UI ships into four of five of them as **a sandboxed iframe scoped to a
