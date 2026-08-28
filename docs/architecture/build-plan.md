@@ -25,16 +25,29 @@ commodity and is treated as input, not contribution.
 ## 2. Where the numbers stand
 
 Measured over 10 seeds × 1,500 customers (1,945 outcome customers), equal review budget of 10%, paired
-seed by seed with an exact sign test. Full table in the README; reproduce with `earshot sweep`.
+seed by seed with an exact sign test.
+
+**[`../../README.md`](../../README.md) is the source of record for every sweep figure. Where this file
+and the README disagree, the README is right.** Sweep numbers move whenever the corpus or the arms
+change: a corpus defect was fixed on 2026-08-28 (commit `08b20cc`) and **every record and p-value in
+this section predates that fix and is being regenerated.** A plan of record that keeps its own copy of a
+moving number goes stale silently and then contradicts the README in front of a judge — which is why
+new claims here are written as **directions**, with the records left in one place. Reproduce either with
+`earshot sweep`.
 
 - **The pre-registered headline holds.** On thin-evidence customers the ledger catches **134 of 780**
   against **96 of 780** for score-each-call-and-forget: 8 wins, 2 ties, no losses, `p=0.008`. At 30
   seeds it strengthens to 27-0-3.
 - **And it loses on concentrated arcs by a comparable margin**: **119 of 629** against **180 of 629**,
   `p=0.039` (3-25-2 at 30 seeds). Published alongside the win; the result is a trade, not a victory.
-- **The strongest fair per-call baseline matches us.** `stateless-top2` — sum the two loudest calls,
-  two floats, no ledger — takes **147 of 780** diffuse arcs against the ledger's 134 (`p=0.508`). The
-  honest claim is *aggregation beats no aggregation*, not *memory beats detection*.
+- **The strongest fair per-call baseline beats us, and it beats us on the stratum the entry is built
+  on.** `stateless-top2` — sum the two loudest calls, two floats, no ledger, no never-discard, no retro
+  re-scoring — takes more diffuse arcs than the full ledger, significantly, at 30 seeds. `window3-top2`
+  does the same. This line previously read "matches us" on a 10-seed comparison that was not
+  significant; **at 30 seeds the tie resolves into a loss**, and the 30-seed record is the one that
+  counts because it is the one the README publishes. See the README's baseline table for the records
+  and p-values. The honest claim is *aggregating a few conversations beats not aggregating*, not
+  *memory beats detection*.
 - **Overall, no arm is distinguishable from any other.** Memory neither beats nor loses to per-call
   detection across the whole portfolio.
 - **The scoring mechanisms earn nothing in recall.** Full ledger vs a plain unweighted count:
@@ -74,16 +87,42 @@ and ties elsewhere, so the trigger is a routing question and the agent is the pr
 ## 4. What is measured, and what is not
 
 **Measured:** recall and precision at equal alert budget, per stratum · per-mechanism ablations ·
-extraction fidelity against planted signals at conversation level, with the miss rate published · multi-seed spread and paired
-significance · tokens, steps, latency and cost per investigation.
+extraction fidelity against planted signals at conversation level, with the miss rate published ·
+multi-seed spread and paired significance · tokens, steps, latency and cost per investigation.
 
-**Not measured, and not pretended otherwise:** agent verdict and routing accuracy · first-attempt
-evidence groundedness against a known answer (the loop rejects unresolvable citations before they can
-leave, so the honest signal is the repair rate `earshot investigate` now prints) · cost per 1,000
-conversations · p50/p95 latency · a second model through the same harness. Also not built: ROC/PR
-curves, dev-split probability calibration, and the four negative controls (time-shuffle,
-outcome-shuffle, volume confound, held-out generator config). v2 promised all of these; none exist, and
-listing them as planned is more useful than listing them as design.
+**Four things on this list were unmeasured until 2026-08-28 and are now measured.** They are recorded
+here with their denominators because three of the four go against us, and because the point of the
+section is that it is checkable rather than reassuring.
+
+- **Agent verdict accuracy: 22 / 50.** `tools/verdict_accuracy.py`, keyed Haiku 4.5 run, 50 crossings
+  drawn evenly from customers who went on to have a real outcome and customers who did not. It caught
+  **19 of 25** real cases and dismissed only **3 of 25** false alarms, abstaining once
+  (`insufficient_evidence`, which the scorer counts as wrong on both arms deliberately). **The agent
+  barely discriminates: it escalates.** That is the honest read, it is worse than the earlier 4 / 10
+  sample suggested on the dismissal arm, and it means the investigator currently buys routing and an
+  audit trail rather than filtering.
+- **Routing accuracy: 41 / 49 correct, 0 wrong, 8 declined.** `tools/routing_accuracy.py`, 2026-08-28,
+  scored against each customer's seeded trajectory via `schema.TRAJECTORY_TEAM`, over the customers
+  that have a seeded family at all. **Zero wrong routes** is the result worth naming: when the agent
+  commits to a team it has not yet been wrong, and its failure mode is declining to route
+  (`owning_team: "none"`), which is a safe failure in a human-in-the-loop queue. Customers with no
+  seeded trajectory are reported separately and never folded into this denominator — they have no
+  correct team, so including them would manufacture either errors or free accuracy.
+- **Cost per 1,000 conversations: \$1.6563.** Reader, on-demand rate, from the 150-document CFPB keyed
+  run of 2026-08-28 (`benchmarks/cfpb/RUNLOG.md`). Computed from published Bedrock prices, not charged.
+- **p50 / p95 reader latency: 1,244 ms / 2,212 ms.** Same run.
+
+**Still not measured, and not pretended otherwise:** **a second model arm through the same harness** —
+arm B has never been run, and under D-022 it is now a Bedrock model (Nova Lite or Llama 3 8B) rather
+than GPT-4o-mini. It costs ~\$0.01 of model spend and one run to close; it is unclosed because of
+scheduling, not difficulty, and §8 logs it as an open delta against the brief. Also still open:
+first-attempt evidence groundedness against a known answer — the loop rejects unresolvable citations
+before they can leave, so the honest signal is the repair rate `earshot investigate` prints, and
+measuring it at volume against a key has not been done.
+
+**Also not built:** ROC/PR curves, dev-split probability calibration, and the four negative controls
+(time-shuffle, outcome-shuffle, volume confound, held-out generator config). v2 promised all of these;
+none exist, and listing them as planned is more useful than listing them as design.
 
 ## 5. Open questions
 
@@ -133,3 +172,39 @@ All within the refinement latitude the covering email reserved.
 4. The headline metric is diffuse-stratum recall at equal alert budget, not seeded-signal recall.
 5. Six comparison arms, not the two the brief implies.
 6. A failure-recovery beat was added to the demo.
+7. **The three team views are four teams, and the Commercial view is gone.** The brief promises "three
+   teams read the same feed in the demo: a Retention view, a Risk and Compliance view, and a Commercial
+   view" ([`../sources/submission-ear-on-every-call.md:75-79`](../sources/submission-ear-on-every-call.md)),
+   and makes all three a Sprint 3 deliverable (`:124`). The shipped team set is **four and different** —
+   `retention` / `collections` / `vulnerability` / `complaints` (`schema.TRAJECTORY_TEAM`) — because the
+   teams fell out of the four seeded signal families, which is what the routing scorer can grade against.
+   Retention survives by name; Risk and Compliance is split across collections, vulnerability and
+   complaints; **Commercial has no equivalent and was dropped without a note until this entry**. The
+   demo's *per-team* promise is being met by a team-scoped filter over the existing `owning_team` field:
+   the data is on every case row already, tenants carry a display-only team map (`tenants.py`, D-029),
+   and routing was measured at **41 / 49 correct with 0 wrong** on 2026-08-28 — so the filter is a view
+   over a field, not new inference. What is genuinely lost is the Commercial *use case*: an upsell or
+   value read on a conversation, which the ledger has never modelled.
+8. **The comparison model was never run, and it is an open delta rather than a retired obligation.**
+   The brief promises "a comparison model runs through the same harness so the numbers are honest"
+   ([`:86-87`](../sources/submission-ear-on-every-call.md)). It was retired on the reasoning that the
+   brief never asked for two *vendors* — true, and beside the point: it asked for a comparison **model**,
+   and one vendor's two models satisfy it exactly. So the obligation stands and is unmet. **Cost to
+   close: ~\$0.01 of model spend and one run** — Nova Lite or Llama 3 8B, both on-demand and invocable
+   today, both already priced in `llm/bedrock.py`, and `--extractor model` already takes the flag. There
+   is no integration work; this is unmet because of scheduling, and saying so is cheaper than defending
+   a retirement.
+9. **The anchor metric — retention lift against a matched control — is not computed anywhere.** The
+   brief names it as the anchor: "signals surfaced and acted on before the outcome, measured as the
+   retention lift in the flagged group against a matched control"
+   ([`:106`](../sources/submission-ear-on-every-call.md)). Nothing in the repo computes lift, and no
+   matched control is constructed; what we publish instead is recall at an equal alert budget, which
+   answers *did we surface it* and not *did surfacing it change the outcome*. **It is constructible, and
+   that is the point of logging it rather than dropping it:** the corpus seeds `CustomerTruth.outcome`
+   per customer, so a matched control is customers who did **not** cross the threshold, matched to the
+   flagged group on stratum, conversation count and pre-crossing score, with lift as the difference in
+   seeded outcome rate between the two. What it would take: a matching function, a variance estimate
+   across the seeds `earshot sweep` already runs, and one honest caveat — **the corpus has no
+   intervention model**, so nothing in it makes a flagged customer's outcome change when a reviewer
+   acts. Without that, a lift number measures the ledger's targeting, not retention. Building the
+   intervention model is the larger half of the job and is not scoped.

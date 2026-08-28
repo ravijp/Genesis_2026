@@ -209,15 +209,16 @@ What survives a paired test:
 
 **Diagnostics, from the committed 400-customer run** in `artifacts/runs/pinned/` — these describe the data and the extractor rather
 than comparing arms, so a single dataset is appropriate; they are not comparison results and should not
-be quoted as such. Extractor recall **0.681 (496 / 728 planted signals)** — it misses 32% and is
-deliberately the weaker option; portfolio outcome rate **13.5% (54 / 400)**. Extraction is matched at
+be quoted as such, and they were **regenerated on 2026-08-28 after the corpus fix** from a clean tree
+(`git_sha` `660dca4`, no `-dirty`). Extractor recall **0.659 (492 / 747 planted signals)** — it misses
+34% and is deliberately the weaker option; portfolio outcome rate **12.75% (51 / 400)**. Extraction is matched at
 conversation level — did the extractor find *this signal type in this conversation* — not at
 character-span level.
 
 The corpus plants two kinds of decoy and they are reported separately, because a firing means the
 opposite thing in each: **extractor decoys** are lookalikes and firing on one is a mistake
-(**2.9%, 4 / 140**); **accumulator decoys** are genuine weak signals that never amount to anything, so
-firing is *correct* (**42.7%, 53 / 124**) and what is under test is whether the ledger goes on to
+(**1.4%, 2 / 141**); **accumulator decoys** are genuine weak signals that never amount to anything, so
+firing is *correct* (**49.7%, 94 / 189**) and what is under test is whether the ledger goes on to
 over-accumulate them — it does not, their flag rate at the 10% budget is 0.000.
 
 **The rule-based offline reader barely works on language it did not write, and we measured it rather
@@ -243,7 +244,7 @@ life_event 0.3636 (4 / 11), churn_intent 0.3846 (5 / 13) — so two of the four 
 **What this changes and what it does not.** The 0.0357 above measures the **26-regex fallback**, not
 the system: on real language the lexicon misses 96% of what a model catches, `financial_distress`,
 `complaint_escalation` and `life_event` each scored **exactly zero**, and 24 of its 26 cues never
-fired on any of the 150 documents. It does **not** rescue the 0.681 on our own prose — that number
+fired on any of the 150 documents. It does **not** rescue the 0.659 on our own prose — that number
 still measures how much pass A and pass B were co-developed, and nothing here touches it. The sampling frame, the marking guide, the
 gold set and the interpretation thresholds were all committed **before** any narrative was read, and
 two failures of our own — a contaminated inter-marker comparison and a defect in the marking guide —

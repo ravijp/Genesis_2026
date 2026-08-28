@@ -39,9 +39,15 @@ constrain it absolutely:
 stream. Contact-centre platforms already produce these.
 
 **A2.** The boundary is commercial as well as convenient. If a bank does not already transcribe, ASR
-costs roughly **55–80× the entire rest of this system** (Appendix B.4). A product requiring the bank to
-start transcribing is a different, far more expensive product. Amazon Transcribe is drawn in §1.3 as the
+costs roughly **100× the entire rest of this system** (Appendix B.4, recomputed 2026-08-28 from B.3's
+own totals: ~\$72,000/mo of transcription against ~\$721/mo of everything else at 500,000
+conversations, on the reader arm that has actually run). A product requiring the bank to start
+transcribing is a different, far more expensive product. Amazon Transcribe is drawn in §1.3 as the
 attachment point; we neither build it nor pay for it.
+
+*This line previously said 55–80× and B.4 said 55–140×. Neither followed from the tables in either
+version of them; both are now derived from B.3 and stated identically in both places. B.4 also carries
+a ~234× projection on an unmeasured second reader arm; it is deliberately not the headline.*
 
 **Input contract** — identical to `schema.Conversation`
 ([schema.py:56-69](../../src/earshot/schema.py#L56-L69)), so no translation layer exists on our side:
@@ -77,9 +83,9 @@ flowchart LR
     end
 
     subgraph MODELS["MODEL LAYER — one LLMProvider protocol"]
-        READA["Reader arm A<br/>Claude Haiku<br/>1 call / conversation"]
-        READB["Reader arm B<br/>GPT-4o-mini<br/>1 call / conversation"]
-        JUDGE["Investigator<br/>Claude Sonnet 4.5<br/>pinned"]
+        READA["Reader arm A<br/>Claude Haiku 4.5<br/>1 call / conversation"]
+        READB["Reader arm B — DEFERRED<br/>Nova Lite or Llama 3 8B<br/>never run"]
+        JUDGE["Investigator<br/>Claude Haiku 4.5<br/>pinned — D-025"]
     end
 
     subgraph STORE["PERSISTENCE"]
@@ -161,30 +167,70 @@ the batch path re-implements scoring, the architecture has already failed.
 
 | Call | Volume | Shape | Model |
 |---|---|---|---|
-| **Read** — one conversation → signals | 1 per conversation. **This is the entire cost curve.** | Short input, short JSON output, heavily schema-constrained, stateless | **Two arms, both measured:** Claude Haiku (arm A) and GPT-4o-mini (arm B) |
-| **Judge** — one investigation | 1 per threshold crossing, ~0.5% of conversations | Multi-turn tool loop, up to 6 model calls, long context | **Claude Sonnet 4.5**, pinned |
+| **Read** — one conversation → signals | 1 per conversation. **This is the entire cost curve.** | Short input, short JSON output, heavily schema-constrained, stateless | **Arm A measured, arm B deferred and never run:** Claude Haiku 4.5 (arm A); arm B is now a Bedrock model, Nova Lite or Llama 3 8B (below) |
+| **Judge** — one investigation | 1 per threshold crossing, ~0.5% of conversations | Multi-turn tool loop, 4–6 model calls measured, long context | **Claude Haiku 4.5**, pinned (D-025) |
 
-### Why two model families on the reader, not one
+### Why a second reader arm — and why it is deferred rather than done
 
 1. **It is a written deliverable.** The submitted brief commits to a second model through the same eval
    harness. Putting both arms on the *reader* rather than the investigator means the comparison runs on
    the path where volume — and therefore cost and latency — actually matters.
-2. **The reader is where the entry is currently weakest.** The offline lexicon scores 0.0357 strict
-   recall on real CFPB narratives. Nothing is known about a model reader's recall because none has ever
-   run. Two independent readers on the same gold set is a stronger answer than one.
+2. **The reader was the entry's weakest point, and arm A has now answered it.** The offline lexicon
+   scores 0.0357 strict recall (4 / 112) on real CFPB narratives. **Arm A, Claude Haiku 4.5 on Bedrock,
+   scores 0.8214 (92 / 112)** on the identical 150-document gold set — measured 2026-08-28,
+   [benchmarks/cfpb/RUNLOG.md](../../benchmarks/cfpb/RUNLOG.md), replayable keyless from
+   `artifacts/cache/extractor.jsonl`. It buys that with 8× the false-positive rate: 0.1598 (78 / 488)
+   against the lexicon's 0.0205.
 3. **`Extractor` is a protocol with two implementations already**
    ([extract.py](../../src/earshot/extract.py), [extract_model.py](../../src/earshot/extract_model.py)).
    A third arm is a constructor argument, not a redesign.
 
-### Why Sonnet 4.5 is pinned on the investigator
+**Arm B has never been run, and it is no longer GPT-4o-mini.** D-022 moved every model call to Bedrock
+and dropped the OpenAI key, so the second arm is now **Amazon Nova Lite or Meta Llama 3 8B** — both
+on-demand and invocable today, both already priced in `PRICE_PER_1M_TOKENS`
+([llm/bedrock.py:96-101](../../src/earshot/llm/bedrock.py#L96-L101)), and both reachable through the
+Converse translation that already exists for arm A. **What it costs to close: one run, \$0.01 of model
+spend** — 150 CFPB documents through `--extractor model` with the arm B model id, then commit the
+response cache (B.1: 150 × \$0.000096 on Nova Lite; **\$0.28** if both arms are re-run together). There
+is no integration work left, which is exactly why leaving it unmeasured is a scheduling choice and
+should be stated as one.
 
-The two committed live investigations cost \$0.089 and \$0.097, and `COST_CAP_PER_CASE_USD = 0.25`
-([cli.py:48](../../src/earshot/cli.py#L48)) is derived from them. `artifacts/cache/investigator-demo.jsonl`
-is keyed on the model, so changing it invalidates the cache that makes the demo replay with no network
-(D-004) and makes every published cost figure provider-historical.
+*§3.4 and Appendix A rows 1 and 4 still describe arm B as GPT-4o-mini over a direct OpenAI key. They
+predate D-022 and are stale; they are flagged here rather than silently patched.*
 
-**Rejected: upgrading to a newer Sonnet or Opus.** Both are better models. Neither is worth losing
-comparability with every published number four weeks before a gate. Revisit after 09-07.
+### Why Haiku 4.5 is pinned on the investigator
+
+**D-025 (2026-08-25) dropped Sonnet 4.5 entirely and put one model, Haiku 4.5, on both the reader and
+the investigator.** The pin is to the model id in
+[llm/bedrock.py:72](../../src/earshot/llm/bedrock.py#L72) —
+`us.anthropic.claude-haiku-4-5-20251001-v1:0` — not to a family name, so a snapshot change is a
+one-line diff a reviewer can see.
+
+Two reasons, and only one of them is cost:
+
+1. **Sonnet is not invocable on this account.** It needs a one-time Anthropic use-case/EUA form and
+   returns `ResourceNotFoundException` until that is filed; Haiku needs none. Dropping Sonnet
+   *unblocked* the investigator rather than economising on it.
+2. **It is roughly three times cheaper per investigation, measured.** \$0.0301 mean against Sonnet's
+   \$0.093 (Appendix B.1). `COST_CAP_PER_CASE_USD = 0.25` ([cli.py:48](../../src/earshot/cli.py#L48))
+   is unchanged, so it now sits at **7.1× the measured p95** (0.25 / 0.0351) where it used to sit at
+   **2.6× the worst Sonnet investigation observed** (0.25 / 0.097). The cap binds on nothing in normal
+   operation. That is headroom, not a tuned ceiling, and it should be re-derived rather than quoted as
+   one.
+
+**The cost argument is not yet earned.** Cheap is only a win if the verdicts are right, and on the same
+50-case run Haiku's verdict accuracy is **22 / 50** (2026-08-28, `tools/verdict_accuracy.py`). A model
+that escalates almost everything is cheap per call and expensive per reviewer-hour. Do not present
+D-025 as a cost win on stage until that number moves.
+
+**Cache note.** `artifacts/cache/investigator-demo.jsonl` is keyed on the model, so the Sonnet-era
+entries in it replay only a Sonnet run. The Haiku work has its own cache,
+`artifacts/cache/investigator-bedrock.jsonl` — **one response cache per provider**, never merged.
+
+**Rejected: upgrading to Opus, or filing the form for Sonnet.** Both are better models. Neither is
+worth losing comparability with every published number before a gate, and the open question is whether
+a *better* model discriminates where Haiku does not — which is a measurement, not a purchase. Revisit
+after 09-07.
 
 ### The provider abstraction absorbs all of this
 
@@ -318,8 +364,10 @@ that argument survives intact.
   never-discard.
 - **Q4.** Ordering guarantee under retry: if event N+1 is processed before a retried event N, is
   `score_at_write` still honest? Per-customer ordering protects the happy path, not the retry path.
-- **Q5.** Which reader wins? Nothing is known. The whole two-arm design assumes the answer is worth
-  measuring rather than assumable.
+- **Q5.** Which reader wins? **Half answered.** Arm A is measured — 0.8214 strict recall (92 / 112) at
+  \$1.6563 per 1,000 conversations, p50 1,244.4 ms, p95 2,212.0 ms (2026-08-28,
+  [benchmarks/cfpb/RUNLOG.md](../../benchmarks/cfpb/RUNLOG.md)). Arm B has never been run, so the
+  comparison the two-arm design exists for still does not exist. ~\$0.30 closes it (§1.5).
 
 ---
 
@@ -440,7 +488,7 @@ committee refuses a second vendor key, this is the fallback and it costs one day
 |---|---|---|---|
 | Reader arm A | **Claude Haiku 4.5** | Cheapest capable Claude on a short-input, short-output, schema-constrained task. | **Sonnet for extraction** — several times the cost for a reading task we have not shown needs it. Measure, don't assume. |
 | Reader arm B | **GPT-4o-mini** | Deliberately not the newest. Effective, and the cheapest credible OpenAI reader. | **GPT-4.1 / frontier GPT** — the brief asks for a second model, not a second frontier bill. **GPT-4.1-mini** is the one-step-up option if 4o-mini's recall is unacceptable. |
-| Investigator | **Claude Sonnet 4.5**, pinned | §1.5. Preserves the cost cap, the committed cache and every published figure. | Newer Sonnet/Opus — better models, wrong time. |
+| Investigator | **Claude Haiku 4.5**, pinned to the model id in [llm/bedrock.py:72](../../src/earshot/llm/bedrock.py#L72) | §1.5, D-025 (2026-08-25). Sonnet 4.5 is dropped: it needs an Anthropic use-case form this account has not filed and returns `ResourceNotFoundException` until it does, while Haiku needs none. Measured \$0.0301 per investigation. | **Sonnet 4.5** — blocked on a form, and 3× the cost for a discrimination gain nobody has measured. **Opus** — same argument, more money. |
 
 ### Two provider gotchas that must be designed around
 
@@ -595,25 +643,56 @@ One conversation ≈ 8 turns ≈ 250 tokens of transcript + ~700 tokens of promp
 
 | Model | $/1k in | $/1k out | Per conversation |
 |---|---|---|---|
-| Claude Haiku 4.5 | 0.0010 | 0.0050 | (1.0 × 0.0010) + (0.15 × 0.0050) = **$0.00175** |
-| GPT-4o-mini | 0.00015 | 0.00060 | (1.0 × 0.00015) + (0.15 × 0.00060) = **$0.00024** |
-| Claude Sonnet 4.5 | 0.0030 | 0.0150 | (1.0 × 0.0030) + (0.15 × 0.0150) = **$0.00525** |
+| Claude Haiku 4.5 — reader arm A **and** investigator | 0.0010 | 0.0050 | (1.0 × 0.0010) + (0.15 × 0.0050) = **$0.00175** |
+| Amazon Nova Lite — arm B candidate | 0.00006 | 0.00024 | (1.0 × 0.00006) + (0.15 × 0.00024) = **$0.000096** |
+| Meta Llama 3 8B — arm B candidate | 0.00030 | 0.00060 | (1.0 × 0.00030) + (0.15 × 0.00060) = **$0.00039** |
+| GPT-4o-mini — *superseded by D-022*, no longer reachable | 0.00015 | 0.00060 | (1.0 × 0.00015) + (0.15 × 0.00060) = **$0.00024** |
+| Claude Sonnet 4.5 — *historical, dropped by D-025* | 0.0030 | 0.0150 | (1.0 × 0.0030) + (0.15 × 0.0150) = **$0.00525** |
 
-**GPT-4o-mini is ~7× cheaper than Haiku on the reader.** That is a finding, not a preference — and it is
-precisely why arm B belongs on the volume path rather than as a token second opinion. If its recall
-holds, it changes the product's cost story materially. If it does not, we have measured that too.
+Bedrock prices are `PRICE_PER_1M_TOKENS` ([llm/bedrock.py:96-101](../../src/earshot/llm/bedrock.py#L96-L101)),
+checked 2026-08-25, divided by 1,000. **The whole table is computed from published prices, never
+charged** (G1): Converse returns token counts only.
 
-One investigation: **measured, not projected** — \$0.089 and \$0.097 on live Sonnet 4.5 → **\$0.093**.
+**An arm B reader is 4–18× cheaper than Haiku per conversation.** That is a finding, not a preference,
+and it is why arm B belongs on the volume path rather than being a token second opinion. It is also why
+closing it is cheap: 150 gold-set documents on Nova Lite is **\$0.01** (150 × \$0.000096), and the
+whole gold set through *both* arms is **\$0.28** (150 × \$0.001846).
+
+**The reader unit price is now checkable against a measurement, and it is conservative.** The keyed
+CFPB run (2026-08-28, [benchmarks/cfpb/RUNLOG.md](../../benchmarks/cfpb/RUNLOG.md)) spent \$0.24845
+over 150 conversations = **\$1.6563 per 1,000**, i.e. **\$0.0016563 per conversation** against the
+\$0.00175 this table projects. The projection is **5.7% high**, because real CFPB narratives run
+slightly shorter than the 1,000-in / 150-out shape assumed above. **The tables below keep \$0.00175
+deliberately** — it is the conservative number and it is the one that stays comparable to the arm B
+rows, which have no measurement at all. Measured reader latency on the same run: **p50 1,244.4 ms, p95
+2,212.0 ms.**
+
+**One investigation: \$0.0301, measured over 50 cases.** Claude Haiku 4.5 on Bedrock, keyed run
+2026-08-28, artifact `artifacts/runs/verdict-accuracy-20260809-3ebd9fb57097-bedrock.json`:
+
+| | min | p50 | mean | p95 | max |
+|---|---|---|---|---|---|
+| \$ per investigation | 0.0241 | 0.0314 | **0.0301** | 0.0351 | 0.0388 |
+
+4–6 model calls per case, and **all 50 stopped `decided`** — none hit the step limit, the schema-retry
+limit or the cost cap. Every figure below uses the **\$0.0301 mean**.
+
+This replaces the previous **\$0.093** (the mean of two live Sonnet 4.5 investigations, \$0.089 and
+\$0.097). Two caveats, because the swap is not purely good news: the sample is 25× larger and therefore
+much better, but the Sonnet figure was *charged* by OpenRouter while the Haiku figure is **computed
+from published prices** (G1) — a real reduction in the standing of the number, not a footnote. And a
+cheaper investigation is only a saving if its verdicts are usable; at **22 / 50** on the same run, they
+are not yet (§1.5).
 
 ## B.2 Build scale (~1,800 conversations per dataset, 400 customers)
 
 | Item | Arithmetic | $/mo |
 |---|---|---|
-| AT-43 gold set, both reader arms | 150 × ($0.00175 + $0.00024) | 0.30 |
-| One 10-seed sweep, arm A (Haiku) | 10 × 1,800 × $0.00175 | 31.50 |
-| One 10-seed sweep, arm B (GPT-4o-mini) | 10 × 1,800 × $0.00024 | 4.32 |
-| Investigations | 90 × $0.093 | 8.37 |
-| **Model subtotal** | | **44.49** |
+| AT-43 gold set, both reader arms | 150 × ($0.00175 + $0.000096) | 0.28 |
+| One 10-seed sweep, arm A (Haiku 4.5) | 10 × 1,800 × $0.00175 | 31.50 |
+| One 10-seed sweep, arm B (Nova Lite) | 10 × 1,800 × $0.000096 | 1.73 |
+| Investigations | 90 × $0.0301 | 2.71 |
+| **Model subtotal** | 0.28 + 31.50 + 1.73 + 2.71 | **36.22** |
 | DynamoDB (~1 GB, PITR) | | 1.00 |
 | S3 (5 GB + requests) | | 1.00 |
 | Lambda (300k GB-s; free tier 400k) | | 0.00 |
@@ -624,7 +703,11 @@ One investigation: **measured, not projected** — \$0.089 and \$0.097 on live S
 | CodePipeline + CodeBuild | 1.00 + (200 min × $0.005) | 2.00 |
 | SQS FIFO | | 0.05 |
 | **Infrastructure subtotal** | | **~11.15** |
-| **Total** | | **~$56/month** |
+| **Total** | 36.22 + 11.15 | **~$47/month** |
+
+Was \$55.64 (~\$56) before 2026-08-28. The \$8.27 difference is entirely two model swaps: the
+investigator from Sonnet at \$0.093 to Haiku at a measured \$0.0301 (−\$5.66), and arm B from
+GPT-4o-mini to Nova Lite under D-022 (−\$2.59 on the sweep, −\$0.02 on the gold set).
 
 ## B.3 Bank scale — 500,000 conversations/month
 
@@ -632,11 +715,11 @@ One investigation: **measured, not projected** — \$0.089 and \$0.097 on live S
 this is *not* the code's 10%, which is an equal-alert-budget evaluation device
 ([cli.py:44](../../src/earshot/cli.py#L44)), not an operating point. See **Q1**.
 
-| Item | Arithmetic | $/mo (Haiku) | $/mo (GPT-4o-mini) |
+| Item | Arithmetic | $/mo (arm A, Haiku 4.5 — **measured**) | $/mo (arm B, Nova Lite — **never run**) |
 |---|---|---|---|
-| Extraction, batch rate (50%) | 500,000 × unit × 0.5 | 437.50 | 60.00 |
-| Investigations, Sonnet 4.5 | 2,500 × $0.093 | 232.50 | 232.50 |
-| **Model subtotal** | | **670.00** | **292.50** |
+| Extraction, batch rate (50%) | 500,000 × unit × 0.5 | 437.50 | 24.00 |
+| Investigations, Haiku 4.5 | 2,500 × $0.0301 | 75.25 | 75.25 |
+| **Model subtotal** | | **512.75** | **99.25** |
 | Lambda | 1.5M GB-s + 2,500 × 60s | 30.00 | 30.00 |
 | DynamoDB | 1.25M WRU + 5M RRU + 6 GB + PITR | 10.00 | 10.00 |
 | Kinesis (1 shard) | $0.015/hr × 730 | 11.00 | 11.00 |
@@ -648,23 +731,53 @@ this is *not* the code's 10%, which is an equal-alert-budget evaluation device
 | VPC interface endpoints (bank-required) | 6 × 2 AZ × $7.20 | 86.40 | 86.40 |
 | WAF | | 11.00 | 11.00 |
 | Backup + Athena + Glue | | 20.00 | 20.00 |
-| **Infrastructure subtotal** | | **~208** | **~208** |
-| **Total** | | **~$878** | **~$501** |
+| **Infrastructure subtotal** | | **208.40** | **208.40** |
+| **Total** | model subtotal + 208.40 | **721.15 → ~\$721** | **307.65 → ~\$308** |
 
-**Per 1,000 conversations: \$1.76 (Haiku reader) to \$1.00 (GPT-4o-mini reader).** On-demand rather than
-batch extraction: \$2.63 and \$1.24 respectively. Quote the range, not the low end.
+**Per 1,000 conversations: \$1.44 on the measured Haiku reader.** 721.15 / 500. On-demand rather than
+batch extraction — the extraction line doubles to 875.00 — it is **\$2.32** (1,158.65 / 500). **Quote
+\$1.44–2.32 and quote it as the arm A number**, because arm A is the only reader that has run.
+
+The arm B column is a **projection from a price list for a model nobody has invoked**: \$0.62 per 1,000
+batch (307.65 / 500), \$0.66 on-demand (331.65 / 500). It belongs in the table because it bounds how
+much cheaper the volume path could get, and it must never be quoted as the system's cost.
+
+**Two corrections carried out here, and both were previously known and left standing:**
+
+1. **The old on-demand arm B figure was wrong on its own table.** It said \$1.24 per 1,000 where the
+   table's own totals gave (500.90 + 60.00) / 500 = **\$1.12**. Nothing derived from \$1.24; it was a
+   typo that survived every read of the document, which is the point — a known error left in place is
+   evidence the document is not maintained.
+2. **Sonnet's \$232.50 investigation line was the single largest model cost in the document** and had
+   been dead since D-025 dropped Sonnet on 2026-08-25. At a measured \$0.0301 it is **\$75.25**, a fall
+   of **\$157.25/month**, and it takes the arm A model subtotal from \$670.00 to \$512.75 — the model
+   layer is now **71% of bank-scale spend on arm A** (512.75 / 721.15), against 76% before.
 
 ## B.4 The number that dominates everything
 
 If the bank does **not** already transcribe: 500,000 × ~6 min = 3,000,000 min × ~\$0.024/min =
 **~\$72,000/month, or ~\$144 per 1,000 conversations.**
 
-**That is 55–140× the entire rest of this system.** It is the strongest single feasibility argument in
-the entry, and it argues *for* the boundary in §1.2: attaching to transcripts a bank already produces
-makes the marginal cost of *Ear on Every Call* ~\$1–2 per 1,000 conversations against a transcription
-bill already paid. `ExtractionTelemetry.cost_per_1000_conversations`
-([extract_model.py:111-117](../../src/earshot/extract_model.py#L111-L117)) already computes our half of
-that ratio — it becomes **measured** the moment the first keyed run happens.
+**That is ~100× the entire rest of this system on the measured reader** — 72,000 / 721.15 = 99.8, and
+the same ratio per 1,000 conversations, \$144 / \$1.44. On the projected arm B reader it would be
+**~234×** (72,000 / 307.65), but that half of the range depends on a model nobody has run, so **quote
+100×**. It is the strongest single feasibility argument in the entry, and it argues *for* the boundary
+in §1.2: attaching to transcripts a bank already produces makes the marginal cost of *Ear on Every
+Call* ~\$1.44 per 1,000 conversations against a transcription bill already paid.
+
+**This ratio is now half measured rather than wholly projected.**
+`ExtractionTelemetry.cost_per_1000_conversations`
+([extract_model.py:111-117](../../src/earshot/extract_model.py#L111-L117)) reported **\$1.6563 per
+1,000** on the first keyed run (150 CFPB conversations, 2026-08-28,
+[benchmarks/cfpb/RUNLOG.md](../../benchmarks/cfpb/RUNLOG.md)) — our half of the ratio, from a run, on
+real customer language. It is *higher* than B.3's \$1.44 for a reason worth stating: the \$1.6563 is
+reader spend alone at the **on-demand** rate, while B.3's \$1.44 spreads reader, investigator and all
+infrastructure over the same 1,000 conversations at the **batch** rate. The two are not competing
+estimates of one quantity. The ASR side stays a list-price projection; nobody here has bought a minute
+of transcription.
+
+*Previously stated as 55–140× here and 55–80× in §1.2. Neither figure followed from B.3's totals in
+any version of them.*
 
 ## B.5 The $200 build budget
 
@@ -677,14 +790,20 @@ that ratio — it becomes **measured** the moment the first keyed run happens.
 
 | Model line item | Arithmetic | $ |
 |---|---|---|
-| AT-43 gold set, both arms, ×3 re-runs | 3 × 150 × $0.00199 | 0.90 |
-| Pool-widening re-measure after fixing the cue vocabulary | 2 × 1,800 × $0.00199 | 7.16 |
-| 10-seed sweep, arm A | 10 × 1,800 × $0.00175 | 31.50 |
-| 10-seed sweep, arm B | 10 × 1,800 × $0.00024 | 4.32 |
+| AT-43 gold set, both arms, ×3 re-runs | 3 × 150 × $0.001846 | 0.83 |
+| Pool-widening re-measure after fixing the cue vocabulary | 2 × 1,800 × $0.001846 | 6.65 |
+| 10-seed sweep, arm A (Haiku 4.5) | 10 × 1,800 × $0.00175 | 31.50 |
+| 10-seed sweep, arm B (Nova Lite) | 10 × 1,800 × $0.000096 | 1.73 |
 | History-length curve, 3 configs × 10 seeds, reduced n | 3 × 31.50 × 0.4 | 37.80 |
-| Investigations for the demo recording | 40 × $0.093 | 3.72 |
+| Investigations for the demo recording | 40 × $0.0301 | 1.20 |
 | Contingency inside the bucket | | ~20 |
-| | | **~105** |
+| | 0.83 + 6.65 + 31.50 + 1.73 + 37.80 + 1.20 + 20 | **~100** |
+
+The plan was ~\$105 before 2026-08-28 and the bucket above stays at **105**: the ~\$5 the Haiku
+investigator and the Nova Lite arm B free up is left in the bucket as extra headroom against the prompt
+-invalidation risk below, rather than re-allocated. **The 50-case verdict-accuracy run of 2026-08-28
+has already been spent out of this bucket: 50 × \$0.0301 = \$1.51**, and it is not a line above because
+it was not planned — it is the run that produced the \$0.0301 every figure in B.2–B.4 now uses.
 
 ### The budget risk nobody has priced
 
