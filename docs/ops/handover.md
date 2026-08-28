@@ -4,41 +4,36 @@
 Rewritten in place at each handover. **Keep it under ~60 lines.** It is a baton, not a history:
 next action, live blockers, traps already paid for. History goes in `progress.md` or git.
 
-**2026-08-29** · commit `9433c67` · branch `build/ear-on-every-call` · **777 tests**, separation
-guard over 44 modules, ruff clean, **30 UI routes**
+**2026-08-29 (late)** · commit `74536fc` · branch `build/ear-on-every-call` · **812 tests**, separation guard over
+44 modules, a contrast gate over 634 colour pairs, ruff clean, **30 UI routes**
 
 ## First turn
 
 1. Say where the build stands and the next action, in two lines. Then start it.
-2. AWS: **the SSO session is expired.** `source tools/aws-login.sh` needs a browser — that is
-   Ravi's action, and it blocks the one keyed run below. `--force` if a grant IT says is live
-   still reads as denied.
+2. AWS: SSO was re-minted 2026-08-29 and every keyed item ran. **`aws sts get-caller-identity`
+   is a lying probe** — it answers from a cached role credential while the SSO token underneath
+   is dead. Probe Bedrock. `source tools/aws-login.sh` when it is; the login needs a browser.
 3. `progress.md` for work-package status and blocker owners. `decisions.md` before arguing.
 
 ## Next action
 
-**A four-agent red team ran on 2026-08-28 and its findings are all landed** — read
-`state-of-play.md` first, the numbers moved. In order of value:
+**Everything keyed is done and republished.** AT-57 **22 / 50** and AT-58 **36 / 49** on the
+shipping corpus and both replay; the streamed demo is re-recorded with both arms keyed; the
+cost cap is re-derived from measurement. Read `state-of-play.md` — the numbers moved. In order:
 
-1. **Re-run AT-57 keyed on the fixed corpus** (~$1.50, 50 balanced cases):
-   `uv run --extra aws python tools/verdict_accuracy.py --provider bedrock --per-arm 25
-   --customers 2400`. **Blocked on the SSO login only.** The published 22 / 50 was measured at
-   `47a2be8`, before the corpus fix, and no longer replays — the README states that rather than
-   hiding it, but it should not stay true. Then `tools/routing_accuracy.py` re-scores it free.
-2. **Re-record `ui/stream.js`** (~$0.47, same SSO block). The whole streamed demo payload is
-   **pre-fix**: it replays fine as a static recording but cannot be regenerated from the current
-   corpus, and it still shows one customer (`CUST-0004`) whose evidence chain repeats a sentence
-   across `-C0` and `-C2` — the artefact `08b20cc` removed. `ui/data.js` was regenerated free and
-   is clean.
-3. **The IAM ticket** — one inline policy and the deployed path stops being a diagram. It now
-   also needs `logs:*`: the Lambdas are **unobservable**, not merely inert. JSON in
-   `aws-infrastructure.md`, written to be pasted.
-4. **Arm B, priced honestly: $0.01** on Nova Lite for the reader arm alone ($0.28 re-runs both).
-   The last item on `build-plan.md`'s "not measured" list, and the brief did ask for a
-   comparison model.
-5. **The design fork is Ravi's call and he has the facts**: `.claude/worktrees/agent-ade2e23d7e6368e38`
-   has **18 routes to main's 21** — it is a dark-first restyle of the *pre-console* UI and does
-   not contain `#/desk` at all. Lift the palette or discard; do not merge it.
+1. **The IAM ticket** — the only hard blocker. One inline policy, and it now also needs `logs:*`:
+   the deployed Lambdas are **unobservable**, not merely inert. JSON in `aws-infrastructure.md`.
+2. **Arm B: $0.01** on Nova Lite for the reader arm ($0.28 both). Last item on `build-plan.md`'s
+   "not measured" list. `extractor_cache_path()` is per-model now, so it cannot pollute the cache
+   behind the published reader figures.
+3. **Extend the reader-coverage sample.** n=20 per trajectory is a direction; samples nest, so
+   `--per-trajectory 40` pays only the delta (~$0.45). The **collections regression** is the half
+   most worth a bigger denominator.
+4. **Regenerate `ui/data.js` from a keyed investigate run.** The recorded document screens — queue,
+   case, retro, the one `ui/README.md` calls "the proof" — are still the offline rule engine.
+5. **The design fork is superseded.** `.claude/worktrees/agent-ade2e23d7e6368e38` is a restyle of
+   the pre-console UI (18 routes to 30) and main now has a generated design system it was
+   reacting to. Recommend discard; still Ravi's call.
 
 **Delegate file-writing work with `isolation: "worktree"`.** The Agent tool's own isolation was
 refusing to start on 2026-08-28; `git worktree add -b wp/<name> /c/tmp/<name> HEAD` and telling
@@ -54,6 +49,9 @@ investigator is a **router and an audit trail, not a filter**. **CDK does not wo
 
 ## Traps already paid for
 
+- **A keyed run's cache is one file per provider AND per model AND per measurement.** A second
+  reader arm through the shared path appends into the cache behind a published figure, silently:
+  keys do not collide, nothing errors, the file just quietly holds two models.
 - **`config_hash` does not cover the code.** It was byte-identical across two corpora that
   disagreed about who crosses. Manifests carry `pipeline_sha`; a guard comparing config hashes
   alone will bless a stale artifact. Land generator changes *before* spending on keyed runs.

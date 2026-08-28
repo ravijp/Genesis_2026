@@ -1,6 +1,6 @@
 # State of play
 
-**Updated 2026-08-28 (late).** Rewritten in place every working session — **never appended to**. If
+**Updated 2026-08-29.** Rewritten in place every working session — **never appended to**. If
 something will not fit, it belongs in `decisions.md` (a choice), `working-agreements.md` (a rule), or
 Jira (work). Anything historical belongs in git.
 
@@ -14,8 +14,8 @@ AWS design and `aws-infrastructure.md` for what is actually provisioned.
 
 The system runs end to end with **zero API keys**: dataset generation → extraction → per-customer
 ledger → investigator agent producing case files with cited evidence → a UI that opens from disk.
-**777 tests**, ruff clean, separation guard over **44 modules** across `src/` and `tools/`,
-**30 UI routes**.
+**812 tests**, ruff clean, separation guard over **44 modules** across `src/` and `tools/`,
+**30 UI routes**, and a contrast gate over **634** rendered colour pairs.
 Next gate **2026-09-07**.
 
 **A red team of four ran against the whole entry on 2026-08-28** — code correctness, architecture
@@ -36,13 +36,25 @@ conversations, the reader emitted two signals with different `conversation_id`s,
 ledger's compensating win on concentrated arcs over `stateless-top2` did not survive (`p=0.017` →
 `0.230`). Quote nothing from this page at 10 seeds.
 
+**The retention desk was dead, and the model reader revives it (2026-08-29).** The offline lexicon
+finds churn evidence in 0.43 of the conversations where it was planted against 0.67–0.86 for the
+other three families. Corroboration is cross-conversation, so **0 of 325 churn customers ever
+crossed** — the brief's *lead* team received nothing, ever. Measured over the same 288 conversations
+(`tools/reader_coverage.py`, $0.4260): the model reader takes churn coverage to **0.79** and **9 of
+20** churn customers now reach Retention.
+
+**And it costs us collections**: the model finds *less* planted distress evidence than 26 regexes do
+(0.42 against 0.74) and Collections crossings fall 4 → 1. Choosing a reader is an operational
+decision about which desk you under-serve, not a procurement decision about which model is best. The
+model-arm crossings are an **upper bound** — the threshold is a top-K cut over the *offline* reader's
+ranking, held fixed across arms because deriving the model's own costs $13.85.
+
 **The agent is a router, not a filter — both halves now measured.** AT-57 at n=50 keyed
-(25 with an outcome, 25 without): **22 / 50** overall, caught 19/25, dismissed **3 / 25**, one
-abstention, mean confidence 0.92 on the wrong answers. The 4/10 direction held at five times the
-sample. AT-58, measured for the first time and free (it scores the artifact AT-57 already wrote):
-**41 / 49 routed to the right team, 0 wrong, 8 declined.** When it commits to a team it is never
-wrong; it refuses to route in `complaints` (5 of 12) and `collections` (2 of 7), and `retention` never
-appears as a truth team in the sample at all.
+(25 with an outcome, 25 without): **22 / 50** overall, caught 18/25, dismissed **4 / 25**, one
+abstention, mean confidence 0.86 on the wrong answers. Re-run on the post-fix corpus and **it
+replays** — verified before publishing. AT-58 routing, free (it scores the artifact AT-57 already
+wrote): **36 / 49 correct, 2 wrong, 11 declined**, both wrong routes unmoored from the evidence on
+hand rather than near-misses. `retention` has no row at all, for the reason above.
 
 **`config_hash` does not cover the code, and that cost $1.50.** The corpus fix changed who crosses
 (25 with an outcome → 17, threshold 0.7246 → 0.6655) with the config hash **identical on both sides**,
@@ -82,30 +94,35 @@ nine" everywhere for weeks; the rendered screen was always right.)
   merely inert, they are **unobservable**: no log group exists despite 4 invocations on 2026-08-27.
   `iam:PutRolePolicy` was attempted and denied. Policy JSON and the reproducible error lines are in
   `aws-infrastructure.md`, written to be pasted into a ticket.
-- **The SSO session expired mid-session and needs a browser.** That is the only thing blocking the
-  AT-57 re-run on the fixed corpus (~$1.50, 50 balanced cases at 2,400 customers).
+- **Nothing keyed is blocked.** SSO was re-minted 2026-08-29 and every keyed item on the list ran.
+  Note the trap: `aws sts get-caller-identity` succeeds from a cached role credential while the SSO
+  token underneath is dead. Probe Bedrock, not STS.
 - CodeBuild/CodePipeline blocked by the same `iam:CreateRole` gap. Object Lock on `agentic-trio` is
   OFF and needs an AWS Support case — **A6's ledger guarantee is unaffected**, that is DynamoDB with
   no TTL and no delete path. No SNS, no Budgets, no VPC subnets, so the sweep stays local.
 
 ## Next, in order
 
-1. **Re-run AT-57 keyed on the fixed corpus.** Needs `aws sso login` in a browser. The published
-   22 / 50 was measured at `47a2be8`, before the corpus fix, and **no longer replays** — that
-   provenance is stated in the README rather than hidden, but it should not stay true.
-2. **The IAM ticket.** One policy, and the deployed path stops being a diagram.
-3. **Re-record `ui/stream.js`** (~$0.47, same SSO block). The streamed demo payload is pre-fix and
-   still shows one customer whose evidence chain repeats a sentence across two conversations —
-   the artefact the corpus fix removed. `ui/data.js` was regenerated free and is clean at 0.
-4. **Arm B**, now priced honestly: **$0.01** on Nova Lite for the reader arm alone, $0.28 to re-run
-   both. It is the only item left on `build-plan.md`'s "not measured" list.
-5. **Observability (W11, EMF) and the spend ceiling in our own code (W4).** `COST_CAP_PER_CASE_USD`
-   is still $0.25, derived from two Sonnet cases; it is now 7.1× the measured Haiku p95.
-6. **The UI's write path** — needs a decision about how a static page authenticates against an
+1. **The IAM ticket** — the only hard blocker left. One inline policy and the deployed path stops
+   being a diagram. It now also needs `logs:*`: the Lambdas are unobservable, not merely inert.
+2. **Arm B**, priced honestly: **$0.01** on Nova Lite for the reader arm alone, $0.28 to re-run
+   both. The last item on `build-plan.md`'s "not measured" list. `extractor_cache_path()` is now
+   per-model, so it cannot append into the cache behind the published reader figures.
+3. **Extend the reader-coverage sample.** n=20 per trajectory is a direction with denominators;
+   samples nest, so `--per-trajectory 40` re-reads nothing and costs only the delta (~$0.45).
+   The collections regression is the half most worth a bigger denominator.
+4. **Observability (W11, EMF).** The spend ceiling (W4) is done — the cap is re-derived and the
+   CloudWatch alarm now derives from it rather than sitting at twice its value.
+5. **The UI's write path** — needs a decision about how a static page authenticates against an
    `AuthType=AWS_IAM` Function URL, not just the IAM fix.
 
 ## Known-weak, stated rather than hidden
 
+- **The reader choice is a trade between desks, not an upgrade.** The model reader takes Retention
+  from 0 crossings to 9 of 20 and drops Collections from 4 to 1. One dataset, n=20 per trajectory.
+- **The lexicon's churn coverage (0.43) is a pass-B gap and stays unfixed.** Widening those cues to
+  close a gap found by measuring against the answer key is exactly the pass-B-toward-pass-A tuning
+  the build rules forbid. It is published instead.
 - **Two cheaper arms beat us on the pre-registered stratum**: `stateless-top2` (6–18–6, `p=0.023`) and
   `window3-top2` (5–21–4, `p=0.002`) at 30 seeds. The pattern across everything is that **selectivity
   beats volume** — the arms that beat us keep the best two of what they see. What never-discard buys
@@ -126,6 +143,9 @@ nine" everywhere for weeks; the rendered screen was always right.)
   the trap harder, which is biased *against* the ledger. Not a bug; possibly a `decisions.md` entry.
 - **The Sonnet investigation figures are provider-historical and no longer replay** (`prompt_sha`
   moved twice). The README says so instead of offering a command that fails.
+- **The recorded document screens (`ui/data.js`) are still the offline rule engine**, printed on
+  screen. `#/desk`, `#/desk/call` and `#/stream` are keyed Haiku. Regenerating `data.js` from a keyed
+  investigate run is cheap and not yet done.
 - **`infrastructure.md` has twelve further contradictions** listed in the 2026-08-28 work-package
   report — §3.4's OpenAI provider section, Appendix A's Sonnet ARNs, the CDK and container-image
   sections against D-024. Each belongs to its own pass.

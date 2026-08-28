@@ -78,6 +78,45 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 
 ## Log
 
+**2026-08-29 (late)** · **Every keyed measurement re-taken on the shipping corpus, and a design
+system** (`1a91e46`, `7359427`, `a459ee0`, `bcbcd8b`, `33c213c`, `74536fc`).
+
+**AT-57 22 / 50 and AT-58 36 / 49**, both on the post-fix corpus, both replaying — verified before
+publishing, which is the whole point of the README paragraph deleted a day earlier. The agent
+escalates: 18/25 caught, 4/25 dismissed. Routing is harder post-fix (41→36) and its two wrong routes
+are unmoored from the evidence rather than near-misses.
+
+**A dead route, found and then explained.** The offline lexicon finds churn evidence in 0.43 of the
+conversations where it was planted, against 0.67–0.86 elsewhere; corroboration is cross-conversation,
+so **0 of 325 churn customers ever crossed** and the brief's lead team received nothing. `tools/
+reader_coverage.py` measured both readers over the same 288 conversations ($0.4260): the model reader
+takes churn coverage to **0.79** and **9 of 20** churn customers reach Retention — **and drops
+Collections coverage to 0.42, crossings 4 → 1**. Choosing a reader is an operational decision about
+which desk you under-serve. Published at equal size.
+
+**The cost cap is finally derived from measurement** ($0.25 → $0.10), which D-025 asked for and never
+got. Two existing guards fired on the change: the deployed Lambda's deliberate copy of the constant,
+and a CloudWatch alarm sitting at a literal $0.20 while its own comment claimed it was `cap * 0.8` —
+at the new cap that is an alarm at twice the ceiling, which could only fire after the cap had already
+stopped the run.
+
+**A hazard closed before it fired.** `extractor_cache_path()` returned one file for every model, so
+arm B would have appended Nova Lite completions into the committed cache behind 0.8214 recall and
+$1.6563 per 1,000. No collision, no error, just two models in one file. Now per-model, with the
+default keeping its historical filename so a judge's keyless replay still works.
+
+**The UI got a design system, not a repaint.** Generated neutral ramp (one hue, one chroma, even
+OKLCH lightness steps) indexed by both themes; semantic colours at one lightness per theme; elevation
+by surface rather than by border. It found a live bug: the tenant accent was rendering as body text
+at **3.71:1**, so `--accent` (any client hex, no words), `--accent-ink` (ours) and `--accent-edge`
+(corrected mark) are now three tokens. `ui/contrast.mjs` gates **634** rendered pairs across both
+themes, discovers its own surface, and enforces D-030 — dimming a retained ledger row by one step
+fails the build even at 7.9:1.
+
+**The streamed demo was re-recorded** with both arms keyed. The first attempt had the reader on Haiku
+and the investigator on the offline rule engine; the artifact's own filename (`model-offline`) is the
+only reason it was caught.
+
 **2026-08-29 (small hours)** · **A four-agent red team, and the numbers it moved** (`d46bf02`,
 `40e5f7f`, `a03c02b`, `08b20cc`, `660dca4`, `dd3c50e`, `4430f8b`, `0a7c2e4`). Four reviewers ran
 against code correctness, architecture invariants, story-versus-evidence, and demo/UI/AWS honesty.
