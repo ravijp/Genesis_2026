@@ -30,13 +30,7 @@ from .config import DEFAULT, RunConfig
 from .corpus import generate, smallest_fragment_pool
 from .evals import corpus_diagnostics, evaluate_all, evaluate_arm, extraction_fidelity
 from .extract import Extractor, OfflineLexiconExtractor, extract_all
-from .llm import (
-    CachingProvider,
-    LazyOpenRouterProvider,
-    OfflineProvider,
-    ProviderError,
-    cache_mode,
-)
+from .llm import ProviderError, build_provider, cache_mode
 from .memory import ScoreBreakdown
 from .schema import Case, Outcome, Stratum
 
@@ -495,26 +489,14 @@ def _case_record(
 
 
 def _provider(name: str, prompt_sha: str):
-    """Offline by default and always keyless.
+    """Offline unless asked otherwise, and offline is always keyless.
 
-    Only the network provider is wrapped in the response cache. The offline provider is already
-    deterministic, and wrapping it would let `EARSHOT_CACHE_MODE=replay` turn a cache miss into a
-    failure on the one path that must never need anything.
+    Selection and cache-mode handling live in `llm/select.py`, shared with the model reader and
+    the two Lambda handlers, so the three cannot drift about what a provider name means. What
+    stays here is only the default: this CLI is the thing a judge runs, and it must work with no
+    credentials of any kind.
     """
-    if name != "openrouter":
-        return OfflineProvider()
-
-    from .llm import OpenRouterProvider
-
-    # In replay mode the network is never touched, so a key must not be required to get here.
-    # Construction is deferred so the cache serves first and the live client is built only if
-    # something actually misses; building it eagerly makes replay depend on a key it will
-    # never use.
-    if cache_mode() == "replay":
-        return CachingProvider(LazyOpenRouterProvider(), prompt_sha)
-
-    inner = OpenRouterProvider()
-    return inner if cache_mode() == "off" else CachingProvider(inner, prompt_sha)
+    return build_provider(name or "offline", prompt_sha)
 
 
 def _print_case(
@@ -843,9 +825,12 @@ def main() -> int:
     )
     parser.add_argument(
         "--provider",
-        choices=["offline", "openrouter"],
+        choices=["offline", "bedrock", "openrouter"],
         default="offline",
-        help="investigate only. Offline needs no key and no network.",
+        help="investigate only. Offline needs no key and no network, and is the default so a "
+             "judge can reproduce every screen with no account. `bedrock` is what the deployed "
+             "system runs (D-022, D-025); `openrouter` exists for the committed replay cache "
+             "recorded before the move.",
     )
     parser.add_argument(
         "--extractor",
@@ -853,8 +838,9 @@ def main() -> int:
         default="offline",
         help="run and sweep only: which reader turns conversations into signals. `offline` is "
         "the keyless 26-regex lexicon and is the default, so everything runs with no key and no "
-        "network. `model` reads every conversation with a model and needs a key, or "
-        "EARSHOT_CACHE_MODE=replay against a recorded cache.",
+        "network. `model` reads every conversation with a model -- Bedrock unless $EARSHOT_LLM "
+        "says otherwise -- and needs credentials, or EARSHOT_CACHE_MODE=replay against a "
+        "recorded cache.",
     )
     parser.add_argument(
         "--limit", type=int, default=3, help="investigate only: how many cases to work."

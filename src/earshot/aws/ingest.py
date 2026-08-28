@@ -50,6 +50,7 @@ from typing import Any
 from ..config import ScoringConfig
 from ..extract import Extractor, OfflineLexiconExtractor
 from ..schema import Conversation
+from .metrics import COUNT, NONE, emit
 from .stores import REGION, LedgerStore, table_name
 from .transcripts import TranscriptArchive, TranscriptError, parse_conversation
 
@@ -260,14 +261,29 @@ def handler(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
             conversation = parse_conversation(json.loads(record["body"]))
             result = _INGESTOR.ingest(conversation)
         except Exception as exc:  # noqa: BLE001 -- the contract is "this record failed", not why
-            # Structured and one line: a CloudWatch Insights query on `event=ingest.failed` is the
-            # only practical way to find a poison message in a busy log group.
-            print(
-                json.dumps(
-                    {"event": "ingest.failed", "messageId": message_id, "error": str(exc)}
-                )
+            # One line that is both a metric and a log record, so an alarm on Failed and a
+            # CloudWatch Insights query on `event="ingest.failed"` can never disagree about what
+            # happened. Finding a poison message in a busy log group needs the second one.
+            emit(
+                "ingest.failed",
+                {"Failed": (1, COUNT)},
+                properties={"messageId": message_id, "error": str(exc)},
             )
             failures.append({"itemIdentifier": message_id})
             continue
-        print(json.dumps({"event": "ingest.ok", **result.to_dict()}))
+        emit(
+            "ingest.ok",
+            {
+                "Ingested": (1, COUNT),
+                "SignalsWritten": (result.written, COUNT),
+                # The A7 duplicate metric. Not an error rate: SQS delivers at least once and the
+                # conditional write is what makes that harmless. A sudden climb still means
+                # something upstream is redriving.
+                "DuplicateDeliveries": (result.duplicates, COUNT),
+                "Crossings": (1 if result.crossed else 0, COUNT),
+                "Investigations": (1 if result.enqueued else 0, COUNT),
+                "LedgerScore": (round(result.score, 6), NONE),
+            },
+            properties=result.to_dict(),
+        )
     return {"batchItemFailures": failures}

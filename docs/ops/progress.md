@@ -46,14 +46,14 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 |---|---|---|---|
 | W3 | Bedrock provider (`llm/bedrock.py`) | **DONE** | Converse both ways, Haiku 4.5 default, computed-not-charged cost, lazy client. 33 stub tests |
 | W1 | Persist case fields | **DONE** | `case_record.py` — one serializer for the disk artifact and the DynamoDB item. Unblocks W10 |
-| W4 | Spend cap in our own code | TODO | Budgets/Cost Explorer not granted. Put the ceiling next to `COST_CAP_PER_CASE_USD` |
+| W4 | Spend cap in our own code | **DONE** | `llm/budget.py`. `CappedProvider` wraps every paid provider, refuses before the call, outside the cache. 15 tests |
 | W5 | First keyed reader run | TODO | Needs W3. 150 CFPB docs, ~$0.30, both arms |
 | W6 | Ledger + case DynamoDB stores | **DONE (code); tables not created** | `aws/stores.py` + `tools/provision.py`. Conditional writes, no delete path on the ledger, scoring delegated. 39 stub tests. Dry-run verified against the real account |
 | W7 | Ingest path (SQS FIFO → handler) | **DONE** | `aws/ingest.py`. Partial batch failure, conditional append, scoring delegated. 18 tests, no AWS |
 | W8 | Investigate path | **DONE (code)** | `aws/investigate.py` + `aws/transcripts.py`. Loop unchanged, score recomputed not trusted, account data labelled synthetic. 29 tests |
 | W9 | CI/CD | BLOCKED (IT) | CodeBuild + CodePipeline denied. `buildspec.yml` is written and parked, ready to run |
 | W10 | Reviewer UI, 3 screens | **DONE (read-only)** | `ui/`, no build step. All three beats render from a committed artifact with zero AWS. The write path waits on the API being reachable |
-| W11 | Observability (EMF) | TODO | CloudWatch granted; no SNS, so alarms target EventBridge → Lambda |
+| W11 | Observability (EMF) | **DONE (emit side)** | `aws/metrics.py`, wired into all three handlers. Alarms/dashboard still to create; no SNS, so they target EventBridge → Lambda |
 | W12 | Sweep runner | DROPPED for now | Fargate needs VPC subnets; keep the sweep local |
 
 ## Blocked, and who owns it
@@ -75,6 +75,38 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-28 (W4, W11, and the reason no keyed run was possible)** · 457 tests (+41), guard 96 →
+105, ruff clean.
+
+**The finding: the model reader could not reach Bedrock at all.** `model_extractor()` was hardwired
+to OpenRouter, whose key D-022 retired three days earlier. The Bedrock provider existed, was tested,
+and nothing could select it — so "run the keyed benchmark" had been sitting on the list as an
+unblocked task while being impossible. Three call sites (`cli.py:_provider`,
+`extract_model.model_extractor`, the two handlers) had each decided provider selection separately
+and drifted. `llm/select.py` is now the one place: `$EARSHOT_LLM`, default **bedrock**, explicit
+`if`/`elif`, never a registry. Two reader tests were pinned to `openrouter` explicitly rather than
+relying on it being the default.
+
+**W4 — the spend ceiling.** `llm/budget.py`. `CappedProvider` wraps every paid provider inside
+`build_provider`, so a new call site cannot forget to opt in. Four things worth carrying:
+
+- It refuses **before** the call. Raising afterwards means the money is already spent and the cap
+  is a report.
+- It inherits **D-011 unchanged**: cumulative spend, never a single anomalous call. Nothing can
+  know a call's price before making it, and a cap that pretends otherwise is worse.
+- It sits **outside** the cache, so a replayed response costs nothing and does not count. Inverting
+  the layers would make a keyless replay run exhaustible.
+- It is **per-process** — in Lambda, per-container, not account-wide. What bounds the deployed
+  fleet is reserved concurrency plus `maxReceiveCount: 3`. Said plainly rather than implying an
+  account guarantee.
+
+**W11 — EMF, not `PutMetricData`.** One JSON line per event that CloudWatch reads as metrics and a
+human reads as a log, so the two can never disagree; no API call on the hot path, and no
+`cloudwatch:PutMetricData` on the role (which does not have it). `stopped_because` is the one
+non-Stage dimension, because its cardinality is bounded by the loop's exits and the distribution
+across them is the earliest signal of the agent degrading. `customer_id` and `case_id` stay
+properties — a dimension per customer is one CloudWatch metric per customer.
 
 **2026-08-28 (W10)** · **The reviewer UI, three screens, no build step.** `ui/index.html` +
 `styles.css` + `app.js` + a generated, committed `data.js`. 416 tests (+10), ruff clean.

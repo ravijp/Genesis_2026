@@ -333,7 +333,13 @@ def test_the_shipped_command_never_builds_a_network_reader_unless_asked(
 def test_asking_for_the_model_reader_without_a_key_exits_1_with_an_explanation(
     monkeypatch, tmp_path, capsys
 ) -> None:
-    """The command has to say what is wrong and what still works, not raise MissingAPIKey."""
+    """The command has to say what is wrong and what still works, not raise MissingAPIKey.
+
+    Pinned to OpenRouter explicitly. The default provider became Bedrock when D-022 retired the
+    OpenRouter key, and Bedrock's credentials come from the environment rather than from a
+    variable a test can delete — so this keeps testing the message, not the default.
+    """
+    monkeypatch.setenv("EARSHOT_LLM", "openrouter")
     monkeypatch.setenv("EARSHOT_ARTIFACTS", str(tmp_path))
     monkeypatch.delenv("EARSHOT_OPENROUTER_API_KEY", raising=False)
     monkeypatch.delenv("EAR_OPENROUTER_API_KEY", raising=False)
@@ -371,6 +377,7 @@ def test_the_extractor_flag_is_refused_on_commands_that_do_not_take_one(
 
 
 def test_no_key_fails_with_an_explanation_not_a_traceback(monkeypatch) -> None:
+    monkeypatch.setenv("EARSHOT_LLM", "openrouter")
     monkeypatch.delenv("EARSHOT_OPENROUTER_API_KEY", raising=False)
     monkeypatch.delenv("EAR_OPENROUTER_API_KEY", raising=False)
     monkeypatch.setenv("EARSHOT_OPENROUTER_API_KEY_FILE", "/nonexistent/key.txt")
@@ -397,6 +404,36 @@ def test_replay_needs_no_key_and_reports_a_miss_instead_of_reaching_the_network(
     extractor = model_extractor(cache=ResponseCache(tmp_path / "cache.jsonl", "replay"))
     with pytest.raises(CacheMiss):
         extractor.extract(conversation())
+
+
+# --- which provider the reader actually reaches for -------------------------------------------
+
+
+def test_the_default_reader_is_bedrock(monkeypatch, tmp_path) -> None:
+    """D-022 retired the OpenRouter key and moved every arm to Bedrock. The reader defaulting to
+    OpenRouter anyway is why no keyed run was possible until 2026-08-28 — the provider existed and
+    nothing could select it."""
+    monkeypatch.delenv("EARSHOT_LLM", raising=False)
+    monkeypatch.setenv("EARSHOT_CACHE_MODE", "replay")
+
+    reader = model_extractor(cache=ResponseCache(tmp_path / "cache.jsonl", "replay"))
+    assert "bedrock" in reader.provider.name
+
+
+def test_the_reader_honours_an_explicit_provider(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("EARSHOT_CACHE_MODE", "replay")
+    reader = model_extractor(
+        "openrouter", cache=ResponseCache(tmp_path / "cache.jsonl", "replay")
+    )
+    assert "openrouter" in reader.provider.name
+
+
+def test_an_unknown_provider_is_refused_by_name(monkeypatch, tmp_path) -> None:
+    """A typo in `$EARSHOT_LLM` must not fall through to a default and silently measure something
+    else — the whole point of naming the provider in every manifest."""
+    monkeypatch.setenv("EARSHOT_CACHE_MODE", "replay")
+    with pytest.raises(ValueError, match="unknown provider"):
+        model_extractor("clawed", cache=ResponseCache(tmp_path / "cache.jsonl", "replay"))
 
 
 def test_a_recorded_read_replays_with_no_provider_available(tmp_path) -> None:

@@ -39,6 +39,7 @@ from urllib.parse import unquote
 from ..case_record import evidence_chain
 from ..config import ScoringConfig
 from .ingest import DEFAULT_THRESHOLD
+from .metrics import COUNT, emit
 from .stores import CaseStore, LedgerStore, ReviewStore, table_name
 from .transcripts import TranscriptArchive
 
@@ -325,7 +326,13 @@ def handler(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
     except ApiError as exc:
         return _response(exc.status, {"error": exc.message})
     except Exception as exc:  # noqa: BLE001 -- a trace in a response body is an information leak
-        print(json.dumps({"event": "api.error", "path": path, "error": f"{type(exc).__name__}"}))
+        # The exception TYPE, never its message: a `ClientError` naming a table is a leak in a log
+        # that a wider audience reads than the response body ever reaches.
+        emit(
+            "api.error",
+            {"ServerError": (1, COUNT)},
+            properties={"path": path, "method": method, "error": type(exc).__name__},
+        )
         return _response(500, {"error": "internal error"})
     return _response(status, payload)
 

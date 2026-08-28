@@ -43,6 +43,7 @@ from ..case_record import make_case_id
 from ..config import ScoringConfig
 from ..llm.base import LLMProvider
 from ..schema import SignalType
+from .metrics import COUNT, MILLISECONDS, NONE, emit
 from .stores import CaseStore, LedgerStore, table_name
 from .transcripts import TranscriptArchive, TranscriptError
 
@@ -205,6 +206,9 @@ class Investigator:
             "score_drifted": reported_score is not None
             and round(reported_score, 6) != round(ctx.score, 6),
             "cost_usd": trace.cost_usd,
+            # Model time, not wall clock. In replay the two differ by ~50x, and one number
+            # labelled neither is how "2 investigations in 1.2s" ends up beside a per-case 33s.
+            "latency_ms": trace.latency_ms,
             "model_calls": trace.model_calls,
             "stopped_because": trace.stopped_because,
             "evidence_repairs": trace.evidence_repairs,
@@ -269,19 +273,64 @@ def handler(event: dict[str, Any], context: Any = None) -> dict[str, Any]:
                 reported_score=crossing["reported_score"],
             )
         except Exception as exc:  # noqa: BLE001 -- the contract is "this record failed", not why
-            print(
-                json.dumps(
-                    {
-                        "event": "investigate.failed",
-                        "messageId": message_id,
-                        "error": f"{type(exc).__name__}: {exc}",
-                    }
-                )
+            emit(
+                "investigate.failed",
+                {"Failed": (1, COUNT)},
+                properties={
+                    "messageId": message_id,
+                    "error": f"{type(exc).__name__}: {exc}",
+                },
             )
             failures.append({"itemIdentifier": message_id})
             continue
-        print(json.dumps(logged))
+        _emit_investigation(logged)
     return {"batchItemFailures": failures}
+
+
+def _emit_investigation(logged: dict[str, Any]) -> None:
+    """One EMF line per investigation.
+
+    `stopped_because` is a DIMENSION here and nowhere else: its cardinality is bounded by the
+    loop's own exit reasons, and the distribution across them is the most diagnostic number this
+    system produces. A shift toward `cost_cap` or `max_steps` is the agent degrading, and it moves
+    before any accuracy metric does.
+    """
+    if logged["event"] != "investigate.ok":
+        emit(
+            logged["event"],
+            {"NoLongerCrossing": (1, COUNT)},
+            properties={k: v for k, v in logged.items() if k != "event"},
+        )
+        return
+    emit(
+        "investigate.ok",
+        {
+            "Investigated": (1, COUNT),
+            "CostUsd": (round(logged.get("cost_usd") or 0.0, 6), NONE),
+            "ModelCalls": (logged.get("model_calls") or 0, COUNT),
+            # First-attempt failures, not post-retry ones: a decision whose citations do not
+            # resolve is rejected inside the loop, so this is the groundedness signal AT-57 asks
+            # for. Taken off the returned decision it would be a structural zero.
+            "EvidenceRepairs": (logged.get("evidence_repairs") or 0, COUNT),
+            "ScoreDrifted": (1 if logged.get("score_drifted") else 0, COUNT),
+            "LatencyMs": (round(logged.get("latency_ms") or 0.0, 3), MILLISECONDS),
+        },
+        dimensions={"StoppedBecause": str(logged.get("stopped_because") or "unknown")},
+        properties={
+            k: v
+            for k, v in logged.items()
+            if k
+            not in {
+                "event",
+                "cost_usd",
+                "model_calls",
+                "evidence_repairs",
+                "score_drifted",
+                "latency_ms",
+                "stopped_because",
+            }
+        },
+    )
 
 
 __all__ = [

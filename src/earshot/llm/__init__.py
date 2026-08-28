@@ -25,6 +25,13 @@ from .bedrock import (
     MissingBoto3,
     normalize_model_id,
 )
+from .budget import (
+    DEFAULT_SPEND_CAP_USD,
+    BudgetExhausted,
+    CappedProvider,
+    SpendCeiling,
+    spend_cap_usd,
+)
 from .cache import CacheMiss, CachingProvider, ResponseCache, cache_mode, cache_path
 from .offline import OfflineProvider
 from .openrouter import (
@@ -33,9 +40,19 @@ from .openrouter import (
     OpenRouterProvider,
     resolve_api_key,
 )
+from .select import DEFAULT_LLM, PROVIDERS, build_provider, llm_name
 
 __all__ = [
     "DEFAULT_BEDROCK_MODEL",
+    "DEFAULT_SPEND_CAP_USD",
+    "BudgetExhausted",
+    "CappedProvider",
+    "SpendCeiling",
+    "spend_cap_usd",
+    "DEFAULT_LLM",
+    "PROVIDERS",
+    "build_provider",
+    "llm_name",
     "DEFAULT_MODEL",
     "BedrockProvider",
     "CacheMiss",

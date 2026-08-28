@@ -345,40 +345,38 @@ def extractor_cache_path() -> Path:
 
 
 def model_extractor(
+    provider_name: str | None = None,
     *,
     prompt_version: str = DEFAULT_VERSION,
     model_cfg: ModelConfig | None = None,
     cache=None,
 ) -> ModelExtractor:
-    """The model reader over OpenRouter, wrapped in the response cache.
+    """The model reader, wrapped in the response cache.
+
+    `provider_name` defaults to `$EARSHOT_LLM` and then to Bedrock (D-022 retired the OpenRouter
+    key). Selection itself lives in `llm/select.py` so the reader, the CLI and the two Lambda
+    handlers cannot drift about what "the model" means -- which they had, leaving the reader
+    unable to reach the only provider this account has credentials for.
 
     One keyed run records every completion; every later run replays it with
     `EARSHOT_CACHE_MODE=replay` and no key at all. That is the same record-then-replay path the
     two committed live investigations use, and it is what lets a measurement be reproduced in a
     room with no wifi.
 
-    In replay mode the network client is never constructed, so no key is required to get here.
-    In record mode it is constructed eagerly and raises `MissingAPIKey` immediately -- failing
-    on conversation zero rather than on conversation one.
+    In replay mode the network client is never constructed, so no credentials are required to get
+    here. In record mode it is built eagerly and fails immediately -- on conversation zero rather
+    than on conversation one, halfway through a run that has already spent money.
     """
-    from .llm import (
-        CachingProvider,
-        LazyOpenRouterProvider,
-        OpenRouterProvider,
-        ResponseCache,
-        cache_mode,
-    )
+    from .llm import ResponseCache, build_provider, cache_mode
 
     _, _, combined_sha = extractor_prompts(prompt_version)
-    mode = cache_mode()
-    provider: LLMProvider
-    if mode == "off":
-        provider = OpenRouterProvider()
-    else:
-        inner = LazyOpenRouterProvider() if mode == "replay" else OpenRouterProvider()
-        provider = CachingProvider(
-            inner,
-            combined_sha,
-            cache=ResponseCache(path=extractor_cache_path()) if cache is None else cache,
-        )
+    provider = build_provider(
+        provider_name,
+        combined_sha,
+        cache=(
+            None
+            if cache_mode() == "off"
+            else (ResponseCache(path=extractor_cache_path()) if cache is None else cache)
+        ),
+    )
     return ModelExtractor(provider, model_cfg=model_cfg, prompt_version=prompt_version)
