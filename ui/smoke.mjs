@@ -128,6 +128,7 @@ const caseId = data.queue.cases[0].case_id;
 const evidence = data.cases[caseId].evidence[0];
 const routes = [
   "#/",
+  "#/deployment",
   "#/portfolio",
   "#/queue",
   // Encoded and raw, because `make_case_id` joins its triple with "#": the links now emit the
@@ -238,6 +239,37 @@ for (const block of stream.tenants) {
   // The disclosure is a fact about the build, so it is asserted rather than trusted.
   if (block.manifest.asr !== "none") {
     failures.push(`${tid}: manifest.asr is ${block.manifest.asr}, expected "none"`);
+  }
+  // The turn-by-turn beat is the demo. A run whose narration is empty, or whose reads point at
+  // conversations that are not in the stream, renders a screen that silently claims less than it
+  // should -- so it fails the build rather than the presenter.
+  const narrated = Object.keys(block.reads || {});
+  if (!narrated.length) {
+    failures.push(`${tid}: no conversation was read turn-by-turn; the narration beat is empty`);
+  }
+  for (const cid of narrated) {
+    if (!block.conversations[cid]) {
+      failures.push(`${tid}: reads reference ${cid}, which has no transcript`);
+    }
+    const steps = block.reads[cid];
+    const seen = steps.map((s) => s.turns_seen);
+    if (seen.join() !== [...seen].sort((a, b) => a - b).join()) {
+      failures.push(`${tid}/${cid}: read steps are not in transcript order`);
+    }
+    const last = steps[steps.length - 1];
+    if (last && last.turns_seen !== (block.conversations[cid].turns || []).length) {
+      failures.push(
+        `${tid}/${cid}: the final read saw ${last.turns_seen} turns, not the whole transcript ` +
+          `(${(block.conversations[cid].turns || []).length}) -- narration would disagree with ` +
+          `what was appended to the ledger`
+      );
+    }
+  }
+  // At least one belief must actually move somewhere in the run. If nothing ever changes, the
+  // turn-by-turn cadence is decoration and the screen should not imply otherwise.
+  const moved = narrated.some((cid) => block.reads[cid].some((s) => s.changed));
+  if (!moved) {
+    failures.push(`${tid}: no read step changed the reader's belief anywhere in the run`);
   }
 }
 

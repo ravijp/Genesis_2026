@@ -40,7 +40,9 @@ ARTIFACT_GLOB = "artifacts/runs/stream-*.json"
 # The keys a tenant block must carry for the demo screens to render. Checked by name rather than
 # trusted, because the failure mode of a missing key is a blank panel with no error -- which on
 # stage reads as "the product has nothing to show" rather than "the fixture is stale".
-REQUIRED = ("manifest", "tenant", "frames", "cases", "conversations", "teams", "totals")
+REQUIRED = (
+    "manifest", "tenant", "frames", "cases", "conversations", "teams", "totals", "reads",
+)
 
 
 class FixtureError(RuntimeError):

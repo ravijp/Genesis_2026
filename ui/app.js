@@ -91,7 +91,7 @@
     var el = document.getElementById("mainnav");
     if (!el) return;
     var items = [
-      { href: "#/portfolio", label: "Deployments", key: "portfolio" },
+      { href: "#/deployment", label: "Deployment", key: "deployment" },
       { href: "#/stream", label: "Live stream", key: "stream" },
       { href: "#/queue", label: "Reviewer queue", key: "queue" },
     ];
@@ -420,20 +420,26 @@
     // The portfolio is the front door when there is a demo to show, and the queue is the front
     // door when there is not. Rendered directly rather than redirected: a `location.replace` here
     // would put a second entry in the router's own history and make Back leave the page.
-    var wantsPortfolio =
-      parts[0] === "portfolio" || (!parts.length && LIVE && LIVE.hasData());
-    if (wantsPortfolio && LIVE) {
-      renderNav("portfolio");
-      renderProvenance(null);
+    var wantsDeployment =
+      parts[0] === "deployment" ||
+      parts[0] === "portfolio" ||  // the old name; bookmarks from before the rename still land
+      (!parts.length && LIVE && LIVE.hasData());
+    if (wantsDeployment && LIVE) {
+      renderNav("deployment");
       document.getElementById("provenance").innerHTML =
-        "<strong>Three synthetic deployments.</strong> Same engine, three books of business, " +
-        "three configurations. Every conversation below was generated as text: there is no " +
-        "speech recognition in this system.";
-      return LIVE.renderPortfolio(view, crumbs);
+        "<strong>One synthetic deployment.</strong> This system is a layer that goes into a " +
+        "client's existing stack — their contact centre, their transcripts, their case " +
+        "management, their reviewers. Every conversation here was generated as text: there is " +
+        "no speech recognition anywhere in this system.";
+      return LIVE.renderIntegration(view, crumbs);
     }
     if (parts[0] === "stream" && LIVE) {
-      var tenantId = parts[1] || null;
-      var streamSource = tenantId ? LIVE.sourceFor(tenantId) : null;
+      // parts[1] is a tenant id when present. With one deployment shipping it usually is not, so
+      // it falls back rather than 404ing on the route a person actually types.
+      var tenantId = parts[1] && parts[1] !== "case" && parts[1] !== "conversation"
+        ? parts[1]
+        : LIVE.defaultTenantId();
+      var streamSource = LIVE.sourceFor(tenantId);
       if (streamSource) streamSource.key = tenantId;
 
       if (parts[2] === "case" && parts[3] && streamSource) {

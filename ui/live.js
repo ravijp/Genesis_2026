@@ -1,24 +1,30 @@
-/* The demo screens: a multi-enterprise portfolio, and the arrival stream replayed on a clock.
+/* The demo screens: where this drops into a client's stack, and the arrival stream.
  *
- * `app.js` owns the router and the three reviewer screens. This file owns the two demo screens
- * and is loaded before it. Split because they are different jobs: the reviewer screens are the
- * product a bank's staff use, and these two are how the product is *shown* -- one has to keep
- * working when the other is being rebuilt the night before a gate.
+ * `app.js` owns the router and the four reviewer screens. This file owns the two demo screens and
+ * is loaded before it. Split because they are different jobs: the reviewer screens are the product
+ * a bank's staff use, and these two are how the product is *shown* — one has to keep working while
+ * the other is being rebuilt the night before a gate.
  *
- * **It computes nothing.** Every score, delta, board position, crossing and cost in a frame was
- * computed by `memory.py` inside `earshot stream` and written to `ui/stream.js`. This file steps
- * an index through an array and paints. It does not add, decay, rank or threshold. The moment a
- * browser starts scoring there are two scorers in this system and they will disagree on stage.
+ * **It computes nothing.** Every score, delta, board position, crossing, belief change and cost
+ * was computed in Python inside `earshot stream` and written to `ui/stream.js`. This file steps an
+ * index through arrays and paints. It does not add, decay, rank, threshold, or decide that a
+ * model changed its mind — `read_live._diff()` decided that. The moment a browser starts computing
+ * there are two answers to one question and they will disagree on stage.
  *
- * **There is no speech recognition anywhere in this product**, and this screen says so rather
- * than implying otherwise by animating a waveform. What the replay reproduces faithfully is the
- * *arrival pattern* -- order across the whole book, day spacing, channel mix -- and, at 1x, the
- * reader's own measured per-call latency. The transcripts were generated as text.
+ * **The turn-by-turn beat.** For the handful of conversations that were narrated, the reader was
+ * called again after each customer turn on the transcript heard *so far*. The call panel
+ * interleaves those reads with the turns that triggered them, so the audience watches a belief
+ * form: nothing at two turns, `complaint_escalation` at 0.65 by turn four, firmer at turn six —
+ * and sometimes withdrawn, or re-quoted to better evidence. Every one of those movements is in
+ * the data; none is invented here.
+ *
+ * **Reveal is CSS, not JS timers.** Turns and reads share one staggered `animation-delay` keyed
+ * off how many turns had been heard, so the two columns cannot drift, a scrub backwards restarts
+ * cleanly, and no interval can outlive a route change.
  *
  * **Two sources, one player.** Over `file://` it plays the recorded run, which is what survives a
- * judging room with no wifi (D-004). Served from `earshot stream --serve` it can instead attach
- * an EventSource to localhost and paint frames as a live Bedrock call produces each one. Same
- * `paint()` either way, because the server emits the identical frame objects `run_stream` writes.
+ * judging room with no wifi (D-004). Served from `earshot stream --serve` it attaches an
+ * EventSource to localhost and paints frames as a live Bedrock call produces each one.
  */
 
 window.EARSHOT_LIVE = (function () {
@@ -28,8 +34,8 @@ window.EARSHOT_LIVE = (function () {
   var STREAM = window.EARSHOT_STREAM || null;
 
   // Height of one live-board row, in px. Rows are absolutely positioned and moved by transform so
-  // a re-rank is a visible slide rather than a repaint -- re-ranking IS the thing being shown, and
-  // an innerHTML swap makes it invisible. Must match `.boardrow` height in styles.css.
+  // a re-rank is a visible slide rather than a repaint — re-ranking IS the thing being shown, and
+  // an innerHTML swap makes it invisible. Must match `.boardrow` height in demo.css.
   var ROW = 40;
 
   // 1x is the reader's own measured latency for that conversation, so "real time" is a fact from
@@ -43,6 +49,12 @@ window.EARSHOT_LIVE = (function () {
   ];
   var FALLBACK_MS = 900;
   var FLOOR_MS = 90;
+
+  // Bounds on the per-turn reveal stagger. Scaled to the frame's own duration so a 13-turn call
+  // finishes revealing before the next one arrives, then clamped so it is neither a slideshow nor
+  // a flash.
+  var STAGGER_MIN = 22;
+  var STAGGER_MAX = 90;
 
   var player = null;
 
@@ -65,7 +77,7 @@ window.EARSHOT_LIVE = (function () {
       '<div class="panel"><h2>No stream data</h2><p class="lede">' +
       U.esc(what) +
       " This screen replays a recorded <code>earshot stream</code> run. Build one:</p>" +
-      '<pre class="quote">uv run earshot stream --tenant all --extractor model --provider bedrock\n' +
+      '<pre class="quote">uv run earshot stream --extractor model --provider bedrock\n' +
       "uv run python tools/stream_fixture.py</pre>" +
       '<p><a class="plain" href="#/queue">Back to the reviewer queue</a></p></div>';
   }
@@ -99,114 +111,126 @@ window.EARSHOT_LIVE = (function () {
     );
   }
 
-  function tenantPills(activeId, hrefFor) {
-    return (
-      '<nav class="pills" aria-label="Enterprise">' +
-      blocks()
-        .map(function (b) {
-          var t = b.tenant;
-          var on = t.tenant_id === activeId;
-          return (
-            '<a class="pill' + (on ? " on" : "") + '" href="' + U.esc(hrefFor(t.tenant_id)) + '"' +
-            ' style="--accent:' + U.esc(t.accent) + '">' +
-            "<span class=\"dot\"></span><span>" + U.esc(t.name) + "</span>" +
-            '<span class="pill-sub">' + U.esc(t.industry) + "</span></a>"
-          );
-        })
-        .join("") +
-      "</nav>"
-    );
-  }
+  /* ---- screen: how this drops into the client's stack ---------------------------------------
+   *
+   * Built from `tenant.integration`, which is data in `tenants.py`, not a drawing. A diagram
+   * maintained by hand drifts from the code within a sprint; this cannot, because the same list
+   * that describes a seam is the one the deployment is configured from.
+   */
 
-  /* ---- screen: the portfolio -------------------------------------------------------------- */
+  function renderIntegration(view, crumbs) {
+    U.setCrumbs(crumbs, [{ label: "Deployment" }]);
+    var block = blockFor(null);
+    if (!block) return noData(view, "ui/stream.js is missing.");
+    var t = block.tenant;
+    var n = block.totals;
 
-  function renderPortfolio(view, crumbs) {
-    U.setCrumbs(crumbs, [{ label: "Deployments" }]);
-    var all = blocks();
-    if (!all.length) return noData(view, "No tenants found in ui/stream.js.");
-
-    var cards = all
-      .map(function (b) {
-        var t = b.tenant;
-        var n = b.totals;
-        var teams = (b.teams || [])
-          .map(function (row) {
-            return (
-              '<li><span class="team-name">' + U.esc(row.label) + "</span>" +
-              '<span class="team-bar"><i style="width:' +
-              (n.investigated ? (100 * row.cases) / n.investigated : 0) +
-              '%"></i></span>' +
-              '<span class="num">' + U.esc(row.cases) + "</span></li>"
-            );
-          })
-          .join("");
+    var seams = (t.integration || [])
+      .map(function (s, i) {
         return (
-          '<section class="panel tenant-card" style="--accent:' + U.esc(t.accent) + '">' +
-          '<div class="tenant-head"><span class="dot"></span><div>' +
-          "<h3>" + U.esc(t.name) + "</h3>" +
-          '<p class="muted">' + U.esc(t.industry) + " · synthetic book</p></div></div>" +
-          '<p class="book">' + U.esc(t.book) + "</p>" +
-          '<dl class="kv tight">' +
-          "<dt>Conversations read</dt><dd>" + U.esc(n.conversations) + "</dd>" +
-          "<dt>Customers</dt><dd>" + U.esc(n.customers) + "</dd>" +
-          "<dt>Signals kept</dt><dd>" + U.esc(n.signals) + "</dd>" +
-          "<dt>Alert threshold</dt><dd>" + U.n2(t.threshold) + " (fixed)</dd>" +
-          "<dt>Crossings</dt><dd>" + U.esc(n.crossings) + "</dd>" +
-          "<dt>Investigated</dt><dd>" + U.esc(n.investigated) + " of " + U.esc(n.crossings) +
-          "</dd>" +
-          "<dt>Reader spend</dt><dd>" + U.usd(n.reader_cost_usd) + "</dd>" +
-          "<dt>Agent spend</dt><dd>" + U.usd(n.investigation_cost_usd) + "</dd>" +
-          "</dl>" +
-          '<h4 class="mini">Where cases were routed</h4>' +
-          '<ul class="teams">' + teams + "</ul>" +
-          '<p><a class="plain" href="#/stream/' + U.esc(t.tenant_id) + '">' +
-          "Watch this book stream →</a></p>" +
-          "</section>"
+          '<li class="seam ' + (s.ours ? "ours" : "theirs") + '">' +
+          '<span class="seam-n">' + (i + 1) + "</span>" +
+          '<div class="seam-body">' +
+            '<div class="seam-head">' +
+              "<strong>" + U.esc(s.stage) + "</strong>" +
+              '<span class="badge ' + (s.ours ? "bad" : "mute") + '">' +
+              (s.ours ? "we build this" : "client's existing system") + "</span>" +
+            "</div>" +
+            '<div class="seam-sys">' + U.esc(s.system) + "</div>" +
+            '<p class="seam-note">' + U.esc(s.note) + "</p>" +
+          "</div></li>"
+        );
+      })
+      .join("");
+
+    var ours = (t.integration || []).filter(function (s) { return s.ours; }).length;
+    var theirs = (t.integration || []).length - ours;
+
+    var teams = (block.teams || [])
+      .map(function (row) {
+        return (
+          '<li><span class="team-name">' + U.esc(row.label) + "</span>" +
+          '<span class="team-bar"><i style="width:' +
+          (n.investigated ? (100 * row.cases) / n.investigated : 0) +
+          '%"></i></span>' +
+          '<span class="num">' + U.esc(row.cases) + "</span></li>"
         );
       })
       .join("");
 
     view.innerHTML =
-      "<h2>Three deployments, one engine</h2>" +
-      '<p class="lede">Each of these is the same code on its own book of business: its own ' +
-      "conversations, its own decay half-lives, its own alert threshold, and its own names for " +
-      "the four routing teams. There is no per-tenant scorer and no per-tenant prompt. What " +
-      "differs is configuration, and the numbers below differ because of it.</p>" +
-      '<div class="cards">' + cards + "</div>" +
-      '<section class="panel"><h3>What actually differs between them</h3>' +
-      '<div class="table-wrap"><table><thead><tr>' +
-      "<th>Deployment</th><th>Book</th><th class=\"right\">Threshold</th>" +
-      '<th class="right">Customers</th><th class="right">Conversations</th>' +
-      "<th>Reader</th><th>Agent</th>" +
-      "</tr></thead><tbody>" +
-      all
-        .map(function (b) {
-          return (
-            "<tr><td>" + U.esc(b.tenant.name) + "</td>" +
-            "<td>" + U.esc(b.tenant.industry) + "</td>" +
-            '<td class="right num">' + U.n2(b.tenant.threshold) + "</td>" +
-            '<td class="right num">' + U.esc(b.totals.customers) + "</td>" +
-            '<td class="right num">' + U.esc(b.totals.conversations) + "</td>" +
-            "<td>" + U.esc(b.manifest.reader) + "</td>" +
-            "<td>" + U.esc(b.manifest.provider) + "</td></tr>"
-          );
-        })
-        .join("") +
-      "</tbody></table></div>" +
-      '<p class="note"><strong>The thresholds differ because the review capacity differs</strong>' +
-      " — a servicer with four reviewers on a book of 38 cannot accept a card issuer's alert " +
-      "rate. Every one of these books is synthetic and every enterprise here is invented; the " +
-      "names exist so three deployments are distinguishable on screen. Costs are shown per " +
-      "deployment and never summed, because each is a separate customer of this system.</p>" +
-      "</section>";
+      '<div class="deploy" style="--accent:' + U.esc(t.accent) + '">' +
+      "<h2>" + U.esc(t.name) + " — where this sits in the stack</h2>" +
+      '<p class="lede">This is a layer, not a platform. <strong>' + theirs + " of " +
+      (ours + theirs) + " stages are systems the client already runs</strong> and we neither " +
+      "replace them nor keep a second copy of their data. What we add is the part that does not " +
+      "exist in a bank's stack today: a per-customer ledger that never discards a weak signal, " +
+      "and re-scores every one of them when the next conversation arrives.</p>" +
+
+      '<ol class="seams">' + seams + "</ol>" +
+
+      '<div class="grid">' +
+        '<section class="panel"><h3>Configured for this deployment</h3>' +
+        '<p class="muted small">Everything below is per-client configuration, not per-client ' +
+        "code. There is one scorer, one prompt set and one agent loop; a second client is a " +
+        "second entry in <code>tenants.py</code>.</p>" +
+        '<dl class="kv tight">' +
+          "<dt>Book</dt><dd>" + U.esc(t.industry) + "</dd>" +
+          "<dt>Alert threshold</dt><dd>" + U.n2(t.threshold) + " — a fixed cut, sized to their " +
+          "review capacity</dd>" +
+          "<dt>Routing destinations</dt><dd>" +
+          Object.keys(t.teams || {}).map(function (slot) {
+            return U.esc(t.teams[slot]) + ' <span class="muted">(' + U.esc(slot) + ")</span>";
+          }).join("<br>") +
+          "</dd>" +
+          "<dt>Decay half-lives</dt><dd>set per signal family, from their risk appetite</dd>" +
+        "</dl></section>" +
+
+        '<section class="panel"><h3>What this run did</h3><dl class="kv tight">' +
+          "<dt>Conversations read</dt><dd>" + U.esc(n.conversations) + " across " +
+          U.esc(n.customers) + " customers, " + U.esc(n.horizon_days) + " days</dd>" +
+          "<dt>Signals kept</dt><dd>" + U.esc(n.signals) + "</dd>" +
+          "<dt>Threshold crossings</dt><dd>" + U.esc(n.crossings) + "</dd>" +
+          "<dt>Cases worked by the agent</dt><dd>" + U.esc(n.investigated) + " of " +
+          U.esc(n.crossings) + "</dd>" +
+          "<dt>Read once</dt><dd>" + U.esc(n.conversations_read_once) + " conversations, one " +
+          "model call each — " + U.usd(n.reader_cost_usd) + "</dd>" +
+          "<dt>Read turn-by-turn</dt><dd>" + U.esc(n.conversations_narrated) + " conversations, " +
+          U.esc(n.narration_calls) + " calls — " + U.usd(n.narration_cost_usd) + "</dd>" +
+          "<dt>Agent</dt><dd>" + U.usd(n.investigation_cost_usd) + "</dd>" +
+          "<dt>Total</dt><dd><strong>" + U.usd(n.total_cost_usd) + "</strong></dd>" +
+        "</dl></section>" +
+
+        '<section class="panel"><h3>Where cases were routed</h3>' +
+        '<ul class="teams">' + teams + "</ul>" +
+        '<p class="note">Every destination is listed, including the ones at zero. An empty team ' +
+        "is a finding rather than a gap in the chart: it is how a model that escalates instead " +
+        "of discriminating shows up on a dashboard.</p></section>" +
+      "</div>" +
+
+      '<section class="panel"><h3>What we never do</h3>' +
+      '<ul class="nevers">' +
+        "<li><strong>No speech recognition.</strong> None in this system, and no code path could " +
+        "add one. We consume the transcripts a client's contact centre already produces.</li>" +
+        "<li><strong>No outbound contact.</strong> There is no email, dialler or message surface " +
+        "anywhere — not in the API, not in these screens, not in the demo server. Tests assert " +
+        "the absence, so human-in-the-loop is structural rather than a setting.</li>" +
+        "<li><strong>No second copy of their book.</strong> We store signals and the quote behind " +
+        "each, not a duplicate CRM.</li>" +
+        "<li><strong>No black-box score.</strong> Accumulation, decay and thresholds are plain " +
+        "deterministic Python. The model reads and judges; it never counts.</li>" +
+      "</ul></section>" +
+
+      '<p><a class="plain" href="#/stream">Watch conversations arrive →</a></p>' +
+      "</div>";
   }
 
   /* ---- screen: the stream ------------------------------------------------------------------
    *
-   * The player is a plain index into `block.frames`. `paint(i)` is a pure function of the frame
-   * at `i` plus the frames before it (for the counters and the decided-cases list), so a scrub
-   * backwards lands on exactly the state the forward pass would have shown. That property is
-   * what makes the scrubber safe to use in front of an audience.
+   * The player is a plain index into `block.frames`. `paint(i)` is a pure function of the frame at
+   * `i` plus the frames before it (for counters and decided cases), so a scrub backwards lands on
+   * exactly the state a forward pass would have shown. That property is what makes the scrubber
+   * safe to use in front of an audience.
    */
 
   function teardown() {
@@ -228,13 +252,12 @@ window.EARSHOT_LIVE = (function () {
     }
     var t = block.tenant;
     U.setCrumbs(crumbs, [
-      { label: "Deployments", href: "#/portfolio" },
-      { label: t.name },
+      { label: "Deployment", href: "#/deployment" },
+      { label: "Live stream" },
     ]);
 
     view.innerHTML =
       '<div class="stream" style="--accent:' + U.esc(t.accent) + '">' +
-      tenantPills(t.tenant_id, function (id) { return "#/stream/" + id; }) +
       '<div class="stream-head">' +
         "<h2>" + U.esc(t.name) + " — conversations arriving</h2>" +
         '<p class="lede">' + U.esc(t.book) + "</p>" +
@@ -265,6 +288,7 @@ window.EARSHOT_LIVE = (function () {
       timer: null,
       source: null,
       live: false,
+      liveMeta: null,
       rows: {},
       nodes: {
         transport: document.getElementById("transport"),
@@ -313,11 +337,15 @@ window.EARSHOT_LIVE = (function () {
     schedule();
   }
 
-  function nextCrossing() {
+  function nextMatching(test) {
     for (var k = player.i + 1; k < player.frames.length; k++) {
-      if (player.frames[k].crossed) return k;
+      if (test(player.frames[k])) return k;
     }
-    return player.frames.length - 1;
+    return player.i;
+  }
+
+  function readsFor(frame) {
+    return ((player.block.reads || {})[frame.conversation_id]) || null;
   }
 
   function paintTransport() {
@@ -329,7 +357,8 @@ window.EARSHOT_LIVE = (function () {
       "</button>" +
       '<button class="tbtn" id="stepback" title="Back one conversation">◀</button>' +
       '<button class="tbtn" id="stepfwd" title="Forward one conversation">▶</button>' +
-      '<button class="tbtn" id="tocross">Next threshold crossing ⤳</button>' +
+      '<button class="tbtn" id="toread">Next call read live ⤳</button>' +
+      '<button class="tbtn" id="tocross">Next crossing ⤳</button>' +
       '<button class="tbtn" id="restart">↺ Restart</button>' +
       '<span class="speeds">' +
       SPEEDS.map(function (s, k) {
@@ -365,9 +394,13 @@ window.EARSHOT_LIVE = (function () {
       player.playing = false;
       jump(player.i + 1);
     };
+    document.getElementById("toread").onclick = function () {
+      player.playing = true;
+      jump(nextMatching(function (f) { return !!readsFor(f); }));
+    };
     document.getElementById("tocross").onclick = function () {
       player.playing = false;
-      jump(nextCrossing());
+      jump(nextMatching(function (f) { return f.crossed; }));
     };
     document.getElementById("restart").onclick = function () {
       player.playing = true;
@@ -392,43 +425,102 @@ window.EARSHOT_LIVE = (function () {
     );
   }
 
-  /* ---- the three panels -------------------------------------------------------------------- */
+  /* ---- the call panel, with the reader's belief forming inside it -------------------------- */
 
-  function paintCall(frame) {
-    var block = player.block;
-    var conversation = (block.conversations || {})[frame.conversation_id] || {};
-    var cited = {};
-    (frame.signals || []).forEach(function (s) {
-      cited[s.turn_index] = s;
+  function beliefChips(step) {
+    if (!step.signals.length) {
+      return '<span class="belief none">nothing yet</span>';
+    }
+    var moved = {};
+    ["appeared", "firmed", "faded", "withdrawn", "requoted"].forEach(function (kind) {
+      (step[kind] || []).forEach(function (family) {
+        (moved[family] = moved[family] || []).push(kind);
+      });
     });
-
-    // Turns reveal on a CSS delay rather than a JS timer: it restarts cleanly on every frame,
-    // survives a scrub, and cannot leave a stray interval running when the route changes.
-    var turns = (conversation.turns || [])
-      .map(function (turn, k) {
-        var hit = cited[turn.index === undefined ? k : turn.index];
+    return step.signals
+      .map(function (s) {
+        var kinds = moved[s.signal_type] || [];
         return (
-          '<li class="turn' + (hit ? " hit" : "") + '" style="--k:' + k + '">' +
-          '<span class="who">' + U.esc(turn.speaker) + "</span>" +
-          "<span>" + U.esc(turn.text) + "</span>" +
-          (hit
-            ? '<span class="flag">' + U.esc(U.words(hit.signal_type)) +
-              "  conf " + U.n2(hit.confidence) + "</span>"
-            : "") +
-          "</li>"
+          '<span class="belief ' + (kinds.length ? "moved" : "") + '">' +
+          U.esc(U.words(s.signal_type)) +
+          '<b class="conf">' + U.n2(s.confidence) + "</b>" +
+          kinds
+            .map(function (k) { return '<em class="move ' + k + '">' + k + "</em>"; })
+            .join("") +
+          "</span>"
         );
       })
       .join("");
+  }
+
+  /* One list, two kinds of item: the turns of the transcript, and the reader's belief after each
+   * read point. Interleaved rather than side-by-side, because the claim being made is causal —
+   * *this* line is what moved the number — and two parallel columns make the viewer do that
+   * matching themselves. */
+  function paintCall(frame) {
+    var block = player.block;
+    var conversation = (block.conversations || {})[frame.conversation_id] || {};
+    var turns = conversation.turns || [];
+    var reads = readsFor(frame);
+    var stagger = Math.max(
+      STAGGER_MIN,
+      Math.min(STAGGER_MAX, frameDuration(frame) / Math.max(1, turns.length))
+    );
+
+    // Read steps bucketed by how many turns had been heard, so each lands directly under the turn
+    // that triggered it.
+    var afterTurn = {};
+    (reads || []).forEach(function (step) {
+      (afterTurn[step.turns_seen] = afterTurn[step.turns_seen] || []).push(step);
+    });
+
+    // Where the reader is currently quoting, so the cited line is marked as the belief forms.
+    var citedTurns = {};
+    (frame.signals || []).forEach(function (s) { citedTurns[s.turn_index] = s; });
+
+    var items = [];
+    turns.forEach(function (turn, k) {
+      var index = turn.index === undefined ? k : turn.index;
+      var hit = citedTurns[index];
+      items.push(
+        '<li class="turn' + (hit ? " hit" : "") + '" style="--k:' + k + '">' +
+        '<span class="who">' + U.esc(turn.speaker) + "</span>" +
+        "<span>" + U.esc(turn.text) + "</span>" +
+        (hit
+          ? '<span class="flag">cited · ' + U.esc(U.words(hit.signal_type)) +
+            "  conf " + U.n2(hit.confidence) + "</span>"
+          : "") +
+        "</li>"
+      );
+      (afterTurn[k + 1] || []).forEach(function (step) {
+        items.push(
+          '<li class="read' + (step.changed ? " changed" : "") + '" style="--k:' + k + '">' +
+          '<span class="tick">reader · ' + U.esc(step.turns_seen) + " turns heard</span>" +
+          '<span class="beliefs">' + beliefChips(step) + "</span>" +
+          '<span class="readmeta">' + U.esc(step.latency_ms) + " ms · " +
+          U.usd(step.cost_usd, 5) + "</span>" +
+          "</li>"
+        );
+      });
+    });
 
     var read = frame.reader || {};
     player.nodes.call.innerHTML =
       "<h3>On the line — " + U.esc(frame.conversation_id) + "</h3>" +
       '<p class="muted small">' + U.esc(frame.customer_id) + " · " + U.esc(frame.channel) +
       " · day " + U.esc(frame.day) + " · " + U.esc(frame.n_turns) + " turns</p>" +
-      '<ul class="turns live">' + turns + "</ul>" +
+      (reads
+        ? '<p class="cadence live">Read <strong>' + reads.length + " times while the call was " +
+          "still open</strong> — once after each customer turn, on the transcript heard so far. " +
+          "Watch the belief move.</p>"
+        : '<p class="cadence once">Read <strong>once</strong>, on the completed transcript. ' +
+          "Turn-by-turn reading is bounded to a handful of conversations per run because it " +
+          "costs a call per customer turn.</p>") +
+      '<ul class="turns live" style="--stagger:' + stagger.toFixed(1) + 'ms">' +
+      items.join("") + "</ul>" +
       '<div class="readbar">' +
       (read.model_calls
-        ? "<span>read by the model: " + U.esc(read.latency_ms) + " ms · " +
+        ? "<span>this conversation, into the ledger: " + U.esc(read.latency_ms) + " ms · " +
           U.usd(read.cost_usd, 5) + "</span>"
         : "<span>read by the keyless lexicon: no model call, no cost</span>") +
       "<span>" +
@@ -443,7 +535,6 @@ window.EARSHOT_LIVE = (function () {
     var before = frame.score_before || 0;
     var after = frame.score_after || 0;
     var delta = after - before;
-    var crossedNow = frame.crossed;
 
     player.nodes.ledger.innerHTML =
       "<h3>" + U.esc(frame.customer_id) + " — standing ledger</h3>" +
@@ -466,7 +557,7 @@ window.EARSHOT_LIVE = (function () {
           "<span>cut " + U.n2(t.threshold) + "</span>" +
         "</div>" +
       "</div>" +
-      (crossedNow
+      (frame.crossed
         ? '<div class="crossbanner">THRESHOLD CROSSED — case opened for ' +
           U.esc(frame.customer_id) + " on day " + U.esc(frame.day) +
           '<span class="sub">Opened by this conversation. The agent works it against the ' +
@@ -561,8 +652,7 @@ window.EARSHOT_LIVE = (function () {
         var d = c.decision || {};
         return (
           // encodeURIComponent, because `make_case_id` joins its triple with "#" and a raw one
-          // inside a hash route is legal-but-browser-dependent. `app.js` decodes every path part,
-          // so an encoded id round-trips exactly and the question stops being interesting.
+          // inside a hash route is legal-but-browser-dependent. `app.js` decodes every path part.
           '<li><a class="plain" href="#/stream/' + U.esc(block.tenant.tenant_id) +
           "/case/" + U.esc(encodeURIComponent(c.case_id)) + '">' +
           '<span class="badge ' + U.verdictClass(d.verdict) + '">' +
@@ -586,7 +676,7 @@ window.EARSHOT_LIVE = (function () {
         ? '<p class="note"><strong>' + unworked.length + " crossing(s) opened but were not " +
           "investigated</strong> — " + U.esc(unworked[0].reason || "no reason recorded") +
           ". They are listed in the artifact rather than dropped, because a demo that shows " +
-          "four worked cases from nine crossings and does not say so is claiming a precision it " +
+          "six worked cases from nine crossings and does not say so is claiming a precision it " +
           "did not measure.</p>"
         : "");
   }
@@ -639,7 +729,7 @@ window.EARSHOT_LIVE = (function () {
     var source = new EventSource("/live/stream");
     player.source = source;
     // The live manifest is kept apart from the recorded block's: the transcripts on screen still
-    // come from the recorded fixture (same tenant, same seed, so the same book), but the
+    // come from the recorded fixture (same deployment, same seed, so the same book), but the
     // provenance printed over them must describe the run that is happening now.
     source.addEventListener("meta", function (e) {
       if (!player) return;
@@ -693,8 +783,8 @@ window.EARSHOT_LIVE = (function () {
     paintTransport();
   }
 
-  /* The stream's own cases, exposed so `app.js` can render them with the same three reviewer
-   * screens the recorded investigate run uses. One renderer, two data sources. */
+  /* The stream's own cases, exposed so `app.js` can render them with the same reviewer screens the
+   * recorded investigate run uses. One renderer, two data sources. */
   function sourceFor(tenantId) {
     var block = blockFor(tenantId);
     if (!block) return null;
@@ -703,16 +793,20 @@ window.EARSHOT_LIVE = (function () {
       conversations: block.conversations,
       manifest: block.manifest,
       tenant: block.tenant,
-      backHref: "#/stream/" + block.tenant.tenant_id,
-      backLabel: block.tenant.name,
+      backHref: "#/stream",
+      backLabel: "Live stream",
     };
   }
 
   return {
-    renderPortfolio: renderPortfolio,
+    renderIntegration: renderIntegration,
     renderStream: renderStream,
     sourceFor: sourceFor,
     teardown: teardown,
     hasData: function () { return blocks().length > 0; },
+    defaultTenantId: function () {
+      var all = blocks();
+      return all.length ? all[0].tenant.tenant_id : null;
+    },
   };
 })();

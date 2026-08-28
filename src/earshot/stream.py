@@ -113,6 +113,10 @@ class StreamRun:
     conversations: dict[str, dict[str, Any]] = field(default_factory=dict)
     reader_cost_usd: float = 0.0
     investigation_cost_usd: float = 0.0
+    # Set by the caller after the narration pass, which runs on its own extractor so its prefix
+    # reads cannot inflate `ExtractionTelemetry.conversations` -- the denominator of the published
+    # cost-per-1,000-conversations figure.
+    narration_cost_usd: float = 0.0
     elapsed_seconds: float = 0.0
 
 
@@ -380,6 +384,24 @@ def _team_rollup(records: dict[str, dict[str, Any]], t: Tenant) -> list[dict[str
     return rows
 
 
+def narration_targets(run: StreamRun, limit: int) -> list[str]:
+    """Which conversations to read turn-by-turn, best first.
+
+    Crossings first, because the conversation that opens a case is the one an audience wants to
+    watch the reader change its mind on. Then the richest remaining conversations by signal count,
+    so a run with few crossings still has something to show. Bounded by `limit` because narration
+    costs a call per customer turn and the whole book would multiply the read cost several-fold
+    for a screen that shows one conversation at a time.
+    """
+    crossing_ids = [c.conversation_id for c in run.crossings]
+    seen = set(crossing_ids)
+    rest = sorted(
+        (f for f in run.frames if f["conversation_id"] not in seen and f["signals"]),
+        key=lambda f: (-len(f["signals"]), f["i"]),
+    )
+    return (crossing_ids + [f["conversation_id"] for f in rest])[:limit]
+
+
 def _all_keys(obj: Any) -> set[str]:
     if isinstance(obj, dict):
         return set(obj) | {k for v in obj.values() for k in _all_keys(v)}
@@ -388,16 +410,28 @@ def _all_keys(obj: Any) -> set[str]:
     return set()
 
 
-def stream_payload(run: StreamRun, manifest: dict[str, Any]) -> dict[str, Any]:
-    """The whole run, in the shape the browser reads. Refuses to leak the answer key."""
+def stream_payload(
+    run: StreamRun,
+    manifest: dict[str, Any],
+    reads: dict[str, list[dict[str, Any]]] | None = None,
+) -> dict[str, Any]:
+    """The whole run, in the shape the browser reads. Refuses to leak the answer key.
+
+    `reads` is the turn-by-turn narration for the handful of conversations that got it, keyed by
+    conversation id. Absent for the rest, and the totals say how many of each — a screen that
+    animates a belief forming on six conversations and stays silent about the other 127 is
+    implying a cadence the run did not pay for.
+    """
     t = run.tenant
     records = _case_records(run)
     investigated = len(records)
     crossings = len(run.crossings)
+    reads = reads or {}
     payload = {
         "manifest": manifest,
         "tenant": t.public(),
         "frames": run.frames,
+        "reads": reads,
         "cases": records,
         "conversations": run.conversations,
         "teams": _team_rollup(records, t),
@@ -413,8 +447,17 @@ def stream_payload(run: StreamRun, manifest: dict[str, Any]) -> dict[str, Any]:
             "horizon_days": max((f["day"] for f in run.frames), default=0),
             "reader_cost_usd": round(run.reader_cost_usd, 6),
             "investigation_cost_usd": round(run.investigation_cost_usd, 6),
-            "total_cost_usd": round(run.reader_cost_usd + run.investigation_cost_usd, 6),
+            "total_cost_usd": round(
+                run.reader_cost_usd + run.investigation_cost_usd + run.narration_cost_usd, 6
+            ),
             "elapsed_seconds": round(run.elapsed_seconds, 2),
+            # Narration is counted and named apart from the read. It is the cost of *showing the
+            # working* on a handful of conversations, not the cost of reading the book, and one
+            # blended figure would misstate both.
+            "conversations_narrated": len(reads),
+            "conversations_read_once": len(run.frames) - len(reads),
+            "narration_calls": sum(len(series) for series in reads.values()),
+            "narration_cost_usd": round(run.narration_cost_usd, 6),
         },
         # Why each crossing does or does not have a case behind it. On screen next to the queue,
         # so "only four were investigated" is visible rather than inferable.

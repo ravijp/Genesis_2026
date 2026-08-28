@@ -33,7 +33,8 @@ from .extract import Extractor, OfflineLexiconExtractor, extract_all
 from .llm import ProviderError, build_provider, cache_mode
 from .memory import ScoreBreakdown
 from .schema import Case, Outcome, Stratum
-from .stream import StreamError, run_stream, stream_payload
+from .read_live import narrate, narration_totals
+from .stream import StreamError, narration_targets, run_stream, stream_payload
 from .tenants import Tenant, resolve as resolve_tenants
 
 # The review team's capacity, as a share of the portfolio. The investigator works the top of
@@ -800,8 +801,17 @@ def cmd_stream(
                 context_for=context_for,
                 investigate_limit=investigate_limit,
             )
+            # The narration pass gets its OWN extractor instance. Its prefix reads would
+            # otherwise land in `ExtractionTelemetry.conversations`, which is the denominator of
+            # the published cost-per-1,000-conversations figure -- nine prefix reads counted as
+            # nine conversations divides the same money by nine times the work.
+            narrator = build_extractor(extractor_name, t.run)
+            targets = narration_targets(run, t.narrate)
+            by_id = {c.conversation_id: c for c in conversations}
+            reads = narrate(narrator, [by_id[cid] for cid in targets if cid in by_id])
+            run.narration_cost_usd = narration_totals(reads)["narration_cost_usd"]
             payload = stream_payload(
-                run, _stream_manifest(t, extractor, provider, provider_name)
+                run, _stream_manifest(t, extractor, provider, provider_name), reads
             )
         except (ProviderError, StreamError) as exc:
             print(f"\n{t.name}: {exc}", file=sys.stderr)
@@ -821,8 +831,12 @@ def cmd_stream(
               f"{totals['not_investigated']} left unworked (recorded, with the reason)")
         for row in payload["teams"]:
             print(f"    {row['label']:<28} {row['cases']} case(s)")
+        print(f"  {totals['conversations_narrated']} conversation(s) read turn-by-turn in "
+              f"{totals['narration_calls']} calls; the other "
+              f"{totals['conversations_read_once']} were read once")
         print(f"  reader ${totals['reader_cost_usd']:.4f} + agent "
-              f"${totals['investigation_cost_usd']:.4f} = ${totals['total_cost_usd']:.4f}"
+              f"${totals['investigation_cost_usd']:.4f} + narration "
+              f"${totals['narration_cost_usd']:.4f} = ${totals['total_cost_usd']:.4f}"
               + ("   (replay, recorded figures)" if cache_mode() == "replay" else ""))
         print(f"  -> {out}")
         _print_extraction_telemetry(extractor)
