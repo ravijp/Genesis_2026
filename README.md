@@ -27,12 +27,12 @@ uv run earshot sweep --seeds 10 --customers 1500        # the numbers below (~30
 uv run earshot demo --customers 400                     # the accumulation moment, narrated
 uv run earshot investigate --customers 200 --limit 3    # the agent working three cases
 uv run earshot run --customers 400                      # one dataset, for debugging only
-uv run earshot stream --tenant all                      # three deployments, conversations arriving
+uv run earshot stream                                   # conversations arriving, turn by turn
 ```
 
-**The demo opens from disk.** `open ui/index.html` — no npm, no server, no network. Three
-enterprises on one engine, a live arrival stream, the reviewer queue, and every case with the
-quotes behind it. Details in [ui/README.md](ui/README.md).
+**The demo opens from disk.** `open ui/index.html` — no npm, no server, no network. Where this
+sits in a client's stack, a live arrival stream with the model's read forming turn by turn, the
+reviewer queue, and every case with the quotes behind it. Details in [ui/README.md](ui/README.md).
 
 **Every command above runs with no API keys and no network.** The offline provider is rule-based and
 deliberately weaker than a model; its miss rate is measured and published. To use real models instead,
@@ -277,35 +277,64 @@ is a cache miss — which reports itself as `provider_error` rather than reachin
 
 ### The streamed demo, measured 2026-08-28
 
-Three synthetic deployments, read end to end by Claude Haiku 4.5 on Bedrock. Every figure below is
-counted from the run, and the whole thing replays from the committed cache with no key.
+One synthetic deployment, read end to end by Claude Haiku 4.5 on Bedrock. Every figure is counted
+from the run, and the whole thing replays from the committed cache with no key.
 
-| Deployment | Book | Cut | Conversations | Signals | Crossings | Worked | Reader | Agent |
-|---|---|---|---|---|---|---|---|---|
-| Northwind Retail Bank | retail banking | 0.60 | 133 / 44 customers | 63 | 9 | 4 | $0.187 | $0.132 |
-| Meridian Card Services | card issuing | 0.52 | 212 / 52 customers | 107 | 17 | 4 | $0.298 | $0.138 |
-| Harborline Lending | mortgage servicing | 0.68 | 115 / 38 customers | 77 | 7 | 4 | $0.168 | $0.142 |
+| | |
+|---|---|
+| Conversations read | 133, across 44 customers over 179 days |
+| Signals kept | 63 |
+| Threshold crossings | 9 (fixed cut at 0.60) |
+| Cases worked by the agent | 6 of 9 |
+| Read once — one call each | 127 conversations · **$0.187** · p50 1,101 ms · p95 1,564 ms |
+| Read turn-by-turn | 6 conversations · 54 calls · **$0.073** |
+| Agent investigations | 6 · **$0.209** |
+| **Total** | **$0.469** |
 
-460 conversations read for **$0.653**, p50 ~1.1 s per conversation, **0 unparsable replies and 0
-dropped quotes** across all three. Twelve investigations for **$0.412**. $1.065 in total.
+**0 unparsable replies, 0 dropped quotes, 0 relocated quotes** across all 133 reads.
 
-Four things that must be said next to that table, not after it:
+#### Reading a call while it is still open
+
+Six conversations were read *again after each customer turn*, on the transcript heard so far, so a
+belief can be watched forming rather than arriving finished. On `CUST-0043-C3`:
+
+| After | Reader believes | Movement |
+|---|---|---|
+| 2 turns | — | |
+| 5 turns | `complaint_escalation` 0.65 | appeared |
+| 7 turns | `complaint_escalation` 0.70 | firmed |
+| 9 turns | `complaint_escalation` 0.70 | |
+| 10 turns | `complaint_escalation` 0.72 | firmed |
+
+Across the six, every movement type occurs in real output: **9 appeared, 7 firmed, 1 faded, 3
+withdrawn** (the model retracts a signal after hearing more) **and 1 requoted** (it moves its
+citation to better evidence). The browser does not decide any of that — `read_live._diff()` does,
+in Python, and the page animates the result.
+
+Two properties make it a measurement rather than theatre, both tested: the model is handed a
+genuine **prefix**, never the full transcript with a smaller number attached; and the final step's
+request is byte-identical to the batch read, so under a content-addressed cache they are one entry.
+That second one is the guarantee that the belief at the end of the animation is the belief that was
+appended to the ledger.
+
+Four things that must be said next to those numbers, not after them:
 
 - **The threshold is a fixed cut, not the budget-derived one** the rows above this section use. A
   streaming consumer sees one conversation at a time and has no population to rank against, so it
   cannot take the top 10% of anything. This mirrors `aws/ingest.py`, the deployed path. The two
   numbers disagree about who crossed; they are labelled apart on every screen.
-- **Only 12 of 33 crossings were investigated**, four per deployment, to bound the cost of a
-  re-record. The other 21 are listed as unworked with the reason — visible on the screen, not
-  inferable from it.
-- **Routing is still not accuracy-measured, and what it shows is not flattering.** Haiku sent 3 of
-  Northwind's 4 cases to one team and left 2 of Meridian's 4 **unrouted** (`owning_team: "none"`).
-  That is on the dashboard because it is a finding, and it is consistent with AT-57: the agent
-  escalates rather than discriminates.
-- **There is no speech recognition anywhere in this system.** The transcripts are generated text.
-  What the stream replays faithfully is the *arrival pattern*, and at 1× each frame is held for the
-  reader's own measured latency on that conversation. `manifest.asr` says `none`, every screen
-  prints it, and the UI smoke test fails the build if it ever says anything else.
+- **Only 6 of 9 crossings were investigated**, to bound the cost of a re-record, and only 6 of 133
+  conversations were read turn-by-turn, because that costs a call per customer turn. Both
+  denominators are on the screen, not inferable from it.
+- **Routing is still not accuracy-measured, and what it shows is not flattering.** The agent
+  concentrates its routing and sometimes returns `owning_team: "none"`. That is on the deployment
+  screen because it is a finding, and it is consistent with AT-57: the agent escalates rather than
+  discriminates.
+- **There is no speech recognition anywhere in this system.** The transcripts are generated text,
+  and a bank at this size already transcribes for QA and compliance — that is the seam we consume,
+  not one we build. What the stream replays faithfully is the *arrival pattern*, and at 1× each
+  frame is held for the reader's own measured latency on that conversation. `manifest.asr` says
+  `none`, every screen prints it, and the UI smoke test fails the build if it ever says otherwise.
 
 ---
 
@@ -342,11 +371,10 @@ The four things worth knowing before you read any of it:
   editing the test.
 - **`prompts/`** — versioned files, so a prompt change is a reviewable diff. Their sha goes into the
   response-cache key, which is what makes "this recorded answer came from this prompt" checkable.
-- **`ui/`** — five static screens, no build step, and the demo runs from `file://`. `stream.py` and
-  `tenants.py` behind them add a *streaming* view and a *multi-deployment* view of the same engine —
-  a tenant is a configuration (own corpus, own half-lives, own threshold, own team names), never a
-  fork. `earshot stream --serve` runs the same loop over SSE on localhost so the model calls happen
-  while a room watches.
+- **`ui/`** — five static screens, no build step, and the demo runs from `file://`. `stream.py`,
+  `read_live.py` and `tenants.py` behind them add the arrival stream, the turn-by-turn read, and the
+  per-client configuration layer. `earshot stream --serve` runs the same loop over SSE on localhost
+  so the model calls happen while a room watches.
 
 ---
 
