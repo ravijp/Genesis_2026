@@ -5,7 +5,7 @@ in place at each handover. **Keep it under ~60 lines** — it loads into every c
 baton, not a history: next action, live blockers, traps already paid for. History goes in
 `progress.md` or git.
 
-**2026-08-28** · commit `6611d07` · branch `build/ear-on-every-call` · **416 tests**, guard at 96, ruff clean
+**2026-08-28** · commit `5da1518` · branch `build/ear-on-every-call` · **479 tests**, guard at 105, ruff clean
 
 ## First turn
 
@@ -14,25 +14,31 @@ baton, not a history: next action, live blockers, traps already paid for. Histor
    if a grant IT says is live still reads as denied (SSO caches grants in the role session).
 3. `docs/ops/progress.md` for work-package status and blocker owners. `decisions.md` before arguing.
 
-## Next action — unblock the deployed path, then measure
+## Next action — the IT ask, then a bigger sample
 
-**AWS is real and the deployment is correct but inert.** 3 DynamoDB tables (PITR on), 3 SQS queues,
-3 Lambdas from one zip, a Function URL for the API (`AuthType=AWS_IAM`). `GET /health` returns 200;
-everything touching a store returns 500 and neither queue is wired, because
-**`zenon-poc-lambda-execution` has no SQS, DynamoDB or Bedrock permissions** (its only policy is
-`zenon-poc-s3-lambda`). `iam:PutRolePolicy` was attempted and denied — nothing changed — and
-`iam:SimulatePrincipalPolicy` is denied too, so this is IT's. **The ask is copy-pasteable in
-`aws-infrastructure.md`**: one inline policy plus the two reproducible error lines. Once it lands,
-re-run `tools/deploy.py --stage dev --no-dry-run`; it is idempotent and will add the two event
-source mappings it could not create.
+**Everything buildable is built.** W1, W4, W7, W8, W10, W11 and the reviewer API are done; AWS is
+provisioned, all three Lambdas are deployed (zip sha `8323ff7cd3ca`), six CloudWatch alarms exist,
+and the first keyed runs have produced real numbers. What is left needs either IT or more money.
 
-Not blocked meanwhile: the **first keyed run** (both arms, 150 CFPB docs, ~$0.30, runs from the
-laptop and the committed cache then replays keyless forever), **W11 observability**, **W4's spend
-ceiling**, and the UI's write path once the API is reachable from a browser.
+**Blocked on IT — one inline policy.** `zenon-poc-lambda-execution` has no SQS, DynamoDB or Bedrock
+permissions, so the deployed handlers are inert and neither queue is wired.
+`iam:PutRolePolicy` was attempted and denied; `iam:SimulatePrincipalPolicy` is denied too. **The
+policy JSON and the two reproducible error lines are in `aws-infrastructure.md`, written to be
+pasted into a ticket.** Once it lands: `tools/deploy.py --stage dev --no-dry-run` is idempotent and
+will add the two event source mappings it could not create.
 
-**W10 is done.** `ui/` — open `index.html`, no build step, all three beats render from a committed
-artifact with zero AWS. Rebuild its data with `earshot investigate --customers 400 --limit 8` then
-`tools/ui_fixture.py`. **Delegate file-writing work with `isolation: "worktree"`.**
+**Not blocked, in order of value:**
+
+1. **A bigger AT-57 sample.** The measured 4 / 10 is a direction, not an estimate — and the
+   direction is bad: the agent called `genuine` nine times out of ten and dismissed none of the
+   five false alarms. 30–50 cases at ~$0.03 each says whether that holds. Then try a better prompt
+   or a stronger model; D-025's cost argument for Haiku is not earned until it does.
+2. **Routing accuracy** — which team a case is sent to. Never measured, and `verdict_accuracy.py`
+   already collects `owning_team`.
+3. **The UI's write path**, once the API is reachable from a browser. A static page cannot sign an
+   `AuthType=AWS_IAM` Function URL, so this needs an auth decision, not just the IAM fix.
+
+**Delegate file-writing work with `isolation: "worktree"`.**
 
 ## State
 
@@ -54,6 +60,16 @@ a fresh clone runs all 416 tests keyless, and that is load-bearing.
   overwrite and redelivery, not a deliberate delete. The ledger's A6 guarantee is DynamoDB and is
   untouched — keep the two apart on stage. (3) The account tools are synthetic (`account_data:
   "synthetic"` on every case); there is no bank core feed.
+- **A measurement drawn from the top of the queue cannot be wrong in the direction that matters.**
+  The first keyed investigator run scored 8 / 8 and meant nothing: no negative in the sample.
+  `tools/verdict_accuracy.py` samples both arms, and the real answer is 4 / 10.
+- **`outcome is not None` is always true.** `Outcome.NONE` is the no-outcome value. Use
+  `evals._outcome_customers`, or a whole arm silently disappears.
+- **One response cache per provider.** A keyed Bedrock run appended Haiku completions into the
+  pinned Sonnet demo cache the README quotes; only the test pinning that file's contents caught it.
+- **The reader is named after the model that ANSWERED**, not the one requested — `bedrock.py`
+  substitutes its own default for `base.DEFAULT_MODEL` by design, and the first keyed run was
+  logged under the wrong model name because of it.
 - **Anything verified against a stub is unverified.** A shared role that can be *passed* is not a
   role that can *do* anything (D-024 checked deployment and stopped); a test that *assumes* an
   optional dep is absent breaks the day it is installed; two provisioner bugs lived in the seam
