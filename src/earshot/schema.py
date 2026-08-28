@@ -25,6 +25,21 @@ class SignalType(str, Enum):
     LIFE_EVENT = "life_event"
 
 
+# The one map from a seeded signal family to the team that owns it operationally. Shared by
+# `core/accounts.py` (which pre-populates a customer's synthetic prior-case history) and by
+# `tools/routing_accuracy.py` (which grades the investigator's `owning_team` decision against
+# a customer's seeded `trajectory`). A second, independent copy is exactly how a prior-case
+# generator and a routing scorer end up disagreeing about what "correct" means -- the same
+# failure mode `tools/verdict_accuracy.py` avoids by importing `evals._outcome_customers`
+# rather than re-deriving "has an outcome" locally.
+TRAJECTORY_TEAM: dict[str, str] = {
+    SignalType.CHURN_INTENT.value: "retention",
+    SignalType.FINANCIAL_DISTRESS.value: "collections",
+    SignalType.COMPLAINT_ESCALATION.value: "complaints",
+    SignalType.LIFE_EVENT.value: "vulnerability",
+}
+
+
 class Stratum(str, Enum):
     """Labelled from *generation parameters*, never from what a baseline can detect.
 

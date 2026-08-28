@@ -23,6 +23,8 @@ import hashlib
 import random
 from dataclasses import dataclass
 
+from ..schema import TRAJECTORY_TEAM
+
 WINDOW_DAYS = 90
 DAYS_PER_MONTH = 30
 
@@ -289,13 +291,10 @@ def synthesize_prior_cases(
     if rng.random() < 0.25 + 0.25 * _clamp(latent_risk):
         n = rng.choice((1, 1, 2))
 
-    families = ("churn_intent", "financial_distress", "complaint_escalation", "life_event")
-    teams = {
-        "churn_intent": "retention",
-        "financial_distress": "collections",
-        "complaint_escalation": "complaints",
-        "life_event": "vulnerability",
-    }
+    # Keys, in insertion order (churn_intent, financial_distress, complaint_escalation,
+    # life_event) -- unchanged from the tuple this replaced, so `rng.choice` below draws the
+    # same index stream and no seeded corpus changes shape.
+    families = tuple(TRAJECTORY_TEAM)
     notes = {
         "dismissed": "Reviewer judged the signal isolated; no action taken.",
         "resolved": "Payment plan agreed and completed; case closed.",
@@ -313,7 +312,7 @@ def synthesize_prior_cases(
                 case_id=f"{customer_id}-PC{i}",
                 opened_on_day=opened,
                 signal_type=family,
-                owning_team=teams[family],
+                owning_team=TRAJECTORY_TEAM[family],
                 resolution=resolution,
                 note=notes[resolution],
             )
