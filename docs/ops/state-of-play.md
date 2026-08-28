@@ -14,7 +14,8 @@ AWS design and `aws-infrastructure.md` for what is actually provisioned.
 
 The system runs end to end with **zero API keys**: dataset generation → extraction → per-customer
 ledger → investigator agent producing case files with cited evidence → a UI that opens from disk.
-**774 tests**, ruff clean, separation guard over **44 modules** across `src/` and `tools/`.
+**777 tests**, ruff clean, separation guard over **44 modules** across `src/` and `tools/`,
+**30 UI routes**.
 Next gate **2026-09-07**.
 
 **A red team of four ran against the whole entry on 2026-08-28** — code correctness, architecture
@@ -62,6 +63,14 @@ case id is the mechanism four of five real vendors actually ship, so a bounded r
 visible seam is accurate, not stylistic. The primary user is the **specialist reviewer** (D-030). No
 vendor logo, wordmark, brand hex or icon set anywhere; verified.
 
+**The brief's three team views ship, as four.** `#/desk/team/<slot>` filters the reviewer queue,
+21 routes to 30. The slot is in the URL and the label comes from the tenant map at render (D-029,
+display-only). **`none` is a first-class bucket labelled "Not routed", listed at zero** — it is the
+agent declining to choose, which it did 8 of 49 times, and those are the cases a reviewer must not
+lose. A team with no cases still appears and still opens. Retention survives by name, Risk and
+Compliance splits three ways, and **Commercial has no equivalent** — said on the screen rather than
+papered over with an invented team.
+
 **One deployment (Northwind), framed as an integration.** Nine pipeline seams, **five of them the
 client's own systems** — the screen counts them rather than asserting it. (The prose said "six of
 nine" everywhere for weeks; the rendered screen was always right.)
@@ -85,7 +94,9 @@ nine" everywhere for weeks; the rendered screen was always right.)
    22 / 50 was measured at `47a2be8`, before the corpus fix, and **no longer replays** — that
    provenance is stated in the README rather than hidden, but it should not stay true.
 2. **The IAM ticket.** One policy, and the deployed path stops being a diagram.
-3. **The team-scoped queue view**, in flight — the last cheap deliverable from the brief.
+3. **Re-record `ui/stream.js`** (~$0.47, same SSO block). The streamed demo payload is pre-fix and
+   still shows one customer whose evidence chain repeats a sentence across two conversations —
+   the artefact the corpus fix removed. `ui/data.js` was regenerated free and is clean at 0.
 4. **Arm B**, now priced honestly: **$0.01** on Nova Lite for the reader arm alone, $0.28 to re-run
    both. It is the only item left on `build-plan.md`'s "not measured" list.
 5. **Observability (W11, EMF) and the spend ceiling in our own code (W4).** `COST_CAP_PER_CASE_USD`

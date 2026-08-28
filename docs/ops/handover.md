@@ -4,8 +4,8 @@
 Rewritten in place at each handover. **Keep it under ~60 lines.** It is a baton, not a history:
 next action, live blockers, traps already paid for. History goes in `progress.md` or git.
 
-**2026-08-29** · commit `30dc7f8` · branch `build/ear-on-every-call` · **774 tests**, separation
-guard over 44 modules, ruff clean, 21 UI routes
+**2026-08-29** · commit `9433c67` · branch `build/ear-on-every-call` · **777 tests**, separation
+guard over 44 modules, ruff clean, **30 UI routes**
 
 ## First turn
 
@@ -25,13 +25,18 @@ guard over 44 modules, ruff clean, 21 UI routes
    --customers 2400`. **Blocked on the SSO login only.** The published 22 / 50 was measured at
    `47a2be8`, before the corpus fix, and no longer replays — the README states that rather than
    hiding it, but it should not stay true. Then `tools/routing_accuracy.py` re-scores it free.
-2. **The IAM ticket** — one inline policy and the deployed path stops being a diagram. It now
+2. **Re-record `ui/stream.js`** (~$0.47, same SSO block). The whole streamed demo payload is
+   **pre-fix**: it replays fine as a static recording but cannot be regenerated from the current
+   corpus, and it still shows one customer (`CUST-0004`) whose evidence chain repeats a sentence
+   across `-C0` and `-C2` — the artefact `08b20cc` removed. `ui/data.js` was regenerated free and
+   is clean.
+3. **The IAM ticket** — one inline policy and the deployed path stops being a diagram. It now
    also needs `logs:*`: the Lambdas are **unobservable**, not merely inert. JSON in
    `aws-infrastructure.md`, written to be pasted.
-3. **Arm B, priced honestly: $0.01** on Nova Lite for the reader arm alone ($0.28 re-runs both).
+4. **Arm B, priced honestly: $0.01** on Nova Lite for the reader arm alone ($0.28 re-runs both).
    The last item on `build-plan.md`'s "not measured" list, and the brief did ask for a
    comparison model.
-4. **The design fork is Ravi's call and he has the facts**: `.claude/worktrees/agent-ade2e23d7e6368e38`
+5. **The design fork is Ravi's call and he has the facts**: `.claude/worktrees/agent-ade2e23d7e6368e38`
    has **18 routes to main's 21** — it is a dark-first restyle of the *pre-console* UI and does
    not contain `#/desk` at all. Lift the palette or discard; do not merge it.
 
