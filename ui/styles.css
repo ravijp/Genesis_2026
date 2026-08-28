@@ -1,4 +1,16 @@
-/* Three screens, one stylesheet, no framework. Tokens first so the palette is one edit. */
+/* The explanatory screens: the stream, the retro re-score, the transcript, the deployment map.
+ *
+ * `console.css` styles the *product* half — our panel inside a stand-in of the client's desktop —
+ * and these two are deliberately siblings rather than twins. The console is dense chrome a bank
+ * employee lives in; these are a documented argument about why the numbers on it are true. Same
+ * type scale, same 4px radii, same tabular numerals, quieter surfaces.
+ *
+ * The density numbers are not taste. 13-14px body with a 12px floor, tabular numerals wherever a
+ * number appears, hairlines rather than shadows, and small corner radii are what enterprise
+ * consoles of this class actually use; a 10px radius and a 15px body — which is what this file
+ * had — is what reads as consumer SaaS from the back of a room.
+ *
+ * Tokens first, so the palette is one edit. */
 
 :root {
   --bg: #f7f8fa;
@@ -16,7 +28,7 @@
   --bad-soft: #fbe9e9;
   --ok: #1f6b45;
   --ok-soft: #e4f2ea;
-  --radius: 10px;
+  --radius: 4px;
   --mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -47,7 +59,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 15px/1.55 var(--sans);
+  font: 13.5px/1.55 var(--sans);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -94,16 +106,16 @@ body {
 
 /* ---- shared -------------------------------------------------------------------- */
 
-h2 { font-size: 17px; margin: 0 0 4px; letter-spacing: -0.01em; }
-h3 { font-size: 14px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-3); }
+h2 { font-size: 16px; margin: 0 0 4px; letter-spacing: -0.01em; }
+h3 { font-size: 12px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-3); }
 .lede { margin: 0 0 20px; color: var(--ink-2); max-width: 74ch; }
 
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 18px 20px;
-  margin-bottom: 18px;
+  padding: 15px 17px;
+  margin-bottom: 15px;
 }
 
 .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
@@ -115,10 +127,11 @@ h3 { font-size: 14px; margin: 0 0 10px; text-transform: uppercase; letter-spacin
 .badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   white-space: nowrap;
 }
 .badge.ok { background: var(--ok-soft); color: var(--ok); }
