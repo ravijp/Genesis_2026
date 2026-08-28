@@ -47,7 +47,7 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | W3 | Bedrock provider (`llm/bedrock.py`) | **DONE** | Converse both ways, Haiku 4.5 default, computed-not-charged cost, lazy client. 33 stub tests |
 | W1 | Persist case fields | **DONE** | `case_record.py` — one serializer for the disk artifact and the DynamoDB item. Unblocks W10 |
 | W4 | Spend cap in our own code | **DONE** | `llm/budget.py`. `CappedProvider` wraps every paid provider, refuses before the call, outside the cache. 15 tests |
-| W5 | First keyed reader run | TODO | Needs W3. 150 CFPB docs, ~$0.30, both arms |
+| W5 | First keyed reader run | **DONE** | 150 CFPB docs on Haiku 4.5. Strict recall 0.8214 (92 / 112) vs the lexicon's 0.0357, at 8x the false-positive rate. $1.66 per 1,000 |
 | W6 | Ledger + case DynamoDB stores | **DONE (code); tables not created** | `aws/stores.py` + `tools/provision.py`. Conditional writes, no delete path on the ledger, scoring delegated. 39 stub tests. Dry-run verified against the real account |
 | W7 | Ingest path (SQS FIFO → handler) | **DONE** | `aws/ingest.py`. Partial batch failure, conditional append, scoring delegated. 18 tests, no AWS |
 | W8 | Investigate path | **DONE (code)** | `aws/investigate.py` + `aws/transcripts.py`. Loop unchanged, score recomputed not trusted, account data labelled synthetic. 29 tests |
@@ -75,6 +75,21 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | Claude Sonnet 4.5 / the Anthropic form | **No longer blocking** (D-025). Haiku 4.5 does both jobs and is already invocable. Worth filing eventually; nothing waits on it. |
 
 ## Log
+
+**2026-08-28 (evening)** · **Redeployed** (zip sha `8323ff7cd3ca`) and **six CloudWatch alarms
+created for real**. `cloudwatch:PutMetricAlarm` turned out to be granted, which the permission probe
+had never tested. The deployed API emits EMF correctly — verified by invoking it and reading the log
+tail — and still returns 500 on anything touching DynamoDB, which remains the one IAM gap.
+
+Both handlers are deployed with the **offline** provider: keyless, no spend, and
+`deploy.py --provider bedrock` flips it without a redeploy. Bedrock itself is proven from the laptop
+(the keyed runs went through it); it is only the execution role that cannot reach it.
+
+The alarms have **no actions**. There is no SNS here, so they go red in a console and page nobody,
+and `tools/alarms.py` prints that as a PARKED row rather than implying coverage. Wiring EventBridge
+to a notifier Lambda would be the first thing in this system that looks like an outbound surface —
+an operator notifier is not a customer contact surface, but it is close enough that it should be
+built deliberately rather than as a side effect of wanting alerts.
 
 **2026-08-28 (W4, W11, and the reason no keyed run was possible)** · 457 tests (+41), guard 96 →
 105, ruff clean.

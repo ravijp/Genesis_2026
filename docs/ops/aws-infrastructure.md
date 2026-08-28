@@ -48,7 +48,8 @@ Region **us-east-1** for everything below.
 | **CodeCommit** | `https://git-codecommit.us-east-1.amazonaws.com/v1/repos/agentic-trio` | Push via `codecommit://genesis@agentic-trio`, never the HTTPS URL — see Step 4 |
 | **DynamoDB** | `earshot-dev-ledger` · `earshot-dev-cases` · `earshot-dev-reviews` | Created 2026-08-28. On-demand, PITR **on**, no TTL on any of the three |
 | **SQS** | `earshot-dev-transcripts.fifo` · `earshot-dev-investigations` (+ `-dlq`) | Created 2026-08-28. Redrive to the DLQ at 3 receives |
-| **Lambda** | `earshot-dev-ingest` · `earshot-dev-investigate` · `earshot-dev-api` | Deployed 2026-08-28, python3.13, zip sha `532a888f9bf4`, all passing `zenon-poc-lambda-execution`. **Inert — see the IAM gap below** |
+| **Lambda** | `earshot-dev-ingest` · `earshot-dev-investigate` · `earshot-dev-api` | Deployed 2026-08-28, python3.13, zip sha `8323ff7cd3ca`, all passing `zenon-poc-lambda-execution`. Both handlers run the **offline** provider (keyless, no spend); `deploy.py --provider bedrock` flips it. **Inert — see the IAM gap below** |
+| **CloudWatch alarms** | 6, `earshot-dev-*` | Created 2026-08-28 over the EMF metrics. **No actions on any of them** — no SNS on this account, so they go red in a console and page nobody. `tools/alarms.py` |
 | **Reviewer API URL** | `https://omqdmdwrekgdrkybgerq7ggkji0soujn.lambda-url.us-east-1.on.aws/` | Function URL, `AuthType=AWS_IAM`. `GET /health` returns 200; everything touching a store returns 500 until the role is fixed |
 | **SSO start URL** | *still unknown* | The one value blocking `aws sso login`. IAM Identity Center → Dashboard → *Settings summary* → **AWS access portal URL** |
 
@@ -71,7 +72,12 @@ attached policy is `zenon-poc-s3-lambda`; there are no inline policies. So:
 - Anything touching DynamoDB returns `ClientError`. Verified against the deployed function:
   `GET /health` → 200, `GET /cases` → 500 with `api.error ... ClientError` in the log.
 - Bedrock invoke would fail the same way, which is why both handlers are deployed with the
-  offline provider.
+  offline provider. **Bedrock itself is fine** — the keyed runs on 2026-08-28 went through it from
+  a laptop, on the SSO session's own credentials. It is only the Lambda execution role that cannot
+  reach it.
+- `cloudwatch:PutMetricAlarm` **is** granted, which was not obvious: six alarms were created for
+  real on 2026-08-28. `cloudwatch:PutMetricData` is not needed at all — the handlers emit EMF on
+  stdout and the log driver extracts the metrics.
 
 **D-024 verified deployability, not functionality**, and the distinction was invisible until a
 handler actually had to read a table.
