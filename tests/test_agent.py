@@ -712,3 +712,29 @@ def test_cache_key_changes_when_the_prompt_changes() -> None:
     a = ResponseCache.key("m", "sha-a", messages, [])
     b = ResponseCache.key("m", "sha-b", messages, [])
     assert a != b, "editing a prompt must invalidate its recorded responses"
+
+def test_the_cost_cap_clears_a_full_length_loop_but_still_binds() -> None:
+    """The cap has to survive an honest worst case and still stop a runaway. Both directions.
+
+    It was $0.25 until 2026-08-29, derived from two Sonnet 4.5 investigations at $0.089 and
+    $0.097. Sonnet was dropped by D-025, and against measured Haiku that cap sat at 6.8x the
+    worst of 50 keyed cases: it never bound once, so it was a comment with a number in it rather
+    than a ceiling. D-025 said the honest move was to re-derive it from a real Bedrock run.
+
+    This ties the cap to `MAX_STEPS` rather than to a literal, because the two are one decision.
+    Raising the step budget without revisiting the cap would let an honest maximum-length loop
+    trip a guard meant for runaways — which reads to a reviewer exactly like a broken agent.
+    """
+    from earshot.agent.investigator import MAX_STEPS
+    from earshot.cli import COST_CAP_PER_CASE_USD, MEASURED_COST_PER_MODEL_CALL_USD
+
+    full_loop = MAX_STEPS * MEASURED_COST_PER_MODEL_CALL_USD
+    assert COST_CAP_PER_CASE_USD > full_loop, (
+        f"a full {MAX_STEPS}-step loop costs about ${full_loop:.4f} at the measured per-call "
+        f"rate, which the ${COST_CAP_PER_CASE_USD} cap would cut off mid-case"
+    )
+    # And it must still be able to bind. A cap far above any reachable cost cannot stop anything.
+    assert COST_CAP_PER_CASE_USD < 5 * full_loop, (
+        f"${COST_CAP_PER_CASE_USD} is more than 5x a maximum-length loop (${full_loop:.4f}); a "
+        f"ceiling that cannot be reached is not a ceiling"
+    )

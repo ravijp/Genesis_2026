@@ -35,10 +35,17 @@ from typing import Any
 from earshot.aws.metrics import NAMESPACE
 from earshot.aws.stores import REGION, STAGES
 
-# Above `COST_CAP_PER_CASE_USD * 0.8`. The per-case cap already stops one runaway investigation;
-# this catches the average creeping toward it, which is the shape of a prompt or a model getting
-# more expensive without anyone deciding that it should.
-COST_WARN_USD = 0.20
+# `COST_CAP_PER_CASE_USD * 0.8`, derived rather than typed. The per-case cap already stops one
+# runaway investigation; this catches the AVERAGE creeping toward it, which is the shape of a
+# prompt or a model getting more expensive without anyone deciding that it should.
+#
+# It was a literal 0.20 until 2026-08-29. When the cap was re-derived from 50 keyed cases and fell
+# to $0.10, this stayed at $0.20 — an alarm set at twice the cap, which could only ever have fired
+# after the cap had already stopped the run. A test caught it. Deriving it removes the chance of a
+# repeat, and the test stays because a derivation can still be wrong.
+from earshot.aws.investigate import COST_CAP_PER_CASE_USD
+
+COST_WARN_USD = round(COST_CAP_PER_CASE_USD * 0.8, 4)
 
 
 def alarm_specs(stage: str) -> list[dict[str, Any]]:

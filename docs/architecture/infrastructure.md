@@ -211,12 +211,16 @@ Two reasons, and only one of them is cost:
 1. **Sonnet is not invocable on this account.** It needs a one-time Anthropic use-case/EUA form and
    returns `ResourceNotFoundException` until that is filed; Haiku needs none. Dropping Sonnet
    *unblocked* the investigator rather than economising on it.
-2. **It is roughly three times cheaper per investigation, measured.** \$0.0301 mean against Sonnet's
-   \$0.093 (Appendix B.1). `COST_CAP_PER_CASE_USD = 0.25` ([cli.py:48](../../src/earshot/cli.py#L48))
-   is unchanged, so it now sits at **7.1× the measured p95** (0.25 / 0.0351) where it used to sit at
-   **2.6× the worst Sonnet investigation observed** (0.25 / 0.097). The cap binds on nothing in normal
-   operation. That is headroom, not a tuned ceiling, and it should be re-derived rather than quoted as
-   one.
+2. **It is roughly three times cheaper per investigation, measured.** \$0.0295 mean against Sonnet's
+   \$0.093 (Appendix B.1), over 50 keyed cases on 2026-08-29: p95 \$0.0357, max \$0.0368, 4–5 model
+   calls per case, all 50 stopped `decided`.
+   **`COST_CAP_PER_CASE_USD` was re-derived from that run and is now \$0.10**
+   ([cli.py](../../src/earshot/cli.py)). At \$0.25 it sat at 6.8× the worst of those 50 cases and
+   never bound once — a ceiling that cannot be reached is not a ceiling, and D-025 said so at the
+   time. \$0.10 is ~2.7× the worst observed case and ~2.5× a full `MAX_STEPS` loop at the measured
+   per-call rate, so an honest case still cannot trip it while a runaway stops at roughly three
+   cases' worth of spend instead of eight. A test ties the cap to `MAX_STEPS`, so raising the step
+   budget without revisiting the cap fails loudly.
 
 **The cost argument is not yet earned.** Cheap is only a win if the verdicts are right, and on the same
 50-case run Haiku's verdict accuracy is **22 / 50** (2026-08-28, `tools/verdict_accuracy.py`). A model

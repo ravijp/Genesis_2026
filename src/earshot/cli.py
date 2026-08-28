@@ -44,9 +44,29 @@ from .tenants import Tenant, resolve as resolve_tenants
 # framing the eval uses, rather than a magic score.
 INVESTIGATION_BUDGET = 0.10
 
-# Ceiling on model spend for a single case. The two committed live Sonnet 4.5 investigations cost
-# $0.089 and $0.097, so this is ~2.6x headroom and still stops a runaway loop from being expensive.
-COST_CAP_PER_CASE_USD = 0.25
+# Ceiling on model spend for a single case.
+#
+# Re-derived 2026-08-29 from measurement, which is what D-025 asked for and did not get. It was
+# $0.25, set as ~2.6x the two committed live Sonnet 4.5 investigations ($0.089, $0.097). Sonnet
+# was dropped on 2026-08-25, and against measured Haiku 4.5 that cap was **6.8x the worst case
+# in 50 keyed investigations** -- a ceiling that cannot be reached is not a ceiling, it is a
+# comment with a number in it.
+#
+# The measurement (AT-57, 50 cases, 2026-08-29, `tools/verdict_accuracy.py`): mean $0.0295,
+# p95 $0.0357, max $0.0368, 4-5 model calls per case, all 50 stopped `decided` -- the old cap
+# never bound once. A loop that ran the full `agent.investigator.MAX_STEPS` would land near
+# $0.045 at the measured per-call rate.
+#
+# $0.10 is ~2.7x the worst observed case and ~2.2x a maximum-length loop: enough headroom that
+# an honest case cannot trip it, low enough that a runaway stops at roughly three cases' worth
+# of spend rather than eight. `test_the_cost_cap_clears_a_full_length_loop` ties it to
+# MAX_STEPS, so raising the step budget without revisiting this fails loudly.
+COST_CAP_PER_CASE_USD = 0.10
+
+# Measured cost of one investigator model call: $0.0295 per case over 4-5 calls (AT-57, 50
+# cases, 2026-08-29). Named rather than inlined because the cap above is derived from it and a
+# reader deserves to see the arithmetic rather than trust a rounded result.
+MEASURED_COST_PER_MODEL_CALL_USD = 0.0295 / 4.5
 
 # Anchored to the working directory, not to the package. A package-relative path resolves
 # inside site-packages once `ear` is installed rather than run from a checkout.

@@ -50,8 +50,9 @@ from .transcripts import TranscriptArchive, TranscriptError
 # Ceiling on model spend for one case. Mirrors `cli.py:COST_CAP_PER_CASE_USD` -- deliberately a
 # copy rather than an import, because `cli.py` pulls in the corpus and this module may not.
 # `tests/test_investigate_handler.py` asserts the two numbers agree, so the duplication is checked
-# rather than hoped for.
-COST_CAP_PER_CASE_USD = 0.25
+# rather than hoped for -- and it earned that on 2026-08-29, when the local cap was re-derived from
+# 50 keyed cases and this copy was the only thing that noticed.
+COST_CAP_PER_CASE_USD = 0.10
 
 DEFAULT_STAGE = "dev"
 
