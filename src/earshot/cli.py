@@ -33,6 +33,8 @@ from .extract import Extractor, OfflineLexiconExtractor, extract_all
 from .llm import ProviderError, build_provider, cache_mode
 from .memory import ScoreBreakdown
 from .schema import Case, Outcome, Stratum
+from .stream import StreamError, run_stream, stream_payload
+from .tenants import Tenant, resolve as resolve_tenants
 
 # The review team's capacity, as a share of the portfolio. The investigator works the top of
 # the queue, so this is what defines "crossed the threshold" — the same equal-alert-budget
@@ -412,14 +414,30 @@ def _queue(run: RunConfig, budget: float = INVESTIGATION_BUDGET):
     return corpus, ledger, cut, threshold
 
 
-def _context(corpus, customer_id: str, breakdown: ScoreBreakdown, threshold: float, seed: int):
+def _context(
+    corpus,
+    customer_id: str,
+    breakdown: ScoreBreakdown,
+    threshold: float,
+    seed: int,
+    cutoff_day: int | None = None,
+):
     """Assemble the agent's view of one customer.
 
     The truth object stays in this function. Only primitives cross into `ToolContext`, and
     nothing downstream can reach `outcome` — see tests/test_separation.py.
+
+    `cutoff_day` drops conversations that had not arrived yet. `None` (the batch path) hands over
+    the whole arc, which is right when the queue was cut from a finished corpus. The stream path
+    passes the crossing day, because a live consumer cannot hand the agent a transcript that has
+    not happened — and a demo that does is showing a batch with a clock painted on it.
     """
     truth = next(c for c in corpus.customers if c.customer_id == customer_id)
-    conversations = tuple(corpus.conversations_for(customer_id))
+    conversations = tuple(
+        c
+        for c in corpus.conversations_for(customer_id)
+        if cutoff_day is None or c.day <= cutoff_day
+    )
     return ToolContext(
         customer_id=customer_id,
         as_of_day=breakdown.as_of_day,
@@ -650,6 +668,173 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
     return 0
 
 
+def stream_inputs(t: Tenant):
+    """One tenant's corpus, as `(conversations, context_for)`.
+
+    **This function is why `stream.py` can stay on the separation-guarded surface.** Generating a
+    corpus and assembling a `ToolContext` both need the truth objects, and `cli.py` is the one
+    module already exempted for exactly that (see the exemption list in
+    `tests/test_separation.py`). Handing the stream engine a conversation sequence and a closure
+    means it never holds an object carrying `stratum`, `outcome` or `latent_risk` — the guarantee
+    is structural rather than a promise not to look.
+
+    Cut at `breakdown.as_of_day`, which for a crossing is the day it happened, so the agent sees
+    what a live consumer would have handed it and nothing that arrived afterwards.
+    """
+    corpus = generate(t.run)
+
+    def context_for(customer_id: str, breakdown: ScoreBreakdown, threshold: float):
+        return _context(
+            corpus,
+            customer_id,
+            breakdown,
+            threshold,
+            t.run.seed,
+            cutoff_day=breakdown.as_of_day,
+        )
+
+    return corpus.conversations, context_for
+
+
+def _stream_manifest(t: Tenant, extractor, provider, provider_name: str) -> dict:
+    """Provenance for one streamed tenant. The UI prints it on every screen.
+
+    `reader` comes from the extractor's own `name`, which for the model reader is the model that
+    ANSWERED rather than the one requested -- `bedrock.py` substitutes its own default by design,
+    and the first keyed run in this repo was logged under the wrong model name because of it.
+
+    `asr` is stamped `"none"` unconditionally. There is no speech recognition in this system and
+    no code path that could add one, so this is a fact about the build, not a caption someone
+    remembered to write. A screenshot outlives the caveat said out loud beside it.
+    """
+    system, _, prompt_sha = investigator_prompts()
+    return {
+        "tenant_id": t.tenant_id,
+        "seed": t.run.seed,
+        "config_hash": t.run.hash(),
+        "git_sha": _git_sha(),
+        "provider": getattr(provider, "name", provider_name),
+        "reader": getattr(extractor, "name", None) or "offline-lexicon",
+        "prompt_version": system.version,
+        "prompt_sha": prompt_sha,
+        "cache_mode": cache_mode(),
+        "threshold": round(t.threshold, 4),
+        "threshold_kind": "fixed cut, as the deployed ingest handler uses. NOT the "
+                          "budget-derived threshold `earshot investigate` reports.",
+        "asr": "none",
+        "asr_note": "Transcripts are generated text replayed on a wall clock. The arrival "
+                    "pattern is reproduced; no audio is transcribed anywhere in this system.",
+        "data": "synthetic",
+    }
+
+
+def cmd_stream(
+    tenant_names: str,
+    provider_name: str,
+    extractor_name: str,
+    *,
+    serve: bool = False,
+    port: int = 8765,
+    investigate_limit: int | None = None,
+    pace_seconds: float = 0.0,
+) -> int:
+    """Walk each tenant's book in arrival order and record a frame timeline per conversation.
+
+    One artifact per tenant, because a tenant is a deployment: merging three books into one file
+    would make the multi-enterprise view a presentation trick rather than three runs that happen
+    to be shown together.
+    """
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="replace")
+
+    try:
+        tenants = resolve_tenants(tenant_names)
+    except KeyError as exc:
+        print(f"earshot stream: {exc}", file=sys.stderr)
+        return 1
+    if not tenants:
+        print("earshot stream: no tenants selected", file=sys.stderr)
+        return 1
+
+    if serve:
+        if len(tenants) != 1:
+            print(
+                "earshot stream --serve takes exactly one tenant, e.g. --tenant northwind. "
+                "A live stream has one clock.",
+                file=sys.stderr,
+            )
+            return 1
+        from .stream_server import serve_stream
+
+        return serve_stream(
+            tenants[0],
+            provider_name=provider_name,
+            extractor_name=extractor_name,
+            port=port,
+            investigate_limit=investigate_limit,
+            pace_seconds=pace_seconds,
+        )
+
+    _, _, prompt_sha = investigator_prompts()
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    print(f"\n{'=' * 78}\nEAR ON EVERY CALL - live stream, replayable\n{'=' * 78}")
+    print(f"reader={extractor_name}   agent-provider={provider_name}   "
+          f"cache_mode={cache_mode()}   git={_git_sha()}")
+    print("NO SPEECH RECOGNITION. Transcripts are generated text; what is replayed is the "
+          "arrival pattern.")
+    if provider_name == "offline":
+        print("NOTE: the offline provider is a rule engine, not a model. Its verdicts are a "
+              "floor, not a result.")
+
+    grand_total = 0.0
+    for t in tenants:
+        extractor = build_extractor(extractor_name, t.run)
+        provider = _provider(provider_name, prompt_sha)
+        conversations, context_for = stream_inputs(t)
+        try:
+            run = run_stream(
+                t,
+                conversations,
+                extractor,
+                provider,
+                context_for=context_for,
+                investigate_limit=investigate_limit,
+            )
+            payload = stream_payload(
+                run, _stream_manifest(t, extractor, provider, provider_name)
+            )
+        except (ProviderError, StreamError) as exc:
+            print(f"\n{t.name}: {exc}", file=sys.stderr)
+            return 1
+
+        totals = payload["totals"]
+        grand_total += totals["total_cost_usd"]
+        slug = f"{t.tenant_id}-{extractor_name}-{provider_name}-{cache_mode()}"
+        out = ARTIFACTS / f"stream-{slug}-{t.run.hash()}.json"
+        out.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+
+        print(f"\n{'-' * 78}")
+        print(f"{t.name}  ({t.industry})   threshold {t.threshold:.2f} fixed")
+        print(f"  {totals['conversations']} conversations from {totals['customers']} customers "
+              f"over {totals['horizon_days']} days -> {totals['signals']} signals")
+        print(f"  {totals['crossings']} crossings, {totals['investigated']} investigated, "
+              f"{totals['not_investigated']} left unworked (recorded, with the reason)")
+        for row in payload["teams"]:
+            print(f"    {row['label']:<28} {row['cases']} case(s)")
+        print(f"  reader ${totals['reader_cost_usd']:.4f} + agent "
+              f"${totals['investigation_cost_usd']:.4f} = ${totals['total_cost_usd']:.4f}"
+              + ("   (replay, recorded figures)" if cache_mode() == "replay" else ""))
+        print(f"  -> {out}")
+        _print_extraction_telemetry(extractor)
+
+    print(f"\n{'=' * 78}")
+    print(f"{len(tenants)} tenant(s), ${grand_total:.4f} total"
+          + ("   (replay: these are the RECORDED figures from the keyed run)"
+             if cache_mode() == "replay" else ""))
+    print("Build the browser fixture:  uv run python tools/stream_fixture.py")
+    return 0
+
+
 def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) -> int:
     """Many seeds, paired comparison, and the integers behind every rate.
 
@@ -802,7 +987,9 @@ def main() -> int:
         sys.stdout.reconfigure(errors="replace")  # type: ignore[union-attr]
 
     parser = argparse.ArgumentParser(prog="earshot", description="Ear on Every Call")
-    parser.add_argument("command", choices=["run", "demo", "investigate", "sweep"])
+    parser.add_argument(
+        "command", choices=["run", "demo", "investigate", "sweep", "stream"]
+    )
     parser.add_argument(
         "--seeds",
         type=int,
@@ -844,6 +1031,40 @@ def main() -> int:
     )
     parser.add_argument(
         "--limit", type=int, default=3, help="investigate only: how many cases to work."
+    )
+    parser.add_argument(
+        "--tenant",
+        default="all",
+        help="stream only: which enterprise deployment(s) to stream -- 'all', or a "
+        "comma-separated list of tenant ids from earshot/tenants.py. Each is the same engine on "
+        "its own corpus with its own tuning, threshold and team names.",
+    )
+    parser.add_argument(
+        "--cases",
+        type=int,
+        default=None,
+        help="stream only: how many crossings to investigate with the agent, per tenant. "
+        "Defaults to the tenant's own budget. Crossings beyond it are recorded as unworked with "
+        "the reason, never silently dropped.",
+    )
+    parser.add_argument(
+        "--serve",
+        action="store_true",
+        help="stream only: serve ui/ on localhost and push frames over SSE as they are computed, "
+        "so a demo makes real calls while the room watches. The recorded file:// replay stays the "
+        "default because a judging room with no wifi must still see the product (D-004).",
+    )
+    parser.add_argument(
+        "--port", type=int, default=8765, help="stream --serve only: the localhost port."
+    )
+    parser.add_argument(
+        "--pace",
+        type=float,
+        default=0.0,
+        help="stream --serve only: seconds to hold each frame. 0 (default) paces at the "
+        "reader's own latency -- its live latency on a cold cache, its recorded latency on a "
+        "warm one -- so the speed on screen is always a measurement rather than a chosen "
+        "animation. Set EARSHOT_CACHE_MODE=off to force genuinely new calls on stage.",
     )
     args = parser.parse_args()
 
@@ -892,7 +1113,7 @@ def main() -> int:
     # None means "the offline lexicon, built from this run's config" — the default path, left
     # untouched so every published number reproduces exactly as before.
     extractor: Extractor | None = None
-    if args.command in ("run", "sweep") and args.extractor != "offline":
+    if args.command in ("run", "sweep", "stream") and args.extractor != "offline":
         try:
             extractor = build_extractor(args.extractor, run)
         except ProviderError as exc:
@@ -903,7 +1124,9 @@ def main() -> int:
             )
             return 1
     elif args.extractor != "offline":
-        parser.error(f"--extractor applies to run and sweep, not to {args.command}")
+        parser.error(
+            f"--extractor applies to run, sweep and stream, not to {args.command}"
+        )
 
     if args.command == "run":
         return cmd_run(run, extractor)
@@ -911,6 +1134,16 @@ def main() -> int:
         return cmd_demo(run)
     if args.command == "sweep":
         return cmd_sweep(run, args.seeds, extractor)
+    if args.command == "stream":
+        return cmd_stream(
+            args.tenant,
+            args.provider,
+            args.extractor,
+            serve=args.serve,
+            port=args.port,
+            investigate_limit=args.cases,
+            pace_seconds=args.pace,
+        )
     return cmd_investigate(run, args.provider, args.limit)
 
 

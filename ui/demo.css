@@ -1,0 +1,224 @@
+/* The demo screens: deployment nav, the portfolio, and the arrival stream.
+ *
+ * A second stylesheet rather than more of `styles.css`, and the split is not filing: everything
+ * in `styles.css` is the product a bank's staff use, and everything here is how it is shown.
+ * The product screens deliberately do not animate -- a queue that moves while someone is reading
+ * it is worse -- and the stream deliberately does, because motion is the beat. Keeping them in
+ * one file is how a transition ends up on a table nobody wanted one on.
+ *
+ * Tokens come from `styles.css`, which loads first. Nothing here redefines a colour; `--accent`
+ * is re-pointed per tenant by an inline style so each deployment reads as itself.
+ */
+
+.mainnav { display: flex; gap: 4px; }
+.navlink {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--ink-2);
+  border: 1px solid transparent;
+}
+.navlink:hover { background: var(--panel-2); }
+.navlink.on { background: var(--accent-soft); color: var(--accent); border-color: var(--line); }
+
+.muted { color: var(--ink-3); }
+.small { font-size: 12.5px; }
+.mini {
+  font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--ink-3); margin: 16px 0 8px;
+}
+.kv.tight dt, .kv.tight dd { padding: 3px 0; }
+
+/* ---- portfolio -------------------------------------------------------------------- */
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.tenant-card { border-top: 3px solid var(--accent); }
+.tenant-head { display: flex; gap: 12px; align-items: flex-start; }
+.tenant-head h3 { margin: 0; }
+.tenant-card .dot,
+.pill .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent); flex: none; margin-top: 6px;
+}
+.book { color: var(--ink-2); font-size: 13.5px; margin: 10px 0 14px; }
+
+.teams { list-style: none; margin: 0; padding: 0; }
+.teams li {
+  display: grid; grid-template-columns: 1fr 90px 28px;
+  gap: 10px; align-items: center; padding: 4px 0; font-size: 13px;
+}
+.team-bar { height: 6px; border-radius: 3px; background: var(--panel-2); overflow: hidden; }
+.team-bar > i { display: block; height: 100%; background: var(--accent); }
+.teams .num { text-align: right; color: var(--ink-2); }
+
+/* ---- the stream ------------------------------------------------------------------- */
+
+.stream { display: flex; flex-direction: column; gap: 14px; }
+.stream-head h2 { margin: 0 0 4px; }
+
+.pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel);
+  text-decoration: none; color: var(--ink-2); font-size: 13px;
+}
+.pill.on { border-color: var(--accent); background: var(--panel-2); color: var(--ink); }
+.pill-sub { color: var(--ink-3); font-size: 12px; }
+
+/* Provenance for the stream sits inside the screen as well as in the page banner. A screenshot
+   of the stage is what ends up in someone else's deck, and it has to carry its own caveats. */
+.prov-inline {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-family: var(--mono);
+  line-height: 1.7;
+}
+.prov-inline code { font-size: 12px; }
+
+.transport {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 10px 14px;
+}
+.tbtn {
+  font: inherit; font-size: 13px;
+  padding: 6px 12px; border-radius: 7px;
+  border: 1px solid var(--line); background: var(--panel-2);
+  color: var(--ink); cursor: pointer;
+}
+.tbtn:hover { border-color: var(--accent); }
+.tbtn.small { font-size: 12px; padding: 4px 9px; }
+.tbtn.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.tbtn.live-btn {
+  margin-left: auto; background: var(--bad-soft);
+  color: var(--bad); border-color: var(--bad);
+}
+.speeds { display: flex; gap: 4px; }
+.scrub { flex: 1 1 220px; min-width: 160px; accent-color: var(--accent); }
+.pos { font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); }
+.badge.live { animation: pulse 1.4s ease-in-out infinite; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+.stage { display: grid; grid-template-columns: 1.15fr 1fr 1.1fr; gap: 14px; align-items: start; }
+@media (max-width: 1100px) { .stage { grid-template-columns: 1fr; } }
+
+/* The call panel. Turns reveal on a staggered CSS delay rather than a JS timer: it restarts
+   cleanly on every frame, survives a scrub backwards, and cannot leak an interval on a route
+   change. What is being reproduced is the arrival of a transcript, never an audio pipeline --
+   there is no speech recognition in this system and no waveform is drawn anywhere. */
+.call .turns.live li {
+  position: relative;
+  animation: rise .32s ease both;
+  animation-delay: calc(var(--k) * 55ms);
+  font-size: 13.5px;
+  grid-template-columns: 72px 1fr;
+}
+.call .turns.live li.hit { background: var(--bad-soft); }
+.call .flag {
+  grid-column: 2;
+  font-family: var(--mono); font-size: 11.5px;
+  color: var(--bad); text-transform: uppercase; letter-spacing: .05em;
+  margin-top: 4px;
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.readbar {
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line);
+  font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+}
+
+/* The ledger panel: one meter, two marks -- what the customer scored before this conversation
+   landed and what they score after it -- with the threshold drawn on the same axis. "Crossed"
+   is then something a viewer sees rather than something a caption asserts. */
+.scoremeter { margin: 14px 0 10px; }
+.meter {
+  position: relative; height: 22px; border-radius: 6px;
+  background: var(--panel-2); overflow: hidden;
+}
+.meter > .fill {
+  position: absolute; inset: 0 auto 0 0; background: var(--accent);
+  transition: width .5s cubic-bezier(.2,.7,.2,1);
+}
+.meter > .was { position: absolute; inset: 0 auto 0 0; background: var(--ink-3); opacity: .45; }
+.meter > .cut { position: absolute; top: -2px; width: 3px; height: 26px; background: var(--bad); }
+.meterlabels {
+  display: flex; justify-content: space-between; gap: 10px; margin-top: 6px;
+  font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+}
+.meterlabels .big { font-size: 17px; color: var(--ink); font-weight: 700; }
+.meterlabels .delta.up { color: var(--ok); }
+
+.crossbanner {
+  margin: 14px 0 4px; padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--bad-soft); color: var(--bad);
+  border: 1px solid var(--bad);
+  font-weight: 700; font-size: 13.5px;
+  animation: flash .5s ease;
+}
+.crossbanner .sub { display: block; margin-top: 6px; font-weight: 400; font-size: 12.5px; }
+@keyframes flash {
+  from { transform: scale(.985); opacity: .3; }
+  to { transform: none; opacity: 1; }
+}
+
+/* The live board. Rows are absolutely positioned and moved by transform, so a re-rank slides.
+   Re-ranking is the beat being demonstrated, and an innerHTML swap makes it invisible. */
+.boardrows { position: relative; transition: height .4s ease; }
+.boardrow {
+  position: absolute; left: 0; right: 0; height: 40px;
+  display: grid; grid-template-columns: 88px 1fr 90px 52px 68px;
+  gap: 10px; align-items: center;
+  padding: 0 8px; border-radius: 7px;
+  font-size: 12.5px;
+  transition: transform .45s cubic-bezier(.2,.7,.2,1), background .3s;
+}
+.boardrow .cid, .boardrow .num { font-family: var(--mono); }
+.boardrow .sig {
+  color: var(--ink-3); overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.boardrow .state {
+  font-size: 11px; color: var(--ink-3); text-align: right;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.boardrow .bar { position: relative; width: 100%; height: 7px; }
+.boardrow .bar > i { transition: width .45s ease; }
+.boardrow .bar > .cut {
+  position: absolute; top: -2px; width: 2px; height: 11px; background: var(--bad);
+}
+.boardrow.touched { background: var(--accent-soft); }
+.boardrow.over .num { color: var(--bad); font-weight: 700; }
+.boardrow.open { background: var(--bad-soft); }
+.boardrow.open .state { color: var(--bad); }
+
+.ticker {
+  display: flex; flex-wrap: wrap; gap: 22px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 12px 16px;
+  font-size: 12.5px; color: var(--ink-3);
+}
+.ticker b { font-family: var(--mono); font-size: 16px; color: var(--ink); margin-right: 6px; }
+
+.decided { list-style: none; margin: 0; padding: 0; }
+.decided li { border-bottom: 1px solid var(--line); }
+.decided li:last-child { border-bottom: 0; }
+.decided a, .decided li.livecase {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  padding: 10px 4px; text-decoration: none; color: inherit;
+}
+.decided a:hover { background: var(--panel-2); }
+.decided .cid { font-family: var(--mono); }
+.decided .team { color: var(--accent); font-size: 13px; }
+.decided .muted { font-size: 12px; font-family: var(--mono); }
