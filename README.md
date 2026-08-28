@@ -70,6 +70,16 @@ Recall at a **10% review budget**, since a review team's capacity is the real co
 strata are shown, because the result is a **trade** and reporting only one side of it would be picking
 the answer out of a comparison the code computes in full:
 
+**Every row below reads the same offline-lexicon signal stream.** `earshot sweep` runs
+`OfflineLexiconExtractor` — the keyless 26-regex fallback, not a model — and now prints
+`reader=offline-lexicon` in its own header and stamps `provider` into the artifact manifest, so the
+source is never left unlabelled. That reader is weak in absolute terms (**0.0357 strict recall,
+4 / 112**, against real CFPB language — measured further down this page), but this table is not
+testing that number. Every arm consumes the identical stream from the identical reader, so the
+arm-vs-arm comparison stays internally valid regardless of how weak the reader is: a stronger reader
+would move every row's absolute recall up together, not reorder them. What moves between rows here
+is the memory mechanism, not the evidence it is fed.
+
 | Arm | Recall | Hits / outcomes | **Diffuse arcs** | hits / n | **Concentrated arcs** | hits / n |
 |---|---|---|---|---|---|---|
 | window3-top2 *(last 3 conversations, keep the best 2)* | 0.134 | 261 / 1945 | **0.195** | **152 / 780** | 0.173 | 109 / 629 |
@@ -263,17 +273,17 @@ cut, and it is what makes the agent's job hard — it is being handed a queue th
 by construction and asked to sort it.
 
 **Still not measured:** routing accuracy (which team a case is sent to), and any of this at a sample
-size worth a confidence interval — 10 cases is a direction, not an estimate. The two live Claude Sonnet 4.5 investigations in
-`artifacts/cache/` cost **$0.089 and $0.097** and took 30.3s and 33.4s. They are committed, and this
-exact command replays them with no network and a deliberately invalid key:
+size worth a confidence interval — 10 cases is a direction, not an estimate.
 
-```bash
-EARSHOT_CACHE_MODE=replay EARSHOT_OPENROUTER_API_KEY=invalid \
-  uv run earshot investigate --provider openrouter --customers 200 --limit 2
-```
-
-The cache holds those **two** investigations only. Asking for a third, or for a different corpus size,
-is a cache miss — which reports itself as `provider_error` rather than reaching the network.
+**Provider-historical, superseded by D-025 (2026-08-25):** two live Claude Sonnet 4.5 investigations,
+recorded via OpenRouter on 2026-08-09, cost **$0.089 and $0.097** and took 30.3s and 33.4s — the only
+live-model cost/latency this repo has ever measured for the investigator, kept as a data point rather
+than deleted. **They no longer replay.** `artifacts/cache/investigator-demo.jsonl` is keyed on
+`prompt_sha`, and the investigator prompt changed twice after the cache was recorded (`7229b70`,
+`80c0914`); D-025 also moved both reader and investigator to Bedrock Haiku 4.5, which changes the
+model string regardless. The old replay command now cache-misses and prints `provider_error` instead
+of reaching the network, so it is not reproduced here. No Haiku-on-Bedrock investigation cost/latency
+figures exist yet to replace it.
 
 ### The streamed demo, measured 2026-08-28
 

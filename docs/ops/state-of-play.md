@@ -51,7 +51,8 @@ Three things to carry:
   feed replaces.
 
 **AWS is real, and the deployment is correct but inert (2026-08-28).** 3 DynamoDB tables with PITR
-on, 3 SQS queues with DLQ redrive, 3 Lambdas on python3.13 from one zip (sha `532a888f9bf4`), and a
+on, 3 SQS queues with DLQ redrive, 3 Lambdas on python3.13 from one zip (sha `8323ff7cd3ca`, the
+2026-08-28 evening redeploy), and a
 Function URL for the reviewer API at `AuthType=AWS_IAM`. `GET /health` returns 200 in 1.4s cold.
 Everything touching a store returns 500 and neither queue is wired — see the IAM row below.
 Account `859430413223`, permission set `agentic-trio`, **us-east-1**, bucket `s3://agentic-trio`.
@@ -72,7 +73,7 @@ evidence). `--serve` does it inline so it happens live on stage; verified with
 **One deployment, framed as an integration.** A portfolio of three invented banks briefly shipped and
 was cut: it demonstrated the configuration layer and nothing else, and three fake logos is a weaker
 claim than one deployment described honestly. `tenants.py` keeps the machinery — that machinery *is*
-the per-client seam — and adds a `Seam` list of the nine pipeline stages with who owns each. **Six of
+the per-client seam — and adds a `Seam` list of the nine pipeline stages with who owns each. **Five of
 nine are the client's existing systems**, and the screen counts them rather than asserting it.
 
 **Measured, keyed:** 133 conversations for $0.187 (p50 1,101 ms, **0 unparsable, 0 dropped quotes**),

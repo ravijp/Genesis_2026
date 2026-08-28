@@ -14,7 +14,7 @@ ui/ s3://agentic-trio/ui/` needs nothing we do not have.
 | **In use** | `#/desk` | The reviewer's console: a ranked queue, a case, and a disposition — **our panel inside a stand-in of the client's own case-management desktop** |
 | **In use** | `#/desk/call` | The same console during a live call, with the reader's turn-by-turn output. Labelled illustrative |
 | **How it works** | `#/stream` | The whole book arriving in day order: the ledger accumulating, the queue re-ranking, cases opening |
-| **How it works** | `#/deployment` | The nine pipeline stages and who owns each. Six of nine are the client's existing systems |
+| **How it works** | `#/deployment` | The nine pipeline stages and who owns each. Five of nine are the client's existing systems |
 
 The console is dense chrome someone works in all day and nothing in it animates. The stream
 deliberately moves, because the motion *is* the argument. Keeping them visually distinct is the
@@ -79,8 +79,11 @@ It says **"Illustrative … nobody decides here"** on the screen, with the reaso
 The decision buttons are **honest about being inert**. `aws/api.py` serves
 `POST /cases/{id}/reviews` and `ReviewStore` holds the audit trail, but a static page cannot sign
 an `AuthType=AWS_IAM` Function URL, so clicking shows the exact request body that *would* be sent
-and says plainly that it was not. A button that silently does nothing is worse than one that
-explains itself.
+and says plainly that it was not. **That is not the only reason it would not work.** The Lambda
+execution role is still missing its SQS, DynamoDB and Bedrock permissions (`aws-infrastructure.md`),
+so the endpoint returns 500 on anything touching a store regardless of who signs the request —
+signing the request would only trade one failure for another. A button that silently does nothing
+is worse than one that explains itself.
 
 ## The live-stream demo, and exactly what is real about it
 

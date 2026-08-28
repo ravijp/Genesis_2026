@@ -401,19 +401,15 @@ def test_the_committed_cache_is_exactly_the_two_live_investigations() -> None:
     )
 
 
-def test_the_committed_cache_covers_the_documented_replay_invocation() -> None:
-    """The README names one exact replay command; the cache has to actually cover it.
-
-    A cache that covers fewer investigations than the documented `--limit` puts a
-    `provider_error` on screen at the gate, which is what happened before this test existed.
-    """
-    from earshot.llm.cache import ResponseCache
-
-    cache = ResponseCache(mode="replay")
-    assert len(cache) >= 10, (
-        f"the committed cache holds {len(cache)} completions — the documented replay command "
-        f"(--customers 200 --limit 2) needs the responses for two full investigations"
-    )
+# `test_the_committed_cache_covers_the_documented_replay_invocation` stood here and asserted only
+# `len(cache) >= 10` — a count, never a key — so it stayed green through the exact failure it was
+# written to catch: the README's replay command (`--provider openrouter --customers 200 --limit 2`)
+# cache-misses today, because the investigator prompt changed twice after the cache was recorded
+# (`7229b70`, `80c0914`) and the cache key includes `prompt_sha`. Verified 2026-08-28 by running the
+# command as documented: both cases print `provider_error`. Deleted along with the README claim
+# (D-025 also dropped Sonnet) rather than rewritten, because there is nothing left to guard — the
+# README no longer tells anyone to run that command. The two tests above still pin the cache's
+# *contents* (model, cost, count); that guard is real and stays.
 
 
 @pytest.mark.parametrize("junk", [None, {"content": "{}"}, "a bare string", 42])

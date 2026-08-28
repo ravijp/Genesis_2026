@@ -78,6 +78,13 @@ attached policy is `zenon-poc-s3-lambda`; there are no inline policies. So:
 - `cloudwatch:PutMetricAlarm` **is** granted, which was not obvious: six alarms were created for
   real on 2026-08-28. `cloudwatch:PutMetricData` is not needed at all — the handlers emit EMF on
   stdout and the log driver extracts the metrics.
+- **CloudWatch Logs is missing too — not just SQS, DynamoDB and Bedrock.** No inline policy grants
+  any `logs:*` action, and `aws logs describe-log-groups --log-group-name-prefix
+  /aws/lambda/earshot-dev-api` returns an empty list even though the function shows 4 invocations
+  in CloudWatch metrics for 2026-08-27. So the deployment is not merely inert, it is
+  **unobservable**: the `ClientError` line quoted above came from `aws lambda invoke --log-type
+  Tail`'s own captured tail, the one path that does not depend on this permission. Nobody can pull
+  that line, or anything else the function logs, back out of CloudWatch itself until this lands.
 
 **D-024 verified deployability, not functionality**, and the distinction was invisible until a
 handler actually had to read a table.
@@ -89,9 +96,9 @@ Nothing was changed by the attempt.
 ### The ask for IT (Vikash) — one inline policy, copy-pasteable
 
 Attach as an inline policy named `earshot-dev` on role `zenon-poc-lambda-execution`. It grants
-nothing outside `earshot-*` and the two S3 prefixes, and it **deliberately omits
-`dynamodb:DeleteItem`** — A6's never-discard guarantee is that the deployed role *cannot* delete a
-ledger entry, not that our code chooses not to.
+nothing outside `earshot-*`, the two S3 prefixes, and this function's own log groups, and it
+**deliberately omits `dynamodb:DeleteItem`** — A6's never-discard guarantee is that the deployed
+role *cannot* delete a ledger entry, not that our code chooses not to.
 
 ```json
 {
@@ -114,18 +121,26 @@ ledger entry, not that our code chooses not to.
      "Action": ["s3:ListBucket"], "Resource": ["arn:aws:s3:::agentic-trio"],
      "Condition": {"StringLike": {"s3:prefix": ["evidence/*", "artifacts/*"]}}},
     {"Sid": "EarshotBedrock", "Effect": "Allow",
-     "Action": ["bedrock:InvokeModel"], "Resource": ["*"]}
+     "Action": ["bedrock:InvokeModel"], "Resource": ["*"]},
+    {"Sid": "EarshotLogs", "Effect": "Allow",
+     "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
+     "Resource": ["arn:aws:logs:us-east-1:859430413223:log-group:/aws/lambda/earshot-*",
+                  "arn:aws:logs:us-east-1:859430413223:log-group:/aws/lambda/earshot-*:*"]}
   ]
 }
 ```
 
-**Two evidence lines for the ticket**, both reproducible:
+**Three evidence lines for the ticket**, all reproducible:
 
 - `aws lambda create-event-source-mapping ...` → *"The function execution role does not have
   permissions to call ReceiveMessage on SQS"*
 - Invoking `earshot-dev-api` with `{"rawPath": "/cases"}` → HTTP 500, log line
-  `{"event": "api.error", "path": "/cases", "error": "ClientError"}`. The same function returns 200
-  on `/health`, so the artifact and the code are not in question.
+  `{"event": "api.error", "path": "/cases", "error": "ClientError"}`, captured from the invoke's own
+  `--log-type Tail` response rather than CloudWatch. The same function returns 200 on `/health`, so
+  the artifact and the code are not in question.
+- `aws logs describe-log-groups --log-group-name-prefix /aws/lambda/earshot-dev-api` → empty list,
+  while CloudWatch metrics show 4 invocations for 2026-08-27. Without the `EarshotLogs` statement
+  above, that gap does not close on its own — nothing the function logs after today is retrievable.
 
 **Once the policy lands**, re-run `uv run --extra aws python tools/deploy.py --stage dev
 --no-dry-run`: it is idempotent and will create the two event source mappings it could not create

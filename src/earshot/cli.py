@@ -900,6 +900,11 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
     """
     from .sweep import paired_record, sign_test_p, sweep
 
+    # `sweep()` builds its own default per seed when none is supplied (sweep.py:99-102) rather
+    # than taking one from here, but it is always the same reader — surfaced so the header and
+    # the manifest never leave the signals' source unstated (CLAUDE.md: "offline numbers are
+    # always labelled with their provider and never presented as a headline").
+    reader_name = extractor.name if extractor is not None else OfflineLexiconExtractor.name
     seeds = [run.seed + i for i in range(n_seeds)]
     if _extraction_telemetry(extractor) is not None:
         # A count, not an estimate: the reader is called once per conversation, and a sweep
@@ -915,9 +920,15 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
     elapsed = time.time() - started
 
     print(f"\n{'=' * 86}\nEAR ON EVERY CALL — multi-seed evaluation\n{'=' * 86}")
-    print(f"{n_seeds} seeds x {run.corpus.n_customers} customers   "
+    print(f"reader={reader_name}   {n_seeds} seeds x {run.corpus.n_customers} customers   "
           f"review budget {INVESTIGATION_BUDGET:.0%}   git={_git_sha()}   ({elapsed:.0f}s)")
-    print(f"seeds: {seeds[0]}..{seeds[-1]}\n")
+    print(f"seeds: {seeds[0]}..{seeds[-1]}")
+    if reader_name == OfflineLexiconExtractor.name:
+        print("NOTE: offline-lexicon reader (26-regex cue-and-dampener). Its strict-recall miss "
+              "rate is measured separately (see README); every table below is arm-vs-arm on the "
+              "signals it produces, not a claim about accuracy against real language.\n")
+    else:
+        print("")
 
     print(f"{'arm':<18} {'recall':>8} {'stdev':>7} {'hits/outcomes':>16} "
           f"{'diffuse':>9} {'diffuse hits/n':>15} {'conc':>7} {'conc hits/n':>15}")
@@ -1010,6 +1021,7 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
                     "config_hash": run.hash(),
                     "git_sha": _git_sha(),
                     "elapsed_seconds": round(elapsed, 2),
+                    "provider": reader_name,
                     "extraction_telemetry": _extraction_telemetry(extractor),
                 },
                 "arms": {

@@ -116,7 +116,7 @@ def _scoring(**overrides) -> ScoringConfig:
     return replace(ScoringConfig(), **overrides)
 
 
-# The deployed pipeline, stage by stage. Six of these nine stages are the client's own systems,
+# The deployed pipeline, stage by stage. Five of these nine stages are the client's own systems,
 # which is the shape of the claim: this is a layer, not a replacement. The two seams that matter
 # commercially are the first `ours=True` (a transcript feed we consume, in whatever format they
 # already produce) and the last (a case we hand back into the queue their reviewers already work).
