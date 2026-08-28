@@ -18,6 +18,7 @@ import statistics
 import subprocess
 import sys
 import time
+import warnings
 from dataclasses import asdict, replace
 from pathlib import Path
 
@@ -28,7 +29,7 @@ from .aws.transcripts import to_payload
 from .case_record import case_record
 from .config import DEFAULT, RunConfig
 from .core.accounts import account_snapshot, synthesize_prior_cases
-from .corpus import generate, smallest_fragment_pool
+from .corpus import ArcCeilingWarning, check_arc_ceiling, generate
 from .evals import corpus_diagnostics, evaluate_all, evaluate_arm, extraction_fidelity
 from .extract import Extractor, OfflineLexiconExtractor, extract_all
 from .llm import ProviderError, build_provider, cache_mode
@@ -1153,30 +1154,25 @@ def main() -> int:
             parser.error("--conversations-per-customer takes MIN,MAX, e.g. '8,20'")
         if lo < 1 or hi < lo:
             parser.error(f"--conversations-per-customer needs 1 <= MIN <= MAX, got {lo},{hi}")
-        scarcest_type, pool_size = smallest_fragment_pool()
-        if hi > pool_size:
-            parser.error(
-                f"--conversations-per-customer MAX={hi} exceeds the smallest fragment pool "
-                f"({scarcest_type.value}, {pool_size} fragments). Fragments are planted without "
-                f"replacement, so no arc can carry more than {pool_size} signals however long it "
-                f"gets, and a longer-history comparison would measure padding rather than "
-                f"accumulation. Widen the pools in corpus_lexicon.py first."
-            )
         conv_range = (lo, hi)
 
-    # The same ceiling binds the DEFAULT range, and did so for every number published to date.
-    # Warned rather than refused: it is a pre-existing property of the corpus, not something the
-    # caller chose, and refusing here would break reproduction of the published figures.
-    _scarce_type, _pool = smallest_fragment_pool()
-    _default_max = DEFAULT.corpus.conversations_per_customer[1]
-    if conv_range is None and _default_max > _pool:
-        print(
-            f"NOTE: arcs run to {_default_max} conversations but the scarcest fragment pool "
-            f"({_scarce_type.value}) holds {_pool}, and fragments are planted without replacement. "
-            f"Arcs on that trajectory carry at most {_pool} signals, so their later conversations "
-            f"are empty by construction. This bounds what any history-length claim can show.",
-            file=sys.stderr,
-        )
+    # The fragment-pool ceiling is enforced in `corpus.check_arc_ceiling()`, which `generate()`
+    # calls, so no caller can bypass it. Running it HERE as well buys only the command-line
+    # manners: a usage error instead of a traceback, before any work starts.
+    probe = run.corpus if conv_range is None else replace(
+        run.corpus, conversations_per_customer=conv_range
+    )
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always", ArcCeilingWarning)
+        try:
+            check_arc_ceiling(probe)
+        except ValueError as exc:
+            parser.error(str(exc))
+    for warning in caught:
+        print(f"NOTE: {warning.message}", file=sys.stderr)
+    # Said once, in prose, above. Silence the duplicate `generate()` is about to raise --
+    # `filterwarnings`, not `simplefilter`, so nothing else in the filter list is discarded.
+    warnings.filterwarnings("ignore", category=ArcCeilingWarning)
 
     if args.seed != DEFAULT.seed or args.customers or conv_range:
         corpus_cfg = run.corpus

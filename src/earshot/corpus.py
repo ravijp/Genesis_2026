@@ -17,6 +17,7 @@ No third-party dependencies: Dirichlet is sampled via normalised Gamma draws fro
 from __future__ import annotations
 
 import random
+import warnings
 
 from .config import CorpusConfig, RunConfig
 from .corpus_lexicon import (
@@ -63,8 +64,22 @@ def _pick_stratum(rng: random.Random, cfg: CorpusConfig) -> Stratum:
 def _nearest_fragment(
     pool: tuple[Fragment, ...], target: float, used: set[str]
 ) -> Fragment | None:
-    """Pick the fragment whose intrinsic loudness best matches the mass allocated here."""
-    candidates = [f for f in pool if f.fragment_id not in used] or list(pool)
+    """Pick the unused fragment whose intrinsic loudness best matches the mass allocated here.
+
+    Returns None once the pool is exhausted, and the conversation is then left EMPTY.
+
+    There used to be an `or list(pool)` fallback here, which re-planted an already-used
+    fragment instead. That was a correctness defect, not a convenience: the identical sentence
+    appeared in two conversations on different days, the extractor emitted two signals with
+    different `conversation_id`s, and `memory._raw()` counted them as `n_conversations = 2`.
+    The ledger then paid a cross-conversation corroboration bonus for evidence that was one
+    utterance copied twice -- manufacturing the exact mechanism this system claims to measure.
+    At the shipped default range it hit 28 / 213 arc customers per 400.
+
+    Padding with an empty conversation dilutes an arc, which is a bias AGAINST the ledger and
+    is visible in the diagnostics. Repeating a fragment inflated it, and was invisible.
+    """
+    candidates = [f for f in pool if f.fragment_id not in used]
     if not candidates:
         return None
     return min(candidates, key=lambda f: (abs(f.strength - target), f.fragment_id))
@@ -140,9 +155,69 @@ def _render_conversation(
     )
 
 
+class ArcCeilingWarning(UserWarning):
+    """The configured arc length exceeds the scarcest fragment pool.
+
+    Its own class so `cli.py` can silence exactly this warning after printing the same fact in
+    readable prose, without silencing anything else.
+    """
+
+
+# Read off the dataclass default rather than hard-coded, so "did the caller choose this range,
+# or is it the range we ship?" stays true if the shipped default ever moves.
+_SHIPPED_CONVERSATION_RANGE = CorpusConfig().conversations_per_customer
+
+
+def check_arc_ceiling(cfg: CorpusConfig) -> None:
+    """Enforce the fragment-pool ceiling for EVERY caller, not just the command line.
+
+    Fragments are planted WITHOUT replacement, so no arc can carry more signals than the
+    scarcest trajectory pool holds. A `conversations_per_customer` maximum above that ceiling
+    produces arcs whose later conversations are empty, and a longer-history comparison then
+    measures padding rather than accumulation.
+
+    This check used to live in `cli.py`'s argument parsing, where it only ran when
+    `--conversations-per-customer` was passed. `sweep.py`, `tools/verdict_accuracy.py`,
+    `tenants.py` and every test build a `RunConfig` programmatically and never touched it, and
+    the shipped default -- whose maximum of 5 already exceeds the pool of 4 -- never reached it
+    at all. It lives here now because `generate()` is the one door every corpus comes through.
+
+    Warn vs raise, and why the two cases differ:
+
+    * A range the CALLER chose is a mistake the caller can fix, and the resulting comparison is
+      not worth running. Raise.
+    * The SHIPPED default also breaches the ceiling and has done so for every number published
+      to date. Raising on it would break `sweep`, `demo`, every test and the reproduction of
+      every figure in the README -- turning a documented corpus limitation into an outage. So
+      it warns, loudly, through a real `warnings.warn` that a programmatic caller sees. Fixing
+      it means widening the pools in `corpus_lexicon.py`, which changes pass A / pass B overlap
+      and moves the published extractor recall, so it is a deliberate act, not a side effect.
+    """
+    scarcest, pool_size = smallest_fragment_pool()
+    hi = cfg.conversations_per_customer[1]
+    if hi <= pool_size:
+        return
+    detail = (
+        f"arcs run to {hi} conversations but the scarcest fragment pool "
+        f"({scarcest.value}) holds {pool_size}, and fragments are planted without replacement. "
+        f"Arcs on that trajectory carry at most {pool_size} signals, so their later "
+        f"conversations are empty by construction. This bounds what any history-length claim "
+        f"can show."
+    )
+    if cfg.conversations_per_customer == _SHIPPED_CONVERSATION_RANGE:
+        warnings.warn(detail, ArcCeilingWarning, stacklevel=3)
+        return
+    raise ValueError(
+        f"conversations_per_customer MAX={hi} exceeds the smallest fragment pool "
+        f"({scarcest.value}, {pool_size} fragments). {detail} Widen the pools in "
+        f"corpus_lexicon.py first."
+    )
+
+
 def generate(run: RunConfig | None = None) -> Corpus:
     run = run or RunConfig()
     cfg = run.corpus
+    check_arc_ceiling(cfg)
     rng = random.Random(run.seed)
 
     customers: list[CustomerTruth] = []
@@ -284,8 +359,16 @@ def smallest_fragment_pool() -> tuple[SignalType, int]:
     Fragments are planted WITHOUT replacement within a customer's arc, so this number is the
     hard ceiling on how many signals any single arc can carry. A conversations-per-customer
     range whose maximum exceeds it produces arcs padded with empty conversations, which makes
-    a longer-history comparison measure padding rather than accumulation. `cli.py` refuses such
-    a range rather than running it, because the failure is invisible in the output.
+    a longer-history comparison measure padding rather than accumulation.
+
+    That sentence used to be a claim rather than a description. Until 2026-08-28 the planter
+    fell back to re-using an already-planted fragment when the pool ran out, so exceeding the
+    ceiling produced arcs with REPEATED conversations -- the opposite failure, and the one that
+    inflates the ledger instead of diluting it. `_nearest_fragment` now returns None and the
+    conversation really is left empty.
+
+    `check_arc_ceiling()` enforces the ceiling on every caller: it raises for a range the
+    caller chose and warns for the shipped default, which breaches it by one.
     """
     signal_type, pool = min(BY_TYPE.items(), key=lambda kv: len(kv[1]))
     return signal_type, len(pool)
