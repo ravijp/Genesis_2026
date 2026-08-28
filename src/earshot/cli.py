@@ -738,6 +738,7 @@ def cmd_stream(
     port: int = 8765,
     investigate_limit: int | None = None,
     pace_seconds: float = 0.0,
+    narrate_live: int = 3,
 ) -> int:
     """Walk each tenant's book in arrival order and record a frame timeline per conversation.
 
@@ -774,6 +775,7 @@ def cmd_stream(
             port=port,
             investigate_limit=investigate_limit,
             pace_seconds=pace_seconds,
+            narrate_live=narrate_live,
         )
 
     _, _, prompt_sha = investigator_prompts()
@@ -1072,6 +1074,14 @@ def main() -> int:
         "--port", type=int, default=8765, help="stream --serve only: the localhost port."
     )
     parser.add_argument(
+        "--narrate-live",
+        type=int,
+        default=3,
+        help="stream --serve only: how many signal-bearing conversations to read turn-by-turn "
+        "as they arrive, so a belief can be watched forming on a call happening now. Each costs "
+        "a model call per customer turn, so this is deliberately small. 0 turns it off.",
+    )
+    parser.add_argument(
         "--pace",
         type=float,
         default=0.0,
@@ -1157,6 +1167,7 @@ def main() -> int:
             port=args.port,
             investigate_limit=args.cases,
             pace_seconds=args.pace,
+            narrate_live=args.narrate_live,
         )
     return cmd_investigate(run, args.provider, args.limit)
 

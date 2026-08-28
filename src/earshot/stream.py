@@ -49,6 +49,7 @@ from .aws.transcripts import to_payload
 from .case_record import case_record
 from .extract import Extractor
 from .memory import ScoreBreakdown, SignalLedger
+from .read_live import read_turn_by_turn
 from .schema import Case, Conversation, SignalType
 from .tenants import CANONICAL_TEAMS, Tenant
 
@@ -117,6 +118,7 @@ class StreamRun:
     # reads cannot inflate `ExtractionTelemetry.conversations` -- the denominator of the published
     # cost-per-1,000-conversations figure.
     narration_cost_usd: float = 0.0
+    narrated_live: int = 0
     elapsed_seconds: float = 0.0
 
 
@@ -181,6 +183,8 @@ def run_stream(
     *,
     context_for: ContextFactory,
     investigate_limit: int | None = None,
+    narrator: Extractor | None = None,
+    narrate_live: int = 0,
     on_frame: Callable[[dict[str, Any]], None] | None = None,
     on_investigated: Callable[[Crossing], None] | None = None,
 ) -> StreamRun:
@@ -189,6 +193,16 @@ def run_stream(
     `on_frame` and `on_investigated` are called as each completes, which is what `--serve` pushes
     to a browser. Batch callers pass neither and read `run.frames` at the end; there is one code
     path either way, so the live server and the recorded replay cannot drift about what a frame is.
+
+    `narrator` + `narrate_live` turn on **inline** turn-by-turn reading for the first
+    `narrate_live` conversations that carry a signal, attaching the read steps to the frame itself.
+    That exists for `--serve`, where the point is watching a belief form on a call happening now;
+    the recorded path narrates as a post-pass instead, because it can pick the conversations that
+    opened cases once it knows which those were. Both produce the same `ReadStep` shape.
+
+    The narrator is a **separate extractor instance** for the same reason the post-pass one is:
+    prefix reads landing in the ledger reader's `ExtractionTelemetry.conversations` would divide
+    the same money by many times the work and report a cost per conversation that is fiction.
     """
     started = time.time()
     limit = t.investigate if investigate_limit is None else investigate_limit
@@ -246,6 +260,17 @@ def run_stream(
             )
             pending.append(crossing)
 
+        # Inline narration, for `--serve`. Runs only where the reader actually found something,
+        # because a belief that never forms is not worth eight calls to animate, and stops after
+        # `narrate_live` conversations so a stage demo does not quietly spend the whole book's
+        # budget on its first two minutes.
+        inline_reads: list[dict[str, Any]] | None = None
+        if narrator is not None and signals and run.narrated_live < narrate_live:
+            steps = read_turn_by_turn(narrator, conversation)
+            inline_reads = [step.to_dict() for step in steps]
+            run.narration_cost_usd += sum(step.cost_usd for step in steps)
+            run.narrated_live += 1
+
         run.conversations[conversation.conversation_id] = to_payload(conversation)
         frame = {
             "i": index,
@@ -281,6 +306,10 @@ def run_stream(
             },
             "board": _board(ledger, seen, day, t.threshold, opened),
         }
+        if inline_reads is not None:
+            # On the frame, not in the run-level `reads` map: a live consumer receives one
+            # frame at a time and has no map to look anything up in.
+            frame["reads"] = inline_reads
         run.frames.append(frame)
         if on_frame is not None:
             on_frame(frame)

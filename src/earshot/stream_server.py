@@ -155,6 +155,7 @@ def serve_stream(
     port: int = 8765,
     investigate_limit: int | None = None,
     pace_seconds: float = 0.0,
+    narrate_live: int = 3,
 ) -> int:
     """Run one tenant's stream on a worker thread and serve it, plus `ui/`, on localhost.
 
@@ -181,6 +182,10 @@ def serve_stream(
     # Built before the socket opens, not on the first connection: generating a corpus takes long
     # enough to look like a hang if it happens after someone has already clicked.
     conversations, context_for = stream_inputs(t)
+    # A SECOND extractor, for the turn-by-turn reads. Prefix reads landing in the ledger
+    # reader's telemetry would divide the same money by many times the work and report a
+    # cost-per-conversation that is fiction.
+    narrator = build_extractor(extractor_name, t.run) if narrate_live else None
 
     frames: queue.Queue = queue.Queue()
     state: dict[str, Any] = {"run": None, "started": False}
@@ -225,6 +230,8 @@ def serve_stream(
                 provider,
                 context_for=context_for,
                 investigate_limit=investigate_limit,
+                narrator=narrator,
+                narrate_live=narrate_live,
                 on_frame=on_frame,
                 on_investigated=on_investigated,
             )
@@ -259,7 +266,8 @@ def serve_stream(
 
     url = f"http://127.0.0.1:{port}/index.html#/stream"
     print(f"\n{'=' * 78}")
-    print(f"LIVE STREAM  {t.name}   reader={extractor_name}  agent={provider_name}")
+    print(f"LIVE STREAM  {t.name}   reader={extractor_name}  agent={provider_name}   "
+          f"turn-by-turn on the first {narrate_live} conversations that carry a signal")
     print(f"{'=' * 78}")
     print(f"  open  {url}")
     print("  Frames are produced by the same run_stream() the recorded command calls, and the")
