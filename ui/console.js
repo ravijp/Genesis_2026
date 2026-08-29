@@ -410,7 +410,15 @@ window.EARSHOT_CONSOLE = (function () {
         U.esc(loadBearing.length) + " quote" + (loadBearing.length === 1 ? " is" : "s are") +
         " load-bearing — remove " + (loadBearing.length === 1 ? "it" : "any of them") +
         " and the case falls back below the cut. " +
-        '<a class="plain" href="#/case/' + U.esc(encodeURIComponent(c.case_id)) +
+        // `#/stream/<tenant>/case/...`, NOT `#/case/...`. The bare form reads the OTHER recorded
+        // source (`EARSHOT_DATA`, the offline-rules run), and these are stream cases -- the two
+        // fixtures are different seeds and share no case id, so the bare link resolved to
+        // "Not found" on the single most important click in the demo. The transcript link 40
+        // lines up already had this right; only this one was missed. `ui/smoke.mjs` now crawls
+        // emitted hrefs, because it renders route strings it builds itself and structurally
+        // could not catch this.
+        '<a class="plain" href="#/stream/' + U.esc(b.tenant.tenant_id) + "/case/" +
+        U.esc(encodeURIComponent(c.case_id)) +
         '/retro">See the re-score →</a>' +
       "</div>" +
 

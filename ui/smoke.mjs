@@ -202,6 +202,8 @@ for (const block of stream.tenants) {
   }
 }
 
+const emitted = new Map(); // href -> the route that emitted it
+
 for (const hash of routes) {
   context.location.hash = hash;
   for (const id of Object.keys(nodes)) nodes[id].innerHTML = "";
@@ -225,6 +227,48 @@ for (const hash of routes) {
     const hit = html.match(/.{0,60}(undefined|\[object Object\]|NaN).{0,60}/)[0];
     failures.push(`${hash}: rendered a placeholder value -> ...${hit}...`);
   }
+  for (const m of html.matchAll(/href="(#\/[^"]*)"/g)) emitted.set(m[1], hash);
+}
+
+/* Every in-app link the UI EMITS must resolve to a screen.
+ *
+ * The loop above renders route strings this file builds itself, so it can only ever prove that
+ * the routes we thought of work. It cannot see a link the application writes into its own
+ * markup -- and on 2026-08-30 exactly that was broken: the reviewer console's "See the
+ * re-score" emitted `#/case/<id>/retro`, which reads the offline-rules fixture, while the id
+ * was a stream case. The two fixtures share no case id, so the single most important click in
+ * the demo landed on "Not found" with the whole suite green.
+ *
+ * So: crawl what was actually emitted, render each one, and require it not to be the
+ * not-found screen. Discovery, not a list -- a link added later is covered without anyone
+ * remembering to add it here (working-agreements §6). */
+const notFound = /Not found|No case |No transcript for |No screen at /;
+const crawled = [];
+for (const [href, from] of emitted) {
+  if (routes.includes(href)) continue; // already rendered above
+  context.location.hash = href;
+  for (const id of Object.keys(nodes)) nodes[id].innerHTML = "";
+  try {
+    vm.runInContext(readFileSync(join(UI, "app.js"), "utf8"), context);
+  } catch (err) {
+    failures.push(`${href} (linked from ${from}): threw ${err.message}`);
+    continue;
+  }
+  const html =
+    nodes.view.innerHTML +
+    Object.keys(nodes)
+      .filter((id) => id !== "view")
+      .map((id) => nodes[id].innerHTML)
+      .join("");
+  crawled.push(href);
+  if (notFound.test(html)) {
+    failures.push(
+      `${href} (linked from ${from}) resolves to the not-found screen -- a dead link in the UI's own markup`
+    );
+  }
+}
+if (!emitted.size) {
+  failures.push("no in-app hrefs were discovered at all -- the crawl is asserting nothing");
 }
 
 /* The team filter has to be a partition of the queue, and the control has to list every bucket.
@@ -370,6 +414,7 @@ if (failures.length) {
 }
 const frames = stream.tenants.reduce((n, b) => n + b.frames.length, 0);
 console.log(
-  `smoke OK: ${routes.length} routes, ${data.queue.count} recorded cases, ` +
+  `smoke OK: ${routes.length} routes, ${crawled.length} crawled links, ` +
+  `${data.queue.count} recorded cases, ` +
     `${stream.tenants.length} tenants, ${frames} stream frames`
 );
