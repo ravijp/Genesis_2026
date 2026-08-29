@@ -36,7 +36,8 @@ Code and config only, plus the two `.md` files that must live here (D-023).
 - `.claude/settings.json` — **enforces the edit-approval tiers** that CLAUDE.md states in prose: `docs/sources/` is denied outright, and `decisions.md`, `working-agreements.md`, `CLAUDE.md`, `docs/architecture/`, the frozen benchmark protocols and the committed artifacts all prompt before an edit. Read-only commands are pre-allowed so routine work does not prompt. Committed deliberately — it is team policy, not personal config; `settings.local.json` is the per-developer file and is gitignored `[stable]`
 - `Dockerfile` — one image for all three Lambdas and the sweep task; which handler runs is a CMD override, never a separate build. Carries `prompts/` and pins `EARSHOT_PROMPTS`/`EARSHOT_ARTIFACTS` rather than relying on path fallbacks that break in a wheel install `[skeleton]`
 - `.dockerignore` — keeps `prompts/`, `src/`, `uv.lock` in; everything regenerable or judge-facing out `[stable]`
-- `buildspec.yml` — CodeBuild: ruff → pytest → image → ECR → `cdk deploy`. Lint and tests run *before* the image build so a broken commit fails fast. Deploys the immutable digest, never the tag `[skeleton]`
+- `.github/workflows/ci.yml` — **the CI that actually runs.** ruff → pytest → `ui/smoke.mjs` → `ui/contrast.mjs` → a 3-seed keyless sweep, on every push. Installs node on purpose: `test_ui.py` skips both UI gates when node is absent, so a green suite can have them silently off `[stable]`
+- `buildspec.yml` — **parked, has never run, cannot run as written.** CodeBuild is blocked on the W9 IAM denial, and the file predates D-024: it calls `cdk deploy`, `cd infra` (no such directory) and `npm run build` in a build-step-free UI. Header says so. Left as a dated record of a superseded design rather than rewritten into a second unrunnable file `[skeleton]`
 
 ## src/earshot/ — the product
 
