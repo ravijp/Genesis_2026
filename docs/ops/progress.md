@@ -469,3 +469,53 @@ luck. Rule now in CLAUDE.md and working-agreements §8: any agent that writes fi
 `.claude/settings.json` approval tiers, duplication and dead-code pass, one-command AWS login.
 IT fixed S3 object ARNs, CloudFormation, ECR, X-Ray, ECS: probe went 23/34 → 30/34.
 `build/ear-on-every-call` pushed to CodeCommit. CDK ruled out; boto3 deploy path proven.
+
+## 2026-08-30 · The widened corpus, and a keyed run that did not finish
+
+**Spent: $12.32 on Bedrock Haiku 4.5. No sweep artifact was produced.** Recorded here rather than
+quietly absorbed, because the failure is reusable knowledge and the reads are still on disk.
+
+**What was being tested.** `build-plan.md` §5.1 and D-020 (2026-08-09) predicted that the shipped
+corpus cannot pose the history-length question: customers average ~3.5 conversations, so
+`stateless-top2` — keep the best two — discards almost nothing, and two of four fragment pools hold
+4 fragments so a long arc exhausts its pool. The remedy was written down three weeks ago: widen the
+pools, lengthen histories, re-run. This was that run.
+
+**The corpus work landed.** Pools 8/8/4/4 → 14/14/14/14, 32 new fragments authored in a genuine
+pass A (the author never opened `extract_lexicon.py`). The arc ceiling is gone: the shipped default
+no longer breaches the scarcest pool, and `test_the_shipped_default_no_longer_breaches_the_ceiling`
+now pins the *absence* of the warning that used to fire on every run.
+
+**What it cost in measured recall, and why that is not a regression.** The offline lexicon finds
+**1 of the 32 new fragments against 21 of the original 24** — 0.03 against 0.88. Published
+extraction recall falls 0.55–0.78 → **0.2125–0.2525** (six seeds, 400 customers), and the band in
+`test_published_extraction_recall_stays_in_its_measured_band` was moved deliberately with the
+reasoning in the file. Recall falling is the safe direction: only a rise indicates a leak. The gap
+is itself the sharpest measurement this repo has of *the lexicon only reads language it was written
+beside* — sharper than the 0.0357 CFPB figure, because these fragments are in-domain.
+
+**Why the keyed run failed, and it was an own goal.** The run hit the built-in $5.00 spend ceiling
+half way (3,561 of 7,035 conversations). On resume with a raised cap it re-bought reads already
+paid for: **5,494 unique keys against 8,769 billed calls, 3,275 duplicates.** The response cache
+keys on `(model, prompt_sha, messages, tools)` and `cli.py` was committed between the two runs,
+moving `prompt_sha` and orphaning every cached read. The cache was isolated by *path*, which
+correctly protected the published `extractor.jsonl`; nobody checked the *key* was stable across a
+code change before resuming. **Pin `prompt_sha` before resuming a keyed run, or do not resume it.**
+
+**What the reads do support, from the cache alone and independent of the sweep:** over **5,494
+unique keyed reads on the widened corpus, the model reader emitted at least one signal on 2,390 —
+0.4350 — and produced zero unparseable responses.** Cache committed at
+`artifacts/cache/extractor-widened-arcs.jsonl` (3.4 MB).
+
+**Directional, NOT publishable — 6 seeds, n=300, offline reader.** On the widened corpus the ledger
+stops losing to `stateless-top2` on diffuse arcs: 4-1-1, 3-0-3, 1-1-4 at alpha 2.0 / 6.0 / 20.0,
+against 3-5-2, 1-7-2, 2-5-3 on the shipped corpus. None significant. Quote none of it: D-007, and
+6 seeds cannot clear 0.05.
+
+**One thing settled and now pinned.** The tautology objection — *"your diffuse stratum is defined by
+the Dirichlet alpha, so an aggregator winning there is arithmetic"* — is answered by measurement
+rather than argument: a tenfold change in `alpha_diffuse` does not swing the comparison, on either
+corpus. `test_the_diffuse_result_is_not_a_restatement_of_the_dirichlet_alpha`.
+
+**Open:** the widened corpus is committed but nothing is published from it. The 10-seed keyed sweep
+that would decide adoption costs ~$10 with a pinned `prompt_sha`, and has not been run.

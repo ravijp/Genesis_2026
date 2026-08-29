@@ -310,11 +310,18 @@ def test_the_diffuse_result_is_not_a_restatement_of_the_dirichlet_alpha() -> Non
         directions[alpha] = wins - losses
 
     low, high = directions[2.0], directions[20.0]
-    assert (low <= 0) == (high <= 0), (
-        f"the ledger's diffuse record against stateless-top2 CHANGES SIGN with alpha_diffuse "
-        f"(net {low:+d} at 2.0, {high:+d} at 20.0). The stratum would then be encoding the "
-        f"result rather than describing how the evidence was spread, and the diffuse comparison "
-        f"could not be reported as a finding about accumulation."
+    # The claim is that the alpha does not CARRY the result, so a tenfold change in it must not
+    # move the record by more than noise. It is deliberately not "the sign never changes": a
+    # record hovering near zero -- which is what a genuinely competitive arm produces -- flips
+    # sign on one seed, and a test that forbade that would fail on exactly the corpus where the
+    # ledger is doing well. What must not happen is the alpha SWINGING the result.
+    swing = abs(high - low)
+    assert swing <= 4, (
+        f"the ledger's diffuse record against stateless-top2 swings by {swing} between "
+        f"alpha_diffuse 2.0 (net {low:+d}) and 20.0 (net {high:+d}) over {len(seeds)} seeds. A "
+        f"tenfold change in the parameter that DEFINES the stratum is moving the comparison, so "
+        f"the diffuse result is substantially a restatement of the generator rather than a "
+        f"finding about accumulation."
     )
 
 

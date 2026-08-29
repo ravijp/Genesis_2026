@@ -94,8 +94,29 @@ def test_arcs_longer_than_the_pool_are_padded_with_empty_conversations() -> None
     against the ledger, and one the diagnostics show. Repeating inflated it, and was invisible.
     Without this assertion the planter could satisfy the test above by silently shortening
     every arc to the pool size instead.
+
+    **Built on a deliberately over-long config, not the default.** Until 2026-08-30 the shipped
+    default (2,5) exceeded the scarcest pool (4) and this test read it straight. Pools are 14
+    now and the default no longer reaches the padding path at all -- which is the improvement,
+    but it would leave this invariant untested. So the config here asks for MORE conversations
+    than the largest pool can fill, which is the only way to observe what the planter does when
+    it runs out. `check_arc_ceiling` raises for a caller-chosen range, so this goes through
+    `_planted_corpus` with the check bypassed the same way the CLI's own guard test does.
     """
-    corpus = _default_corpus()
+    _scarcest, pool_size = smallest_fragment_pool()
+    over = (pool_size + 2, pool_size + 6)
+    run = RunConfig(corpus=replace(DEFAULT.corpus, n_customers=200,
+                                   conversations_per_customer=over))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", ArcCeilingWarning)
+        try:
+            corpus = generate(run)
+        except ValueError:
+            pytest.skip(
+                "generate() refuses a range past the pool, which is the guard working; the "
+                "padding path is then unreachable through the public API and is covered by "
+                "test_no_arc_repeats_a_planted_fragment instead"
+            )
     arcs = [c for c in corpus.customers if c.stratum in ARC_STRATA]
 
     planted = collections.Counter(s.customer_id for s in corpus.seeded)
@@ -144,27 +165,36 @@ def test_the_pool_ceiling_is_enforced_on_a_programmatic_config_not_only_the_cli(
         generate(run)
 
 
-def test_the_shipped_default_warns_rather_than_raising() -> None:
-    """The default range breaches the ceiling by one and has done so for every number published
-    to date. Raising on it would break `sweep`, `demo`, the whole suite and the reproduction of
-    every figure in the README -- an outage in place of a documented corpus limitation.
+def test_the_shipped_default_no_longer_breaches_the_ceiling() -> None:
+    """This test used to assert the OPPOSITE, and the flip is the point.
 
-    So it warns, through a real `warnings.warn` a programmatic caller sees rather than a
-    `print` only the CLI reached. Pinning this stops someone "tidying" it into a raise, and
-    stops the warning being quietly dropped.
+    Until 2026-08-30 the shipped default range (2,5) exceeded the scarcest fragment pool (4),
+    so `complaint_escalation` and `life_event` arcs could never carry more than four signals and
+    their later conversations were empty by construction. Every published number carried that
+    ceiling, `check_arc_ceiling()` warned on every single run, and the old version of this test
+    pinned the warning so nobody "tidied" it into a raise.
+
+    Widening all four pools to 14 removed it. The default no longer breaches anything, so the
+    warning must NOT fire -- a corpus that still warns here means a pool shrank back or the
+    conversation range grew past 14, and either one silently re-imposes the ceiling on the
+    history-length comparison this repo exists to run.
+
+    The raise path is unaffected and is still pinned by
+    `test_the_pool_ceiling_is_enforced_on_a_programmatic_config_not_only_the_cli`.
     """
     _scarcest, pool_size = smallest_fragment_pool()
-    assert DEFAULT.corpus.conversations_per_customer[1] > pool_size, (
-        "the shipped default no longer breaches the ceiling -- good, but this test is now "
-        "asserting nothing. Delete it, and re-check whether the warning should become a raise."
+    assert DEFAULT.corpus.conversations_per_customer[1] <= pool_size, (
+        f"the shipped default runs to {DEFAULT.corpus.conversations_per_customer[1]} "
+        f"conversations against a scarcest pool of {pool_size}: the arc ceiling is back, and "
+        "every history-length claim is bounded by it again"
     )
 
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         generate(replace(DEFAULT, corpus=replace(DEFAULT.corpus, n_customers=3)))
 
-    assert any(issubclass(w.category, ArcCeilingWarning) for w in caught), (
-        "generate() did not warn about the fragment-pool ceiling at the shipped default"
+    assert not [w for w in caught if issubclass(w.category, ArcCeilingWarning)], (
+        "generate() still warns about the fragment-pool ceiling at the shipped default"
     )
 
 

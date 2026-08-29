@@ -42,11 +42,24 @@ def test_demo_never_contradicts_its_own_headline_claim(cli, capsys) -> None:
     out = capsys.readouterr().out
 
     assert "NEVER fires" in out, "the demo no longer states the claim this test is about"
-    assert "would flag" not in out, (
-        "the demo narrated 'would flag' for a customer it selected because per-call detection "
-        "never alerts on them — selection and narration are asking different questions:\n\n"
-        + "\n".join(line for line in out.splitlines() if "per-call" in line)
-    )
+
+    # The contradiction this guards is narrating "would flag" for a customer the demo SELECTED
+    # for the property that per-call detection never alerts on them. When no such customer
+    # exists in the dataset, the demo takes its fallback path and says so loudly -- "NOT an
+    # instance of the claim" -- and `test_demo_reports_a_real_instance_or_says_it_has_none`
+    # holds it to that. Showing the nearest arc AND disclosing that it is not an instance is the
+    # honest branch; forbidding "would flag" there would make the demo suppress evidence about
+    # an arc it is openly telling the audience is not an instance.
+    #
+    # This started mattering on 2026-08-30: with the widened fragment pools `clean == 0`, so the
+    # fallback is the live path rather than a rare branch.
+    if "NOT an instance of the claim" not in out:
+        assert "would flag" not in out, (
+            "the demo narrated 'would flag' for a customer it selected because per-call "
+            "detection never alerts on them — selection and narration are asking different "
+            "questions:\n\n"
+            + "\n".join(line for line in out.splitlines() if "per-call" in line)
+        )
 
 
 def test_demo_reports_a_real_instance_or_says_it_has_none(cli, capsys) -> None:

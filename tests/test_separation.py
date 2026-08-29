@@ -554,10 +554,22 @@ def test_offline_extractor_is_measurably_imperfect() -> None:
     )
 
 
-# The band the extractor's published recall must stay inside. Widened from the observed spread
-# (0.635-0.686 over six seeds at 400 customers) so ordinary drift does not trip it, but tight
-# enough that reaching the answer key does.
-RECALL_BAND = (0.55, 0.78)
+# The band the extractor's published recall must stay inside. Tight enough that reaching the
+# answer key trips it, wide enough that ordinary drift does not.
+#
+# MOVED DELIBERATELY on 2026-08-30, from (0.55, 0.78). The fragment pools were widened from
+# 8/8/4/4 to 14/14/14/14 to lift the arc ceiling, and the 32 new fragments were authored in a
+# genuine pass A -- the author never opened `extract_lexicon.py`. The offline lexicon finds
+# 1 of those 32 against 21 of the original 24, so recall fell to 0.2125-0.2525 over six seeds
+# at 400 customers.
+#
+# That drop is the guard working, not failing: recall going DOWN means the reader got weaker,
+# and only recall going UP indicates a leak. The old band is preserved in git; moving it is
+# logged here because a band that moves quietly is not a guard. The gap between 0.88 detection
+# on pass-A-adjacent fragments and 0.03 on blind ones is itself the finding -- it is the
+# sharpest measurement this repo has of "the lexicon only reads language it was written
+# beside", and it is why the history-length experiment runs on the model reader.
+RECALL_BAND = (0.16, 0.32)
 
 
 def test_published_extraction_recall_stays_in_its_measured_band() -> None:
