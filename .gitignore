@@ -25,8 +25,16 @@ sso/cache/
 
 # Run artifacts: regenerable output is ignored, but the pinned run and the
 # response cache are COMMITTED so a judge can replay the demo with no keys.
+#
+# The two SWEEP artifacts are committed too, and for a different reason: every
+# headline recall figure and p-value in the README comes out of them. "Reproducible"
+# (re-run it yourself and trust your run matches) and "verifiable" (check the number
+# against the record it was published from) are different claims, and the README
+# implies the second. 56KB and 127KB.
 artifacts/runs/*
 !artifacts/runs/pinned/
+!artifacts/runs/sweep-10x1500-*.json
+!artifacts/runs/sweep-30x1500-*.json
 data/generated/
 
 # Tooling
