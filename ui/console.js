@@ -66,12 +66,54 @@ window.EARSHOT_CONSOLE = (function () {
     return (b.accounts || {})[customerId] || null;
   }
 
+  /* ---- the call timer -----------------------------------------------------------------------
+   *
+   * `#/desk/call` is the one screen that makes a liveness claim -- it says "● ON CALL" beside
+   * Hold / Mute / Transfer. It held a hardcoded `04:12`, which is the loudest possible "this is a
+   * mock" signal on a screen whose read steps below it are real measured Bedrock calls.
+   *
+   * Ticking it claims nothing false: the screen is labelled "Illustrative ... nobody decides
+   * here", and a call that has been open for N seconds is a property of the demo session, not a
+   * measurement of anything. What WOULD be dishonest is deriving it from the reader's latencies
+   * and implying the model kept pace with the call -- so it counts wall-clock from render and
+   * says nothing about the transcript.
+   *
+   * Torn down on every route change, for the reason `live.js:236` documents: a timer left running
+   * behind a different screen paints into detached nodes forever. */
+  var timer = null;
+
+  function clock(seconds) {
+    var m = Math.floor(seconds / 60);
+    var s = seconds % 60;
+    return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function teardown() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  }
+
+  function startTimer(doc) {
+    teardown();
+    var started = Date.now();
+    var node = doc.getElementById("cns-timer");
+    if (!node || typeof setInterval !== "function") return;
+    timer = setInterval(function () {
+      var live = doc.getElementById("cns-timer");
+      // The node is replaced on every render; if it has gone, so has the screen.
+      if (!live) return teardown();
+      live.textContent = clock(Math.floor((Date.now() - started) / 1000));
+    }, 1000);
+  }
+
   /* ---- the team-scoped queue ----------------------------------------------------------------
    *
    * Three teams reading one feed is the horizontal claim in the submitted brief. `owning_team` is
-   * already on every case row, and routing was measured at 41 / 49 correct, 0 wrong, 8 declined
-   * on 2026-08-28 (`tools/routing_accuracy.py`), so this is a view over a graded field rather
-   * than new inference.
+   * already on every case row, and routing was measured at 36 / 49 correct, 2 wrong, 11 declined
+   * (`tools/routing_accuracy.py`), so this is a view over a graded field rather than new
+   * inference. (Read 41 / 49, 0 wrong before 2026-08-30; that was the pre-fix corpus.)
    *
    * **The buckets are a partition.** Every worked case lands in exactly one, and `none` catches
    * anything the tenant profile does not map — the same `else: unrouted` branch
@@ -743,7 +785,7 @@ window.EARSHOT_CONSOLE = (function () {
           '<span class="cns-live">● ON CALL</span>' +
           '<span class="cns-callwho">' + U.esc(conversation.customer_id) + " · " +
           U.esc(conversation.channel) + "</span>" +
-          '<span class="cns-timer num">04:12</span>' +
+          '<span class="cns-timer num" id="cns-timer">' + U.esc(clock(0)) + "</span>" +
           '<span class="cns-callbtns" aria-hidden="true">' +
             '<span class="cns-cb">Hold</span><span class="cns-cb">Mute</span>' +
             '<span class="cns-cb">Transfer</span><span class="cns-cb end">End</span>' +
@@ -773,6 +815,8 @@ window.EARSHOT_CONSOLE = (function () {
         "</div></main>",
       utility: utilityBar(b, "phone"),
     });
+    // After innerHTML, so the node exists to be found.
+    startTimer(document);
     return !!last;
   }
 
@@ -788,5 +832,7 @@ window.EARSHOT_CONSOLE = (function () {
     renderQueue: renderQueue,
     renderCase: renderCase,
     renderCall: renderCall,
+    // Symmetric with `LIVE.teardown()`. `app.js` calls both on every route change.
+    teardown: teardown,
   };
 })();

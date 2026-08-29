@@ -415,6 +415,7 @@
     // Every route change stops the stream player. A timer left running behind a different screen
     // keeps painting into detached nodes and, in live mode, keeps an EventSource open.
     if (LIVE) LIVE.teardown();
+    if (CONSOLE && CONSOLE.teardown) CONSOLE.teardown();
 
     var hash = location.hash.replace(/^#\/?/, "");
     var query = "";
