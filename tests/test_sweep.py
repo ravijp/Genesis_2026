@@ -265,6 +265,59 @@ def test_the_strongest_per_call_baseline_is_not_a_copy_of_the_weakest(swept) -> 
     )
 
 
+def test_the_diffuse_result_is_not_a_restatement_of_the_dirichlet_alpha() -> None:
+    """The sharpest available attack on this evaluation, answered by measurement.
+
+    The objection: "your diffuse stratum is DEFINED by the Dirichlet alpha that spread the
+    evidence thin. An arm that aggregates across conversations must win on evidence you
+    deliberately spread. That is arithmetic, not a finding."
+
+    `corpus.py`'s docstring answers a *different* objection -- strata are generative rather than
+    selected on a baseline's decision function, which rules out selection on the dependent
+    variable, a worse sin. It does not rule out the tautology.
+
+    This does, empirically. If the diffuse comparison were entailed by the alpha, sweeping the
+    alpha would sweep the result: concentrate the mass and the aggregator should lose, spread it
+    further and it should win. Measured on 2026-08-30 at alpha 2.0 / 6.0 / 20.0 over ten seeds,
+    the record against `stateless-top2` was 3-5-2, 1-7-2 and 2-5-3 -- the same direction at every
+    setting, none of them significant. **The alpha is not what decides the comparison.**
+
+    So the honest claim is narrower and better: the stratum sets how thinly evidence is spread,
+    and what decides whether accumulation pays is the number of conversations there are to
+    accumulate over. That is a claim about history depth, which is measurable, rather than a
+    property of the generator.
+
+    Two alphas, not three, and 6 seeds, not ten: this runs in the ordinary suite and the point
+    is the direction, not the p-value. If a future change makes the ledger's diffuse result flip
+    sign with the alpha, this fails -- and it should, because then the stratum really would be
+    encoding the answer.
+    """
+    from dataclasses import replace
+
+    from earshot.config import DEFAULT
+    from earshot.sweep import paired_record, sweep
+
+    seeds = list(range(20260809, 20260815))
+    directions = {}
+    for alpha in (2.0, 20.0):
+        base = replace(
+            DEFAULT, corpus=replace(DEFAULT.corpus, n_customers=300, alpha_diffuse=alpha)
+        )
+        _, by_arm = sweep(base, seeds, budget=0.10)
+        wins, losses, _ties = paired_record(
+            by_arm, "full-ledger", "stateless-top2", metric="diffuse_recall"
+        )
+        directions[alpha] = wins - losses
+
+    low, high = directions[2.0], directions[20.0]
+    assert (low <= 0) == (high <= 0), (
+        f"the ledger's diffuse record against stateless-top2 CHANGES SIGN with alpha_diffuse "
+        f"(net {low:+d} at 2.0, {high:+d} at 20.0). The stratum would then be encoding the "
+        f"result rather than describing how the evidence was spread, and the diffuse comparison "
+        f"could not be reported as a finding about accumulation."
+    )
+
+
 def test_pooled_recall_is_over_customers_not_a_mean_of_rates(swept) -> None:
     """Averaging per-seed rates weights a small seed the same as a large one."""
     summaries, by_arm = swept
