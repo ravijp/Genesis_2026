@@ -1,5 +1,22 @@
-# CodeBuild: test, build, push, deploy. Tests gate the build (infrastructure.md §2.4 item 7) —
-# a failing suite must stop the pipeline, never warn and continue.
+# PARKED — THIS FILE HAS NEVER RUN AND CANNOT RUN AS WRITTEN. Read this before believing it.
+#
+# CodeBuild and CodePipeline are blocked on the `iam:CreateRole` denial (W9, progress.md), so
+# nothing has ever executed this. Do not read it as evidence of a CI pipeline: the tests are
+# real and green, but what runs them is `.github/workflows/ci.yml`, not this.
+#
+# Three things here are stale against decisions already taken, and are left in place rather than
+# quietly corrected because the file is a record of a design that was superseded, not a plan:
+#
+#   * `npx cdk deploy` and `cd infra` contradict D-024 (2026-08-25) — CDK does not work in this
+#     account and `tools/provision.py` + `tools/deploy.py` are the path. There is no `infra/`.
+#   * `docker build` against a container image contradicts D-024's second half; the Lambdas ship
+#     as one zip. A `Dockerfile` exists but nothing deployed uses it.
+#   * `cd ui && npm ci && npm run build` cannot run: the UI is deliberately build-step-free
+#     (D-004) and there is no `ui/package.json`.
+#
+# Rewriting it to match D-024 would mean writing a CodeBuild spec for a pipeline that is still
+# blocked and therefore still untestable — a second unrun file, with the same problem and less
+# history. When W9 unblocks, rewrite it then, against the deploy path that actually exists.
 version: 0.2
 
 env:

@@ -1,0 +1,63 @@
+# The suite that gates this repo. `buildspec.yml` is a PARKED CodeBuild spec that has never run
+# and cannot run as written (W9 is blocked on an IAM denial); this file is what actually runs.
+#
+# Node is installed because two of the gates are JS: `ui/smoke.mjs` renders every route against a
+# stub DOM and `ui/contrast.mjs` computes a WCAG ratio for every colour pair the markup produces.
+# `tests/test_ui.py` shells out to both, so without node on PATH they skip silently -- which is
+# the failure mode this file exists to prevent.
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # `.python-version` pins 3.13; uv installs it rather than relying on the runner's.
+      - run: uv python install
+
+      # --frozen: fail if uv.lock disagrees with pyproject.toml rather than silently resolving
+      # something the committed lock never described.
+      - run: uv sync --frozen
+
+      # `src tests tools` is the project's lint surface, per CLAUDE.md. `benchmarks/` is
+      # deliberately NOT in it and currently has 114 violations -- adding it here would either
+      # fail every build or force a 114-error cleanup as a side effect of turning CI on. If
+      # benchmarks should be linted, that is its own commit with its own diff.
+      - name: ruff
+        run: uv run ruff check src tests tools
+
+      - name: pytest
+        run: uv run pytest -q
+
+      # Run explicitly as well as through pytest: if `test_ui.py` ever starts skipping, these
+      # still fail the build rather than passing by absence.
+      - name: ui smoke
+        run: node ui/smoke.mjs
+
+      - name: ui contrast gate
+        run: node ui/contrast.mjs
+
+      # The claim on the README is that a fresh clone reproduces the numbers with zero API keys.
+      # This is the cheapest honest check of it: a short sweep, no credentials in the environment.
+      - name: keyless reproduction
+        run: uv run earshot sweep --seeds 3 --customers 300

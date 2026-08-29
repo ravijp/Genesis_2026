@@ -73,6 +73,18 @@ MEASURED_COST_PER_MODEL_CALL_USD = 0.0295 / 4.5
 ARTIFACTS = Path(os.environ.get("EARSHOT_ARTIFACTS", "artifacts")) / "runs"
 
 
+def _p(p: float) -> str:
+    """Format a p-value without ever printing `0.000`.
+
+    An exact sign test returns a small positive float, never zero: at 26-2 it is 1.48e-05. Printed
+    at three decimals that reads `p=0.000`, which is not a p-value and is the kind of thing a
+    statistically literate judge circles -- it claims impossibility where the truth is "smaller
+    than this table can show". The stored value in the artifact is unaffected (it rounds to 4dp);
+    this is the printed one only.
+    """
+    return f"{p:.3f}" if p >= 0.001 else "<0.001"
+
+
 def _git_sha() -> str:
     """The commit a run came from, suffixed `-dirty` if the tree had uncommitted changes.
 
@@ -1025,7 +1037,7 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
                 w, lost, tied = paired_record(by_arm, a, b, metric=metric)
                 p = sign_test_p(w, lost)
                 mark = "  <-- p<0.05" if p < 0.05 else ""
-                print(f"  {a:<18} vs {b:<18} {w}-{lost}-{tied}  p={p:.3f}{mark}")
+                print(f"  {a:<18} vs {b:<18} {w}-{lost}-{tied}  p={_p(p)}{mark}")
                 comparisons.append(
                     {"metric": metric, "a": a, "b": b,
                      "wins": w, "losses": lost, "ties": tied, "p": round(p, 4)}
@@ -1038,7 +1050,7 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
         by_arm, "full-ledger", "stateless-max", metric="diffuse_recall"
     )
     print("\nPRE-REGISTERED HEADLINE — full-ledger vs stateless-max on diffuse arcs")
-    print(f"  {w}-{lost}-{tied}  p={sign_test_p(w, lost):.3f}   "
+    print(f"  {w}-{lost}-{tied}  p={_p(sign_test_p(w, lost))}   "
           f"(declared before the run; everything below is exploratory)")
 
     n_diffuse = _matrix(

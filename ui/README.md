@@ -31,9 +31,10 @@ teaser.
 The submitted brief promises that **three teams read the same feed**
 (`docs/sources/submission-ear-on-every-call.md:75-79`, and `:124` makes it a Sprint 3
 deliverable). The shipped set is four and different, so `#/desk/team/<slot>` is a filter over
-`owning_team` — a field every case row already carries, graded at **41 / 49 correct, 0 wrong, 8
-declined** on 2026-08-28 (`tools/routing_accuracy.py`). It is a view over a measured field, not
-new inference.
+`owning_team` — a field every case row already carries, graded at **36 / 49 correct, 2 wrong, 11
+declined** (`tools/routing_accuracy.py`). It is a view over a measured field, not new inference.
+(This read 41 / 49 with 0 wrong until 2026-08-30; that figure was measured on the pre-fix corpus
+and did not survive the corpus fix. See `docs/architecture/build-plan.md` §4.)
 
 Four things about it are load-bearing:
 
