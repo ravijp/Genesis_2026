@@ -101,13 +101,20 @@ section is that it is checkable rather than reassuring.
   barely discriminates: it escalates.** That is the honest read, it is worse than the earlier 4 / 10
   sample suggested on the dismissal arm, and it means the investigator currently buys routing and an
   audit trail rather than filtering.
-- **Routing accuracy: 41 / 49 correct, 0 wrong, 8 declined.** `tools/routing_accuracy.py`, 2026-08-28,
-  scored against each customer's seeded trajectory via `schema.TRAJECTORY_TEAM`, over the customers
-  that have a seeded family at all. **Zero wrong routes** is the result worth naming: when the agent
-  commits to a team it has not yet been wrong, and its failure mode is declining to route
-  (`owning_team: "none"`), which is a safe failure in a human-in-the-loop queue. Customers with no
-  seeded trajectory are reported separately and never folded into this denominator — they have no
-  correct team, so including them would manufacture either errors or free accuracy.
+- **Routing accuracy: 36 / 49 correct, 2 wrong, 11 declined.** `tools/routing_accuracy.py`, scored
+  against each customer's seeded trajectory via `schema.TRAJECTORY_TEAM`, over the customers that
+  have a seeded family at all. Customers with no seeded trajectory are reported separately and never
+  folded into this denominator — they have no correct team, so including them would manufacture
+  either errors or free accuracy. The failure mode is still mostly declining to route
+  (`owning_team: "none"`), which is safe in a human-in-the-loop queue, but **it is no longer zero
+  wrong**: both wrong routes are unmoored from the evidence on hand rather than near-misses.
+
+  **This number was 41 / 49 with 0 wrong until 2026-08-30, and the earlier figure was measured on
+  the pre-fix corpus** (`config_hash 3ebd9fb57097`, the one whose planter re-used fragments and paid
+  a corroboration bonus for one utterance copied twice). Both artifacts are in `artifacts/runs/`;
+  they differ by corpus, not by prompt. It is the second time a stale figure survived a corpus fix
+  because `config_hash` alone did not distinguish the two — which is why every manifest now carries
+  `pipeline_sha`.
 - **Cost per 1,000 conversations: \$1.6563.** Reader, on-demand rate, from the 150-document CFPB keyed
   run of 2026-08-28 (`benchmarks/cfpb/RUNLOG.md`). Computed from published Bedrock prices, not charged.
 - **p50 / p95 reader latency: 1,244 ms / 2,212 ms.** Same run.

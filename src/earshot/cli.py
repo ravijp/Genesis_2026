@@ -29,7 +29,7 @@ from .aws.transcripts import to_payload
 from .case_record import case_record
 from .config import DEFAULT, RunConfig
 from .core.accounts import account_snapshot, synthesize_prior_cases
-from .corpus import ArcCeilingWarning, check_arc_ceiling, generate
+from .corpus import ArcCeilingWarning, check_arc_ceiling, generate, pipeline_fingerprint
 from .evals import corpus_diagnostics, evaluate_all, evaluate_arm, extraction_fidelity
 from .extract import Extractor, OfflineLexiconExtractor, extract_all
 from .llm import ProviderError, build_provider, cache_mode
@@ -213,6 +213,7 @@ def cmd_run(run: RunConfig, extractor: Extractor | None = None) -> int:
     manifest = {
         "seed": run.seed,
         "config_hash": run.hash(),
+        "pipeline_sha": pipeline_fingerprint(),
         "git_sha": _git_sha(),
         "provider": extractor.name,
         "elapsed_seconds": round(elapsed, 2),
@@ -692,6 +693,7 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
                 "manifest": {
                     "seed": run.seed,
                     "config_hash": run.hash(),
+                    "pipeline_sha": pipeline_fingerprint(),
                     "git_sha": _git_sha(),
                     "provider": getattr(provider, "name", provider_name),
                     "prompt_version": system.version,
@@ -783,6 +785,7 @@ def _stream_manifest(t: Tenant, extractor, provider, provider_name: str) -> dict
         "tenant_id": t.tenant_id,
         "seed": t.run.seed,
         "config_hash": t.run.hash(),
+        "pipeline_sha": pipeline_fingerprint(),
         "git_sha": _git_sha(),
         "provider": getattr(provider, "name", provider_name),
         "reader": getattr(extractor, "name", None) or "offline-lexicon",
@@ -1063,6 +1066,12 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
                     "n_customers": run.corpus.n_customers,
                     "budget": INVESTIGATION_BUDGET,
                     "config_hash": run.hash(),
+                    # `config_hash` covers configuration VALUES and not the generator: on
+                    # 2026-08-28 it was byte-identical across two corpora that disagreed about
+                    # who crosses. The keyed tools have carried `pipeline_sha` since, but the
+                    # sweep -- the only source of quotable numbers -- did not, which left the
+                    # exact hole the fingerprint exists to close on the headline artifact.
+                    "pipeline_sha": pipeline_fingerprint(),
                     "git_sha": _git_sha(),
                     "elapsed_seconds": round(elapsed, 2),
                     "provider": reader_name,
