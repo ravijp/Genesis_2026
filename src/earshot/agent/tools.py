@@ -9,7 +9,7 @@ Three properties, each there for a reason:
    the pydantic args model, so the wire contract cannot drift from the validation the tool
    actually performs. Hand-written JSON schemas rot silently.
 3. **The context carries primitives, not truth.** The caller assembles `ToolContext` and passes
-   `latent_risk` down as a number. Nothing here can reach an outcome, a stratum, or a seeded
+   `risk_signal` down as a number. Nothing here can reach an outcome, a stratum, or a seeded
    signal — `tests/test_separation.py` covers this file by glob and will fail if that changes.
 """
 
@@ -41,15 +41,18 @@ class ToolError(RuntimeError):
 class ToolContext:
     """Everything the tools may see about one customer. Assembled by the caller.
 
-    `latent_risk` is a generative parameter (it drives synthetic transactions the way real
-    financial stress drives real ones). The outcome — whether this customer actually churned or
-    defaulted — is deliberately absent and must stay absent.
+    `risk_signal` is a generative parameter (it drives synthetic transactions the way real
+    financial stress drives real ones). It is named `risk_signal`, not `latent_risk`, on
+    purpose: `CustomerTruth.latent_risk` (see `schema.py`) is the answer-key-adjacent field this
+    context must never carry, and the two now have different names so that `risk_signal =
+    truth.latent_risk` reads as the error it would be. The outcome — whether this customer
+    actually churned or defaulted — is deliberately absent and must stay absent.
     """
 
     customer_id: str
     as_of_day: int
     seed: int
-    latent_risk: float
+    risk_signal: float
     signal_type: str
     score: float
     threshold: float
@@ -62,7 +65,7 @@ class ToolContext:
         """Memoised so repeated tool calls inside one investigation see one consistent account."""
         if window_days not in self._txn_cache:
             self._txn_cache[window_days] = generate_history(
-                self.customer_id, self.latent_risk, self.seed, self.as_of_day, window_days
+                self.customer_id, self.risk_signal, self.seed, self.as_of_day, window_days
             )
         return self._txn_cache[window_days]
 
@@ -70,7 +73,7 @@ class ToolContext:
         if self.prior_cases is not None:
             return self.prior_cases
         return synthesize_prior_cases(
-            self.customer_id, self.latent_risk, self.seed, self.as_of_day
+            self.customer_id, self.risk_signal, self.seed, self.as_of_day
         )
 
 
@@ -351,7 +354,7 @@ def get_account_state(ctx: ToolContext, args: AccountStateArgs) -> AccountStateR
     """The account screen a servicing agent would have open while reading the case."""
     snapshot = account_snapshot(
         ctx.customer_id,
-        ctx.latent_risk,
+        ctx.risk_signal,
         ctx.seed,
         ctx.as_of_day,
         args.window_days,

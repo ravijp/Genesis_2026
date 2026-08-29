@@ -491,7 +491,10 @@ def _context(
         # financial_state, and only ever financial_state. The corpus-side risk figure is a
         # function of how much evidence was planted in this customer's conversations, so a
         # tool given it recovers the stratum -- the answer key -- without reading anything.
-        latent_risk=truth.financial_state,
+        # The field is `risk_signal`, not `latent_risk`, precisely so that a future edit
+        # reaching for the corpus-side field by that name here would read as the obvious
+        # error it is.
+        risk_signal=truth.financial_state,
         signal_type=breakdown.signal_type.value,
         score=breakdown.score,
         threshold=threshold,
@@ -515,6 +518,7 @@ def _case_record(
     all three reviewer-UI beats (ranked list, evidence chain, retro re-score) unrenderable from
     disk. The tempting shortcut, regenerating the corpus from `manifest.seed` to recover them,
     is the one thing that must not happen: it puts `stratum`, `outcome` and `latent_risk`
+    (the corpus-side field; `ctx.risk_signal` is the tool-side one and is never this)
     behind a client-facing screen. So the record is written here, from primitives, at the one
     point where they are all in hand.
 
@@ -631,7 +635,8 @@ def cmd_investigate(run: RunConfig, provider_name: str, limit: int) -> int:
     # format. Taken from the ToolContext the agent actually saw — which `test_separation.py`
     # already guarantees is answer-key-free — and NEVER by regenerating the corpus from the seed,
     # which is the shortcut that would put `stratum`, `outcome` and `latent_risk` behind a
-    # client-facing screen.
+    # client-facing screen. (`ToolContext.risk_signal` is the tool-side field; it is never
+    # `latent_risk`, the corpus-side one.)
     transcripts: dict[str, dict] = {}
     for i, (customer_id, breakdown) in enumerate(cut[:limit], start=1):
         ctx = _context(corpus, customer_id, breakdown, threshold, run.seed)
@@ -722,18 +727,21 @@ def stream_inputs(t: Tenant):
     module already exempted for exactly that (see the exemption list in
     `tests/test_separation.py`). Handing the stream engine a conversation sequence and a closure
     means it never holds an object carrying `stratum`, `outcome` or `latent_risk` — the guarantee
-    is structural rather than a promise not to look.
+    is structural rather than a promise not to look. (`ToolContext`'s own field for this is
+    `risk_signal`, named differently from the corpus's `latent_risk` on purpose — see
+    `agent/tools.py`.)
 
     Cut at `breakdown.as_of_day`, which for a crossing is the day it happened, so the agent sees
     what a live consumer would have handed it and nothing that arrived afterwards.
 
     `account_for` is the same seam again, for the reviewer console's customer-360 header. It
     returns exactly what `agent/tools.py` already gives the investigator — no more — and it is
-    built here for the same reason `context_for` is: `account_snapshot()` takes a risk figure, and
-    the ONLY value that may cross is `financial_state`. The corpus-side `latent_risk` is a
-    function of how much evidence was planted, so anything given it recovers the stratum without
-    reading a word. `tests/test_no_answer_key_leak.py` proves the snapshot's numeric fields cannot
-    recover the label; that proof holds only while this keeps passing `financial_state`.
+    built here for the same reason `context_for` is: `account_snapshot()` takes a `risk_signal`
+    argument, and the ONLY value that may cross is `financial_state`. The corpus-side
+    `latent_risk` is a function of how much evidence was planted, so anything given it recovers
+    the stratum without reading a word. `tests/test_no_answer_key_leak.py` proves the snapshot's
+    numeric fields cannot recover the label; that proof holds only while this keeps passing
+    `financial_state`.
     """
     corpus = generate(t.run)
     truth_by_id = {c.customer_id: c for c in corpus.customers}
@@ -753,6 +761,7 @@ def stream_inputs(t: Tenant):
         if truth is None:
             return None
         risk = truth.financial_state  # never truth.latent_risk. See the docstring.
+        # (this `risk` local feeds account_snapshot's `risk_signal` argument)
         snapshot = account_snapshot(customer_id, risk, t.run.seed, as_of_day)
         priors = synthesize_prior_cases(customer_id, risk, t.run.seed, as_of_day)
         return {

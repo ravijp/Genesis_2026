@@ -89,7 +89,7 @@ def ctx() -> ToolContext:
         customer_id="C1",
         as_of_day=70,
         seed=SEED,
-        latent_risk=0.7,
+        risk_signal=0.7,
         signal_type=SignalType.FINANCIAL_DISTRESS.value,
         score=breakdown.score,
         threshold=0.5,

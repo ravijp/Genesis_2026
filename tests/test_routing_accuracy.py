@@ -37,11 +37,11 @@ def test_prior_case_generator_and_the_scorer_read_the_same_map() -> None:
     leaving the two silently disagreeing about what "correct" means."""
     seen_any = False
     for i in range(200):
-        cases = synthesize_prior_cases(f"CUST-{i:04d}", latent_risk=0.9, seed=1, as_of_day=400)
+        cases = synthesize_prior_cases(f"CUST-{i:04d}", risk_signal=0.9, seed=1, as_of_day=400)
         for case in cases:
             seen_any = True
             assert case.owning_team == TRAJECTORY_TEAM[case.signal_type]
-    assert seen_any, "no prior cases were generated across 200 customers at high latent_risk"
+    assert seen_any, "no prior cases were generated across 200 customers at a high risk_signal"
 
 
 def test_owning_team_vocabulary_matches_the_schema() -> None:
