@@ -19,15 +19,17 @@ in `agent/`, where the tests for it are.
    record. A case file quoting a stale score is a case file a reviewer cannot reconcile.
 
 **The account tools are synthetic, and the case says so.** `core/accounts.py` derives transactions
-and prior cases from `(customer_id, latent_risk, seed, as_of_day)`. Locally `latent_risk` is the
-corpus's `financial_state`; in deployment there is no bank core feed to read, so the handler draws
-it deterministically from the customer id (`_synthetic_risk`) -- fiction, stable per customer,
+and prior cases from `(customer_id, risk_signal, seed, as_of_day)`. The parameter is named
+`risk_signal`, not `latent_risk`, precisely so it cannot be confused with the corpus's
+answer-key-adjacent `CustomerTruth.latent_risk` -- locally it is fed the corpus's
+`financial_state`; in deployment there is no bank core feed to read, so the handler draws it
+deterministically from the customer id (`_synthetic_risk`) -- fiction, stable per customer,
 derived from nothing real. The alternative, one constant for everybody, makes every account
 identical, which is a worse thing to put on a screen than a labelled synthetic one. Every case this
 handler writes carries `account_data: "synthetic"` so no reviewer UI can present it as a bank
 record. **When a real feed exists, this is the seam it replaces.**
 
-**No answer key can reach here.** `latent_risk` is drawn from a hash of the customer id, not from a
+**No answer key can reach here.** `risk_signal` is drawn from a hash of the customer id, not from a
 truth object; there is no corpus import, and `tests/test_separation.py` covers this file by glob.
 """
 
@@ -151,7 +153,7 @@ class Investigator:
             customer_id=customer_id,
             as_of_day=as_of_day,
             seed=0,  # the account synthesiser's stream selector; the customer id carries identity
-            latent_risk=_synthetic_risk(customer_id),
+            risk_signal=_synthetic_risk(customer_id),
             signal_type=signal_type.value,
             score=breakdown.score,
             threshold=threshold,

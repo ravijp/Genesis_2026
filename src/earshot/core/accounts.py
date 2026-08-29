@@ -2,11 +2,15 @@
 
 **The separation rule, stated where it is easiest to break.** This module sits on the path from
 conversation to decision, so it must never see the answer key. Everything below is derived from
-four primitives the caller hands in — `(customer_id, latent_risk, seed, as_of_day)` — and from
-nothing else. Latent risk is a legitimate generative parameter: real financial stress does show
-up in a current account, so a bank's transactions genuinely correlate with it. `outcome` is the
-answer key, and a tool that let the agent read it would make the evaluation worthless — which is
-why `tests/test_separation.py` discovers this file by glob rather than by a maintained list.
+four primitives the caller hands in — `(customer_id, risk_signal, seed, as_of_day)` — and from
+nothing else. The parameter is named `risk_signal`, not `latent_risk`, precisely so it cannot be
+confused with `CustomerTruth.latent_risk` (see `schema.py`): that field is the answer-key-adjacent
+one that must never reach here, and giving the tool-side value a different name means a call like
+`risk_signal=truth.latent_risk` reads as the error it would be. The risk figure itself is a
+legitimate generative parameter regardless of its name: real financial stress does show up in a
+current account, so a bank's transactions genuinely correlate with it. `outcome` is the answer
+key, and a tool that let the agent read it would make the evaluation worthless — which is why
+`tests/test_separation.py` discovers this file by glob rather than by a maintained list.
 
 **Why the numbers are deliberately noisy.** If transactions were a clean readout of latent risk,
 the investigator's job would be a threshold check and the whole experiment would measure nothing.
@@ -113,14 +117,14 @@ def _clamp(x: float, lo: float = 0.0, hi: float = 1.0) -> float:
 
 def generate_history(
     customer_id: str,
-    latent_risk: float,
+    risk_signal: float,
     seed: int,
     as_of_day: int,
     window_days: int = WINDOW_DAYS,
 ) -> list[Transaction]:
     """A window of current-account activity ending on `as_of_day`, oldest first."""
     rng = _rng(customer_id, seed, "accounts")
-    latent = _clamp(latent_risk)
+    latent = _clamp(risk_signal)
 
     # Three noisy readings of the same latent state. Independent noise is what stops the
     # account from being a lookup table: indicators routinely disagree.
@@ -214,7 +218,7 @@ def generate_history(
 
 def account_snapshot(
     customer_id: str,
-    latent_risk: float,
+    risk_signal: float,
     seed: int,
     as_of_day: int,
     window_days: int = WINDOW_DAYS,
@@ -224,7 +228,7 @@ def account_snapshot(
     txns = (
         transactions
         if transactions is not None
-        else generate_history(customer_id, latent_risk, seed, as_of_day, window_days)
+        else generate_history(customer_id, risk_signal, seed, as_of_day, window_days)
     )
     rng = _rng(customer_id, seed, "profile")
 
@@ -279,16 +283,16 @@ def _overdraft_limit(txns: list[Transaction]) -> float:
 
 
 def synthesize_prior_cases(
-    customer_id: str, latent_risk: float, seed: int, as_of_day: int
+    customer_id: str, risk_signal: float, seed: int, as_of_day: int
 ) -> tuple[PriorCase, ...]:
     """Cases a human already worked. Investigations rarely start on a blank customer.
 
-    Deliberately weak on latent risk — it nudges *how many* prior cases exist and nothing else.
-    Resolutions are drawn from the seed, so a dismissed case is not a coded outcome.
+    Deliberately weak on the risk signal — it nudges *how many* prior cases exist and nothing
+    else. Resolutions are drawn from the seed, so a dismissed case is not a coded outcome.
     """
     rng = _rng(customer_id, seed, "prior-cases")
     n = 0
-    if rng.random() < 0.25 + 0.25 * _clamp(latent_risk):
+    if rng.random() < 0.25 + 0.25 * _clamp(risk_signal):
         n = rng.choice((1, 1, 2))
 
     # Keys, in insertion order (churn_intent, financial_distress, complaint_escalation,

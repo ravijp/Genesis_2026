@@ -29,7 +29,7 @@ QUOTES = {
 }
 
 
-def _context(latent_risk: float = 0.8) -> ToolContext:
+def _context(risk_signal: float = 0.8) -> ToolContext:
     conversations = tuple(
         Conversation(
             conversation_id=cid,
@@ -69,7 +69,7 @@ def _context(latent_risk: float = 0.8) -> ToolContext:
         customer_id="C1",
         as_of_day=70,
         seed=7,
-        latent_risk=latent_risk,
+        risk_signal=risk_signal,
         signal_type=SignalType.FINANCIAL_DISTRESS.value,
         score=breakdown.score,
         threshold=0.5,
@@ -616,7 +616,7 @@ def test_trace_totals_add_up() -> None:
 
 
 def test_offline_provider_produces_a_valid_decision_with_no_network() -> None:
-    ctx = _context(latent_risk=0.9)
+    ctx = _context(risk_signal=0.9)
     decision, trace = investigate(ctx, OfflineProvider())
 
     assert trace.stopped_because == "decided"
@@ -654,7 +654,7 @@ def test_offline_provider_is_deterministic() -> None:
 def test_offline_verdict_moves_with_the_account_evidence() -> None:
     """If the account said nothing, the rule engine would be a coin flip on the ledger alone."""
     verdicts = {
-        risk: investigate(_context(latent_risk=risk), OfflineProvider())[0].verdict
+        risk: investigate(_context(risk_signal=risk), OfflineProvider())[0].verdict
         for risk in (0.0, 0.95)
     }
     assert len(set(verdicts.values())) == 2, verdicts

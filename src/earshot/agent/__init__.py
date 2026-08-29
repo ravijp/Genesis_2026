@@ -1,7 +1,8 @@
 """Layer 2: the investigator agent — loop, tools, decision schema, prompt loading.
 
 No module in this package may import the corpus generator or a ground-truth type. The tools see
-`latent_risk` and a seed; they never see an outcome. See `tests/test_separation.py`.
+`risk_signal` (`ToolContext`'s field, deliberately not named `latent_risk` -- see
+`agent/tools.py`) and a seed; they never see an outcome. See `tests/test_separation.py`.
 """
 
 from __future__ import annotations
