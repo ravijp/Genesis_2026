@@ -207,6 +207,32 @@
   display: flex; align-items: baseline; justify-content: space-between;
   padding: var(--s-2) var(--s-3); border-bottom: 1px solid var(--c-line); font-size: var(--fs-4);
 }
+
+/* ---- the arrival cursor ----------------------------------------------------------------------
+ *
+ * `#/desk` used to be a still image: six cases, forever. This bar is what makes it a replay of a
+ * feed that arrives over time instead -- every case beneath it is filtered by the same day cursor
+ * this bar controls, and every count on this screen (the split head, the team chips, the utility
+ * badge) moves with it. No new token: the note reuses the same warn-toned banner pattern as
+ * `.cns-standin`, because it is making the same kind of claim -- this is not live. */
+.cns-cursorbar { border-bottom: 1px solid var(--c-line); padding: var(--s-2) var(--s-3); }
+.cns-cursornote {
+  margin: 0 0 var(--s-2); font-size: var(--fs-2); color: var(--c-ink-3);
+}
+.cns-cursorrow { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+.cns-cbtn {
+  font: inherit; font-size: var(--fs-3); padding: var(--s-1) var(--s-2);
+  border-radius: var(--c-radius); cursor: pointer;
+  border: 1px solid var(--c-line-strong); background: var(--c-panel); color: var(--c-ink);
+}
+.cns-cbtn:hover { background: var(--c-hi); }
+.cns-cbtn.ghost { border-color: transparent; color: var(--c-ink-2); }
+.cns-cscrub { flex: 1 1 120px; min-width: 90px; accent-color: var(--c-seam); }
+.cns-cursorday {
+  font-size: var(--fs-2); color: var(--c-ink-3); white-space: nowrap;
+  flex-basis: 100%;
+}
+
 .cns-qlist { overflow-y: auto; flex: 1; }
 .cns-qrow {
   display: grid; gap: var(--s-0);
@@ -222,6 +248,26 @@
    is also light enough to drag the secondary line under 4.5:1, and the secondary line is where
    the customer's name is. */
 .cns-qrow.on { background: var(--c-hi); box-shadow: inset 3px 0 0 var(--c-seam); }
+/* A case that just crossed onto this desk. `console.js` rebuilds the whole split-view as one
+   `innerHTML` string on every cursor tick (same architecture as every other screen here), so a
+   `transition` never fires -- the old node is gone before a new value could be diffed against it.
+   A `@keyframes` animation does not have that problem: it runs from its own 0% on element
+   creation regardless of how the element arrived, which is exactly how `lc-in` already animates
+   freshly-parsed turns on the live-call view. Colour only, never `opacity` -- the contrast gate
+   forbids opacity on anything carrying text, and D-030 forbids dimming retained evidence anyway,
+   so this animates FROM a fill TOWARD the ordinary ground, never through transparency. */
+.cns-qrow.arrived { animation: qrow-arrive 2.6s ease-out both; }
+@keyframes qrow-arrive {
+  from { background-color: var(--ok-soft); }
+  to { background-color: transparent; }
+}
+.cns-qnew {
+  display: inline-block; justify-self: start;
+  padding: 1px var(--s-1); margin-bottom: var(--s-0);
+  border-radius: var(--radius-sm);
+  background: var(--ok); color: var(--on-state);
+  font-size: var(--fs-1); font-weight: 700; text-transform: uppercase; letter-spacing: var(--tr-caps);
+}
 .cns-qtop { display: flex; justify-content: space-between; align-items: baseline; }
 .cns-qid { font-family: var(--c-mono); font-size: var(--fs-3); }
 .cns-qscore { font-size: var(--fs-5); font-weight: 700; }
@@ -568,4 +614,8 @@
    their system not to animate should still see every row. */
 @media (prefers-reduced-motion: reduce) {
   .lc-turn, .lc-read { animation: none; }
+  /* The arrival fade is decoration on top of a fact already stated in text (the "Just arrived"
+     badge, the day cursor) -- someone who has asked for no motion still sees the badge, just
+     without the colour easing out from under it. */
+  .cns-qrow.arrived { animation: none; }
 }
