@@ -377,3 +377,75 @@ def test_the_sweep_is_deterministic() -> None:
     assert {k: v.pooled_recall for k, v in first.items()} == {
         k: v.pooled_recall for k, v in second.items()
     }
+
+
+# --- precision, paired and pooled ---------------------------------------------------
+def test_arm_sample_precision_matches_evals_definition(swept) -> None:
+    """`ArmSample.precision` must be `BudgetResult.precision` carried through, not a second
+    definition -- this checks it against `evaluate_arm` directly, on the same corpus and seed."""
+    from earshot.arms import run_all_arms
+    from earshot.corpus import generate
+    from earshot.evals import evaluate_arm
+    from earshot.extract import OfflineLexiconExtractor, extract_all
+
+    _, by_arm = swept
+    run = replace(SMALL, seed=SEEDS[0])
+    corpus = generate(run)
+    # Must match `_one_seed`'s own construction exactly (miss_rate/false_fire_rate come from the
+    # run's config) -- a bare `OfflineLexiconExtractor()` uses different simulated rates and
+    # produces a genuinely different signal stream, which looks like a bug here and is not one.
+    extractor = OfflineLexiconExtractor(
+        miss_rate=run.offline_miss_rate, false_fire_rate=run.offline_false_fire_rate
+    )
+    signals = extract_all(extractor, corpus.conversations)
+    arms = run_all_arms(signals, run.scoring)
+    for arm_name, arm in arms.items():
+        expected = evaluate_arm(corpus, arm, 0.10).precision
+        sample = next(s for s in by_arm[arm_name] if s.seed == SEEDS[0])
+        assert sample.precision == pytest.approx(expected)
+
+
+def test_arm_sample_precision_is_hits_over_flagged() -> None:
+    """The zero-denominator handling matters too: nothing flagged must read 0.0, not NaN."""
+    assert ArmSample(
+        arm="a", seed=1, recall=0.5, hits=4, outcomes=8, flagged=10,
+        diffuse_recall=0.0, precision=0.4,
+    ).precision == pytest.approx(0.4)
+
+
+def test_pairing_works_on_precision_once_it_exists() -> None:
+    """`paired_record` already reaches any field via getattr -- this pins that precision is
+    actually one of those fields now, not just theoretically reachable."""
+    by_arm = {
+        "a": [_sample("a", 1, recall=0.5)],
+        "b": [_sample("b", 1, recall=0.5)],
+    }
+    by_arm["a"][0].precision = 0.9
+    by_arm["b"][0].precision = 0.1
+    assert paired_record(by_arm, "a", "b", metric="precision") == (1, 0, 0)
+
+
+def test_pooled_precision_is_over_flagged_not_a_mean_of_rates(swept) -> None:
+    """Same convention as `pooled_recall`, mirrored onto precision's own denominator."""
+    summaries, by_arm = swept
+    for arm, summary in summaries.items():
+        hits = sum(s.hits for s in by_arm[arm])
+        flagged = sum(s.flagged for s in by_arm[arm])
+        assert summary.total_flagged == flagged
+        if flagged:
+            assert summary.pooled_precision == pytest.approx(hits / flagged)
+
+
+def test_sweep_budgets_agrees_with_sweep_at_the_shared_budget() -> None:
+    """`sweep_budgets` reuses one corpus/extraction pass across budgets instead of `sweep`'s
+    per-call regeneration -- if the two ever disagreed at the same budget, the shortcut would be
+    silently producing a different corpus, not just a faster one."""
+    from earshot.sweep import sweep_budgets
+
+    single, _ = sweep(SMALL, SEEDS, budget=0.10)
+    multi = sweep_budgets(SMALL, SEEDS, budgets=(0.05, 0.10))
+    for arm, summary in single.items():
+        assert multi[0.10][arm].total_hits == summary.total_hits
+        assert multi[0.10][arm].total_flagged == summary.total_flagged
+        assert multi[0.10][arm].pooled_recall == pytest.approx(summary.pooled_recall)
+        assert multi[0.10][arm].pooled_precision == pytest.approx(summary.pooled_precision)
