@@ -4,74 +4,70 @@
 Rewritten in place at each handover. **Keep it under ~60 lines.** It is a baton, not a history:
 next action, live blockers, traps already paid for. History goes in `progress.md` or git.
 
-**2026-08-29 (late)** · commit `74536fc` · branch `build/ear-on-every-call` · **812 tests**, separation guard over
-44 modules, a contrast gate over 634 colour pairs, ruff clean, **30 UI routes**
+**2026-08-30** · commit `35e5bdf` · branch `build/ear-on-every-call` · **827 tests**, separation
+guard over 44 modules, contrast gate over 650 colour pairs / 17 routes, ruff clean, **30 UI routes**
 
 ## First turn
 
 1. Say where the build stands and the next action, in two lines. Then start it.
-2. AWS: SSO was re-minted 2026-08-29 and every keyed item ran. **`aws sts get-caller-identity`
-   is a lying probe** — it answers from a cached role credential while the SSO token underneath
-   is dead. Probe Bedrock. `source tools/aws-login.sh` when it is; the login needs a browser.
+2. **LLM spend is stopped by the user's decision.** No model calls, no `--extractor model`, no keyed
+   tool. `uv run earshot sweep` (offline, default) is free and is the source of quotable numbers.
 3. `progress.md` for work-package status and blocker owners. `decisions.md` before arguing.
 
 ## Next action
 
-**Everything keyed is done and republished.** AT-57 **22 / 50** and AT-58 **36 / 49** on the
-shipping corpus and both replay; the streamed demo is re-recorded with both arms keyed; the
-cost cap is re-derived from measurement. Read `state-of-play.md` — the numbers moved. In order:
+**The corpus was widened 2026-08-30** (pools 8/8/4/4 → 14/14/14/14); every published number was
+regenerated free and offline. Read `state-of-play.md` — the numbers moved, some across zero.
+Everything keyed is on hold. What does NOT need spend, in order:
 
-1. **The IAM ticket** — the only hard blocker. One inline policy, and it now also needs `logs:*`:
-   the deployed Lambdas are **unobservable**, not merely inert. JSON in `aws-infrastructure.md`.
-2. **Arm B: $0.01** on Nova Lite for the reader arm ($0.28 both). Last item on `build-plan.md`'s
-   "not measured" list. `extractor_cache_path()` is per-model now, so it cannot pollute the cache
-   behind the published reader figures.
-3. **Extend the reader-coverage sample.** n=20 per trajectory is a direction; samples nest, so
-   `--per-trajectory 40` pays only the delta (~$0.45). The **collections regression** is the half
-   most worth a bigger denominator.
-4. **Regenerate `ui/data.js` from a keyed investigate run.** The recorded document screens — queue,
-   case, retro, the one `ui/README.md` calls "the proof" — are still the offline rule engine.
-5. **The design fork is superseded.** `.claude/worktrees/agent-ade2e23d7e6368e38` is a restyle of
-   the pre-console UI (18 routes to 30) and main now has a generated design system it was
-   reacting to. Recommend discard; still Ravi's call.
+1. **The IAM ticket** — the only hard blocker that isn't a spend decision. One inline policy, now
+   also needing `logs:*`: the deployed Lambdas are **unobservable**, not merely inert. JSON in
+   `aws-infrastructure.md`.
+2. Corpus/lexicon, UI, docs, CI work — all free. `state-of-play.md`'s "Next, in order" splits what
+   waits on spend (Arm B, `ui/data.js` regen, the 10-seed keyed sweep, a bigger reader-coverage
+   sample) from what does not.
 
-**Delegate file-writing work with `isolation: "worktree"`.** The Agent tool's own isolation was
-refusing to start on 2026-08-28; `git worktree add -b wp/<name> /c/tmp/<name> HEAD` and telling
-the agent the absolute path works fine.
+**When spend resumes:** 10-seed keyed sweep (~$10, pin `prompt_sha` first) on the widened corpus;
+Arm B on Nova Lite (~$0.01–$0.28); reader-coverage past n=20/trajectory (~$0.45 for +20);
+`ui/data.js` regen from a keyed `investigate` run.
+
+**Delegate file-writing work with `isolation: "worktree"`** — `git worktree add -b wp/<name>
+/c/tmp/<name> HEAD`, tell the agent the absolute path.
 
 ## State
 
-One deployment (Northwind), framed as an integration: nine seams, **five** of them the client's
-own systems (the prose said six for weeks; the screen was always right). **One model, Haiku 4.5**
-(D-025) — now measured on a multi-turn loop: **22 / 50** verdicts, **41 / 49** routing. The
-investigator is a **router and an audit trail, not a filter**. **CDK does not work here** (D-024);
-`provision.py` and `deploy.py` are the path. `boto3` stays optional; a fresh clone runs keyless.
+**`random-rank` is a shipped chance-floor arm; full-ledger is indistinguishable from it on diffuse
+arcs** (17–11–2, `p=0.345`) and is **7th of 9 whole-portfolio**. The pre-registered diffuse win over
+`stateless-max` holds (29–0–1); `stateless-top2`/`window3-top2`, which beat the ledger on the old
+corpus, now lose to it (26–2–2 each) — a corpus change flipped a headline both ways. Lexicon finds
+1 of 32 fragments authored for the widened pools (21 of the original 24): reader, not ranking, is
+the binding constraint. One deployment (Northwind), nine seams, five the client's own. One model,
+Haiku 4.5 (D-025): **22/50** verdicts, **36/49** routing, router-not-filter. CDK doesn't work here
+(D-024); `provision.py`/`deploy.py` are the path.
 
 ## Traps already paid for
 
-- **A keyed run's cache is one file per provider AND per model AND per measurement.** A second
-  reader arm through the shared path appends into the cache behind a published figure, silently:
-  keys do not collide, nothing errors, the file just quietly holds two models.
-- **`config_hash` does not cover the code.** It was byte-identical across two corpora that
-  disagreed about who crosses. Manifests carry `pipeline_sha`; a guard comparing config hashes
-  alone will bless a stale artifact. Land generator changes *before* spending on keyed runs.
-- **A failed replay used to overwrite the run it was replaying** — same seed, hash and provider,
-  so the same path. Cache mode is in the filename now and an all-`provider_error` run refuses to
-  write. Do not remove either.
-- **Two thresholds exist and disagree on purpose.** Stream and `aws/ingest.py` use a fixed cut;
-  `earshot investigate` uses a budget-derived top-K. Never merge them on stage.
-- **The corpus warns on every run** that two of four trajectories cap at 4 signals. That is the
-  arc ceiling, it is honest, and widening the pools moves the published recall.
-- **Quote nothing at 10 seeds.** The pre-registered win is 26–2–2 `p=0.000` at 30 and
-  7–2–1 `p=0.180` at 10.
-- **`stream.py` stays on the guarded surface only because `cli.stream_inputs()` hands it the
-  conversations.** Re-add `generate()` and the guard fails, correctly.
-- **The account header must take `financial_state`, never `latent_risk`** — and that wiring now
-  has a behavioural pin, not just a source-string match, because the string match was defeatable.
-- **Narration must never share the ledger reader's extractor**; the final turn-by-turn read must
-  equal the batch read byte for byte; a warm cache makes a "live" run a replay
-  (`EARSHOT_CACHE_MODE=off`); one response cache per provider, named after the model that ANSWERED.
-- **`outcome is not None` is always true** (`Outcome.NONE`) · **a case id contains `#`**, every UI
-  link percent-encodes it · **never delete an `__init__.py`**, it drops the guard and the suite
-  silently · **verify `pwd` before committing**, a `cd` into a worktree persists across tool calls.
-- **The AWS/deploy traps live in `aws-infrastructure.md`** and are not copied here.
+- **A resume can re-buy reads even when the cache is isolated by path.** The cache keys on
+  `(model, prompt_sha, messages, tools)`. A 2026-08-30 run hit the $5 ceiling half way; `cli.py` was
+  committed before it resumed, moving `prompt_sha` and orphaning 3,275 paid-for reads — **$12.32
+  spent, no artifact.** Path isolation protects a *published* figure, not a *resume* whose prompt
+  hash moved. Pin `prompt_sha` before resuming a keyed run, or don't resume it.
+- **A keyed run's cache is one file per provider AND per model AND per measurement** — a second
+  reader arm through the shared path appends behind a published figure, silently. **`config_hash`
+  does not cover the code** — manifests carry `pipeline_sha` now (`7b525d8`); a config-hash-only
+  guard blesses a stale artifact. **A failed replay used to overwrite the run it was replaying** —
+  cache mode is in the filename and an all-`provider_error` run refuses to write; keep both.
+- **Two thresholds disagree on purpose** — stream/`aws/ingest.py` use a fixed cut, `investigate`
+  a budget-derived top-K. Never merge them.
+- **The arc ceiling is gone; a test now pins its absence, not its presence.** Pools are 14/14/14/14;
+  `test_the_shipped_default_no_longer_breaches_the_ceiling` asserts the warning never fires.
+- **Quote nothing at 10 seeds** — not yet re-measured on the widened corpus (the deferred sweep).
+- **`stream.py` stays guarded only because `cli.stream_inputs()` hands it conversations** —
+  re-add `generate()` and the guard correctly fails.
+- **The account tool takes `risk_signal`, never `latent_risk`** — renamed this session so
+  `risk_signal=truth.latent_risk` reads as the error it would be.
+- **Narration must never share the ledger reader's extractor**; the final turn-by-turn read equals
+  the batch read byte for byte; a warm cache makes "live" a replay (`EARSHOT_CACHE_MODE=off`).
+- **`outcome is not None` is always true** · a case id contains `#`, every link percent-encodes it ·
+  never delete an `__init__.py` · verify `pwd` before committing, a worktree `cd` persists.
+- **AWS/deploy traps live in `aws-infrastructure.md`**, not copied here.
