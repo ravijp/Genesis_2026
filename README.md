@@ -27,7 +27,7 @@ git clone <repo-url> && cd Genesis_2026
 uv sync                                                 # installs deps + the `earshot` package
 uv run pytest                                           # the whole suite
 uv run earshot sweep --seeds 10 --customers 1500        # the numbers below (~30s)
-uv run earshot demo --customers 400                     # the accumulation moment, narrated
+uv run earshot demo --customers 3000                    # the accumulation moment, narrated
 uv run earshot investigate --customers 200 --limit 3    # the agent working three cases
 uv run earshot run --customers 400                      # one dataset, for debugging only
 uv run earshot stream                                   # conversations arriving, turn by turn

@@ -60,9 +60,16 @@ git clone <repo-url> && cd Genesis_2026
 uv sync                                     # install dependencies
 
 uv run pytest                               # the whole test suite (~70s)
-uv run earshot demo --customers 400         # the accumulation story, narrated in your terminal
+uv run earshot demo --customers 3000        # the accumulation story, narrated in your terminal
 uv run earshot sweep --seeds 10 --customers 1500   # the evaluation numbers
 ```
+
+**Why 3,000 and not 400.** The demo needs at least one customer the ledger catches while per-call
+detection stays silent throughout. After the fragment pools were widened on 2026-08-30 the offline
+lexicon finds only 1 of the 32 new fragments, so at 400 customers **no such customer exists** and the
+command says so twice rather than showing you a near-miss and letting you assume. At 3,000 it finds
+6 of 150. That honesty branch is deliberate (`cli.py`, and `tests/test_cli.py` pins it) — but it
+means the small demo is not a demo any more.
 
 Then open **`ui/index.html`** in a browser. No server, no npm, no network. That is the product:
 a reviewer's queue, a case with its evidence, and a live stream showing the ledger filling up.

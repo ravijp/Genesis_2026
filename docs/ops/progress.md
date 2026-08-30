@@ -494,13 +494,45 @@ reasoning in the file. Recall falling is the safe direction: only a rise indicat
 is itself the sharpest measurement this repo has of *the lexicon only reads language it was written
 beside* — sharper than the 0.0357 CFPB figure, because these fragments are in-domain.
 
-**Why the keyed run failed, and it was an own goal.** The run hit the built-in $5.00 spend ceiling
-half way (3,561 of 7,035 conversations). On resume with a raised cap it re-bought reads already
-paid for: **5,494 unique keys against 8,769 billed calls, 3,275 duplicates.** The response cache
-keys on `(model, prompt_sha, messages, tools)` and `cli.py` was committed between the two runs,
-moving `prompt_sha` and orphaning every cached read. The cache was isolated by *path*, which
-correctly protected the published `extractor.jsonl`; nobody checked the *key* was stable across a
-code change before resuming. **Pin `prompt_sha` before resuming a keyed run, or do not resume it.**
+**Why the keyed run failed. CORRECTED 2026-08-31 — the first post-mortem below was wrong.**
+
+The run hit the built-in $5.00 spend ceiling half way (3,561 of 7,035 conversations), and the cache
+holds **5,494 distinct keys against 8,769 billed calls — 3,275 duplicates**.
+
+**The original diagnosis was `prompt_sha` drift, and the cache file itself disproves it.** If the
+prompt hash had moved between the two halves, every second-run key would have been *new*: 8,769
+distinct keys and **zero** duplicates. Duplicates can only exist if the key was **stable** and the
+cache failed to serve a hit it already held.
+
+**The real cause was two readers running concurrently against one cache path** — my own error, and a
+compounding one. The first sweep was launched with `nohup ... &`; the liveness check used `pgrep`,
+which **does not exist on this machine** (`pgrep: command not found`), so the monitor reported "SWEEP
+NOT RUNNING" for a process that was still alive, and a second sweep was launched against the same
+`EARSHOT_EXTRACTOR_CACHE_PATH`. `ResponseCache` loads its file once in `__init__` and never re-reads
+it (`llm/cache.py:66-85`), so each process was permanently blind to everything the other wrote.
+
+The evidence is unambiguous:
+
+- Duplication starts at record **185**, not at the 3,561 resume boundary.
+- It runs at a flat **~47%** for the first 6,836 records, then **exactly 0%** for the last 1,933 —
+  two processes racing, then one alone.
+- `latency_ms` differs in 3,274 of 3,275 duplicate pairs: two separate live calls, not a double-write.
+
+**Waste was $4.60 of $12.33 (37%), not half.** And the recorded remedy — "pin `prompt_sha`" — would
+have saved nothing at all.
+
+**The actual lessons, which are different:**
+
+1. **Never point two model runs at one cache path.** The cache is read once at construction; it is
+   not a shared store and cannot be used as one.
+2. **`pgrep` does not exist here.** Any liveness check built on it silently reports "dead". Check
+   for the tool before trusting the check.
+3. **`CachingProvider` counts `hits`/`misses` (`llm/cache.py:127-128`) and never prints them.** A 47%
+   miss rate was invisible across 3,275 paid calls. Surfacing that counter would have caught this in
+   the first minute.
+4. **39 lines in the cache file are torn** — interleaved partial writes from the two processes.
+   `_load()` swallows them silently (`llm/cache.py:79-82`), so 39 paid-for completions are
+   permanently unreplayable and will `CacheMiss`. Not previously recorded.
 
 **What the reads do support, from the cache alone and independent of the sweep:** over **5,494
 unique keyed reads on the widened corpus, the model reader emitted at least one signal on 2,390 —

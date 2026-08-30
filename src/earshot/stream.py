@@ -64,7 +64,12 @@ BOARD_SIZE = 8
 
 # Ceiling on model spend for a single streamed investigation. Same value as `cli`, deliberately:
 # a cap that differs by entrypoint is a cap someone can route around.
-COST_CAP_PER_CASE_USD = 0.25
+#
+# It said that while carrying 0.25 against cli's 0.10 -- the comment refuted itself and nothing
+# caught it, because the test that pins the cap against a full-length loop only ever imported
+# `cli`'s. Corrected 2026-08-31; `test_every_entrypoint_shares_one_cost_cap` now pins all three
+# together. It cannot be imported from `cli` because `cli` imports this module.
+COST_CAP_PER_CASE_USD = 0.10
 
 # Answer-key fields. Checked here as well as in `tools/stream_fixture.py` and the tests, because
 # this module is the one place that holds a `Corpus` and a browser payload in the same scope.

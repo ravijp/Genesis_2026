@@ -27,7 +27,7 @@ Everything keyed is on hold. What does NOT need spend, in order:
    waits on spend (Arm B, `ui/data.js` regen, the 10-seed keyed sweep, a bigger reader-coverage
    sample) from what does not.
 
-**When spend resumes:** 10-seed keyed sweep (~$10, pin `prompt_sha` first) on the widened corpus;
+**When spend resumes:** 10-seed keyed sweep (~$10, ONE process, one cache path) on the widened corpus;
 Arm B on Nova Lite (~$0.01–$0.28); reader-coverage past n=20/trajectory (~$0.45 for +20);
 `ui/data.js` regen from a keyed `investigate` run.
 
@@ -47,11 +47,17 @@ Haiku 4.5 (D-025): **22/50** verdicts, **36/49** routing, router-not-filter. CDK
 
 ## Traps already paid for
 
-- **A resume can re-buy reads even when the cache is isolated by path.** The cache keys on
-  `(model, prompt_sha, messages, tools)`. A 2026-08-30 run hit the $5 ceiling half way; `cli.py` was
-  committed before it resumed, moving `prompt_sha` and orphaning 3,275 paid-for reads — **$12.32
-  spent, no artifact.** Path isolation protects a *published* figure, not a *resume* whose prompt
-  hash moved. Pin `prompt_sha` before resuming a keyed run, or don't resume it.
+- **NEVER point two model runs at one cache path.** `ResponseCache` loads its file once in
+  `__init__` and never re-reads it (`llm/cache.py:66-85`), so concurrent processes are blind to each
+  other's writes. On 2026-08-30 a broken liveness check (`pgrep` **does not exist on this machine**
+  and reports every process dead) led to a second sweep being launched over a live one: **$12.33
+  spent, $4.60 wasted, no artifact, and 39 cache lines torn by interleaved writes** — those
+  completions are paid for and permanently unreplayable. Duplication started at record 185, not at
+  the resume boundary. *(The first post-mortem blamed `prompt_sha` drift. It was wrong: a duplicate
+  key proves the key was STABLE — drift would have produced zero duplicates. `progress.md` carries
+  the corrected version.)*
+- **`CachingProvider` counts hits/misses and never prints them** (`llm/cache.py:127-128`). A 47% miss
+  rate stayed invisible for 3,275 paid calls. Print the counter before spending.
 - **A keyed run's cache is one file per provider AND per model AND per measurement** — a second
   reader arm through the shared path appends behind a published figure, silently. **`config_hash`
   does not cover the code** — manifests carry `pipeline_sha` now (`7b525d8`); a config-hash-only

@@ -738,3 +738,24 @@ def test_the_cost_cap_clears_a_full_length_loop_but_still_binds() -> None:
         f"${COST_CAP_PER_CASE_USD} is more than 5x a maximum-length loop (${full_loop:.4f}); a "
         f"ceiling that cannot be reached is not a ceiling"
     )
+
+
+def test_every_entrypoint_shares_one_cost_cap() -> None:
+    """A cap that differs by entrypoint is a cap someone can route around.
+
+    `stream.py` said exactly that in a comment -- "Same value as `cli`, deliberately" -- while
+    carrying 0.25 against cli's 0.10, for as long as both existed. Nothing caught it: the test
+    above pins the cap against a full-length loop, but only ever imported `cli`'s copy, so the
+    streamed entrypoint ran at 2.5x the ceiling every other path enforced.
+
+    The three cannot be collapsed into one import -- `cli` imports `stream`, so `stream` importing
+    `cli` is circular -- which is precisely why they need pinning together here instead.
+    """
+    from earshot.aws.investigate import COST_CAP_PER_CASE_USD as aws_cap
+    from earshot.cli import COST_CAP_PER_CASE_USD as cli_cap
+    from earshot.stream import COST_CAP_PER_CASE_USD as stream_cap
+
+    assert cli_cap == stream_cap == aws_cap, (
+        f"the per-case cost cap differs by entrypoint: cli=${cli_cap}, stream=${stream_cap}, "
+        f"aws=${aws_cap}. Whichever is highest is the one a runaway will find."
+    )
