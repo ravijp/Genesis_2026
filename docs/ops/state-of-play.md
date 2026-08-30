@@ -114,6 +114,15 @@ client's own systems — the screen counts them rather than asserting it.
 
 ## Known-weak, stated rather than hidden
 
+- **Decoys are planted WITH replacement, deliberately — and the note saying so was accidentally
+  deleted on 2026-08-30 and is restored here.** Measured 2026-08-31 at 400 customers: **33 / 303
+  customers carry the same fragment twice, 38 duplicate plantings, every one of them a decoy and
+  none an arc.** This is the same mechanism `08b20cc` removed from the arc paths, and it is left in
+  the decoy paths on purpose: a recurring accumulator decoy earns a corroboration bonus it does not
+  deserve, which makes the trap *harder* and biases the result **against** the ledger. That is why
+  one was a defect and this is not. It is still unrealistic — nobody says the same sentence twice
+  verbatim — so Phase C of `../corpus/04-plan.md` should replace the repeat with a paraphrase rather
+  than simply stop repeating.
 - **"Diffuse" does not mean what the pitch implies, and this is measured.** Every arc customer
   carries a planted signal in **100% of their conversations** — verified 2026-08-31 at 800 customers:
   **431 / 431 arc customers, zero silent conversations.** So diffuse means *a weak signal every
