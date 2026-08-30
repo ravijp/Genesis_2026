@@ -373,7 +373,16 @@ def _render_live(
 
     n_body = rng.randint(*cfg.body_turns)
     body = _body_turns(rng, topic, n_body, used_surfaces)
-    plant_at = rng.randint(1, max(1, n_body - 1)) if plant is not None else -1
+    # Drawn against the body that was actually built, not against `n_body`. `_body_turns` caps
+    # its output at the topic's follow-ups plus `_MAX_ASIDES`, so for a long draw it returns
+    # fewer pairs than asked for -- and `randint(1, n_body - 1)` then pointed past the end, the
+    # loop never reached `i == plant_at`, and the fragment the PLAN had allocated was silently
+    # never spoken. Measured at 600 customers: 69 arc conversations, spread over all four
+    # trajectories, held no evidence the planner had allocated to them. The answer key stayed
+    # consistent -- nothing is seeded that was not placed -- so it diluted arcs invisibly, which
+    # is the failure mode `smallest_fragment_pool`'s docstring calls the safe direction and still
+    # spends a real signal. `test_every_allocated_fragment_is_actually_spoken` pins it.
+    plant_at = rng.randrange(len(body)) if plant is not None else -1
     closing_pool = topic.promised if arc.promise_made else topic.resolved
     closing = rng.choice(closing_pool)
 

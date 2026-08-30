@@ -754,3 +754,60 @@ def test_no_shipped_sentence_appears_in_the_real_cfpb_narratives():
         f"{len(collisions)} authored strings share a six-word run with a real CFPB narrative: "
         f"{collisions[:3]}"
     )
+
+
+def test_every_allocated_fragment_is_actually_spoken():
+    """A fragment the PLAN allocated must appear in the rendered conversation. Always.
+
+    It did not, for one shipped release-day of Phase C: `_body_turns` caps its output at the
+    topic's follow-ups plus two asides, so a long `body_turns` draw returned fewer pairs than
+    asked for, while `plant_at` was drawn against the number ASKED FOR. The loop then never
+    reached `i == plant_at`, the fragment was never spoken, and the conversation came out empty.
+    Measured at 600 customers: 69 arc conversations across all four trajectories held no evidence
+    the planner had allocated to them.
+
+    It was invisible from outside. Nothing is seeded that was not placed, so the answer key
+    stayed self-consistent and only the ARCS were quietly diluted -- and it moved a real result:
+    the ledger's diffuse record against `stateless-top2` swung from +4 to +15 across a tenfold
+    change in `alpha_diffuse` with the bug, against +4 to +9 without it, i.e. it made the stratum
+    look far more like a restatement of its own generating parameter than it is.
+
+    Driven over every body length the shipped config can draw, at both live channels, rather than
+    over a generated corpus -- a corpus test would need the bad draw to coincide with a plant,
+    which is what let this through for as long as it did.
+    """
+    from earshot.config import CorpusConfig
+    from earshot.corpus_lexicon import TOPICS
+
+    cfg = CorpusConfig()
+    fragment = corpus.BY_TYPE[SignalType.CHURN_INTENT][0]
+    lo, hi = cfg.body_turns
+    for channel in (Channel.CALL, Channel.CHAT):
+        for n in range(lo, hi + 1):
+            for topic in TOPICS:
+                arc = corpus.ArcContext(
+                    position=0, total=1, topic=topic, prior=None, promise_made=False
+                )
+                # A seeded rng whose first `randint(lo, hi)` returns exactly `n`, found by
+                # search, would be brittle; forcing the range instead exercises the same path.
+                forced = replace(cfg, body_turns=(n, n))
+                conversation, plant_turn = corpus._render_live(
+                    random.Random(n * 31 + len(topic.topic_id)),
+                    forced,
+                    "C-0",
+                    "CUST-0000",
+                    channel,
+                    day=10,
+                    plant=fragment,
+                    arc=arc,
+                    used_surfaces=set(),
+                )
+                assert plant_turn is not None, (
+                    f"{topic.topic_id} on {channel.value} with body_turns={n}: the allocated "
+                    "fragment was never placed"
+                )
+                spoken = conversation.turns[plant_turn]
+                assert spoken.speaker == "customer"
+                assert spoken.text in fragment.surfaces(), (
+                    f"turn {plant_turn} holds {spoken.text!r}, not the planted fragment"
+                )
