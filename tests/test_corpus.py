@@ -260,3 +260,97 @@ def test_the_fingerprint_is_stable_across_calls():
     between two calls in one process would fail every artifact it had just stamped."""
     assert corpus.pipeline_fingerprint() == corpus.pipeline_fingerprint()
     assert len(corpus.pipeline_fingerprint()) == 12
+
+
+# --------------------------------------------------------------------------------------------
+# Agent prose. These guard a property the corpus depends on for its DEMO rather than its
+# numbers -- the extractor never reads an agent turn -- so nothing here can move a published
+# figure. They exist because the failure they catch is silent: a fragment with no mapped reply
+# falls back to a generic filler line and simply reads badly, which no other test notices.
+# --------------------------------------------------------------------------------------------
+
+
+def test_every_planted_fragment_has_an_authored_agent_reply():
+    """A fragment with no entry degrades to the pre-2026-08-31 behaviour: an agent line drawn at
+    random with no reference to what was said. That was 864 / 973 planted signals answered with a
+    non-sequitur, including a bereavement disclosure answered with the call-recording notice.
+    Adding a fragment without adding its reply reintroduces exactly that, one fragment at a time.
+    """
+    from earshot import corpus_lexicon as lex
+
+    everything = lex.PLANTS + lex.DECOYS_EXTRACTOR + lex.DECOYS_ACCUMULATOR
+    missing = sorted(f.fragment_id for f in everything
+                     if f.fragment_id not in lex.AGENT_REPLIES_TO_SIGNAL)
+    assert not missing, f"fragments with no authored agent reply: {missing}"
+
+    unfilled = sorted(line for line in lex.FILLER_CUSTOMER
+                      if line not in lex.AGENT_REPLIES_TO_FILLER)
+    assert not unfilled, f"filler lines with no authored agent reply: {unfilled}"
+
+
+def test_the_agent_line_pools_keep_their_exact_lengths():
+    """The RNG stream, not the tuple contents, is what the published numbers depend on.
+
+    `rng.choice` consumes a length-dependent number of bits from the shared generator, and that
+    generator also draws the customer turns. Measured over 3 seeds x 400 customers: resizing
+    FILLER_AGENT from 10 to 14 changed 11,371 of 11,378 customer turns and the conversation count
+    with them. Rewriting the ten strings changed nothing at all. So the text is free to change and
+    the LENGTHS are not.
+    """
+    from earshot import corpus_lexicon as lex
+
+    assert len(lex.FILLER_AGENT) == 10
+    assert len(lex.OPENINGS) == 3
+    assert len(lex.CLOSINGS) == 3
+    assert len(lex.FILLER_CUSTOMER) == 15
+    # The per-channel pools are indexed by POSITION into the pool that was actually drawn from,
+    # so they must line up one-for-one or `agent_opening` silently falls through to `drawn`.
+    assert len(lex.CHAT_OPENINGS) == len(lex.OPENINGS)
+    assert len(lex.CHAT_CLOSINGS) == len(lex.CLOSINGS)
+
+
+def test_no_planted_signal_is_answered_with_a_generic_filler_line():
+    """The property the whole rewrite exists to establish, asserted end to end on a real corpus.
+
+    Before 2026-08-31 this was 864 / 973 at this seed and customer count.
+    """
+    from dataclasses import replace as _replace
+
+    from earshot import corpus_lexicon as lex
+    from earshot.config import CorpusConfig, RunConfig
+
+    built = corpus.generate(RunConfig(corpus=_replace(CorpusConfig(), n_customers=120)))
+    by_conversation = {c.conversation_id: c for c in built.conversations}
+    generic = set(lex.FILLER_AGENT)
+
+    offenders = []
+    for planted in built.seeded:
+        conversation = by_conversation[planted.conversation_id]
+        following = [t for t in conversation.turns if t.index == planted.turn_index + 1]
+        if following and following[0].speaker == "agent" and following[0].text in generic:
+            offenders.append((planted.fragment_id, following[0].text))
+    assert not offenders, f"planted signals answered with an unmapped generic line: {offenders[:5]}"
+
+
+def test_typed_channels_do_not_use_telephone_language():
+    """A chat that says "thanks for holding" is the tell a contact-centre reader spots first.
+
+    Before the rewrite: 129 / 450 chat conversations opened "Thank you for calling", and phrases
+    that only exist on a phone appeared 1,166 times inside chat and complaint documents.
+    """
+    from dataclasses import replace as _replace
+
+    from earshot.config import CorpusConfig, RunConfig
+    from earshot.schema import Channel
+
+    built = corpus.generate(RunConfig(corpus=_replace(CorpusConfig(), n_customers=200)))
+    banned = ("thanks for holding", "this call may be recorded", "thank you for calling",
+              "you're through to", "i'll hold", "on hold", "read it out")
+    offenders = [
+        (c.channel.value, t.text)
+        for c in built.conversations
+        if c.channel is not Channel.CALL
+        for t in c.turns
+        if t.speaker == "agent" and any(b in t.text.lower() for b in banned)
+    ]
+    assert not offenders, f"telephone language in a typed channel: {offenders[:5]}"
