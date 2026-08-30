@@ -93,6 +93,7 @@ EXPECTED_ARMS = {
     "long-context-3",
     "full-ledger",
     "hybrid",
+    "random-rank",
 }
 
 
@@ -377,3 +378,152 @@ def test_the_sweep_is_deterministic() -> None:
     assert {k: v.pooled_recall for k, v in first.items()} == {
         k: v.pooled_recall for k, v in second.items()
     }
+
+
+# --- the random-rank negative control -----------------------------------------------
+def test_random_rank_lands_near_the_budget_rate(swept) -> None:
+    """Chance-level performance, made an arm rather than an assertion nobody checked.
+
+    A pure RNG ranking, evaluated at a 10% budget, recalls ~10% of outcomes BY CONSTRUCTION --
+    it flags 10% of customers with no reference to who actually churns, so on a large enough
+    denominator it lands near the budget with no systematic pull either way.
+
+    The tolerance is not a guess. `swept` runs 150 customers over 3 seeds, pooling to roughly
+    45-60 outcome customers total (SMALL's corpus, ~12-15% outcome rate observed elsewhere in
+    this suite). Binomial noise on a flag-a-fixed-fraction process at n~50 has a standard
+    deviation of about sqrt(0.1*0.9/50) =~ 0.042, so +-0.10 around the 0.10 budget is a ~2.4
+    sigma band -- wide enough that three ordinary seeds do not trip it by chance, tight enough
+    that a control which was secretly reading the answer key (recall pinned near 1.0, or a
+    control with a systematic bias) would still fail it clearly.
+    """
+    summaries, _ = swept
+    control = summaries["random-rank"]
+    assert control.total_outcomes > 20, "denominator too small for a budget-rate check to mean anything"
+    assert 0.0 <= control.pooled_recall <= 1.0
+    assert abs(control.pooled_recall - 0.10) < 0.10, (
+        f"random-rank pooled recall is {control.pooled_recall:.3f} against a 10% budget — "
+        f"either the control is not actually random, or it is reading the answer key"
+    )
+
+
+def test_random_rank_ignores_signal_content() -> None:
+    """The defining property: two runs with identical customers but SWAPPED signal content
+    must rank identically, because the arm is supposed to never look at what the signals say.
+
+    Constructed directly against `run_all_arms` rather than through a full corpus, so the
+    signals can be edited without regenerating anything -- swap `signal_type` and `confidence`
+    on every signal and the random-rank scores must be byte-identical, because nothing about
+    the arm's construction reads either field.
+    """
+    from earshot.arms import run_all_arms
+    from earshot.schema import Channel, ExtractedSignal, SignalType
+
+    base_signals = [
+        ExtractedSignal(
+            customer_id=f"C{i}",
+            conversation_id=f"C{i}-C0",
+            turn_index=0,
+            signal_type=SignalType.CHURN_INTENT,
+            confidence=0.9,
+            evidence_quote="q",
+            day=10,
+            channel=Channel.CALL,
+            cue_id="cue0",
+        )
+        for i in range(20)
+    ]
+    swapped_signals = [
+        replace(s, signal_type=SignalType.LIFE_EVENT, confidence=0.1) for s in base_signals
+    ]
+
+    arms_a = run_all_arms(base_signals, seed=42)
+    arms_b = run_all_arms(swapped_signals, seed=42)
+    assert arms_a["random-rank"].scores() == arms_b["random-rank"].scores(), (
+        "random-rank's scores changed when signal_type/confidence changed — it is reading "
+        "evidence content, not ignoring it"
+    )
+
+
+def test_random_rank_is_seeded_and_reproducible() -> None:
+    """Same seed, same draw — a control that is not reproducible cannot be a control."""
+    from earshot.arms import run_all_arms
+    from earshot.corpus import generate
+
+    run = replace(SMALL, seed=SEEDS[0])
+    corpus = generate(run)
+    from earshot.extract import OfflineLexiconExtractor, extract_all
+
+    signals = extract_all(OfflineLexiconExtractor(), corpus.conversations)
+    first = run_all_arms(signals, run.scoring, seed=123)["random-rank"].scores()
+    second = run_all_arms(signals, run.scoring, seed=123)["random-rank"].scores()
+    third = run_all_arms(signals, run.scoring, seed=124)["random-rank"].scores()
+    assert first == second, "same seed produced different random-rank scores"
+    assert first != third, "different seeds produced identical random-rank scores"
+
+
+# --- the tie-break harness ----------------------------------------------------------
+def test_deterministic_tie_break_is_still_the_default() -> None:
+    """The hard constraint: no existing published number may move. `sweep()` with no
+    `randomise_ties` argument must behave exactly as it did before this harness existed."""
+    default_run, _ = sweep(SMALL, SEEDS[:2], budget=0.10)
+    explicit_off_run, _ = sweep(SMALL, SEEDS[:2], budget=0.10, randomise_ties=False)
+    assert {k: v.pooled_recall for k, v in default_run.items()} == {
+        k: v.pooled_recall for k, v in explicit_off_run.items()
+    }
+
+
+def test_randomised_tie_break_is_reproducible_given_the_same_seeds() -> None:
+    """A randomised tie-break is only a measurement tool if IT is deterministic too — "random"
+    means "seeded independently of the corpus", not "different every time you run it"."""
+    first, _ = sweep(SMALL, SEEDS[:2], budget=0.10, randomise_ties=True)
+    second, _ = sweep(SMALL, SEEDS[:2], budget=0.10, randomise_ties=True)
+    assert {k: v.pooled_recall for k, v in first.items()} == {
+        k: v.pooled_recall for k, v in second.items()
+    }
+
+
+def test_tie_break_seed_is_independent_of_the_corpus_seed() -> None:
+    """`tie_break_seed_for` must not just equal, offset, or otherwise linearly track the corpus
+    seed — the whole point is a stream that does not correlate with which customers the corpus
+    RNG happened to generate first. Checked structurally: hashing a run of consecutive corpus
+    seeds must not produce a run of consecutive (or otherwise arithmetically related) tie-break
+    seeds, which a simple `seed + k` or `seed ^ k` derivation would."""
+    from earshot.evals import tie_break_seed_for
+
+    corpus_seeds = [SEEDS[0] + i for i in range(5)]
+    tie_seeds = [tie_break_seed_for(s) for s in corpus_seeds]
+    assert len(set(tie_seeds)) == len(tie_seeds), "tie-break seeds collided across corpus seeds"
+    assert tie_seeds != corpus_seeds, "tie-break seed equals the corpus seed"
+    diffs = [b - a for a, b in zip(tie_seeds, tie_seeds[1:])]
+    assert len(set(diffs)) > 1, (
+        "tie-break seeds are evenly spaced — the derivation is linear in the corpus seed rather "
+        "than an independent hash of it"
+    )
+
+
+def test_randomising_ties_can_change_which_customers_are_flagged() -> None:
+    """Sanity check that the mechanism actually does something: on an arm with a large tie
+    cluster (`dumb-ledger`, ~55% of its queue alphabetical per the README), swapping the
+    tie-break rule must be able to change the flagged set on at least one seed. If it never did,
+    the harness would be measuring nothing."""
+    from earshot.corpus import generate
+    from earshot.evals import evaluate_arm, tie_break_seed_for
+    from earshot.extract import OfflineLexiconExtractor, extract_all
+
+    from earshot.arms import run_all_arms
+
+    changed = False
+    for seed in [SEEDS[0] + i for i in range(6)]:
+        run = replace(SMALL, seed=seed)
+        corpus = generate(run)
+        signals = extract_all(OfflineLexiconExtractor(), corpus.conversations)
+        arm = run_all_arms(signals, run.scoring, seed=seed)["dumb-ledger"]
+        deterministic = evaluate_arm(corpus, arm, 0.10)
+        randomised = evaluate_arm(corpus, arm, 0.10, tie_break_seed_for(seed))
+        if deterministic.flagged_ids != randomised.flagged_ids:
+            changed = True
+            break
+    assert changed, (
+        "randomising the tie-break never changed dumb-ledger's flagged set across 6 seeds, "
+        "despite its large alphabetical tie-share — the tie-break RNG may not be wired in"
+    )

@@ -18,7 +18,7 @@ from dataclasses import dataclass, replace
 from .arms import run_all_arms
 from .config import RunConfig
 from .corpus import generate
-from .evals import evaluate_arm
+from .evals import evaluate_arm, tie_break_seed_for
 from .extract import Extractor, OfflineLexiconExtractor, extract_all
 
 
@@ -89,7 +89,11 @@ class ArmSummary:
 
 
 def _one_seed(
-    base: RunConfig, seed: int, budget: float, extractor: Extractor | None = None
+    base: RunConfig,
+    seed: int,
+    budget: float,
+    extractor: Extractor | None = None,
+    randomise_ties: bool = False,
 ) -> list[ArmSample]:
     run = replace(base, seed=seed)
     corpus = generate(run)
@@ -101,10 +105,19 @@ def _one_seed(
             miss_rate=run.offline_miss_rate, false_fire_rate=run.offline_false_fire_rate
         )
     signals = extract_all(extractor, corpus.conversations)
-    arms = run_all_arms(signals, run.scoring)
+    # `random-rank`'s own RNG is seeded from the corpus seed directly -- it needs only to be
+    # reproducible per seed, not independent of the corpus draw the way the TIE-BREAK seed below
+    # must be (a random-rank arm ignoring the corpus is the whole point of it; the tie-break
+    # question is a different one, about arms that DO read the evidence).
+    arms = run_all_arms(signals, run.scoring, seed=seed)
+    # `None` unless the caller opted in, so every existing call site (including this function's
+    # own default) keeps the deterministic customer_id tie-break and every published number
+    # keeps reproducing exactly. `tie_break_seed_for` hashes into its own namespace so the
+    # tie-break draw and the corpus's own `random.Random(seed)` stream never correlate.
+    tie_break_seed = tie_break_seed_for(seed) if randomise_ties else None
     out: list[ArmSample] = []
     for name, arm in arms.items():
-        r = evaluate_arm(corpus, arm, budget)
+        r = evaluate_arm(corpus, arm, budget, tie_break_seed)
         # Indexed, not .get() -- a renamed stratum must fail loudly rather than silently
         # reporting the pre-registered headline as 0/780.
         out.append(
@@ -133,10 +146,11 @@ def sweep(
     seeds: list[int],
     budget: float = 0.10,
     extractor: Extractor | None = None,
+    randomise_ties: bool = False,
 ) -> tuple[dict[str, ArmSummary], dict[str, list[ArmSample]]]:
     by_arm: dict[str, list[ArmSample]] = {}
     for seed in seeds:
-        for sample in _one_seed(base, seed, budget, extractor):
+        for sample in _one_seed(base, seed, budget, extractor, randomise_ties):
             by_arm.setdefault(sample.arm, []).append(sample)
 
     summaries: dict[str, ArmSummary] = {}
