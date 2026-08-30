@@ -114,6 +114,22 @@ client's own systems — the screen counts them rather than asserting it.
 
 ## Known-weak, stated rather than hidden
 
+- **"Diffuse" does not mean what the pitch implies, and this is measured.** Every arc customer
+  carries a planted signal in **100% of their conversations** — verified 2026-08-31 at 800 customers:
+  **431 / 431 arc customers, zero silent conversations.** So diffuse means *a weak signal every
+  time*, not *signal with ordinary conversations in between*. The pitch's own story — frustration in
+  March, a complaint in May, a threat to leave in July — implies quiet conversations between the
+  loud ones, and the corpus contains none. The realistic case (a customer calls eight times, three
+  of which matter) is untested, and a judge who asks "what about the noise?" is asking about a real
+  gap. Fixing it moves every published number.
+- **The generated prose is not conversational, and it is on the demo screen.** Measured over 1,400
+  conversations: 1,210 repeat a line verbatim, 129 / 450 chats open "Thank you for **calling**",
+  4,018 / 11,378 customer turns get no reply, and only 109 / 973 planted signals get a responsive
+  agent turn. The agent's whole repertoire is 10 sentences. `ui/data.js` — the screen `ui/README.md`
+  calls "the proof" — carries 36 transcripts of which 30 repeat a line and 13 / 23 non-call ones
+  show speech-recognition noise that cannot exist in typed text. Work in progress on
+  `wp/real-transcripts`.
+
 - **`random-rank` is not clearly beaten on the stratum this entry is built for.** 17–11–2,
   `p=0.345` on diffuse arcs. The ledger's statistically solid wins are against *other* aggregation
   strategies, not against chance.
