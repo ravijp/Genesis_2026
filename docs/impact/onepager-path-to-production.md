@@ -100,7 +100,7 @@ decision that cannot point at real words fails validation and is retried. Measur
 ## 6. What a first client deployment needs
 
 **Ready now:** ingest → ledger → threshold → investigator → case queue, all deployed as code and
-tested (812 tests). Reader and investigator both run against Bedrock. The UI opens from disk with no
+tested (817 tests). Reader and investigator both run against Bedrock. The UI opens from disk with no
 build step and deploys with `aws s3 sync`.
 
 **Needed from the client:**
@@ -125,10 +125,12 @@ re-scoring path.
 
 ## 7. The honest risk
 
-**The mechanism is not yet proven to beat a cheap bounded window.** On the pre-registered stratum two
-simpler baselines beat the full ledger at 30 seeds. The corpus cannot currently settle whether
-never-discard earns its place, because customers average ~3.5 conversations and an arm keeping the
-best two discards almost nothing.
+**The mechanism is not yet proven to beat chance.** On the stratum the entry is built for, the full
+ledger vs a seeded-RNG control is **17-11-2, p=0.345** — it beats every real baseline there and
+cannot separate itself from random ranking. Whole-portfolio it is 7th of 9 arms, one point above
+chance (0.119 vs 0.109). And the records reversed when the corpus changed shape on 2026-08-30: two
+cheaper baselines that previously beat the ledger now lose to it. These numbers describe the corpus
+at least as much as the mechanism.
 
 **What that means for a deployment:** the value proposition that is *measured* is coverage and
 triage — read 100% of conversations instead of a sample, assemble cited evidence, route to the right

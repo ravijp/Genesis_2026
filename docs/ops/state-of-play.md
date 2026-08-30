@@ -14,7 +14,7 @@ AWS design and `aws-infrastructure.md` for what is actually provisioned.
 
 The system runs end to end with **zero API keys**: dataset generation → extraction → per-customer
 ledger → investigator agent producing case files with cited evidence → a UI that opens from disk.
-**812 tests**, ruff clean, separation guard over **44 modules** across `src/` and `tools/`,
+**817 tests**, ruff clean, separation guard over **44 modules** across `src/` and `tools/`,
 **30 UI routes**, and a contrast gate over **634** rendered colour pairs.
 Next gate **2026-09-07**.
 

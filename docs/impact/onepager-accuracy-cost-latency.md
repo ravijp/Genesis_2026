@@ -8,7 +8,7 @@ stated wins.
 **Reproduce any of it with no API key and no network** — the model responses are committed:
 
 ```bash
-uv sync && uv run pytest                                # 812 tests
+uv sync && uv run pytest                                # 817 tests
 uv run earshot sweep --seeds 30 --customers 1500        # every recall figure and p-value
 EARSHOT_CACHE_MODE=replay uv run python tools/verdict_accuracy.py \
   --provider bedrock --per-arm 25 --customers 2400      # the agent table
@@ -98,22 +98,27 @@ better than 4 / 25. The bias runs against us.
 
 | comparison, diffuse arcs | record | p |
 |---|---|---|
-| full ledger vs score-each-call-and-forget *(pre-registered)* | **26–2–2** | **<0.001** |
-| full ledger vs `stateless-top2` — sum the two loudest calls | **6–18–6** *(we lose)* | 0.023 |
-| full ledger vs `window3-top2` — last three calls, best two | **5–21–4** *(we lose)* | 0.002 |
+| full ledger vs score-each-call-and-forget *(pre-registered)* | **29–0–1** | **<0.001** |
+| full ledger vs `stateless-top2` — sum the two loudest calls | **26–2–2** | **<0.001** |
+| full ledger vs `window3-top2` — last three calls, best two | **26–2–2** | **<0.001** |
+| **full ledger vs `random-rank`** — a seeded RNG, ignores every signal | **17–11–2** | **0.345** |
 
-**The pre-registered headline holds and two cheaper baselines beat us on the same stratum.**
-`window3-top2` holds strictly less state than a ledger and wins where the ledger is supposed to be
-strongest. The honest claim is **aggregating a few conversations beats aggregating one** — not
-*memory beats detection*. What never-discard buys over a bounded three-conversation window is
-**unproven**.
+**Read the last row first.** On the stratum this entry is built for, the ledger is **not
+statistically distinguishable from ranking customers at random.** It wins on diffuse arcs against
+every real baseline and cannot separate itself from chance.
 
-**Why the corpus cannot yet settle it, and what that costs.** Customers average ~3.5 conversations,
-so an arm that keeps the best two discards almost nothing. Widening the fragment pools on 2026-08-30
-(8/8/4/4 → 14/14/14/14) lifted the arc ceiling and doubled planted evidence per customer; on that
-corpus the ledger stops losing (4–1–1, 3–0–3, 1–1–4 across three settings of the spread parameter).
-**Six seeds, not significant, and nothing is published from it.** The 10-seed keyed sweep that would
-settle adoption has not been run.
+**Whole-portfolio, the ledger is 7th of 9 arms** — recall 0.119 (695 / 5834) against chance at 0.109
+(633 / 5834) and a ceiling of 0.138. **On concentrated arcs it loses 0–30–0** to four separate arms.
+
+**And these records reversed when the corpus changed.** On the pre-2026-08-30 corpus `stateless-top2`
+and `window3-top2` *beat* the ledger on diffuse arcs (`p=0.023`, `p=0.002`); widening the fragment
+pools reversed both. A change to how many fragments exist to plant flipped a headline in both
+directions, so these numbers describe the corpus at least as much as the mechanism.
+
+**The binding constraint is the reader.** The offline lexicon finds **1 of the 32** fragments written
+without sight of its vocabulary. With a reader that weak every arm crowds between 0.109 and 0.138,
+and no ranking strategy escapes it. That is why the model reader's 0.8214 matters more than any row
+in this table.
 
 **One objection, answered by measurement rather than argument.** *"Your diffuse stratum is defined by
 the parameter that spread the evidence thin, so an aggregator winning there is arithmetic."* A
@@ -133,8 +138,9 @@ Listed because a checkable gap is worth more than a reassuring silence.
 - **Retention lift against a matched control** — the anchor metric the brief names. Not computed, and
   **not currently computable**: the corpus has no intervention model, so a lift figure would measure
   targeting rather than retention. Construction is specified in `build-plan.md` §8.9.
-- **ROC / PR curves and dev-split calibration.** Recall and precision are computed at four review
-  budgets; only the 10% row is published.
+- **ROC curves and dev-split calibration.** Recall and precision at four review budgets are now
+  computed AND printed, with the arm ordering's instability across them stated in the output. A
+  full ROC and a reliability diagram are still not built.
 - **Batch latency end to end.** Per-conversation reader latency is measured; a whole-portfolio
   nightly figure is not.
 

@@ -59,154 +59,151 @@ bit-for-bit. Weighing ambiguous evidence is the model's job. A test enforces the
 Full picture, with diagrams: **[docs/architecture/architecture.md](docs/architecture/architecture.md)**
 
 ---
-
 ## The honest state of the numbers
 
-The harness was built to *test* the claim, not illustrate it. Figures below are from **10 seeds ×
-1,500 customers — 1,904 outcome customers in total** — with every arm paired seed by seed and compared
-with a two-sided sign test. The 30-seed records quoted alongside come from **5,760 outcome customers**.
+The harness was built to *test* the claim, not illustrate it. Every figure below is **30 seeds ×
+1,500 customers — 5,834 outcome customers** — every arm paired seed by seed, compared with an exact
+two-sided sign test. `uv run earshot sweep --seeds 30 --customers 1500` reproduces all of it offline
+with no key, in about 70 seconds.
 
-**Regenerated 2026-08-28** after a corpus defect was fixed (commit `08b20cc`): the planter re-used an
-already-planted fragment once a trajectory's pool ran out, so the same sentence appeared in two
-conversations and the ledger paid a cross-conversation corroboration bonus for one utterance copied
-twice. It hit 120 / 822 arc customers at this corpus size. Every figure below is post-fix, and the
-headline moved — see the pre-registered bullet.
+**Regenerated 2026-08-30**, on a corpus whose fragment pools were widened from 8/8/4/4 to
+14/14/14/14. That lifted the arc ceiling — two of four trajectories previously capped at 4 signals,
+and their later conversations were empty by construction — and it moved almost every number on this
+page, several of them across zero. The previous corpus and its records are in git.
 
-Recall at a **10% review budget**, since a review team's capacity is the real constraint. Both arc
-strata are shown, because the result is a **trade** and reporting only one side of it would be picking
-the answer out of a comparison the code computes in full:
+**Every row reads the same offline-lexicon signal stream.** `earshot sweep` runs the keyless 26-regex
+fallback, prints `reader=offline-lexicon` in its own header, and stamps the provider into the
+artifact manifest, so the source is never unlabelled. That reader is weak in absolute terms and got
+**weaker** on this corpus: of the 32 fragments authored for the widened pools — in a pass whose
+author never saw the extractor's vocabulary — it finds **1**. Of the original 24 it finds 21. The
+arm-vs-arm comparison stays internally valid because every arm eats the identical stream, but hold
+that 1-of-32 in mind, because it explains the shape of everything below.
 
-**Every row below reads the same offline-lexicon signal stream.** `earshot sweep` runs
-`OfflineLexiconExtractor` — the keyless 26-regex fallback, not a model — and now prints
-`reader=offline-lexicon` in its own header and stamps `provider` into the artifact manifest, so the
-source is never left unlabelled. That reader is weak in absolute terms (**0.0357 strict recall,
-4 / 112**, against real CFPB language — measured further down this page), but this table is not
-testing that number. Every arm consumes the identical stream from the identical reader, so the
-arm-vs-arm comparison stays internally valid regardless of how weak the reader is: a stronger reader
-would move every row's absolute recall up together, not reorder them. What moves between rows here
-is the memory mechanism, not the evidence it is fed.
+### The floor: what chance looks like
 
-| Arm | Recall | Hits / outcomes | **Diffuse arcs** | hits / n | **Concentrated arcs** | hits / n |
-|---|---|---|---|---|---|---|
-| window3-top2 *(last 3 conversations, keep the best 2)* | 0.139 | 265 / 1904 | **0.205** | **150 / 730** | 0.183 | 115 / 628 |
-| stateless-top2 *(sum the two loudest calls)* | 0.138 | 263 / 1904 | 0.201 | 147 / 730 | 0.185 | 116 / 628 |
-| dumb-ledger *(unweighted count)* | 0.120 | 229 / 1904 | 0.164 | 120 / 730 | 0.170 | 107 / 628 |
-| full-ledger *(decay, corroboration, channel, escalation)* | 0.124 | 236 / 1904 | 0.160 | 117 / 730 | 0.188 | 118 / 628 |
-| long-context-3 *(last 3 conversations pooled)* | 0.124 | 237 / 1904 | 0.145 | 106 / 730 | 0.205 | 129 / 628 |
-| stateless-top3 *(sum the three loudest calls)* | 0.123 | 235 / 1904 | 0.134 | 98 / 730 | 0.215 | 135 / 628 |
-| hybrid *(rank-combined)* | 0.129 | 246 / 1904 | 0.108 | 79 / 730 | 0.266 | 167 / 628 |
-| stateless-max *(score each call, forget)* | 0.143 | 273 / 1904 | 0.114 | 83 / 730 | **0.303** | **190 / 628** |
+**`random-rank` is a shipped arm.** It ranks customers by a seeded RNG, ignores every signal, and
+flags exactly what the budget allows. It exists because *"does any of this beat chance?"* deserves an
+arm rather than an assertion.
 
-Read the two stratum columns together and the shape is a **trade, not a winner**: arms that aggregate
-across conversations do better on thin evidence and worse on a single loud call, and `stateless-max` —
-which aggregates nothing — is the extreme of both.
+| Arm | Recall @10% | Hits / outcomes | Above chance |
+|---|---|---|---|
+| stateless-max *(score each call, forget)* | **0.138** | 806 / 5834 | +0.029 |
+| hybrid *(rank-combined)* | 0.129 | 754 / 5834 | +0.020 |
+| long-context-3 *(last 3 conversations pooled)* | 0.129 | 751 / 5834 | +0.020 |
+| stateless-top3 *(sum the three loudest)* | 0.121 | 705 / 5834 | +0.012 |
+| window3-top2 *(last 3, keep best 2)* | 0.120 | 698 / 5834 | +0.011 |
+| stateless-top2 *(sum the two loudest)* | 0.119 | 697 / 5834 | +0.010 |
+| **full-ledger** *(decay, corroboration, channel, escalation)* | **0.119** | **695 / 5834** | **+0.010** |
+| dumb-ledger *(unweighted count)* | 0.112 | 655 / 5834 | +0.003 |
+| **random-rank** *(chance)* | **0.109** | **633 / 5834** | — |
 
-That is as far as the ordering goes. It is *not* monotone in how many conversations an arm may
-combine: `stateless-top3` is significantly **worse** than `stateless-top2` on diffuse arcs
-(`10–0–0`, `p=0.002`) despite seeing strictly more of them. The stable claim is "aggregating a few
-conversations beats aggregating one on diffuse arcs, and the reverse on concentrated ones"; the exact
-row order below is specific to the 10% budget, which is the only operating point we evaluate.
+**The full ledger is seventh of nine on whole-portfolio recall, one point above chance.** That is the
+most important line on this page. Everything below is a statement about *where* the ledger's small
+edge lives — not a claim that the edge is large.
 
-What survives a paired test:
+### Where the ledger wins: diffuse arcs
 
-- **Memory wins on the arcs it exists for — at 30 seeds, and not at 10.** On diffuse arcs — evidence
-  spread thin, nothing alarming in any single conversation — the full ledger catches **390 of 2,252**
-  against **226 of 2,252** for scoring-and-forgetting, winning **26 seeds of 30 with 2 ties and 2
-  losses** (`p=0.000`). This is the entry's pre-registered headline, the one comparison declared before
-  the run, and `earshot sweep` prints it first.
-  **At 10 seeds the same comparison is `7–2–1`, `p=0.180` — it does not clear 0.05.** Before the
-  corpus fix of 2026-08-28 the 10-seed record read `8–0–2`, `p=0.008`, and part of that margin was the
-  duplicated-fragment artefact. The effect itself did not shrink — the 30-seed diffuse gap widened from
-  0.068 to 0.073 — but **ten seeds is no longer enough to see it**, and any claim from this page should
-  be quoted at 30.
-- **And memory loses on concentrated arcs, by a comparable margin.** **118 of 628** against
-  **190 of 628** at 10 seeds, losing 9 of 10 (`p=0.021`; at 30 seeds, **2–28–0**, `p=0.000`).
-  Accumulation dilutes a single decisive signal. We publish this because it is the same size as the win
-  and comes from the same run — and because it is the actual argument for running a memory *alongside*
-  per-call detection rather than instead of it.
-- **Two much cheaper arms beat the whole ledger on the stratum the entry is built on.** This is the
-  most important thing on this page and it goes against us.
+On diffuse arcs — evidence spread across conversations, nothing alarming in any single one — the
+ledger beats **every** baseline at 30 seeds:
 
-  `stateless-top2` sums the two loudest calls — two floats per customer, no ledger, no never-discard,
-  no retro re-scoring. `window3-top2` keeps only the last three conversations and only the best two of
-  those — strictly *less* state than a ledger. At 30 seeds, on diffuse arcs:
+| Comparison (diffuse, 30 seeds) | Record | p |
+|---|---|---|
+| vs `stateless-max` **(pre-registered)** | **29–0–1** | **<0.001** |
+| vs `stateless-top2` | **26–2–2** | **<0.001** |
+| vs `window3-top2` | **26–2–2** | **<0.001** |
+| vs `hybrid` | 26–1–3 | <0.001 |
+| vs `stateless-top3` | 20–4–6 | 0.002 |
+| vs `long-context-3` | 20–3–7 | <0.001 |
+| **vs `random-rank`** | **17–11–2** | **0.345** |
 
-  | comparison (diffuse, 30 seeds) | record | p |
-  |---|---|---|
-  | full-ledger vs `stateless-top2` | **6–18–6** (ledger loses) | **0.023** |
-  | full-ledger vs `window3-top2` | **5–21–4** (ledger loses) | **0.002** |
-  | full-ledger vs `stateless-max` *(pre-registered)* | 26–2–2 (ledger wins) | 0.000 |
+**Read the last row before the others.** On the stratum this entry is built for, the ledger is **not
+statistically distinguishable from ranking customers at random.** Diffuse recall is 0.154 (359 /
+2332) against chance at 0.128 (298 / 2332).
 
-  On concentrated arcs the ledger now beats **neither**: `stateless-top2` `16–9–5` (`p=0.230`) and
-  `window3-top2` `17–9–4` (`p=0.169`). Before the corpus fix it beat `stateless-top2` at `p=0.017`;
-  that win did not survive, and the loss to `window3-top2` on diffuse got *worse* (`p=0.013` → `0.002`).
-  So `window3-top2` is not a trade against us — it matches the ledger where the ledger is strong and
-  beats it where the ledger is supposed to be strongest. All of these are exploratory among 84
-  uncorrected tests; only the `stateless-max` row was declared in advance. We are not going to soften
-  them.
+**On the previous corpus, `stateless-top2` and `window3-top2` beat the ledger here** — at `p=0.023`
+and `p=0.002`. On this corpus the ledger beats both at `p<0.001`. Changing how many fragments exist
+to plant reversed a headline in both directions, which is the strongest evidence available that these
+records describe the corpus at least as much as the mechanism.
 
-  What the ledger *does* beat on diffuse arcs, at 30 seeds, is every arm that pools a window without
-  ranking inside it: `long-context-3` **20–8–2** (`p=0.036`) and `stateless-top3` **22–7–1**
-  (`p=0.008`). Both became significant only after the corpus fix. The pattern across all of it is that
-  **selectivity beats volume** — the arms that beat us keep the best two of what they see, and the arms
-  we beat keep everything they see. That is a finding about ranking, not about memory.
+**And the arms it beats are worse than chance on this stratum.** `stateless-max` scores 0.088 on
+diffuse against random's 0.128 — concentrating on the loudest call is *actively wrong* when evidence
+is spread thin. Beating it is a lower bar than it sounds.
 
-  So the honest reading of the pre-registered headline is **aggregating a few conversations beats
-  aggregating one**, not *memory beats detection*. Our diffuse customers average about 2.5 extracted
-  signals, so "keep everything" discards almost nothing more than "keep the best two out of the last
-  three" — and on the evidence so far the cheap bounded rule is *better*, not merely equal. **What
-  never-discard buys over a three-conversation window is, right now, unproven.** Whether it pulls ahead
-  as histories lengthen is the question the ledger has to answer, and the corpus cannot currently pose
-  it (see the fragment-pool limit in the build plan).
-- **Overall, memory neither beats nor loses to per-call detection.** Every pairing involving the full
-  ledger is non-significant on whole-portfolio recall.
-- **Our scoring machinery still earns nothing.** Full ledger vs a dumb unweighted count on diffuse
-  arcs: **3–4–3, `p=1.000`**. But this flips sign across seed sets — on seeds `100..109` the plain
-  count significantly **beats** the full ledger on diffuse arcs (`0–9–1`, `p=0.004`) — and points the
-  other way on the other stratum, where at 30 seeds the full ledger significantly beats the plain
-  count on concentrated arcs (`17–5–8`, `p=0.017`). So "decoration" is too strong in one direction and
-  too generous in the other. The honest statement: the mechanisms are not distinguishable on the
-  stratum we pre-registered, and nothing we have earns a claim either way elsewhere.
-- **Multiplicity.** `earshot sweep` runs **84 pairwise tests** (28 pairings × 3 metrics) with no
-  correction, and prints every one. Only the headline above was declared in advance; any other single
-  `p` under 0.05 is a hint, not a result. Every number quoted in this README appears in that output.
+### Where the ledger loses: concentrated arcs
 
-> **A caveat on ranking, and it cuts against our own headline.** Alerts are the top *K* of a ranked
-> list, and the arms differ enormously in how many distinct scores they produce — so part of each
-> queue is filled by the `customer_id` tie-break rather than by evidence. `earshot sweep` prints this:
->
-> | arm | distinct scores | share of queue decided alphabetically |
-> |---|---|---|
-> | full-ledger | 673 | **0.0%** |
-> | stateless-top3 | 106 | 3.0% |
-> | window3-top2 | 61 | 6.3% |
-> | long-context-3 | 74 | 7.6% |
-> | hybrid | 522 | 8.1% |
-> | stateless-top2 | 60 | 25.4% |
-> | stateless-max | 15 | **40.8%** |
-> | dumb-ledger | 6 | **55.1%** |
->
-> The two arms most affected are **the pre-registered headline's own opponent** (`stateless-max`,
-> 40.8%) and the ablation behind "our machinery earns nothing" (`dumb-ledger`, 55.1%). So this caveat
-> cuts against our own claims, not against a comparison we lose.
->
-> Ties are broken by `customer_id`, deterministically — that stays the default, so every number on
-> this page still reproduces exactly. **We measured how much the headline depends on that** by adding
-> a second tie-break rule, an independent seeded RNG (`evals.tie_break_seed_for`, hashed into its own
-> namespace so it cannot correlate with the corpus draw), and re-running the pre-registered comparison
-> under both, on the same 30 seeds: full-ledger vs `stateless-max` on diffuse arcs goes from
-> **19–4–7** (`p=0.003`) under the `customer_id` tie-break to **21–6–3** (`p=0.006`) under the
-> randomised one. Four of the seven ties resolve — two into wins, two into losses — so the *exact*
-> record is not a precise integer, confirming the caveat rather than retiring it. What survives is the
-> *conclusion*: the ledger wins both ways, at `p<0.01` both ways. At 10 seeds the same swap moves
-> `5–1–4` (`p=0.219`) to `6–2–2` (`p=0.289`) — already non-significant either way, so no conclusion
-> flips there either. `earshot sweep` prints this comparison automatically, immediately after the
-> headline.
->
-> What buys the ledger its resolution is **decay**, not confidence weighting: switching confidence
-> weighting off alone leaves the ranking as well-defined, while switching decay off collapses the
-> number of distinct scores by roughly a third. `earshot run` prints the ablations; it does not yet
-> print their tie-share, so we quote the direction and not the digits.
+A clean sweep of losses, published because it is the same run:
+
+| Comparison (concentrated, 30 seeds) | Record | p |
+|---|---|---|
+| vs `stateless-max` | **0–30–0** | <0.001 |
+| vs `window3-top2` | **0–30–0** | <0.001 |
+| vs `long-context-3` | **0–30–0** | <0.001 |
+| vs `hybrid` | **0–30–0** | <0.001 |
+| vs `stateless-top2` | 0–29–1 | <0.001 |
+| vs `random-rank` | 18–7–5 | 0.043 |
+
+Accumulation dilutes a single decisive signal. The ledger beats chance here and loses to everything
+else — which is the argument for running a memory *alongside* per-call detection rather than instead
+of it.
+
+### The ranking is not stable across operating points
+
+`earshot sweep` evaluates every arm at 1%, 2%, 5% and 10% review budgets — data the harness always
+computed and never printed — and reports whether the order holds. **It does not:**
+
+```
+1%:  stateless-top2 > window3-top2 > stateless-max > … > full-ledger (6th of 9)
+10%: stateless-max > hybrid > long-context-3 > … > full-ledger (7th of 9)
+```
+
+`random-rank` is last at every budget, which is the sanity check that the control behaves. Any table
+quoting a single budget — including the one above — is one slice of an unstable ranking, and the
+command says so in its own output rather than letting a reader assume the order is a property of the
+arms.
+
+### Tie-breaks, measured rather than caveated
+
+Alerts are the top *K* of a ranked list, so an arm producing few distinct scores decides much of its
+queue alphabetically: `dumb-ledger` **65.9%**, `stateless-max` **21.9%**, the full ledger **0.0%**.
+This page used to say that dependence was unmeasured. It now is — `earshot sweep` runs the
+pre-registered headline under both tie-break rules and prints both:
+
+| Headline (diffuse, 30 seeds) | Record | p |
+|---|---|---|
+| deterministic (`customer_id`, the default) | 29–0–1 | <0.001 |
+| randomised (independent seeded RNG) | 28–0–2 | <0.001 |
+
+**The record moves**, so the exact integer was never precise — as the old caveat guessed. The
+conclusion survives both ways at `p<0.001`.
+
+### What this adds up to
+
+**Aggregating a few conversations beats aggregating one, on evidence that is genuinely spread out.**
+Supported at `p<0.001` — and it reverses when the corpus changes shape, so treat it as a statement
+about a regime, not a law.
+
+**That unbounded memory beats a cheap bounded window is unproven.** On the previous corpus the window
+was *better*. Never-discard has not yet earned its place on recall.
+
+**The binding constraint is the reader, not the ranking.** A lexicon finding 1 of 32 fragments written
+outside its vocabulary leaves every arm crowded between 0.109 and 0.138 — a chance floor and a ceiling
+three points above it. No ranking strategy escapes a reader that weak, which is why the model reader's
+**0.8214 (92 / 112)** on real customer language matters more to this product than any row above.
+
+**Precision says nothing recall does not.** The precision matrix is byte-identical to overall recall —
+same records, same p-values — because at an equal alert budget every arm flags the same count, so both
+metrics rank on hits alone. Printed anyway, with that note, because a reader is entitled to check
+rather than take it on trust.
+
+**Multiplicity.** `earshot sweep` runs 84 pairwise tests with no correction and prints every one. Only
+the `stateless-max` diffuse row was declared in advance; any other single `p` under 0.05 is a hint,
+not a result.
+
+> **What buys the ledger its ranking resolution is decay, not confidence weighting.** Switching
+> confidence weighting off alone leaves the ranking as well-defined; switching decay off collapses the
+> number of distinct scores by roughly a third. That is decay's defence, and it is not a recall
+> defence — it is what stops the alert queue being ordered alphabetically. `earshot run` prints the
+> ablations; it does not yet print their tie-share, so the direction is quoted and not the digits.
 
 > **Two retractions, both from earlier today.** (1) A first version of this table came from a single
 > 400-customer run with 39 outcome customers, where every rate was an integer over 39 — differences of
