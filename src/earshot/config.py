@@ -42,7 +42,15 @@ class CorpusConfig:
     # precision meaningless, because a third of any random sample is then a true positive.
     outcome_base_rate: float = 0.03
     outcome_risk_gain: float = 0.18
-    filler_turns: tuple[int, int] = (4, 12)
+    # Customer turns in the body of a conversation, after the reason for contact and the one
+    # security check. Was `filler_turns = (4, 12)`, when a conversation was a bag of unrelated
+    # questions and 4-12 of them was the whole content. A conversation now opens with a stated
+    # reason and closes on a resolution or an undertaking, which is five turns of scaffolding, so
+    # the same total length needs a shorter body: median turns per conversation lands at 15
+    # against 16 before.
+    body_turns: tuple[int, int] = (2, 7)
+    # Speech-recognition damage. Applied to CALL only -- typed channels cannot have it -- and
+    # never to a planted fragment, which is the quote the case screen prints as evidence.
     asr_error_rate: float = 0.02
 
 
