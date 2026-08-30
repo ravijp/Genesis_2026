@@ -29,6 +29,10 @@ from .corpus_lexicon import (
     FILLER_CUSTOMER,
     OPENINGS,
     Fragment,
+    agent_closing,
+    agent_opening,
+    agent_reply_to_filler,
+    agent_reply_to_signal,
 )
 from .schema import (
     Channel,
@@ -114,7 +118,7 @@ def _render_conversation(
     turns: list[Turn] = []
     idx = 0
     if channel != Channel.COMPLAINT:
-        turns.append(Turn(idx, "agent", rng.choice(OPENINGS)))
+        turns.append(Turn(idx, "agent", agent_opening(channel, rng.choice(OPENINGS))))
         idx += 1
 
     n_filler = rng.randint(*cfg.filler_turns)
@@ -129,19 +133,38 @@ def _render_conversation(
             turns.append(Turn(idx, "customer", text))
             plant_turn_index = idx
             idx += 1
-            turns.append(Turn(idx, "agent", rng.choice(FILLER_AGENT)))
+            # The reply is keyed on the fragment, not on the (possibly ASR-mangled) text, and the
+            # `rng.choice` draw still happens so the stream is untouched. See the long note in
+            # `corpus_lexicon.py`.
+            turns.append(
+                Turn(
+                    idx,
+                    "agent",
+                    agent_reply_to_signal(
+                        plant.fragment_id,
+                        plant.signal_type,
+                        plant.strength,
+                        channel,
+                        rng.choice(FILLER_AGENT),
+                    ),
+                )
+            )
             idx += 1
             continue
-        turns.append(
-            Turn(idx, "customer", _apply_asr_noise(rng, rng.choice(FILLER_CUSTOMER), cfg.asr_error_rate))
-        )
+        # Hoisted, not inlined, so the reply can be keyed on what the customer ACTUALLY asked
+        # rather than on its ASR-mangled surface. Evaluation order is unchanged -- `rng.choice`
+        # ran before `_apply_asr_noise` when it was an argument too -- so the stream is untouched.
+        picked = rng.choice(FILLER_CUSTOMER)
+        turns.append(Turn(idx, "customer", _apply_asr_noise(rng, picked, cfg.asr_error_rate)))
         idx += 1
         if rng.random() < 0.75:
-            turns.append(Turn(idx, "agent", rng.choice(FILLER_AGENT)))
+            turns.append(
+                Turn(idx, "agent", agent_reply_to_filler(picked, channel, rng.choice(FILLER_AGENT)))
+            )
             idx += 1
 
     if channel != Channel.COMPLAINT:
-        turns.append(Turn(idx, "agent", rng.choice(CLOSINGS)))
+        turns.append(Turn(idx, "agent", agent_closing(channel, rng.choice(CLOSINGS))))
 
     return (
         Conversation(
