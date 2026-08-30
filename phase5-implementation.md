@@ -84,10 +84,24 @@ All checks passed!
 
 ### 3. The byte-identical proof, 3 seeds × 400 customers
 
-`snapshot.py` captures every customer turn keyed by (conversation, index); every `SeededSignal`
-field; every `CustomerTruth` field; each conversation's channel, day and **speaker sequence**; every
+The harness (`snapshot` + `compare`, ~150 lines, session scratchpad) captures every customer turn
+keyed by (conversation, index); every `SeededSignal` field; every `CustomerTruth` field; each conversation's channel, day and **speaker sequence**; every
 `ExtractedSignal` the offline reader emits; and every customer's ledger score with its per-entry
-`contribution_now` and `score_at_write`. `compare.py` exits non-zero on any movement.
+`contribution_now` and `score_at_write`. `compare` exits non-zero on any movement — self-tested both
+ways: **exit 0** on an unchanged tree, **exit 1** on a deliberately broken one (`FILLER_AGENT` resized
+10 → 14, which it caught as 5,688 / 5,694 customer turns moved and 712 → 725 conversations).
+
+**It is deliberately NOT committed, and the reason is worth recording.** I did try to land it as
+`tools/corpus_invariance.py`, and `tests/test_separation.py` refused it — two failures, because it
+imports `earshot.corpus` to reach `SeededSignal` and `CustomerTruth`. The exemption list
+`_TOOLS_EVALUATION_SIDE` is capped at three entries by
+`test_tools_evaluation_exemptions_stay_small`, whose docstring says exactly why this script does not
+qualify: *"A `tools/` script earns a place here only if reading the seeded key IS its job — scoring
+something against what was planted… A script that merely finds the corpus convenient does not
+qualify."* This harness is a differ, not a scorer. **The guard was right and I reverted rather than
+widening it.** What is durable instead is the four guard tests added to `tests/test_corpus.py`, which
+live on the corpus side where no exemption is needed. Phase C should rebuild the harness from the
+spec above — it is a throwaway by design.
 
 ```
 wrote after_V5.json: 3 seeds, 33663 customer turns, 3049 seeded signals, 998 extracted signals
@@ -133,8 +147,10 @@ git-sha and elapsed-time strings. 238 non-blank lines, zero differ.
 
 ### The one thing that did move
 
-`pipeline_fingerprint()`: `fd58c7642e12` → `3da5f8449b25`. Expected and correct — it hashes source
-bytes and is deliberately over-sensitive. `artifacts/runs/sweep-30x1500-9ddd6674c388.json` carries
+`pipeline_fingerprint()`: `fd58c7642e12` → **`378476ec3a2f`**. Expected and correct — it hashes
+source bytes and is deliberately over-sensitive. (It read `3da5f8449b25` after the first splice and
+moved again with each later edit; `378476ec3a2f` is the committed value. The commit message quotes
+the intermediate one — this is the right figure.) `artifacts/runs/sweep-30x1500-9ddd6674c388.json` carries
 the old stamp at `manifest.pipeline_sha`, so `tools/routing_accuracy.py` will now warn on it. **Its
 numbers are still right**; it needs a re-stamp, which is a 6-minute offline re-run, not a
 re-derivation.
