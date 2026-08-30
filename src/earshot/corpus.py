@@ -407,8 +407,13 @@ def _render_live(
     # is the failure mode `smallest_fragment_pool`'s docstring calls the safe direction and still
     # spends a real signal. `test_every_allocated_fragment_is_actually_spoken` pins it.
     plant_at = rng.randrange(len(body)) if plant is not None else -1
+    # Prefer a closing this customer has not been given before. A chased topic reuses its own
+    # `promised` lines, so without this the agent signed off two contacts running with the same
+    # sentence -- on the one turn that is supposed to be an undertaking.
     closing_pool = topic.promised if arc.promise_made else topic.resolved
-    closing = rng.choice(closing_pool)
+    fresh = [line for line in closing_pool if line not in used_surfaces]
+    closing = rng.choice(fresh or list(closing_pool))
+    used_surfaces.add(closing)
 
     plant_turn_index: int | None = None
     for i, (customer_line, agent_line) in enumerate(body):

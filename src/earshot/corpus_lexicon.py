@@ -2052,9 +2052,9 @@ def gap_bucket(gap_days: int) -> str:
         return "days"
     if gap_days < 25:
         return "weeks"
-    if gap_days < 50:
+    if gap_days < 60:
         return "month"
-    if gap_days < 110:
+    if gap_days < 120:
         return "months"
     return "long"
 
