@@ -1889,6 +1889,46 @@ CONTINUITY_BROKEN: tuple[str, ...] = (
 )
 
 
+# --- chasing something that was promised and not done -------------------------------------
+#
+# A topic carries three follow-ups, which is plenty for one contact and nowhere near enough for
+# four contacts about the same unresolved thing -- and a broken undertaking means the next
+# contact IS about the same thing. Read end to end, `CUST-0029` asked "Will it work at the cash
+# machine, or is that stopped as well?" in February, March and June and got the same answer every
+# time, which is worse than the disorder it replaced.
+#
+# These are topic-independent on purpose: what a person asks on the third chase is not about
+# standing orders or cards, it is about why nothing has happened. That also means they never run
+# out, however long the arc.
+
+CHASE_FOLLOWUPS: tuple[tuple[str, str], ...] = (
+    ("Has anything actually been done since I last got in touch?",
+     "There's a note, and no action against it. I'm not going to dress that up."),
+    ("Is there a reference on there from last time, or does this start again?",
+     "There is, and it doesn't start again. I'm working from what's already on the account."),
+    ("How long is this meant to take, honestly?",
+     "It should have been done by now. I'll give you a date rather than a range."),
+    ("What happened to the last request, do you know?",
+     "It was raised and then it sat. I can see where it stopped."),
+    ("Who do I speak to if it doesn't get sorted this time?",
+     "Me, and if I'm not here it goes to my team leader. I'll put both on the note."),
+    ("I don't want to have to explain this all again next time.",
+     "You won't. It's written down, and the next person will see it before you say a word."),
+    ("Is this going to keep happening?",
+     "Not if I can help it. I'd rather find out why it stuck than just push it through again."),
+)
+
+# What the agent says when the customer is BACK about something that was not done. Answering a
+# chase with the same first-contact acknowledgement is the tell that nothing was remembered --
+# which is the exact failure the FCA's 2025 vulnerability review documents as poor practice, and
+# the exact thing this product exists to fix.
+CHASE_ACK: tuple[str, ...] = (
+    "I can see the note from last time, so you don't have to go through it again. Let me pick it up from there.",
+    "You're right, and it's on the record that you raised it. I'm not going to start you from the beginning.",
+    "I've read what happened last time before you say anything. Sorry -- that should have been finished.",
+)
+
+
 # --- conversation choreography -------------------------------------------------------------
 #
 # Verification once, at the start, and only on a live channel. The security question used to fire

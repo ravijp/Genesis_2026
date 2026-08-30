@@ -24,6 +24,8 @@ from dataclasses import dataclass
 from .config import CorpusConfig, RunConfig
 from .corpus_lexicon import (
     ASIDE_CONNECTORS,
+    CHASE_ACK,
+    CHASE_FOLLOWUPS,
     BY_TYPE,
     COMPLAINT_ACK_GENERIC,
     COMPLAINT_ASK,
@@ -254,7 +256,11 @@ def _surface(rng: random.Random, fragment: Fragment, used_surfaces: set[str]) ->
 
 
 def _body_turns(
-    rng: random.Random, topic: Topic, n: int, said: set[str] | None = None
+    rng: random.Random,
+    topic: Topic,
+    n: int,
+    said: set[str] | None = None,
+    chasing: bool = False,
 ) -> list[tuple[str, str]]:
     """`n` (customer line, agent reply) pairs, WITHOUT replacement, on topic first and last.
 
@@ -270,15 +276,19 @@ def _body_turns(
     thing the customer actually rang about.
     """
     said = said or set()
-    topical = list(topic.followups)
+    # A chase is not a fresh enquiry. Its material is topic-independent -- what has actually been
+    # done, who owns it, why it stuck -- so it never exhausts however long the arc runs, and the
+    # topic's own three follow-ups do not get asked for a third time.
+    topical = list(CHASE_FOLLOWUPS if chasing else topic.followups)
     rng.shuffle(topical)
     # Prefer what this customer has not said yet. A broken undertaking means the NEXT contact is
     # about the same topic, so without this a customer chasing one thing across four contacts
     # asked "Do I need to set it up again from scratch?" four times.
-    topical.sort(key=lambda pair: pair[0] in said)
-    pairs = topical[: max(1, min(n, len(topical)))]
+    unused = [pair for pair in topical if pair[0] not in said]
+    spent = [pair for pair in topical if pair[0] in said]
+    pairs = unused[:n]
 
-    wanted = min(n, len(topical) + _MAX_ASIDES) - len(pairs)
+    wanted = min(n, len(unused) + _MAX_ASIDES) - len(pairs)
     if wanted > 0:
         others = [t for t in TOPICS if t is not topic]
         rng.shuffle(others)
@@ -294,8 +304,18 @@ def _body_turns(
                 other.opener, Channel.CALL, rng.choice(FILLER_AGENT)
             )
             # Interior only: index 0 sets up the topic, the last pair carries the closing.
-            at = rng.randint(1, len(pairs)) if len(pairs) > 1 else len(pairs)
-            pairs.insert(min(at, len(pairs)), (connector + head, reply))
+            # Interior strictly: the last pair's reply carries the closing, and a closing about
+            # the reason for contact glued to the answer to an off-topic question reads as two
+            # conversations spliced together.
+            at = rng.randint(1, len(pairs) - 1) if len(pairs) > 1 else len(pairs)
+            pairs.insert(at, (connector + head, reply))
+
+    # Only if there is genuinely nothing new left. A fourth contact about one unresolved thing
+    # SHOULD run shorter than the first -- a customer who has asked everything twice does not
+    # invent an eighth question -- so this runs out rather than looping, which is what put the
+    # same three chase questions into contacts 3 and 4 of `CUST-0007`.
+    if not pairs:
+        pairs = spent[:1] or list(topic.followups)[:1]
     return pairs
 
 
@@ -360,19 +380,23 @@ def _render_live(
     idx += 1
     turns.append(Turn(idx, "customer", rng.choice(VERIFY_ANSWER[key])))
     idx += 1
-    turns.append(
-        Turn(
-            idx,
-            "agent",
-            rng.choice(VERIFY_DONE)
-            + " "
-            + agent_reply_to_filler(topic.opener, channel, rng.choice(FILLER_AGENT)),
-        )
+    # A chase is acknowledged as a chase. Answering it with the same first-contact line is what
+    # made `CUST-0029` hear "No block that I can see, it may have been their terminal" in
+    # February, March and June -- an agent with no memory, on the demo screen of a product whose
+    # entire claim is memory.
+    acknowledgement = (
+        rng.choice(CHASE_ACK)
+        if arc.chasing
+        else agent_reply_to_filler(topic.opener, channel, rng.choice(FILLER_AGENT))
     )
+    turns.append(Turn(idx, "agent", rng.choice(VERIFY_DONE) + " " + acknowledgement))
     idx += 1
+    # The stated reason counts as said, so a topic settled in one contact does not come back as
+    # an aside in the next.
+    used_surfaces.add(topic.opener)
 
     n_body = rng.randint(*cfg.body_turns)
-    body = _body_turns(rng, topic, n_body, used_surfaces)
+    body = _body_turns(rng, topic, n_body, used_surfaces, chasing=arc.chasing)
     # Drawn against the body that was actually built, not against `n_body`. `_body_turns` caps
     # its output at the topic's follow-ups plus `_MAX_ASIDES`, so for a long draw it returns
     # fewer pairs than asked for -- and `randint(1, n_body - 1)` then pointed past the end, the
@@ -466,11 +490,17 @@ def _render_complaint(
     # the number of paragraphs is drawn, not fixed.
     size = rng.random()
     n_detail, n_impact = (0, 0) if size < 0.30 else (1, 1) if size < 0.75 else (2, 2)
-    detail = list(arc.topic.narrative)
-    rng.shuffle(detail)
-    detail.sort(key=lambda line: line in used_surfaces)
-    used_surfaces.update(detail[:n_detail])
-    paragraphs.extend(detail[:n_detail])
+    # Source order, never shuffled: the two narrative lines are setup then consequence ("I
+    # travelled to the branch on the strength of the hours I was given" / "when I rang to ask why
+    # I was told they had changed"), and shuffling them inverted the chronology of a letter whose
+    # whole job is to set out a chronology.
+    narrative = list(arc.topic.narrative)
+    if n_detail == 1:
+        detail = [next((line for line in narrative if line not in used_surfaces), narrative[0])]
+    else:
+        detail = narrative[:n_detail]
+    used_surfaces.update(detail)
+    paragraphs.extend(detail)
 
     plant_turn_index: int | None = None
     if plant is not None:
