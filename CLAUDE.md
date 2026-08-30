@@ -72,7 +72,10 @@ Frozen gates: **2026-08-10** 15-min check-in · **2026-08-24** combined Sprint 1
 
 ## Starting a fresh session — read these, in this order
 
-0. **`docs/ops/handover.md`** — already imported at the top of this file. The next action lives there.
+0. **`docs/ORIENTATION.md`** — **only if you have never seen this project.** Fifteen minutes, zero
+   assumed context: what it is, the eight-term vocabulary every other document uses, and what is
+   true versus unproven. Skip it if you already know the domain.
+0b. **`docs/ops/handover.md`** — already imported at the top of this file. The next action lives there.
    `docs/ops/progress.md` is its companion: work-package status and blockers with owners.
 1. **`docs/ops/state-of-play.md`** — where we are right now, what is in flight, what is blocked, the
    next three things. One screen, rewritten in place each session, never appended to.

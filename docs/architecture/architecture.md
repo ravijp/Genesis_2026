@@ -198,20 +198,26 @@ rather than replacing them.
 | Question | Metric |
 |---|---|
 | Does the extractor find what was planted? | Conversation-level recall vs seeded signals — matched on (conversation, signal type), not on character spans; **published miss rate** |
-| Does memory beat forgetting? | Six arms at **equal alert budget**, broken out per stratum |
+| Does memory beat forgetting? | **Nine arms** at equal alert budget, broken out per stratum, paired seed by seed with an exact sign test |
 | Does each scoring mechanism earn its place? | Per-mechanism ablation |
-| Is the agent right? | Verdict and routing accuracy vs the seeded trajectory — **not yet computed** |
-| Is the agent honest? | Share of decisions whose evidence resolves on the FIRST attempt (not after retries) — **not yet computed** |
-| Can a bank afford it? | Tokens, steps and cost per investigation are captured; cost per 1,000 conversations and p50/p95 are **not yet computed** |
+| Does any of it beat chance? | `random-rank` — a seeded RNG that ignores every signal — is a shipped arm. **Measured 2026-08-30: full-ledger vs chance on diffuse arcs is 17–11–2, `p=0.345`** |
+| Is the agent right? | Verdict and routing accuracy vs the seeded trajectory. **Measured: 22 / 50 verdicts, 36 / 49 routing (2 wrong, 11 declined)** |
+| Is the agent honest? | Share of decisions whose evidence resolves on the FIRST attempt (not after retries). **Measured: 50 / 50, no repairs** |
+| Can a bank afford it? | **Measured: $1.66 per 1,000 conversations read, $0.0295 per investigation; reader p50 1,244 ms / p95 2,212 ms** |
 
 Comparison numbers come from `earshot sweep` and are written to a run manifest with their seed list.
 
-**Where the numbers stand.** Across ten datasets, the ledger catches 134 of 780 thin-evidence
-customers against 96 of 780 for score-each-call-and-forget (8 wins, 2 ties, no losses, `p=0.008`), and
-*loses* on concentrated arcs by a comparable margin (119 of 629 against 180 of 629, `p=0.039`). The
-result is a trade: the more conversations an arm may combine, the better it does on thin evidence and
-the worse on a single loud call. Overall no arm is distinguishable from any other; a plain unweighted
-count matches the full ledger, and summing the two loudest calls **beats** it on thin evidence. So the
-arms answer *which trigger feeds the investigator best*, not *what the product is*, and what
+**Where the numbers stand — 30 seeds, 5,834 outcome customers, regenerated 2026-08-30.** On diffuse
+arcs the ledger beats every competing arm, including the two that beat it on the previous corpus
+(`26–2–2` against each, `p<0.001`). **And it does not beat chance there: `17–11–2`, `p=0.345`.**
+Whole-portfolio it is 7th of 9 arms — recall 0.119 against random ranking's 0.109 — and on
+concentrated arcs it loses `0–30–0` to four separate arms.
+
+A change to how many fragments exist to plant reversed a published headline in *both* directions, so
+these records describe the corpus at least as much as the mechanism. The binding constraint is the
+reader, not the ranking: the offline lexicon finds 1 of 32 fragments written outside its vocabulary,
+which crowds every arm between 0.109 and 0.138.
+
+So the arms answer *which trigger feeds the investigator best*, not *what the product is*, and what
 never-discard buys over a cheap bounded window is currently unproven. Full table and method in the
-README.
+README, which is the source of record.
