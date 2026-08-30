@@ -253,7 +253,9 @@ def _surface(rng: random.Random, fragment: Fragment, used_surfaces: set[str]) ->
     return rng.choice(options) if options else rng.choice(fragment.surfaces())
 
 
-def _body_turns(rng: random.Random, topic: Topic, n: int) -> list[tuple[str, str]]:
+def _body_turns(
+    rng: random.Random, topic: Topic, n: int, said: set[str] | None = None
+) -> list[tuple[str, str]]:
     """`n` (customer line, agent reply) pairs, WITHOUT replacement, on topic first and last.
 
     899 of 1,400 conversations repeated a customer line verbatim and 166 said one three or more
@@ -267,14 +269,20 @@ def _body_turns(rng: random.Random, topic: Topic, n: int) -> list[tuple[str, str
     the resolution or the undertaking -- is appended to the final reply and has to land on the
     thing the customer actually rang about.
     """
+    said = said or set()
     topical = list(topic.followups)
     rng.shuffle(topical)
+    # Prefer what this customer has not said yet. A broken undertaking means the NEXT contact is
+    # about the same topic, so without this a customer chasing one thing across four contacts
+    # asked "Do I need to set it up again from scratch?" four times.
+    topical.sort(key=lambda pair: pair[0] in said)
     pairs = topical[: max(1, min(n, len(topical)))]
 
     wanted = min(n, len(topical) + _MAX_ASIDES) - len(pairs)
     if wanted > 0:
         others = [t for t in TOPICS if t is not topic]
         rng.shuffle(others)
+        others.sort(key=lambda t: t.opener in said)
         for other in others[:wanted]:
             connector = rng.choice(ASIDE_CONNECTORS)
             head = other.opener
@@ -343,13 +351,14 @@ def _render_live(
         reason = continuity if arc.chasing else (
             continuity + " " + rng.choice(_PIVOTS) + topic.opener
         )
-    turns.append(Turn(idx, "customer", _asr(rng, cfg, channel, reason)))
+    # Not through `_asr`: see its docstring. The reason for contact carries the continuity.
+    turns.append(Turn(idx, "customer", reason))
     idx += 1
 
     key = channel.value if channel.value in VERIFY_ASK else "call"
     turns.append(Turn(idx, "agent", rng.choice(VERIFY_ASK[key])))
     idx += 1
-    turns.append(Turn(idx, "customer", _asr(rng, cfg, channel, rng.choice(VERIFY_ANSWER[key]))))
+    turns.append(Turn(idx, "customer", rng.choice(VERIFY_ANSWER[key])))
     idx += 1
     turns.append(
         Turn(
@@ -363,7 +372,7 @@ def _render_live(
     idx += 1
 
     n_body = rng.randint(*cfg.body_turns)
-    body = _body_turns(rng, topic, n_body)
+    body = _body_turns(rng, topic, n_body, used_surfaces)
     plant_at = rng.randint(1, max(1, n_body - 1)) if plant is not None else -1
     closing_pool = topic.promised if arc.promise_made else topic.resolved
     closing = rng.choice(closing_pool)
@@ -382,6 +391,7 @@ def _render_live(
                 rng.choice(FILLER_AGENT),
             )
         else:
+            used_surfaces.add(customer_line)
             turns.append(Turn(idx, "customer", _asr(rng, cfg, channel, customer_line)))
             idx += 1
         turns.append(Turn(idx, "agent", agent_line + " " + closing if last else agent_line))
@@ -449,6 +459,8 @@ def _render_complaint(
     n_detail, n_impact = (0, 0) if size < 0.30 else (1, 1) if size < 0.75 else (2, 2)
     detail = list(arc.topic.narrative)
     rng.shuffle(detail)
+    detail.sort(key=lambda line: line in used_surfaces)
+    used_surfaces.update(detail[:n_detail])
     paragraphs.extend(detail[:n_detail])
 
     plant_turn_index: int | None = None
@@ -488,7 +500,18 @@ def _render_complaint(
 
 
 def _asr(rng: random.Random, cfg: CorpusConfig, channel: Channel, text: str) -> str:
-    """Speech recognition damage, on the phone and nowhere else."""
+    """Speech-recognition damage: on the phone, on filler, and nowhere else.
+
+    Two exclusions, and both are the same rule. Damage may never fall on a sentence the product
+    reads a claim off. The planted evidence quote is one -- 212 of 973 plants used to ship
+    damaged, and it is the string the case screen prints as proof. The customer's statement of
+    why they are in touch is the other, because from the second contact on it carries the
+    continuity: `"I rang about the lost card about a month ago and nothing has come of it"` came
+    out as `"I about a month ago and nothing has come of it"`, which is not what a transcriber
+    produces and is not readable as the thing the whole entry is about.
+
+    Callers pass those two strings through untouched; everything else in a call comes here.
+    """
     if channel is not Channel.CALL:
         return text
     return _apply_asr_noise(rng, text, cfg.asr_error_rate)

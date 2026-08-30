@@ -576,9 +576,9 @@ PLANTS: tuple[Fragment, ...] = (
     ),
     Fragment(
         "le-w6", SignalType.LIFE_EVENT, 0.22,
-        "I've been going back and forth to appointments with my dad a lot lately, that's why the odd hours calling.",
+        "I'm back and forth to appointments with my dad a lot lately, that's why the odd hours calling.",
         paraphrases=(
-            "I'm back and forth to appointments with my dad a lot at the moment, hence the odd hours.",
+            "There are a lot of hospital appointments with my dad at the moment, hence the odd hours.",
             "Lots of appointments with my dad lately, which is why I ring at strange times.",
         ),
     ),
