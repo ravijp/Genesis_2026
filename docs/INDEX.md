@@ -205,6 +205,9 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 - `gates/2026-08-10-sprint-1-checkin.md` — Sprint 1 check-in brief `[stable]`
 - `gates/committee-requirements-email.md` — the tooling/access emails, **sent and fully answered**: Bedrock was the route, `s3://agentic-trio` and the CodeCommit repo exist. Two of its asks are now things we actively refuse — an OpenAI key (D-022) and HTTPS Git credentials (unusable with SSO). **Kept, not deleted, only because `sources/genesis-committee-comms.md:74` cites it and `sources/` is never-edit** `[stable]`
 - `impact/finance-brief.md` — finance value-chain research; feeds the Zenon-impact axis `[stable]`
+- `impact/onepager-use-case.md` — **required deliverable ① of three** (kickoff-notes.md:43): client-ready use case and impact. The accumulation moment as a four-row table, who reads the feed, and the known limits stated rather than buried `[stable]`
+- `impact/onepager-accuracy-cost-latency.md` — **required deliverable ②**: the internal evidence page. Every figure with its denominator and the command that reproduces it keylessly; a "what is not measured" section that names the four open gaps `[stable]`
+- `impact/onepager-path-to-production.md` — **required deliverable ③**: what is deployed, the single IAM policy blocking it, how it integrates into a bank console, run cost from measured figures, and the honest risk `[stable]`
 
 ## artifacts/
 
