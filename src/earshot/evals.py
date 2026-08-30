@@ -15,6 +15,8 @@ diagnostic here and nothing more.
 
 from __future__ import annotations
 
+import hashlib
+import random
 import statistics
 from dataclasses import dataclass, field
 
@@ -23,6 +25,40 @@ from .schema import Corpus, ExtractedSignal, Outcome, SeededSignal, Stratum
 
 DEFAULT_BUDGETS = (0.01, 0.02, 0.05, 0.10)
 LEAD_HORIZONS = (0, 7, 14, 30, 60)
+
+
+def _tie_break_key(customer_id: str, tie_break_seed: int | None) -> str | float:
+    """The second sort key `evaluate_arm` ranks on, after `-score`.
+
+    Deterministic by default (`tie_break_seed=None`): `customer_id` itself, alphabetical, so
+    every number this repo has ever published keeps reproducing byte-for-byte with no flag
+    needed. When a seed is supplied, every customer gets an independent `random.Random` draw
+    instead -- independent PER CUSTOMER, not one draw for the whole ranking, or every tied
+    customer would keep its relative order and the "random" tie-break would just be a relabelled
+    alphabetical one.
+
+    `tie_break_seed` must never be the corpus seed itself: reusing it would correlate which
+    customers WIN ties with which customers the corpus RNG happened to generate first, which is
+    exactly the kind of confound a tie-break harness exists to rule out. Callers derive it via
+    `tie_break_seed_for()` below rather than passing a run seed directly.
+    """
+    if tie_break_seed is None:
+        return customer_id
+    return random.Random(f"{tie_break_seed}:{customer_id}").random()
+
+
+def tie_break_seed_for(corpus_seed: int) -> int:
+    """An independent seed for the randomised tie-break, derived from the corpus seed.
+
+    Independent means "not the same RNG stream", not "unrelated to the run": a sweep still needs
+    one tie-break seed per corpus seed so a multi-seed comparison is reproducible without
+    plumbing a second `--seeds` list through the CLI. Hashing into a different namespace
+    (`"tiebreak"` vs. the bare seed `corpus.py:221` uses to build `random.Random(run.seed)`)
+    is what makes the two streams independent -- XOR-ing or adding a constant would still let an
+    adversarial seed choice correlate them, hashing does not.
+    """
+    digest = hashlib.sha256(f"tiebreak:{corpus_seed}".encode()).digest()
+    return int.from_bytes(digest[:8], "big")
 
 
 
@@ -71,7 +107,7 @@ def _outcome_customers(corpus: Corpus) -> dict[str, int | None]:
 
 
 def evaluate_arm(
-    corpus: Corpus, arm: ArmResult, budget: float
+    corpus: Corpus, arm: ArmResult, budget: float, tie_break_seed: int | None = None
 ) -> BudgetResult:
     # Every customer gets a score, including those the extractor found nothing for -- omitting
     # them would quietly inflate precision.
@@ -83,7 +119,9 @@ def evaluate_arm(
     # (every customer whose only evidence is one cue of the same weight scores identically),
     # so a `>=` cut sweeps in the whole tie cluster and the arms end up flagging wildly
     # different numbers of customers at the same nominal budget, which is not a comparison at
-    # all. Ties are broken deterministically by customer_id.
+    # all. Ties are broken deterministically by customer_id UNLESS `tie_break_seed` is given, in
+    # which case each customer gets an independent seeded random draw instead — see
+    # `_tie_break_key`. The default is unchanged so every published number keeps reproducing.
     # This ranks on ArmTimeline.final() -- the PEAK score across the whole timeline -- because
     # the question here is "did the ledger ever surface this customer in time", which is the
     # recall question a real system answers by alerting the moment a score crosses.
@@ -96,7 +134,9 @@ def evaluate_arm(
     # `cmd_investigate` (that one) can therefore disagree about who crossed at the same budget.
     # Do not "unify" them without deciding which question you are asking.
     k = max(1, round(budget * len(scores)))
-    ranked = sorted(scores.items(), key=lambda kv: (-kv[1], kv[0]))
+    ranked = sorted(
+        scores.items(), key=lambda kv: (-kv[1], _tie_break_key(kv[0], tie_break_seed))
+    )
     flagged = {cid for cid, s in ranked[:k] if s > 0}
     # Default 1.0, not 0.0: with nothing flagged, nothing should count as crossing.
     threshold = min((scores[cid] for cid in flagged), default=1.0)
@@ -179,10 +219,15 @@ def evaluate_arm(
 
 
 def evaluate_all(
-    corpus: Corpus, arms: dict[str, ArmResult], budgets: tuple[float, ...] = DEFAULT_BUDGETS
+    corpus: Corpus,
+    arms: dict[str, ArmResult],
+    budgets: tuple[float, ...] = DEFAULT_BUDGETS,
+    tie_break_seed: int | None = None,
 ) -> list[BudgetResult]:
     return [
-        evaluate_arm(corpus, arm, budget) for budget in budgets for arm in arms.values()
+        evaluate_arm(corpus, arm, budget, tie_break_seed)
+        for budget in budgets
+        for arm in arms.values()
     ]
 
 

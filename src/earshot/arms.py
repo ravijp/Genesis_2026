@@ -35,6 +35,13 @@
   8. hybrid           -- stateless-max OR full-ledger, whichever fires first, combined on rank.
                          A memory added on top of the per-call detection a bank already runs,
                          rather than a replacement for it.
+  9. random-rank      -- a NEGATIVE CONTROL, not a competitor. Ranks customers by a seeded RNG
+                         with no reference to signal content at all -- it reads the same signal
+                         stream every other arm reads (so it is scored on the same customer
+                         universe) but assigns each customer an independent random score. At a
+                         10% budget it recalls ~10% of outcomes by construction: chance-level
+                         performance made an arm, so "every other arm beats chance" is a
+                         measurement rather than an assertion nobody checked.
 
 Arms 1-5 run through the SAME SignalLedger code path with a different ScoringConfig, so the
 ablation is structurally fair rather than fair-by-assertion. Arms 1 and 2 differ only in how
@@ -43,6 +50,8 @@ many per-conversation scores the customer-level number may see.
 
 from __future__ import annotations
 
+import hashlib
+import random
 from dataclasses import dataclass, field, replace
 
 from .config import ScoringConfig
@@ -211,8 +220,40 @@ def _hybrid(
     return out
 
 
+def _random_rank(signals: list[ExtractedSignal], seed: int) -> dict[str, ArmTimeline]:
+    """The negative control: rank customers by a seeded RNG, with no reference to signal
+    content. Reads only `customer_id` and `day` off the same signal stream every other arm
+    reads -- never the score, the signal type, or the evidence quote -- so it is scored on
+    exactly the same customer universe as every other arm and cannot see anything an arm that
+    ignores evidence should not see.
+
+    One draw per customer, not per signal: a customer with more conversations must not get more
+    chances to roll a high score, or "random" would quietly reward the same volume confound the
+    ledger is checked against in `corpus_diagnostics`.
+
+    Seeded from `hashlib.sha256` rather than `random.Random(seed)` directly, in its own
+    namespace, so a caller who reuses the corpus seed here does not correlate "who wins the
+    random-rank draw" with "which customers the corpus RNG happened to generate first" --
+    the same reasoning `evals.tie_break_seed_for` documents for the tie-break RNG.
+    """
+    by_customer: dict[str, list[ExtractedSignal]] = {}
+    for s in signals:
+        by_customer.setdefault(s.customer_id, []).append(s)
+
+    timelines: dict[str, ArmTimeline] = {}
+    for customer_id, sigs in by_customer.items():
+        digest = hashlib.sha256(f"random-rank:{seed}:{customer_id}".encode()).digest()
+        draw = random.Random(digest).random()
+        last_day = max(s.day for s in sigs)
+        # A single point at the last day the customer had a conversation: the random arm has no
+        # timeline to speak of, but `first_crossing` (used for lead-time reporting) still needs
+        # at least one (day, score) pair to find.
+        timelines[customer_id] = ArmTimeline(customer_id, [(last_day, draw)])
+    return timelines
+
+
 def run_all_arms(
-    signals: list[ExtractedSignal], cfg: ScoringConfig | None = None
+    signals: list[ExtractedSignal], cfg: ScoringConfig | None = None, seed: int = 0
 ) -> dict[str, ArmResult]:
     base = cfg or ScoringConfig()
     stateless = _run(signals, _stateless_config(base), per_conversation=True)
@@ -247,6 +288,8 @@ def run_all_arms(
         ),
         "full-ledger": ArmResult("full-ledger", full),
         "hybrid": ArmResult("hybrid", _hybrid(stateless, full)),
+        # The negative control: chance-level performance, made an arm rather than an assertion.
+        "random-rank": ArmResult("random-rank", _random_rank(signals, seed)),
     }
 
 

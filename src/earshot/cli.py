@@ -163,7 +163,7 @@ def _pipeline(run: RunConfig, extractor: Extractor | None = None):
 def cmd_run(run: RunConfig, extractor: Extractor | None = None) -> int:
     started = time.time()
     corpus, extractor, signals = _pipeline(run, extractor)
-    arms = run_all_arms(signals, run.scoring)
+    arms = run_all_arms(signals, run.scoring, seed=run.seed)
     results = evaluate_all(corpus, arms)
     fidelity = extraction_fidelity(corpus.seeded, signals)
     diagnostics = corpus_diagnostics(corpus, arms)
@@ -260,7 +260,7 @@ def cmd_demo(run: RunConfig) -> int:
     #
     # Outcomes are drawn stochastically, so a diffuse arc may legitimately not churn; there is
     # a fallback below to any diffuse arc, labelled as such.
-    arms = run_all_arms(signals, run.scoring)
+    arms = run_all_arms(signals, run.scoring, seed=run.seed)
     threshold = evaluate_arm(corpus, arms["full-ledger"], INVESTIGATION_BUDGET).threshold
     stateless_arm = arms["stateless-max"]
     stateless_result = evaluate_arm(corpus, stateless_arm, INVESTIGATION_BUDGET)
@@ -1050,8 +1050,29 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
         by_arm, "full-ledger", "stateless-max", metric="diffuse_recall"
     )
     print("\nPRE-REGISTERED HEADLINE — full-ledger vs stateless-max on diffuse arcs")
-    print(f"  {w}-{lost}-{tied}  p={_p(sign_test_p(w, lost))}   "
-          f"(declared before the run; everything below is exploratory)")
+    print(f"  deterministic tie-break (customer_id, the default): {w}-{lost}-{tied}  "
+          f"p={_p(sign_test_p(w, lost))}   (declared before the run; everything below is "
+          f"exploratory)")
+
+    # The tie-break caveat, measured rather than asserted: re-run the SAME seeds with an
+    # independent seeded RNG deciding ties instead of `customer_id`, and report whether the
+    # headline record moves. `stateless-max` carries the largest alphabetical tie-share of any
+    # arm in the roster (README, "RANKING RESOLUTION"), so this is the opponent queue most
+    # exposed to the tie-break rule -- if randomising it were going to move the headline, this
+    # is where it would show up.
+    _, by_arm_random = sweep(
+        run, seeds, budget=INVESTIGATION_BUDGET, extractor=extractor, randomise_ties=True
+    )
+    wr, lostr, tiedr = paired_record(
+        by_arm_random, "full-ledger", "stateless-max", metric="diffuse_recall"
+    )
+    print(f"  randomised tie-break (independent seeded RNG):       {wr}-{lostr}-{tiedr}  "
+          f"p={_p(sign_test_p(wr, lostr))}")
+    if (w, lost, tied) == (wr, lostr, tiedr):
+        print("  -> record UNCHANGED: the tie-break rule does not decide this comparison.")
+    else:
+        print("  -> record MOVED: part of the headline depends on how ties are broken. "
+              "Reported plainly, not softened.")
 
     n_diffuse = _matrix(
         "DIFFUSE ARCS — evidence spread thin, every pairing, paired by seed",

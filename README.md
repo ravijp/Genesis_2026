@@ -190,9 +190,18 @@ What survives a paired test:
 > 40.8%) and the ablation behind "our machinery earns nothing" (`dumb-ledger`, 55.1%). So this caveat
 > cuts against our own claims, not against a comparison we lose.
 >
-> Ties are broken by `customer_id`, deterministically. **We have not measured how much the headline
-> depends on that** — there is no randomised-tie-break harness in this repo, so treat `96 / 780` as
-> carrying an unquantified tie-break component rather than as a precise integer.
+> Ties are broken by `customer_id`, deterministically — that stays the default, so every number on
+> this page still reproduces exactly. **We measured how much the headline depends on that** by adding
+> a second tie-break rule, an independent seeded RNG (`evals.tie_break_seed_for`, hashed into its own
+> namespace so it cannot correlate with the corpus draw), and re-running the pre-registered comparison
+> under both, on the same 30 seeds: full-ledger vs `stateless-max` on diffuse arcs goes from
+> **19–4–7** (`p=0.003`) under the `customer_id` tie-break to **21–6–3** (`p=0.006`) under the
+> randomised one. Four of the seven ties resolve — two into wins, two into losses — so the *exact*
+> record is not a precise integer, confirming the caveat rather than retiring it. What survives is the
+> *conclusion*: the ledger wins both ways, at `p<0.01` both ways. At 10 seeds the same swap moves
+> `5–1–4` (`p=0.219`) to `6–2–2` (`p=0.289`) — already non-significant either way, so no conclusion
+> flips there either. `earshot sweep` prints this comparison automatically, immediately after the
+> headline.
 >
 > What buys the ledger its resolution is **decay**, not confidence weighting: switching confidence
 > weighting off alone leaves the ranking as well-defined, while switching decay off collapses the
