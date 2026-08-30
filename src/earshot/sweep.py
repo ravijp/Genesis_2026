@@ -45,6 +45,10 @@ class ArmSample:
     concentrated_outcomes: int = 0
     distinct_scores: int = 0
     tie_decided: int = 0
+    # Carried from `BudgetResult.precision` rather than recomputed here, so there is exactly one
+    # place in the codebase that defines what precision means (hits / flagged at the budget's
+    # cut, 0.0 with nothing flagged) -- see evals.py:evaluate_arm.
+    precision: float = 0.0
 
 
 @dataclass
@@ -69,6 +73,11 @@ class ArmSummary:
     mean_concentrated: float = 0.0
     total_concentrated_hits: int = 0
     total_concentrated_outcomes: int = 0
+    # Same pooled-vs-mean split as recall, for the same reason: `total_flagged` differs seed to
+    # seed only when `n_flagged` rounds differently at the budget's `round(budget * len(scores))`,
+    # so pooling still means something rather than being a constant times `n_seeds`.
+    mean_precision: float = 0.0
+    total_flagged: int = 0
 
     @staticmethod
     def _pooled(hits: int, outcomes: int) -> float:
@@ -86,6 +95,12 @@ class ArmSummary:
     @property
     def pooled_concentrated(self) -> float:
         return self._pooled(self.total_concentrated_hits, self.total_concentrated_outcomes)
+
+    @property
+    def pooled_precision(self) -> float:
+        """Hits over flagged across every seed, not a mean of rates -- same convention as
+        `pooled_recall`, mirrored for precision's own denominator (flagged, not outcomes)."""
+        return self._pooled(self.total_hits, self.total_flagged)
 
 
 def _one_seed(
@@ -128,6 +143,7 @@ def _one_seed(
                 hits=r.n_hits,
                 outcomes=r.n_outcomes,
                 flagged=r.n_flagged,
+                precision=r.precision,
                 diffuse_recall=r.recall_by_stratum["diffuse"],
                 diffuse_hits=r.stratum_hits["diffuse"],
                 diffuse_outcomes=r.stratum_outcomes["diffuse"],
@@ -139,6 +155,34 @@ def _one_seed(
             )
         )
     return out
+
+
+def _summarise(by_arm: dict[str, list[ArmSample]]) -> dict[str, ArmSummary]:
+    """Shared by `sweep()` and `sweep_budgets()` so the pooled-vs-mean convention is computed in
+    exactly one place -- two summarisers agreeing today and drifting apart at the next field
+    added to `ArmSummary` is how a table quietly stops matching its own artifact."""
+    summaries: dict[str, ArmSummary] = {}
+    for arm, samples in by_arm.items():
+        recalls = [s.recall for s in samples]
+        summaries[arm] = ArmSummary(
+            arm=arm,
+            n_seeds=len(samples),
+            mean_recall=statistics.mean(recalls),
+            stdev=statistics.stdev(recalls) if len(recalls) > 1 else 0.0,
+            lo=min(recalls),
+            hi=max(recalls),
+            total_hits=sum(s.hits for s in samples),
+            total_outcomes=sum(s.outcomes for s in samples),
+            mean_precision=statistics.mean([s.precision for s in samples]),
+            total_flagged=sum(s.flagged for s in samples),
+            mean_diffuse=statistics.mean([s.diffuse_recall for s in samples]),
+            total_diffuse_hits=sum(s.diffuse_hits for s in samples),
+            total_diffuse_outcomes=sum(s.diffuse_outcomes for s in samples),
+            mean_concentrated=statistics.mean([s.concentrated_recall for s in samples]),
+            total_concentrated_hits=sum(s.concentrated_hits for s in samples),
+            total_concentrated_outcomes=sum(s.concentrated_outcomes for s in samples),
+        )
+    return summaries
 
 
 def sweep(
@@ -153,26 +197,61 @@ def sweep(
         for sample in _one_seed(base, seed, budget, extractor, randomise_ties):
             by_arm.setdefault(sample.arm, []).append(sample)
 
-    summaries: dict[str, ArmSummary] = {}
-    for arm, samples in by_arm.items():
-        recalls = [s.recall for s in samples]
-        summaries[arm] = ArmSummary(
-            arm=arm,
-            n_seeds=len(samples),
-            mean_recall=statistics.mean(recalls),
-            stdev=statistics.stdev(recalls) if len(recalls) > 1 else 0.0,
-            lo=min(recalls),
-            hi=max(recalls),
-            total_hits=sum(s.hits for s in samples),
-            total_outcomes=sum(s.outcomes for s in samples),
-            mean_diffuse=statistics.mean([s.diffuse_recall for s in samples]),
-            total_diffuse_hits=sum(s.diffuse_hits for s in samples),
-            total_diffuse_outcomes=sum(s.diffuse_outcomes for s in samples),
-            mean_concentrated=statistics.mean([s.concentrated_recall for s in samples]),
-            total_concentrated_hits=sum(s.concentrated_hits for s in samples),
-            total_concentrated_outcomes=sum(s.concentrated_outcomes for s in samples),
-        )
-    return summaries, by_arm
+    return _summarise(by_arm), by_arm
+
+
+def sweep_budgets(
+    base: RunConfig,
+    seeds: list[int],
+    budgets: tuple[float, ...],
+    extractor: Extractor | None = None,
+) -> dict[float, dict[str, ArmSummary]]:
+    """One corpus and one extraction per seed, evaluated at every budget.
+
+    `sweep()` regenerates the corpus per call, which is fine for its single published budget but
+    would multiply the sweep's runtime by `len(budgets)` for no reason here: the corpus and the
+    extracted signals do not depend on the budget, only `evaluate_arm`'s cut does. Reusing them
+    across budgets is what makes a four-budget curve cost the same generation-and-extraction work
+    as a one-budget sweep.
+    """
+    per_budget: dict[float, dict[str, list[ArmSample]]] = {b: {} for b in budgets}
+    for seed in seeds:
+        run = replace(base, seed=seed)
+        corpus = generate(run)
+        seed_extractor = extractor
+        if seed_extractor is None:
+            seed_extractor = OfflineLexiconExtractor(
+                miss_rate=run.offline_miss_rate, false_fire_rate=run.offline_false_fire_rate
+            )
+        signals = extract_all(seed_extractor, corpus.conversations)
+        # `seed=` matters: `random-rank` draws its ranking from it. Without it this function
+        # builds a different control arm than `_one_seed` does, and the budget curve stops
+        # agreeing with the sweep at the shared 10% budget -- for one arm, quietly.
+        arms = run_all_arms(signals, run.scoring, seed=seed)
+        for budget in budgets:
+            for name, arm in arms.items():
+                r = evaluate_arm(corpus, arm, budget)
+                per_budget[budget].setdefault(name, []).append(
+                    ArmSample(
+                        arm=name,
+                        seed=seed,
+                        recall=r.recall,
+                        hits=r.n_hits,
+                        outcomes=r.n_outcomes,
+                        flagged=r.n_flagged,
+                        precision=r.precision,
+                        diffuse_recall=r.recall_by_stratum["diffuse"],
+                        diffuse_hits=r.stratum_hits["diffuse"],
+                        diffuse_outcomes=r.stratum_outcomes["diffuse"],
+                        concentrated_recall=r.recall_by_stratum["concentrated"],
+                        concentrated_hits=r.stratum_hits["concentrated"],
+                        concentrated_outcomes=r.stratum_outcomes["concentrated"],
+                        distinct_scores=r.n_distinct_scores,
+                        tie_decided=r.n_tie_decided,
+                    )
+                )
+
+    return {budget: _summarise(by_arm) for budget, by_arm in per_budget.items()}
 
 
 def paired_record(

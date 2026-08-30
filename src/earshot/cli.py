@@ -966,7 +966,8 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
     integer over roughly 50 outcome customers, so arms one or two customers apart look
     different and are not. Nothing published comes from `run` alone.
     """
-    from .sweep import paired_record, sign_test_p, sweep
+    from .evals import DEFAULT_BUDGETS
+    from .sweep import paired_record, sign_test_p, sweep, sweep_budgets
 
     # `sweep()` builds its own default per seed when none is supplied (sweep.py:99-102) rather
     # than taking one from here, but it is always the same reader — surfaced so the header and
@@ -998,11 +999,17 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
     else:
         print("")
 
-    print(f"{'arm':<18} {'recall':>8} {'stdev':>7} {'hits/outcomes':>16} "
+    # stdev/lo/hi are recall's spread ACROSS SEEDS (`ArmSummary.summarise`/`_summarise`: computed
+    # from the per-seed recall list, `lo`/`hi` are the min/max seed, not a confidence interval) --
+    # labelled that way here rather than as generic "error bars" so a reader does not mistake a
+    # 10-seed range for something with distributional guarantees behind it.
+    print(f"{'arm':<18} {'recall':>8} {'stdev':>7} {'min seed':>9} {'max seed':>9} "
+          f"{'hits/outcomes':>16} "
           f"{'diffuse':>9} {'diffuse hits/n':>15} {'conc':>7} {'conc hits/n':>15}")
     print("-" * 110)
     for name, s in sorted(summaries.items(), key=lambda kv: -kv[1].pooled_diffuse):
         print(f"{name:<18} {s.pooled_recall:>8.3f} {s.stdev:>7.3f} "
+              f"{s.lo:>9.3f} {s.hi:>9.3f} "
               f"{f'{s.total_hits}/{s.total_outcomes}':>16} "
               f"{s.pooled_diffuse:>9.3f} "
               f"{f'{s.total_diffuse_hits}/{s.total_diffuse_outcomes}':>15} "
@@ -1021,6 +1028,42 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
         arbitrary = statistics.mean([s.tie_decided / s.flagged if s.flagged else 0.0
                                      for s in samples])
         print(f"  {name:<18} {distinct:>16.0f} {arbitrary:>29.1%}")
+
+    # Only the 10% row above is ever published. `evals.DEFAULT_BUDGETS` is computed by
+    # `evaluate_all` on every single-seed `run` already -- this is the same four cuts, pooled
+    # across the sweep's seeds instead of read off one draw, so a reader can see whether the
+    # arm ordering is an artifact of the one operating point this page quotes.
+    budget_summaries = sweep_budgets(run, seeds, DEFAULT_BUDGETS, extractor=extractor)
+    print("\nRECALL AND PRECISION VS BUDGET — pooled across all seeds, integers behind every rate")
+    for budget in DEFAULT_BUDGETS:
+        print(f"\n  budget={budget:.0%}")
+        print(f"    {'arm':<18} {'recall':>8} {'hits/outcomes':>15} "
+              f"{'precision':>10} {'hits/flagged':>14}")
+        for name, s in sorted(
+            budget_summaries[budget].items(), key=lambda kv: -kv[1].pooled_recall
+        ):
+            print(f"    {name:<18} {s.pooled_recall:>8.3f} "
+                  f"{f'{s.total_hits}/{s.total_outcomes}':>15} "
+                  f"{s.pooled_precision:>10.3f} "
+                  f"{f'{s.total_hits}/{s.total_flagged}':>14}")
+
+    # Does the ranking hold as the budget changes, or is the 10% row this page quotes just one
+    # slice of an ordering that reshuffles elsewhere? Checked against the actual pooled recall at
+    # each budget -- not asserted -- because a table with four budgets and no answer to this
+    # question invites a reader to assume whichever answer flatters the entry.
+    orderings = [
+        tuple(sorted(budget_summaries[b], key=lambda n: -budget_summaries[b][n].pooled_recall))
+        for b in DEFAULT_BUDGETS
+    ]
+    stable = len(set(orderings)) == 1
+    print("\n  ARM ORDERING ACROSS BUDGETS (by recall): "
+          + ("STABLE — same rank order at all four budgets."
+             if stable else
+             "CHANGES — rank order is not the same at every budget; the 10% row is one slice, "
+             "not the whole story."))
+    if not stable:
+        for budget, order in zip(DEFAULT_BUDGETS, orderings):
+            print(f"    {budget:.0%}: {' > '.join(order)}")
 
     comparisons: list[dict[str, object]] = []
 
@@ -1089,8 +1132,19 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
         "recall",
         "whole portfolio",
     )
+    n_precision = _matrix(
+        "PRECISION — every pairing, paired by seed",
+        "precision",
+        "NOTE: at THIS equal-budget cut every arm flags the identical count per seed (`n_flagged` "
+        "is a function of the budget and the corpus size, not the arm), so precision = hits / "
+        "(that shared constant) and recall = hits / outcomes, where `outcomes` is also shared "
+        "across arms within a seed. Both rank arms on `hits` alone against the same two "
+        "denominators, so this matrix is not independent evidence -- it is mechanically identical, "
+        "win-loss-tie and p-value, to the OVERALL RECALL matrix above. Printed anyway so a reader "
+        "who asks for precision specifically finds it, not to imply it says something recall didn't.",
+    )
 
-    n_tests = n_diffuse + n_conc + n_overall
+    n_tests = n_diffuse + n_conc + n_overall + n_precision
     print(f"\nNOTE: {n_tests} pairwise tests here, with no multiplicity correction. Only the")
     print("headline above was declared in advance; a single p just under 0.05 among the rest")
     print("is a hint, not a result. Every number published anywhere is in this output.")
@@ -1127,11 +1181,29 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
                         "pooled_recall": round(v.pooled_recall, 4),
                         "pooled_diffuse": round(v.pooled_diffuse, 4),
                         "pooled_concentrated": round(v.pooled_concentrated, 4),
+                        "pooled_precision": round(v.pooled_precision, 4),
                     }
                     for k, v in summaries.items()
                 },
                 "comparisons": comparisons,
                 "samples": {k: [asdict(s) for s in v] for k, v in by_arm.items()},
+                # The budget curve is its own artifact, not folded into "arms" above: that dict
+                # is keyed by arm name at the ONE published budget, and interleaving a second axis
+                # into the same shape is how a reader parsing this file later silently picks up
+                # the wrong budget's numbers under a familiar-looking key.
+                "budget_curve": {
+                    str(budget): {
+                        arm: {
+                            "pooled_recall": round(s.pooled_recall, 4),
+                            "total_hits": s.total_hits,
+                            "total_outcomes": s.total_outcomes,
+                            "pooled_precision": round(s.pooled_precision, 4),
+                            "total_flagged": s.total_flagged,
+                        }
+                        for arm, s in arm_summaries.items()
+                    }
+                    for budget, arm_summaries in budget_summaries.items()
+                },
             },
             indent=2,
             default=str,
