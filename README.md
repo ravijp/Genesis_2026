@@ -13,6 +13,9 @@ This system keeps a **standing per-customer signal ledger** that never discards 
 re-scores it as new conversations arrive — and when it crosses a threshold, an **agent investigates**
 and hands a decision-ready case to a human. It never contacts a customer.
 
+**New to this project?** Read [`docs/ORIENTATION.md`](docs/ORIENTATION.md) first — fifteen minutes,
+assumes no prior context, and defines the vocabulary the rest of these documents use.
+
 ---
 
 ## Quick start — fresh machine

@@ -14,7 +14,10 @@ build promoted to a `src/` layout. Nothing is lost — all of it is on `main`:
 
 ## Reading order for a fresh session
 
-1. `ops/state-of-play.md` — **start here.** Current state, in one screen
+0. `ORIENTATION.md` — **if you have never seen this project.** What it is, the vocabulary every
+   other document assumes, what is true and what is not, in fifteen minutes. Written for a
+   newcomer, a judge, or yourself in three months `[stable]`
+1. `ops/state-of-play.md` — **start here** once oriented. Current state, in one screen
 2. `ops/decisions.md` — what is settled and what was rejected
 3. `ops/working-agreements.md` — the disciplines, each bought with a mistake
 4. `../README.md` — what this is, and the current numbers
@@ -192,6 +195,7 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 ## docs/
 
 - `INDEX.md` — this map. Moved here from the root by D-023 `[stable]`
+- `ORIENTATION.md` — **the zero-context door.** What the project is, the eight-term vocabulary every other document assumes (arc, stratum, diffuse, crossing, plant, decoy…), the results including the chance floor, and where to read next. Written so a newcomer, a judge or a returning teammate needs nothing else first. Explainer only — the README stays the source of record `[stable]`
 - `ops/state-of-play.md` — **the boot file.** Where we are, what is in flight, what is blocked, the next three things. One screen, rewritten in place, never appended `[stable]`
 - `ops/decisions.md` — why things are the way they are and what was rejected, so a fresh session does not re-litigate settled ground `[stable]`
 - `ops/working-agreements.md` — **read before changing anything.** Evaluation discipline, the two-level answer-key guards, demo honesty, keeping docs in step with code, test discipline, bulk-operation discipline, delegation `[stable]`
