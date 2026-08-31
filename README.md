@@ -26,7 +26,7 @@ Requires [uv](https://docs.astral.sh/uv/) and Python 3.13 (uv installs it for yo
 git clone <repo-url> && cd Genesis_2026
 uv sync                                                 # installs deps + the `earshot` package
 uv run pytest                                           # the whole suite
-uv run earshot sweep --seeds 10 --customers 1500        # the numbers below (~30s)
+uv run earshot sweep --seeds 30 --customers 1500        # the numbers below (~2 min)
 uv run earshot demo --customers 3000                    # the accumulation moment, narrated
 uv run earshot investigate --customers 200 --limit 3    # the agent working three cases
 uv run earshot run --customers 400                      # one dataset, for debugging only
@@ -64,179 +64,43 @@ Full picture, with diagrams: **[docs/architecture/architecture.md](docs/architec
 ---
 ## The honest state of the numbers
 
-The harness was built to *test* the claim, not illustrate it. Every figure below is **30 seeds ×
-1,500 customers — 5,834 outcome customers** — every arm paired seed by seed, compared with an exact
-two-sided sign test. `uv run earshot sweep --seeds 30 --customers 1500` reproduces all of it offline
-with no key, in about 70 seconds.
+**The claim this entry makes, in one sentence.** Coverage and retention of evidence are what make an
+at-risk customer visible to a bank; ranking is not. Between our two readers, strict recall on real
+complaint narratives is **0.0357 (4 / 112) against 0.8214 (92 / 112)**, and on our own shipping
+corpus the weak reader leaves **two of four review desks receiving no case at all and a third
+receiving one in twenty**. Of the nine ranking strategies we test, the two that never discard a weak
+signal rank **first and second** on thin evidence, and both bounded-memory arms lose **30–0–0 at
+`p<0.001`** — while every arm, ours included, sits inside a **0.113–0.145** band whose floor is a
+seeded random number generator.
 
-**Regenerated 2026-08-30**, on a corpus whose fragment pools were widened from 8/8/4/4 to
-14/14/14/14. That lifted the arc ceiling — two of four trajectories previously capped at 4 signals,
-and their later conversations were empty by construction — and it moved almost every number on this
-page, several of them across zero. The previous corpus and its records are in git.
+The order of this page follows from that: **the reader first, the ranking second.** Presented the
+other way round, every arm looks crowded near chance for no stated reason.
 
-**Every row reads the same offline-lexicon signal stream.** `earshot sweep` runs the keyless 26-regex
-fallback, prints `reader=offline-lexicon` in its own header, and stamps the provider into the
-artifact manifest, so the source is never unlabelled. That reader is weak in absolute terms and got
-**weaker** on this corpus: of the 32 fragments authored for the widened pools — in a pass whose
-author never saw the extractor's vocabulary — it finds **1**. Of the original 24 it finds 21. The
-arm-vs-arm comparison stays internally valid because every arm eats the identical stream, but hold
-that 1-of-32 in mind, because it explains the shape of everything below.
+**The corpus was rebuilt on 2026-08-31** (Phase C: arcs that read as one relationship — back-references
+that are true, a promise schedule, real turn-taking, channel-correct language). It moved almost every
+number here, killed the pre-registered headline, and is written up in
+[`docs/corpus/06-phase-c-record.md`](docs/corpus/06-phase-c-record.md). Figures measured on the
+corpus that preceded it are labelled **corpus-historical** at the point of use and are not current.
 
-### The floor: what chance looks like
+Every sweep figure below is **30 seeds × 1,500 customers — 5,796 outcome customers** — every arm
+paired seed by seed, compared with an exact two-sided sign test.
+`uv run earshot sweep --seeds 30 --customers 1500` reproduces all of it offline with no key, in 104 s
+on the machine that produced this table.
 
-**`random-rank` is a shipped arm.** It ranks customers by a seeded RNG, ignores every signal, and
-flags exactly what the budget allows. It exists because *"does any of this beat chance?"* deserves an
-arm rather than an assertion.
+**Every arm reads the same offline-lexicon signal stream.** `earshot sweep` runs the keyless 26-regex
+fallback, prints `reader=offline-lexicon` in its own header, and stamps the provider into the artifact
+manifest, so the source is never unlabelled. That reader is weak, the next section measures how weak,
+and the arm-vs-arm comparison stays internally valid because every arm eats the identical stream.
 
-| Arm | Recall @10% | Hits / outcomes | Above chance |
-|---|---|---|---|
-| stateless-max *(score each call, forget)* | **0.138** | 806 / 5834 | +0.029 |
-| hybrid *(rank-combined)* | 0.129 | 754 / 5834 | +0.020 |
-| long-context-3 *(last 3 conversations pooled)* | 0.129 | 751 / 5834 | +0.020 |
-| stateless-top3 *(sum the three loudest)* | 0.121 | 705 / 5834 | +0.012 |
-| window3-top2 *(last 3, keep best 2)* | 0.120 | 698 / 5834 | +0.011 |
-| stateless-top2 *(sum the two loudest)* | 0.119 | 697 / 5834 | +0.010 |
-| **full-ledger** *(decay, corroboration, channel, escalation)* | **0.119** | **695 / 5834** | **+0.010** |
-| dumb-ledger *(unweighted count)* | 0.112 | 655 / 5834 | +0.003 |
-| **random-rank** *(chance)* | **0.109** | **633 / 5834** | — |
+---
 
-**The full ledger is seventh of nine on whole-portfolio recall, one point above chance.** That is the
-most important line on this page. Everything below is a statement about *where* the ledger's small
-edge lives — not a claim that the edge is large.
+## Part one: the reader, and which desks exist because of it
 
-### Where the ledger wins: diffuse arcs
+### Two readers, one gold set, real customer language
 
-On diffuse arcs — evidence spread across conversations, nothing alarming in any single one — the
-ledger beats **every** baseline at 30 seeds:
-
-| Comparison (diffuse, 30 seeds) | Record | p |
-|---|---|---|
-| vs `stateless-max` **(pre-registered)** | **29–0–1** | **<0.001** |
-| vs `stateless-top2` | **26–2–2** | **<0.001** |
-| vs `window3-top2` | **26–2–2** | **<0.001** |
-| vs `hybrid` | 26–1–3 | <0.001 |
-| vs `stateless-top3` | 20–4–6 | 0.002 |
-| vs `long-context-3` | 20–3–7 | <0.001 |
-| **vs `random-rank`** | **17–11–2** | **0.345** |
-
-**Read the last row before the others.** On the stratum this entry is built for, the ledger is **not
-statistically distinguishable from ranking customers at random.** Diffuse recall is 0.154 (359 /
-2332) against chance at 0.128 (298 / 2332).
-
-**On the previous corpus, `stateless-top2` and `window3-top2` beat the ledger here** — at `p=0.023`
-and `p=0.002`. On this corpus the ledger beats both at `p<0.001`. Changing how many fragments exist
-to plant reversed a headline in both directions, which is the strongest evidence available that these
-records describe the corpus at least as much as the mechanism.
-
-**And the arms it beats are worse than chance on this stratum.** `stateless-max` scores 0.088 on
-diffuse against random's 0.128 — concentrating on the loudest call is *actively wrong* when evidence
-is spread thin. Beating it is a lower bar than it sounds.
-
-### Where the ledger loses: concentrated arcs
-
-A clean sweep of losses, published because it is the same run:
-
-| Comparison (concentrated, 30 seeds) | Record | p |
-|---|---|---|
-| vs `stateless-max` | **0–30–0** | <0.001 |
-| vs `window3-top2` | **0–30–0** | <0.001 |
-| vs `long-context-3` | **0–30–0** | <0.001 |
-| vs `hybrid` | **0–30–0** | <0.001 |
-| vs `stateless-top2` | 0–29–1 | <0.001 |
-| vs `random-rank` | 18–7–5 | 0.043 |
-
-Accumulation dilutes a single decisive signal. The ledger beats chance here and loses to everything
-else — which is the argument for running a memory *alongside* per-call detection rather than instead
-of it.
-
-### The ranking is not stable across operating points
-
-`earshot sweep` evaluates every arm at 1%, 2%, 5% and 10% review budgets — data the harness always
-computed and never printed — and reports whether the order holds. **It does not:**
-
-```
-1%:  stateless-top2 > window3-top2 > stateless-max > … > full-ledger (6th of 9)
-10%: stateless-max > hybrid > long-context-3 > … > full-ledger (7th of 9)
-```
-
-`random-rank` is last at every budget, which is the sanity check that the control behaves. Any table
-quoting a single budget — including the one above — is one slice of an unstable ranking, and the
-command says so in its own output rather than letting a reader assume the order is a property of the
-arms.
-
-### Tie-breaks, measured rather than caveated
-
-Alerts are the top *K* of a ranked list, so an arm producing few distinct scores decides much of its
-queue alphabetically: `dumb-ledger` **65.9%**, `stateless-max` **21.9%**, the full ledger **0.0%**.
-This page used to say that dependence was unmeasured. It now is — `earshot sweep` runs the
-pre-registered headline under both tie-break rules and prints both:
-
-| Headline (diffuse, 30 seeds) | Record | p |
-|---|---|---|
-| deterministic (`customer_id`, the default) | 29–0–1 | <0.001 |
-| randomised (independent seeded RNG) | 28–0–2 | <0.001 |
-
-**The record moves**, so the exact integer was never precise — as the old caveat guessed. The
-conclusion survives both ways at `p<0.001`.
-
-### What this adds up to
-
-**Aggregating a few conversations beats aggregating one, on evidence that is genuinely spread out.**
-Supported at `p<0.001` — and it reverses when the corpus changes shape, so treat it as a statement
-about a regime, not a law.
-
-**That unbounded memory beats a cheap bounded window is unproven.** On the previous corpus the window
-was *better*. Never-discard has not yet earned its place on recall.
-
-**The binding constraint is the reader, not the ranking.** A lexicon finding 1 of 32 fragments written
-outside its vocabulary leaves every arm crowded between 0.109 and 0.138 — a chance floor and a ceiling
-three points above it. No ranking strategy escapes a reader that weak, which is why the model reader's
-**0.8214 (92 / 112)** on real customer language matters more to this product than any row above.
-
-**Precision says nothing recall does not.** The precision matrix is byte-identical to overall recall —
-same records, same p-values — because at an equal alert budget every arm flags the same count, so both
-metrics rank on hits alone. Printed anyway, with that note, because a reader is entitled to check
-rather than take it on trust.
-
-**Multiplicity.** `earshot sweep` runs 84 pairwise tests with no correction and prints every one. Only
-the `stateless-max` diffuse row was declared in advance; any other single `p` under 0.05 is a hint,
-not a result.
-
-> **What buys the ledger its ranking resolution is decay, not confidence weighting.** Switching
-> confidence weighting off alone leaves the ranking as well-defined; switching decay off collapses the
-> number of distinct scores by roughly a third. That is decay's defence, and it is not a recall
-> defence — it is what stops the alert queue being ordered alphabetically. `earshot run` prints the
-> ablations; it does not yet print their tie-share, so the direction is quoted and not the digits.
-
-> **Two retractions, both from earlier today.** (1) A first version of this table came from a single
-> 400-customer run with 39 outcome customers, where every rate was an integer over 39 — differences of
-> one customer, inside binomial noise, written up as findings. (2) That corpus also gave every decoy
-> and clean customer a latent risk of exactly `0.0` while every real arc was `≥0.55`, which made the
-> risk value a lossless encoding of the answer key and leaked it into the agent's account tool. Both
-> are fixed; the numbers above are post-fix, and the earlier claim that "memory loses overall" and that
-> "long-context beats us" did not survive either correction.
-
-**Diagnostics, from the committed 400-customer run** in `artifacts/runs/pinned/` — these describe the data and the extractor rather
-than comparing arms, so a single dataset is appropriate; they are not comparison results and should not
-be quoted as such, and they were **regenerated on 2026-08-28 after the corpus fix** from a clean tree
-(`git_sha` `660dca4`, no `-dirty`). Extractor recall **0.659 (492 / 747 planted signals)** — it misses
-34% and is deliberately the weaker option; portfolio outcome rate **12.75% (51 / 400)**. Extraction is matched at
-conversation level — did the extractor find *this signal type in this conversation* — not at
-character-span level.
-
-The corpus plants two kinds of decoy and they are reported separately, because a firing means the
-opposite thing in each: **extractor decoys** are lookalikes and firing on one is a mistake
-(**1.4%, 2 / 141**); **accumulator decoys** are genuine weak signals that never amount to anything, so
-firing is *correct* (**49.7%, 94 / 189**) and what is under test is whether the ledger goes on to
-over-accumulate them — it does not, their flag rate at the 10% budget is 0.000.
-
-**The rule-based offline reader barely works on language it did not write, and we measured it rather
-than waiting to be asked.** Read the provider label before the number: this is
-`OfflineLexiconExtractor`, the keyless 26-regex fallback that exists so everything runs with no API
-keys and no network. **It is not the production reader.** `Extractor` in
-[extract.py](src/earshot/extract.py) is a protocol with two implementations, and **both have now
-been scored against the same 150 hand-marked real CFPB complaint narratives** (public domain, CC0),
-on the same committed gold marks, at the same `(document, signal_type)` grain, by one scorer in one
+Both implementations of the `Extractor` protocol in [extract.py](src/earshot/extract.py) have been
+scored against the same 150 hand-marked real CFPB complaint narratives (public domain, CC0), on the
+same committed gold marks, at the same `(document, signal_type)` grain, by one scorer in one
 execution.
 
 | reader | strict recall | any-type recall | false-positive rate |
@@ -244,31 +108,357 @@ execution.
 | offline lexicon, 26 regexes | 0.0357 (4 / 112) | 0.0964 (8 / 83) | **0.0205 (10 / 488)** |
 | Claude Haiku 4.5 on Bedrock | **0.8214 (92 / 112)** | **0.9759 (81 / 83)** | 0.1598 (78 / 488) |
 
-**Read the third column before the first two.** The model is roughly 8× worse on false positives,
-and almost all of it is one signal type: `complaint_escalation` fires on **0.8072 (67 / 83)** of the
+**Read the third column before the first two.** The model is roughly 8× worse on false positives, and
+almost all of it is one signal type: `complaint_escalation` fires on **0.8072 (67 / 83)** of the
 documents that should not carry it. It marks nearly every complaint as an escalation. Per type its
 strict recall is complaint_escalation 0.9701 (65 / 67), financial_distress 0.8571 (18 / 21),
-life_event 0.3636 (4 / 11), churn_intent 0.3846 (5 / 13) — so two of the four types are still weak.
+life_event 0.3636 (4 / 11), churn_intent 0.3846 (5 / 13) — two of the four types are still weak.
 
-**What this changes and what it does not.** The 0.0357 above measures the **26-regex fallback**, not
-the system: on real language the lexicon misses 96% of what a model catches, `financial_distress`,
-`complaint_escalation` and `life_event` each scored **exactly zero**, and 24 of its 26 cues never
-fired on any of the 150 documents. It does **not** rescue the 0.659 on our own prose — that number
-still measures how much pass A and pass B were co-developed, and nothing here touches it. The sampling frame, the marking guide, the
-gold set and the interpretation thresholds were all committed **before** any narrative was read, and
-two failures of our own — a contaminated inter-marker comparison and a defect in the marking guide —
-are disclosed in the write-up rather than smoothed over. Everything is in
-**[benchmarks/cfpb/](benchmarks/cfpb/)**; `uv run python benchmarks/cfpb/steps/05_score.py`
-reproduces every figure offline with no network. This is the reason the cue vocabulary is being
-regrounded (D-019). It measures the **reader**, not the ledger, and it left the numbers above
-untouched.
+The 0.0357 measures the **26-regex fallback**, not the system: on real language it misses 96% of what
+a model catches, `financial_distress`, `complaint_escalation` and `life_event` each scored **exactly
+zero**, and 24 of its 26 cues never fired on any of the 150 documents. The sampling frame, the marking
+guide, the gold set and the interpretation thresholds were all committed **before** any narrative was
+read, and two failures of our own — a contaminated inter-marker comparison and a defect in the marking
+guide — are disclosed in the write-up rather than smoothed over. Everything is in
+**[benchmarks/cfpb/](benchmarks/cfpb/)**; `uv run python benchmarks/cfpb/steps/05_score.py` reproduces
+every figure offline with no network.
 
-### What the agent actually costs, and where it fails
+This is the one measurement on this page that **does not move when our corpus moves**, because it does
+not touch our corpus. It is why the reader, not the ranking, is the binding constraint.
 
-All from keyed runs on 2026-08-28, Claude Haiku 4.5 through Bedrock, every response committed for
-keyless replay.
+*Corpus-historical: the Haiku row was measured on 2026-08-29 and the gold set is external and
+unchanged, so this comparison stands. The synthetic-corpus recall the CFPB protocol cites separately
+(0.681, 496 / 728) is from a corpus rebuilt twice since — see the dated note at the top of
+`benchmarks/cfpb/PROTOCOL.md`.*
 
-| | measured |
+### The same gap on our own corpus, and what it does to the desks
+
+`uv run python tools/reader_coverage.py --reader offline --per-trajectory 20 --customers 2400`,
+measured 2026-08-31, free and offline. 2,400 customers, 8,429 conversations, 1,270 carrying a seeded
+trajectory; 20 customers sampled per trajectory, 282 conversations. **The denominator is what was
+planted**, never what was found.
+
+| trajectory → desk | planted | found | ratio | best score | crossed |
+|---|---|---|---|---|---|
+| `churn_intent` → **Retention** | 77 | 16 | **0.21** | 0.4486 | **1 / 20** |
+| `complaint_escalation` → **Complaints** | 65 | **1** | **0.02** | 0.0485 | **0 / 20** |
+| `financial_distress` → Collections | 72 | 33 | 0.46 | 0.7218 | 9 / 20 |
+| `life_event` → **Vulnerability** | 68 | 9 | **0.13** | 0.2681 | **0 / 20** |
+| **total** | **282** | **59** | **0.209** | | **10 / 80** |
+
+Threshold 0.2753, the budget-derived top-K cut. Unplanted fires: **0** in all four families.
+
+**Two desks receive nothing and a third receives one case in twenty.** Complaints & Redress sees
+1 of 65 planted complaint conversations. That is not a metric — it is whether a desk exists. A bank
+buying this gets four queues; under this reader, one of them works.
+
+**Nothing was tuned to cause this.** Phase C authored roughly 1,500 new customer sentences, reworded
+six fragments, gated eleven and added five, in a pass whose author did not read the extractor's
+vocabulary. The 26-regex lexicon was co-developed with the *old* prose. Make the prose realistic and
+the lexicon stops working — which is the same result the CFPB benchmark already publishes against real
+customer language (4 / 112), arriving from the other direction.
+
+**It is published, not fixed.** Widening the cues to close a gap discovered by measuring against the
+answer key is exactly the tuning `working-agreements.md` §1 exists to prevent, and it would be visible
+in `git log`. Pass A and pass B are authored without reference to each other on purpose; that
+independence is what makes the miss rate honest.
+
+**Corpus-historical, and it is the gap in this page's lead claim.** The model arm of this comparison
+was measured on **2026-08-29, on the corpus that preceded the 2026-08-31 rebuild** (n=20 per
+trajectory, $0.4260): the dead Retention route went from 0 / 20 to 9 / 20 under Haiku, while
+Collections fell from 4 / 20 to 1 / 20 — a differently-shaped reader, not a uniformly better one,
+moving work between desks. Those figures are **stale and are not restated as current**. The direction
+is not in doubt, because 0.0357 against 0.8214 on CFPB is corpus-independent; the **magnitude on this
+corpus is unmeasured**, and re-measuring it costs about **$0.45**.
+
+### Extraction fidelity on our own prose
+
+From `uv run earshot run --customers 1500` (`config=2d916ad3ceb0`, the same corpus configuration the
+sweep uses). These describe the data and the extractor rather than comparing arms, so a single dataset
+is appropriate; they are **not** comparison results and must not be quoted as such.
+
+| | measured 2026-08-31 |
+|---|---|
+| Planted genuine signals | 2,700 |
+| **Extraction recall** | **0.2285 (617 / 2,700)** — miss rate 0.7715 |
+| Unplanted extractions | 296 |
+| Portfolio outcome rate | 0.126 (189 / 1,500) |
+| Conversations | 5,200, mean 3.47 per customer |
+
+**Retraction, 2026-08-31.** This page published extractor recall as **0.659 (492 / 747)** for weeks.
+That figure came from a 400-customer run on a corpus that no longer exists (`660dca4`) and it is wrong
+by a factor of about **2.9** against the corpus that actually ships. The same measurement on today's
+corpus reads 0.2285 at n=1,500 and 0.2308 (153 / 663) at n=400. Nothing was re-tuned; the prose got
+more realistic and the lexicon stopped keeping up. Every claim that leaned on 0.659 is corrected on
+this page.
+
+Extraction is matched at conversation level — did the extractor find *this signal type in this
+conversation* — not at character-span level.
+
+The corpus plants two kinds of decoy and they are reported separately, because a firing means the
+opposite thing in each: **extractor decoys** are lookalikes and firing on one is a mistake
+(**0.0191, 9 / 470**); **accumulator decoys** are genuine weak signals that never amount to anything,
+so firing is *correct* (**0.4871, 284 / 583**) and what is under test is whether the ledger goes on to
+over-accumulate them — it does not, their flag rate at the 10% budget is 0.000.
+
+---
+
+## Part two: does memory beat forgetting?
+
+### The floor: what chance looks like
+
+**`random-rank` is a shipped arm.** It ranks customers by a seeded RNG, ignores every signal, and flags
+exactly what the budget allows. It exists because *"does any of this beat chance?"* deserves an arm
+rather than an assertion.
+
+| Arm | Recall @10% | Hits / outcomes | Above chance |
+|---|---|---|---|
+| stateless-max *(score each call, forget)* | **0.145** | 841 / 5796 | +0.032 |
+| long-context-3 *(last 3 conversations pooled)* | 0.136 | 791 / 5796 | +0.023 |
+| hybrid *(rank-combined)* | 0.135 | 785 / 5796 | +0.022 |
+| stateless-top3 *(sum the three loudest)* | 0.123 | 711 / 5796 | +0.010 |
+| stateless-top2 *(sum the two loudest)* | 0.119 | 690 / 5796 | +0.006 |
+| window3-top2 *(last 3, keep best 2)* | 0.119 | 689 / 5796 | +0.006 |
+| dumb-ledger *(unweighted count)* | 0.118 | 686 / 5796 | +0.005 |
+| **full-ledger** *(decay, corroboration, channel, escalation)* | **0.115** | **665 / 5796** | **+0.002** |
+| **random-rank** *(chance)* | **0.113** | **657 / 5796** | — |
+
+**The full ledger is eighth of nine on whole-portfolio recall at the 10% budget, two thousandths above
+chance.** That is the most important line on this page, and it is one place worse than the seventh
+this page reported before the rebuild. Everything below is a statement about *where* the ledger's
+small edge lives — not a claim that the edge is large.
+
+**Read the band, not the order.** Every arm sits between 0.113 and 0.145, and the floor of that band
+is a random number generator. Part one is why: a reader that finds 617 of 2,700 planted signals leaves
+very little in the stream to rank. No ranking strategy escapes a reader that weak.
+
+### Diffuse arcs — where accumulation is supposed to pay
+
+Evidence spread across conversations, nothing alarming in any single one.
+
+| Comparison (diffuse, 30 seeds) | Record | p |
+|---|---|---|
+| vs `stateless-top2` | **30–0–0** | **<0.001** |
+| vs `window3-top2` **(re-registered headline, D-031)** | **30–0–0** | **<0.001** |
+| vs `hybrid` | 24–1–5 | <0.001 |
+| vs `long-context-3` | 23–2–5 | <0.001 |
+| vs `stateless-top3` | 21–1–8 | <0.001 |
+| **vs `random-rank` (chance gate, D-031)** | **18–8–4** | **0.076** |
+| vs `stateless-max` **(pre-registered 2026-08-09 — DIED 2026-08-31)** | **15–13–2** | **0.851** |
+| **vs `dumb-ledger`** | **7–18–5** | **0.043 (a loss)** |
+
+Diffuse recall is 0.151 (341 / 2265) against chance at 0.132 (299 / 2265).
+
+**On the stratum this entry is built for, the ledger is not yet distinguishable from ranking customers
+at random: 18–8–4, `p=0.076` at 30 seeds, identical under both tie-break rules.** It moved from
+`p=0.345` to `p=0.076` when the corpus became more realistic. That is a direction, not a result, and we
+do not claim it as progress — it is one corpus change.
+
+A negative control landing mid-field (`random-rank` scores 0.132 in a field spanning 0.109 to 0.166)
+is not evidence the mechanism is worthless. It is evidence there is **almost nothing in the stream to
+rank** — 59 of 282 planted arc conversations found, and 1 of 65 complaint ones. Chance is competitive
+because the signal is missing, not because memory does not work. Settling it costs a keyed sweep of
+about **$10**; it is unspent because LLM spend is stopped by the owner's decision, not by a technical
+block.
+
+**What the ledger does win here is never-discard.** The two arms that never throw a weak signal away —
+`dumb-ledger` and `full-ledger` — rank **first and second** of nine on diffuse recall (0.166 and
+0.151). Both arms bounded in time or capacity lose 30–0–0.
+
+### The pre-registered headline died, and what replaces it
+
+The headline declared on 2026-08-09 was `full-ledger` vs `stateless-max` on diffuse recall. **It is
+dead**, and it keeps its row above permanently rather than being deleted.
+
+| | record | p |
+|---|---|---|
+| published, pre-rebuild corpus | 29–0–1 | <0.001 |
+| **2026-08-31 corpus, deterministic tie-break (the default)** | **15–13–2** | **0.851** |
+| 2026-08-31 corpus, randomised tie-break | 17–9–4 | 0.169 |
+
+Dead under both tie-break rules, so the death is not a tie-break artefact.
+
+**The cause is measured, not guessed.** `stateless-max`'s diffuse recall went 0.088 → 0.141 while
+`full-ledger`'s barely moved (0.154 → 0.151). Before the rebuild, a diffuse customer's loudest
+extracted signal was *anti*-correlated with their outcome — mean max confidence 0.320 for the outcome
+group against 0.329 overall. It is now correlated: 0.341 against 0.292. **A large part of the
+pre-registered win was measuring an opponent the old corpus had crippled.** That finding is worth more
+than the win was, and it retires this page's former claim that "concentrating on the loudest call is
+actively wrong on diffuse evidence" — it is not; that sentence was the artefact.
+
+**The replacement (D-031): `full-ledger` vs `window3-top2` on diffuse recall, 30–0–0, `p<0.001`, under
+both tie-break rules — bound to a co-primary chance gate the entry currently FAILS** (`random-rank`,
+18–8–4, `p=0.076`). The claim holds only if both pass. As of 2026-08-31 the primary passes and the
+chance gate does not.
+
+`window3-top2` was chosen over `stateless-top2` — also 30–0–0 — because it is the only arm bounded in
+**both** time and capacity, making it the literal negation of the never-discard claim D-006 narrowed
+the novelty to. We did not pick the largest record available; `dumb-ledger` vs `window3-top2` is
+29–0–1 and `long-context-3` vs `window3-top2` is 24–0–6. **State the weakness out loud:** the
+replacement was chosen from a matrix already visible, which is the shape of p-hacking. The mitigations
+are mechanical and checkable — the dead row stays, we picked the arm matching the stated mechanism
+rather than the biggest number, we bound ourselves to a gate we fail, and an unseen experiment (the
+silence-permitting corpus in `docs/corpus/04-plan.md`) is pre-registered now as a declared second arm
+published beside the first, never a substitution. Full reasoning and rejected alternatives: **D-031**
+in [`docs/ops/decisions.md`](docs/ops/decisions.md).
+
+### Our own ablation floor beats us on diffuse, and we publish both records
+
+`arms.py` pre-declared the standard in its own docstring: *"`dumb-ledger` — the floor the full ledger
+has to clear: if it ties the full ledger, every mechanism in `memory.py` is decoration."* It does not
+tie. It wins.
+
+| `dumb-ledger` vs `full-ledger`, diffuse, 30 seeds | record | p |
+|---|---|---|
+| deterministic tie-break (`customer_id`, the default) | **18–7–5** | **0.043** |
+| randomised tie-break (independent seeded RNG) | 13–11–6 | 0.839 |
+
+Pooled, deterministic: `dumb-ledger` 0.166 (377 / 2265) against `full-ledger` 0.151 (341 / 2265).
+
+**Why.** `dumb-ledger` produces **5 distinct scores across 1,500 customers**, so **70.8%** of its alert
+queue is decided alphabetically by customer id — and ids are assigned in generation order. The full
+ledger produces **236** distinct scores and **0.0%** of its queue is tie-decided. `earshot sweep`
+prints this table itself:
+
+| arm | distinct scores | queue decided alphabetically |
+|---|---|---|
+| full-ledger | 236 | **0.0%** |
+| random-rank | 796 | 0.0% |
+| hybrid | 213 | 0.6% |
+| long-context-3 | 52 | 7.7% |
+| stateless-top2 · stateless-top3 · window3-top2 | 49 · 65 · 49 | 15.7% · 15.8% · 15.8% |
+| stateless-max | 15 | 42.9% |
+| **dumb-ledger** | **5** | **70.8%** |
+
+The full ledger is the only arm whose recall does not move at all when the tie-break rule changes —
+665 / 5796 overall and 341 / 2265 diffuse, both ways. Every other arm moves.
+
+**This is not tuning until it wins, and the git history is the proof a reader should check.**
+`randomise_ties` and `random-rank` landed together on 2026-08-30 in `04aa24a`, the day *before* the
+rebuild produced this loss. `dumb-ledger` has existed since 2026-08-09 (`fdcfc79`). The harness
+predates the finding, it is applied to all nine arms symmetrically, **the deterministic record stays
+the default**, and both records are published side by side, permanently.
+
+**The cost, stated: on recall the four mechanisms buy nothing measurable.** They tie a plain count
+under a fair tie-break and lose under the default one. What they buy is a queue that is rankable at
+every budget, invariance to the tie-break rule, and one thing a plain count cannot do at all — see the
+next paragraph.
+
+**They are the only way retro re-scoring exists at all.** `uv run python tools/retro_direction.py
+--customers 1500`, free and offline, over every multi-signal ledger entry — comparing each entry's
+**marginal contribution** on the day it landed against its marginal contribution today:
+
+| config | entries | worth **more** now | worth less | unchanged | max gain |
+|---|---|---|---|---|---|
+| `full-ledger` | 485 | **239** | 25 | 221 | 0.1861 |
+| `dumb-ledger` | 485 | **0** | 264 | 221 | 0.0000 |
+
+With every multiplier off the score is `1 − exp(−saturation · n)`, which is concave, so an entry's
+marginal contribution can only shrink. *"March is worth more because of June"* — the submitted
+brief's stated heart, the demo's centrepiece, and the observable the build rules require to be
+*observable rather than asserted* — **cannot happen at all** under an unweighted count. It is 0 of
+485 by construction, not by parameter: no half-life or bonus value changes it.
+
+**The falsifier, so this is not an unfalsifiable excuse.** Either of these removes the machinery: a
+formulation with no corroboration, cross-channel or escalation multiplier that still makes an earlier
+entry's contribution rise; or a run at a larger seed count, or on the silence-permitting corpus, where
+`dumb-ledger` beats `full-ledger` on diffuse recall **under the randomised tie-break**. Today it does
+not (13–11–6).
+
+### Concentrated arcs — where the ledger loses
+
+A clean sweep of losses, published because it is the same run:
+
+| Comparison (concentrated, 30 seeds) | Record | p |
+|---|---|---|
+| vs `stateless-max` | **0–30–0** | <0.001 |
+| vs `long-context-3` | **0–30–0** | <0.001 |
+| vs `hybrid` | **0–30–0** | <0.001 |
+| vs `stateless-top3` | 0–28–2 | <0.001 |
+| vs `stateless-top2` | 1–28–1 | <0.001 |
+| vs `window3-top2` | 1–28–1 | <0.001 |
+| vs `random-rank` | 16–12–2 | 0.572 |
+| vs `dumb-ledger` | 19–8–3 | 0.052 |
+
+Accumulation dilutes a single decisive signal. **The ledger does not beat chance here either** —
+16–12–2 at `p=0.572`. This page previously claimed it did; that claim is retracted. Losing to
+per-call detection on the stratum per-call detection is built for is the argument for running a memory
+*alongside* it rather than instead of it.
+
+### The ranking is not stable across operating points
+
+`earshot sweep` evaluates every arm at 1%, 2%, 5% and 10% review budgets and reports whether the order
+holds. **It does not:**
+
+```
+1%:  long-context-3 > stateless-max > stateless-top3 > window3-top2 > stateless-top2 > full-ledger (6th of 9)
+10%: stateless-max > long-context-3 > hybrid > … > dumb-ledger > full-ledger (8th of 9)
+```
+
+`random-rank` is last at every budget — 1%, 2%, 5% and 10% — which is the sanity check that the control
+behaves. Any table quoting a single budget, including the one above, is one slice of an unstable
+ranking, and the command says so in its own output rather than letting a reader assume the order is a
+property of the arms.
+
+### What this adds up to
+
+**Won, on diffuse arcs: unbounded memory beats a cheap bounded window.** 30–0–0 at `p<0.001` against
+`window3-top2` and against `stateless-top2`, under both tie-break rules. This page called that
+*unproven* for weeks; it is proven on this stratum, and correcting an underclaim matters as much as
+correcting an overclaim.
+
+**Lost, on concentrated arcs: 1–28–1** to the same bounded window. **Not proven whole-portfolio:**
+9–17–4, `p=0.169`. All three directions are now measured, and the honest summary is the whole triple,
+not the first line of it.
+
+**Retracted: "aggregating a few conversations beats aggregating one."** The arm that aggregates one
+(`stateless-max`) now ties us on diffuse (15–13–2) and beats us on the whole portfolio (1–28–1
+against us). That sentence was produced by the pre-rebuild corpus and the rebuilt corpus refutes it.
+
+**Not yet beaten: chance.** 18–8–4, `p=0.076` on diffuse; 13–11–6, `p=0.839` whole-portfolio;
+16–12–2, `p=0.572` on concentrated. The ledger does not beat a seeded RNG on any stratum at 30 seeds.
+
+**The binding constraint is the reader, not the ranking.** Everything in this part sits in a
+0.113–0.145 band because part one's reader finds 617 of 2,700 planted signals. That is why the model
+reader's **0.8214 (92 / 112)** on real customer language matters more to this product than any row
+above.
+
+**Precision says nothing recall does not.** The precision matrix is byte-identical to overall recall —
+same records, same p-values — because at an equal alert budget every arm flags the same count, so both
+metrics rank on hits alone. Printed anyway, with that note, because a reader is entitled to check
+rather than take it on trust.
+
+**Multiplicity.** `earshot sweep` runs **144** pairwise tests with no correction and prints every one.
+Exactly one comparison was declared before any of them was seen — the 2026-08-09 headline, which died.
+The 2026-08-31 replacement was chosen from a matrix already visible and is a **re**-registration, said
+so plainly in D-031. Any other single `p` under 0.05 is a hint, not a result.
+
+> **What the four mechanisms buy is ranking resolution, and the set is measured while the members are
+> not.** `dumb-ledger` switches decay, corroboration, cross-channel weighting and escalation off
+> together and drops from 236 distinct scores to 5, and from 0.0% to 70.8% of its queue decided
+> alphabetically. That justifies the *set*. Which member earns its keep is **not measured on this
+> corpus** — `mechanism_ablations()` in `arms.py` already exists and printing its tie-share is free
+> and offline. This page previously attributed the resolution to decay rather than confidence
+> weighting on the strength of a corpus that no longer exists; that attribution is withdrawn.
+
+> **Two earlier retractions, kept.** (1) A first version of this table came from a single 400-customer
+> run with 39 outcome customers, where every rate was an integer over 39 — differences of one customer,
+> inside binomial noise, written up as findings. (2) That corpus also gave every decoy and clean
+> customer a latent risk of exactly `0.0` while every real arc was `≥0.55`, which made the risk value a
+> lossless encoding of the answer key and leaked it into the agent's account tool. Both are fixed.
+
+---
+
+## Part three: the agent
+
+> **Everything in this part was measured on 2026-08-28 / 2026-08-29, on the corpus that preceded the
+> 2026-08-31 rebuild.** It is **corpus-historical and stale**. It has not been re-measured because the
+> AWS SSO token is expired and LLM spend is stopped; re-measuring is a decision, not a technical
+> block. Read every figure here as "what this agent did on the previous corpus", never as current.
+
+All from keyed runs, Claude Haiku 4.5 through Bedrock, every response committed for keyless replay.
+
+| | measured (corpus-historical, pre-rebuild) |
 |---|---|
 | Reader, cost per 1,000 conversations | **$1.66** ($0.24845 over 150) |
 | Reader latency | p50 **1,244 ms**, p95 **2,212 ms** |
@@ -277,9 +467,9 @@ keyless replay.
 | Evidence repairs (first-attempt groundedness) | **0 / 50** |
 | Loop exits | `decided` 50 / 50 — no `cost_cap`, no `max_steps`; 4–5 model calls per case |
 
-**The agent does not discriminate, and this is the headline result of AT-57.** Fifty crossings —
-25 with a real outcome and 25 without — sampled deliberately, because the top of the queue is nearly
-all true positives and a run drawn from it cannot be wrong in the direction that matters:
+**The agent does not discriminate, and this is the headline result of AT-57.** Fifty crossings — 25
+with a real outcome and 25 without — sampled deliberately, because the top of the queue is nearly all
+true positives and a run drawn from it cannot be wrong in the direction that matters:
 
 | | verdict `genuine` | verdict `false_alarm` | abstained |
 |---|---|---|---|
@@ -287,8 +477,8 @@ all true positives and a run drawn from it cannot be wrong in the direction that
 | outcome absent (25) | **21** | **4** | 0 |
 
 It caught 18 of 25 real cases and dismissed **4 of 25** false alarms, at a mean confidence of 0.86 on
-the wrong answers. **Overall 22 / 50.** An earlier 10-case run read 4 / 10, and a 50-case run on the
-pre-fix corpus also read 22 / 50 — five times the sample and a regenerated corpus moved the number by
+the wrong answers. **Overall 22 / 50.** An earlier 10-case run read 4 / 10, and a 50-case run on an
+earlier corpus also read 22 / 50 — five times the sample and a regenerated corpus moved the number by
 one case in each direction and did not move the conclusion.
 
 Replay it with no credentials and no network:
@@ -301,92 +491,35 @@ That reproduces 22 / 50 and $1.4733 from the committed cache, and it writes to a
 `-replay` artifact rather than over the recorded one. Both of those are scar tissue: a failed replay
 once overwrote the keyed run it was replaying — same seed, same config hash, same provider, same
 filename — and `config_hash` turned out not to cover the *code* that turns a seed into a queue, so
-manifests now also carry a `pipeline_sha`.
+manifests now also carry a `pipeline_sha`. **The replay reproduces the recorded run, not the current
+corpus:** it replays what the model said about conversations that no longer exist in this shape.
+
+**Routing accuracy, corpus-historical.** Each customer carries a seeded `trajectory`, so a correct
+owning team exists; `tools/routing_accuracy.py` grades the `owning_team` the investigator already
+recorded, making **zero further model calls**. On the same 50 cases: **36 of 49 routed to the right
+team, 2 wrong, 11 declined** (`owning_team="none"`). Its dominant failure mode is refusing to route
+rather than misrouting, and the declines concentrate in `collections` (8 of 22). Both wrong routes are
+the bad kind — neither matched the ledger's own dominant signal at the crossing. The 50th case is a
+decoy-accumulator customer with no seeded trajectory: no correct team exists for it, so it is reported
+separately and never enters the denominator.
+
+**`retention` has no row in that table at all, and that is not sampling** — the route was structurally
+unreachable under the offline reader on that corpus, so the figure is really measured on three teams
+out of four. On the rebuilt corpus the same structural problem is **worse and wider**: see part one,
+where two desks receive nothing and a third receives one case in twenty.
 
 So the D-025 cost argument for Haiku is **not yet earned**: it is cheap and it is fast, and on this
-sample it escalates everything. Whether a stronger model, a better prompt or a false-alarm-aware
-loop fixes it is open, and the honest position until then is that the investigator adds routing and
-an audit trail, not filtering.
+sample it escalates everything. Read together, the two results say the investigator is a **router and
+an audit trail, not a filter**: it addresses the case correctly and escalates almost everything.
 
-**Routing accuracy, measured for the first time on 2026-08-28 — and it is the good news.** Each
-customer carries a seeded `trajectory`, so a correct owning team exists; `tools/routing_accuracy.py`
-grades the `owning_team` the investigator already recorded, making **zero further model calls**. On
-the same 50 cases: **36 of 49 routed to the right team, 2 wrong, 11 declined**
-(`owning_team="none"`). Its dominant failure mode is refusing to route rather than misrouting, and
-the declines concentrate in `collections` (8 of 22). Both wrong routes are the bad kind — neither
-matched the ledger's own dominant signal at the crossing, so they are unmoored from the evidence on
-hand rather than defensible near-misses. The 50th case is a decoy-accumulator customer with no seeded
-trajectory: no correct team exists for it, so it is reported separately and never enters the
-denominator.
-
-**`retention` has no row in that table at all, and that is not sampling.** See the next section — the
-route is structurally unreachable under the offline reader, so this figure is really measured on three
-teams out of four.
-
-Read together, the two results say the investigator is a **router and an audit trail, not a filter**:
-it addresses the case correctly and escalates almost everything.
-
-### The retention route is dead under the offline reader
-
-Measured 2026-08-29, and it is the sharpest thing on this page.
-
-The corpus plants four signal families evenly. The offline lexicon finds churn evidence in **1.35 of
-3.42** planted conversations — a coverage ratio of **0.40**, against 0.71 / 0.76 / 0.77 for the other
-three families. Corroboration in the ledger is *cross-conversation*, so a customer whose evidence
-lands in one conversation never corroborates with anything:
-
-| trajectory | conversations planted | conversations found | ratio | best score reached | crossings |
-|---|---|---|---|---|---|
-| `churn_intent` -> retention | 3.42 | 1.35 | **0.40** | **0.646** | **0 / 325** |
-| `complaint_escalation` -> complaints | 3.24 | 2.28 | 0.71 | 0.903 | 55 / 304 |
-| `life_event` -> vulnerability | 3.29 | 2.49 | 0.76 | 0.960 | 109 / 358 |
-| `financial_distress` -> collections | 3.56 | 2.73 | 0.77 | 0.955 | 85 / 323 |
-
-At a threshold of **0.675**, churn customers top out at **0.646**. Not one of 325 can cross. **The
-Retention desk never receives a case** — and Retention is the *lead* team in the submitted brief. It
-is also why `retention` has no row in the routing table above: the agent has never been handed a churn
-case to route.
-
-This is not the corpus favouring some families over others. Fragment strengths are comparable across
-all four and churn's are the strongest (max 0.95). It is a **pass-B gap**: the extractor cues for
-churn fire in fewer of the conversations where churn was planted. Pass A and pass B are authored
-without reference to each other on purpose — that independence is what makes the miss rate honest —
-and widening the churn cues now to close a gap we discovered by measuring the answer key is precisely
-the tuning that rule exists to prevent. So it is published rather than fixed.
-
-**Measured 2026-08-29: the model reader revives retention and loses collections.** Both readers over
-the identical 288 sampled conversations (20 customers per trajectory), $0.4260, `tools/
-reader_coverage.py`. Coverage is against what was **planted**, and the second pair of columns is what
-a reviewer actually gets — the same signals through the same ledger at the same 0.6747 cut:
-
-| trajectory -> desk | lexicon coverage | model coverage | lexicon crossings | model crossings |
-|---|---|---|---|---|
-| `churn_intent` -> **Retention** | 30 / 70 (0.43) | **55 / 70 (0.79)** | **0 / 20** | **9 / 20** |
-| `financial_distress` -> Collections | 56 / 76 (0.74) | **32 / 76 (0.42)** | 4 / 20 | **1 / 20** |
-| `complaint_escalation` -> Complaints | 41 / 61 (0.67) | 42 / 61 (0.69) | 3 / 20 | 3 / 20 |
-| `life_event` -> Vulnerability | 60 / 70 (0.86) | 64 / 70 (0.91) | 10 / 20 | 16 / 20 |
-
-**The dead route comes alive**: churn peaks at 0.8509 under the model against 0.4899 under the
-lexicon, and 9 of 20 churn customers now reach the Retention desk that had never received a case.
-
-**And it costs us collections.** The model reader finds *less* planted distress evidence than 26
-regexes do — 0.42 against 0.74 — and Collections crossings fall from 4 to 1. It is not a uniformly
-better reader; it is a differently-shaped one, and swapping readers moves work between desks. We
-publish that because it is the same size as the win and comes from the same run.
-
-Two caveats stated rather than buried. **The threshold is a top-K cut derived from the *offline*
-reader's ranking of the whole portfolio**, held fixed across both arms because deriving the model's
-own cut means reading all 8,359 conversations at $13.85. A better reader raises every score, so a
-real 10% budget would settle higher — the model crossings above are an **upper bound**. And this is
-**one dataset at n=20 per trajectory**; it is a direction with denominators, not a sweep.
-
-**One more number the recall table never reports:** of the 240 customers the ledger surfaces at a 10%
-review budget over 2,400, **25 have a real outcome and 215 do not**. That is the ledger's own
-precision at the cut, and it is what makes the agent's job hard — it is handed a queue that is **90%
-false alarm by construction** and asked to sort it.
+**One more number, corpus-historical:** of the 240 customers the ledger surfaced at a 10% review budget
+over 2,400, **25 had a real outcome and 215 did not** — the ledger's own precision at the cut, and what
+makes the agent's job hard. It is handed a queue that is **roughly 90% false alarm by construction**
+and asked to sort it. Not re-measured since the rebuild.
 
 **Still not measured:** any of this at a sample size worth a confidence interval — 50 cases on one
-dataset is a result, not an interval — and a second model through the same harness.
+dataset is a result, not an interval — a second model through the same harness, and **all of part
+three on the current corpus**.
 
 **Provider-historical, superseded by D-025 (2026-08-25):** two live Claude Sonnet 4.5 investigations,
 recorded via OpenRouter on 2026-08-09, cost **$0.089 and $0.097** and took 30.3s and 33.4s — the only
@@ -395,10 +528,15 @@ than deleted. **They no longer replay.** `artifacts/cache/investigator-demo.json
 `prompt_sha`, and the investigator prompt changed twice after the cache was recorded (`7229b70`,
 `80c0914`); D-025 also moved both reader and investigator to Bedrock Haiku 4.5, which changes the
 model string regardless. The old replay command now cache-misses and prints `provider_error` instead
-of reaching the network, so it is not reproduced here. No Haiku-on-Bedrock investigation cost/latency
-figures exist yet to replace it.
+of reaching the network, so it is not reproduced here.
 
-### The streamed demo, measured 2026-08-28
+### The streamed demo — recorded 2026-08-28, corpus-historical
+
+> **Recorded on the corpus that preceded the 2026-08-31 rebuild, and not re-recorded.** It replays
+> faithfully from the committed cache, so what you watch is real recorded model output — but it is
+> output about conversations the generator no longer produces in this shape. On the current corpus the
+> same offline Northwind stream goes from **1 crossing to 0** (`docs/corpus/06-phase-c-record.md` §6).
+> Re-recording it needs a key, and LLM spend is stopped.
 
 One synthetic deployment, read end to end by Claude Haiku 4.5 on Bedrock. Every figure is counted
 from the run, and the whole thing replays from the committed cache with no key.
