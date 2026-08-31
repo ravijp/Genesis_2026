@@ -330,8 +330,11 @@ prints this table itself:
 | stateless-max | 15 | 42.9% |
 | **dumb-ledger** | **5** | **70.8%** |
 
-The full ledger is the only arm whose recall does not move at all when the tie-break rule changes —
-665 / 5796 overall and 341 / 2265 diffuse, both ways. Every other arm moves.
+**The full ledger's own queue is never tie-decided** — 0.0% in the table above — so the tie-break
+rule cannot change which customers it flags. Both D-031 gates print identical records under both
+rules (30–0–0 and 18–8–4; `random-rank` is also tie-free at 0.0%). The two comparisons that *do*
+move are exactly the ones whose **opponent** is heavily tie-decided: `stateless-max` at 42.9%
+(15–13–2 → 17–9–4) and `dumb-ledger` at 70.8% (18–7–5 → 13–11–6).
 
 **This is not tuning until it wins, and the git history is the proof a reader should check.**
 `randomise_ties` and `random-rank` landed together on 2026-08-30 in `04aa24a`, the day *before* the
