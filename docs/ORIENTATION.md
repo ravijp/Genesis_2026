@@ -236,8 +236,8 @@ dimming retained evidence would draw exactly the behaviour this product inverts.
 
 **The UI has no build step.** Plain HTML/CSS/JS opened from `file://`. A judging room with no wifi and
 a laptop with no toolchain can still see the product. Two automated gates check it: one renders every
-screen against a stub DOM and crawls the links it emits, another computes WCAG contrast for all 650
-colour pairs in both themes.
+screen against a stub DOM and crawls the links it emits, another computes WCAG contrast for all **650**
+colour pairs across 17 routes in both themes.
 
 **Documented failures are kept, not deleted.** A keyed model run on 2026-08-30 cost **$12.32 and
 produced no artifact** — it hit a spend ceiling half way, and the resume re-bought reads because a

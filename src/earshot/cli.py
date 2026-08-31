@@ -1122,7 +1122,8 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
     w, lost, tied = paired_record(
         by_arm, "full-ledger", "stateless-max", metric="diffuse_recall"
     )
-    print("\nPRE-REGISTERED HEADLINE — full-ledger vs stateless-max on diffuse arcs")
+    print("\nPRE-REGISTERED HEADLINE (2026-08-09) — DIED 2026-08-31, see D-031")
+    print("  full-ledger vs stateless-max on diffuse arcs")
     print(f"  deterministic tie-break (customer_id, the default): {w}-{lost}-{tied}  "
           f"p={_p(sign_test_p(w, lost))}   (declared before the run; everything below is "
           f"exploratory)")
@@ -1146,6 +1147,27 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
     else:
         print("  -> record MOVED: part of the headline depends on how ties are broken. "
               "Reported plainly, not softened.")
+
+    # D-031. The re-registration is bound to two gates, and BOTH tie-break records print for
+    # every one of them -- not only for the original headline. Reporting one rule for the
+    # comparison we win and two for the comparison we lose is the asymmetry that makes a
+    # tie-break argument look motivated. Free: `by_arm_random` is already computed above.
+    def _both_ways(label: str, a: str, b: str, note: str = "") -> None:
+        wd, ld, td = paired_record(by_arm, a, b, metric="diffuse_recall")
+        wx, lx, tx = paired_record(by_arm_random, a, b, metric="diffuse_recall")
+        print(f"  {label}: {a} vs {b}{note}")
+        print(f"      deterministic: {wd}-{ld}-{td}  p={_p(sign_test_p(wd, ld))}"
+              f"      randomised: {wx}-{lx}-{tx}  p={_p(sign_test_p(wx, lx))}")
+
+    print("\nHEADLINE, RE-REGISTERED 2026-08-31 (D-031) — diffuse arcs, both tie-break rules")
+    _both_ways("  primary", "full-ledger", "window3-top2",
+               "   (bounded in BOTH time and capacity)")
+    _both_ways("  CHANCE GATE", "full-ledger", "random-rank",
+               "   (co-primary; the claim holds only if this passes too)")
+    _both_ways("  ablation floor", "dumb-ledger", "full-ledger",
+               "   (every mechanism in memory.py off)")
+    print("  -> The claim is declared to hold only if BOTH gates pass. Read the chance gate's")
+    print("     p-value before the primary's: as of 2026-08-31 we FAIL it, and say so.")
 
     n_diffuse = _matrix(
         "DIFFUSE ARCS — evidence spread thin, every pairing, paired by seed",

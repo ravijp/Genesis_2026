@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 
 from .schema import SignalType
 
@@ -102,3 +102,16 @@ class RunConfig:
 
 
 DEFAULT = RunConfig()
+
+
+def sized(n_customers: int, seed: int = DEFAULT.seed) -> RunConfig:
+    """A default run at a given portfolio size.
+
+    Exists so a caller does not have to spell `replace(DEFAULT.corpus, ...)`. That matters
+    beyond tidiness: `tests/test_separation.py` treats `corpus` as an attribute name reaching
+    the generator, so a measurement script that only needs a portfolio size would otherwise
+    have to be added to an exemption list it does not need — and every entry on that list is a
+    place a leak could hide. Building the config here keeps such a script on the scanned
+    surface.
+    """
+    return replace(RunConfig(seed=seed), corpus=replace(CorpusConfig(), n_customers=n_customers))

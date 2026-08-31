@@ -298,3 +298,24 @@ def test_demo_selection_does_not_move_its_own_population_ratio(cli, capsys) -> N
     assert (clean, catchable, per_call_only) == (7, 132, 10), (
         "the demo's population counts moved; selection must order the instance, not the counts"
     )
+
+
+def test_sized_is_exactly_the_config_every_other_caller_builds_by_hand() -> None:
+    """`config.sized(n)` must equal `replace(DEFAULT, corpus=replace(DEFAULT.corpus, ...))`.
+
+    Not cosmetic. `RunConfig.hash()` names the artifact a run writes and is asserted against
+    committed manifests, so a helper that built a subtly different config would fork the
+    published corpus in two while every number still looked plausible. The sweep behind the
+    README's tables is `2d916ad3ceb0`; the helper has to land on it.
+    """
+    from earshot.config import DEFAULT, sized
+
+    for n in (400, 1500, 2400, 3000):
+        by_hand = replace(DEFAULT, corpus=replace(DEFAULT.corpus, n_customers=n))
+        assert sized(n) == by_hand, f"sized({n}) diverged from the hand-built config"
+        assert sized(n).hash() == by_hand.hash()
+
+    assert sized(1500).hash() == "2d916ad3ceb0", (
+        "the 30x1500 config hash moved — every committed sweep artifact is named after it"
+    )
+    assert sized(1500, seed=20260810) != sized(1500), "sized() ignores its seed argument"
