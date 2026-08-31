@@ -139,10 +139,11 @@ client's own systems — the screen counts them rather than asserting it.
    `mechanism_ablations()` already exists in `arms.py`. `dumb-ledger` switches five things off at
    once, so today's evidence justifies the *set*, not any member. Printing each mechanism's distinct-
    score count would let the entry say which one earns its keep instead of defending all four.
-4. **`ui/data.js` regeneration** — needs a keyed `earshot investigate` run. The recorded document
-   screens (queue, case, retro) are still the offline rule engine; `#/desk`, `#/desk/call` and
-   `#/stream` are keyed Haiku. `ui/README.md` calls those document screens "the proof", so this is
-   the largest remaining gap between what the repo claims and what its screens show.
+4. **The reader behind `ui/data.js` is still the offline lexicon.** Its verdicts are keyed as of
+   `4ec34cd` ($0.2326, 8 investigations, 0 / 8 evidence repairs), but `--extractor` does not apply
+   to `earshot investigate`, so the extraction under those verdicts is the 26-regex fallback. Given
+   §1's desk table, that is the gap most worth closing: the screens `ui/README.md` calls "the proof"
+   are running the reader we publish as leaving two desks empty. Needs a code path, not just spend.
 5. **The 10-seed keyed sweep** (~$10, ONE process on ONE cache path) — the single most valuable
    unspent measurement, because it is what would settle the chance gate. Deferred deliberately.
 6. **Arm B**: Nova Lite for the reader arm (~$0.01 alone, $0.28 both). Last item on
@@ -197,8 +198,10 @@ client's own systems — the screen counts them rather than asserting it.
   it: 0.837 mean on the 21 wrong verdicts against 0.852 on the 29 right ones.
 - **The model reader's own threshold is unmeasured**, so every model-arm crossing figure in the repo
   is an upper bound. $13.96, and the tool prints the caveat itself on every run.
-- **`ui/data.js` is still the offline rule engine**, printed on screen, pending a keyed
-  `earshot investigate` run that spend policy currently blocks.
+- **`ui/data.js` is half-upgraded and the screens say which half.** Verdicts are keyed Bedrock as of
+  `4ec34cd`; the reader under them is still the offline lexicon, because `--extractor` does not reach
+  `earshot investigate`. So the document screens demonstrate the agent on the reader whose coverage
+  gap those same screens exist to argue against.
 - **A keyed run's cache is isolated by path but not by prompt hash across a resume** — the $12.32
   lesson. See `handover.md`'s traps.
 - **No AT ticket covers any of the eleven AWS work packages.** 45 issues live, 28 In Progress,
