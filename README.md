@@ -263,7 +263,7 @@ block.
 
 **What the ledger does win here is never-discard.** The two arms that never throw a weak signal away —
 `dumb-ledger` and `full-ledger` — rank **first and second** of nine on diffuse recall (0.166 and
-0.151). Both arms bounded in time or capacity lose 30–0–0.
+0.151). The two arms that cap what they keep — `stateless-top2` and `window3-top2` — lose 30–0–0.
 
 ### The pre-registered headline died, and what replaces it
 
