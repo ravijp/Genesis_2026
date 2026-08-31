@@ -41,14 +41,18 @@ between 0.109 (chance) and 0.138 (`stateless-max`), a three-point band, and no r
 escapes a reader this weak. That is why the model reader's **0.8214 (92/112)** strict recall on real
 CFPB narratives matters more to this product than any row in the sweep table.
 
-**A keyed run on 2026-08-30 cost $12.32 and produced no artifact.** It hit the $5 spend ceiling
-half way (3,561 / 7,035 conversations); resuming with a raised cap re-bought 3,275 already-paid-for
-reads because `cli.py` was committed between the two halves, moving `prompt_sha` and orphaning the
-cache the resume should have hit. Isolating a cache by *path* protects a published figure; it does
-not protect a *resume* if the prompt hash moves underneath it. 5,494 unique reads are banked at
-`artifacts/cache/extractor-widened-arcs.jsonl` (3.4 MB) — from the cache alone, independent of the
-sweep, the model reader fired on 2,390 / 5,494 (0.4350) with zero unparseable responses. **Pin
-`prompt_sha` before resuming a keyed run, or do not resume it.**
+**A keyed run on 2026-08-30 cost $12.33 and produced no artifact.** It hit the $5 spend ceiling
+half way, and the resume re-bought 3,275 already-paid-for reads. **The first post-mortem blamed
+`prompt_sha` drift and was wrong** — a duplicate cache key proves the key was *stable*, since drift
+would have produced 8,769 distinct keys and zero duplicates. The real cause was **two readers racing
+one cache path**: a liveness check used `pgrep`, which does not exist on this machine and therefore
+reports every process dead, so a second sweep was launched over a live one. `ResponseCache` loads its
+file once in `__init__` and never re-reads (`llm/cache.py:66-85`). Duplication starts at record 185,
+not the resume boundary; waste was **$4.60 of $12.33**, not half; **39 lines are torn** and those
+completions are permanently unreplayable. Full correction in `progress.md`. 5,494 unique reads are
+banked at `artifacts/cache/extractor-widened-arcs.jsonl` (3.4 MB) — from the cache alone the model
+reader fired on 2,390 / 5,494 (0.4350) with zero unparseable responses. **Never point two model runs
+at one cache path.**
 
 **LLM spend is stopped.** Everything above is free (`earshot sweep`, offline). Nothing keyed will run
 until the user restarts spend. What is buildable without it: corpus/lexicon work, UI, docs, CI, tests.
@@ -102,7 +106,7 @@ client's own systems — the screen counts them rather than asserting it.
 2. **`ui/data.js` regeneration** — needs a keyed `earshot investigate` run. The recorded document
    screens (queue, case, retro) are still the offline rule engine; `#/desk`, `#/desk/call` and
    `#/stream` are already keyed Haiku. Waits on spend.
-3. **The 10-seed keyed sweep** (~$10, pinned `prompt_sha`) that would decide whether the widened
+3. **The 10-seed keyed sweep** (~$10, ONE process on ONE cache path) that would decide whether the widened
    corpus changes the diffuse win at the smaller seed count. Deferred deliberately.
 4. **Arm B**: Nova Lite for the reader arm (~$0.01 alone, $0.28 both). Last item on
    `build-plan.md`'s "not measured" list. `extractor_cache_path()` is per-model, so it cannot

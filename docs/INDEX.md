@@ -227,7 +227,7 @@ API call and output hash logged. Run `steps/05_score.py` alone to reproduce the 
 - `cache/investigator-bedrock.jsonl` — AT-57/AT-58's cache: 50 verdict-loop investigations keyed Haiku 4.5 on Bedrock, replayed by `tools/verdict_accuracy.py` and scored free by `tools/routing_accuracy.py` `[generated]`
 - `cache/extractor.jsonl` — the model reader's cache behind the CFPB benchmark (0.8214 strict recall) and the streamed-demo reads: one file per model by `extractor_cache_path()`, this is the default (Haiku 4.5) path `[generated]`
 - `cache/extractor-coverage.jsonl` — `tools/reader_coverage.py`'s cache: both readers over the same 288 sampled conversations, behind the "model reader revives retention, loses collections" measurement `[generated]`
-- `cache/extractor-widened-arcs.jsonl` — the 2026-08-30 widened-corpus keyed run's cache. 5,494 unique reads banked from a run that spent $12.32 and produced no sweep artifact (hit the spend ceiling, a resume moved `prompt_sha` and re-bought 3,275 duplicates) `[generated]`
+- `cache/extractor-widened-arcs.jsonl` — the 2026-08-30 widened-corpus keyed run's cache. 5,494 unique reads banked from a run that spent $12.33 and produced no sweep artifact (hit the spend ceiling; the resume re-bought 3,275 reads because TWO processes raced one cache path -- not `prompt_sha` drift, which the duplicates themselves disprove). 39 lines torn and unreplayable `[generated]`
 - `runs/` (unpinned) — per-run output, gitignored `[generated]`
 
 ## sources/ — primary inputs, do not edit
