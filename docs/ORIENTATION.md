@@ -144,7 +144,7 @@ identical signal stream, so the comparison is fair regardless of which reader pr
 ### The good news
 
 On **diffuse arcs** — evidence spread thin, nothing alarming in any single conversation, which is
-exactly the case memory exists for — the full ledger beats **both** bounded-memory arms **30–0–0** at
+exactly the case memory exists for — the full ledger beats **both** capped-memory arms (`stateless-top2`, `window3-top2`) **30–0–0** at
 `p<0.001`, under both tie-break rules. The two arms that never discard a weak signal (`full-ledger`
 and `dumb-ledger`) rank **first and second of nine** on this stratum. That is never-discard earning
 its place, and it is the entry's originality claim measured rather than asserted.
@@ -228,8 +228,9 @@ better than any prose file, and it never goes stale.
 
 ## 7. The parts most likely to surprise you
 
-**The tests are unusually load-bearing.** 827 collected, 817 passing and 10 deliberately
-skipped with a stated reason. Several exist because a specific mistake was
+**The tests are unusually load-bearing.** Measured 2026-08-31: **855 collected, 850 passing, 5
+deliberately skipped** with a stated reason. `uv run pytest -q` is where that number lives — if this
+sentence and the command disagree, the command is right. Several exist because a specific mistake was
 made once and must never recur — for example, a test that scans every module to prove the extractor
 *cannot* import the answer key, and a test that fails if the UI dims a sub-threshold row, because
 dimming retained evidence would draw exactly the behaviour this product inverts.

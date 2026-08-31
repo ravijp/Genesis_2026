@@ -111,7 +111,7 @@ measuring an opponent the old corpus had crippled; and our own ablation floor �
 `memory.py` switched off — beats us here. All three are printed by `earshot sweep` itself.
 
 **What does hold, and it is the originality claim:** the two arms that never discard a weak signal
-rank **first and second of nine** on this stratum, and both bounded-memory arms lose 30–0–0 under
+rank **first and second of nine** on this stratum, and both capped-memory arms lose 30–0–0 under
 both tie-break rules.
 
 **Whole-portfolio, the ledger is 8th of 9 arms** at the 10% budget — recall 0.115 (665 / 5796) against

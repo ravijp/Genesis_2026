@@ -92,7 +92,7 @@ One purchase, many owners.
   the keyless lexicon's **0.0357 (4 / 112)**. Scored on an external gold set that no corpus change
   touches.
 - **Never-discard earns its place:** on thin evidence the two arms that keep every weak signal rank
-  first and second of nine, and both bounded-memory arms lose **30 – 0 – 0, p<0.001**.
+  first and second of nine, and both capped-memory arms lose **30 – 0 – 0, p<0.001**.
 - **Retro re-scoring is real, not asserted:** 239 of 485 multi-signal ledger entries are worth more
   now than when they were written. Under an unweighted count it is **0 of 485** — the mechanism is
   what makes it possible at all.

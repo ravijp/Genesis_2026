@@ -69,7 +69,7 @@ at-risk customer visible to a bank; ranking is not. Between our two readers, str
 complaint narratives is **0.0357 (4 / 112) against 0.8214 (92 / 112)**, and on our own shipping
 corpus the weak reader leaves **two of four review desks receiving no case at all and a third
 receiving one in twenty**. Of the nine ranking strategies we test, the two that never discard a weak
-signal rank **first and second** on thin evidence, and both bounded-memory arms lose **30–0–0 at
+signal rank **first and second** on thin evidence, and the two arms that cap what they keep lose **30–0–0 at
 `p<0.001`** — while every arm, ours included, sits inside a **0.113–0.145** band whose floor is a
 seeded random number generator.
 

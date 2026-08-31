@@ -209,7 +209,7 @@ rather than replacing them.
 Comparison numbers come from `earshot sweep` and are written to a run manifest with their seed list.
 
 **Where the numbers stand — 30 seeds, 5,796 outcome customers, corpus rebuilt 2026-08-31.** On
-diffuse arcs the ledger beats both bounded-memory arms `30–0–0` at `p<0.001` under both tie-break
+diffuse arcs the ledger beats both capped-memory arms (`stateless-top2`, `window3-top2`) `30–0–0` at `p<0.001` under both tie-break
 rules, and the two arms that never discard a weak signal rank first and second of nine. **It does not
 beat chance there: `18–8–4`, `p=0.076`**, nor on any other stratum. Whole-portfolio it is 8th of 9
 arms — recall 0.115 (665 / 5796) against random ranking's 0.113 (657 / 5796) — and on concentrated
