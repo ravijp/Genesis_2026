@@ -68,13 +68,16 @@ Full picture, with diagrams: **[docs/architecture/architecture.md](docs/architec
 at-risk customer visible to a bank; ranking is not. Between our two readers, strict recall on real
 complaint narratives is **0.0357 (4 / 112) against 0.8214 (92 / 112)**, and on our own shipping
 corpus the weak reader leaves **two of four review desks receiving no case at all and a third
-receiving one in twenty**. Of the nine ranking strategies we test, the two that never discard a weak
-signal rank **first and second** on thin evidence, while the two arms that cap what they keep lose
+receiving one in twenty** — while the model reader, over the identical 282 conversations and through
+the identical ledger, takes **Complaints from 0 / 20 to 20 / 20 and Vulnerability from 0 / 20 to
+19 / 20**. Of the nine ranking strategies we test, the two that never discard a weak signal rank
+**first and second** on thin evidence, while the two arms that cap what they keep lose
 **30–0–0 at `p<0.001`** — and every arm, ours included, sits inside a **0.113–0.145** band whose
 floor is a seeded random number generator.
 
 The order of this page follows from that: **the reader first, the ranking second.** Presented the
-other way round, every arm looks crowded near chance for no stated reason.
+other way round, every arm looks crowded near chance for no stated reason. The desk table is
+[one section down](#the-same-gap-on-our-own-corpus-and-what-it-does-to-the-desks).
 
 **The corpus was rebuilt on 2026-08-31** (Phase C: arcs that read as one relationship — back-references
 that are true, a promise schedule, real turn-taking, channel-correct language). It moved almost every
@@ -158,18 +161,59 @@ vocabulary. The 26-regex lexicon was co-developed with the *old* prose. Make the
 the lexicon stops working — which is the same result the CFPB benchmark already publishes against real
 customer language (4 / 112), arriving from the other direction.
 
-**It is published, not fixed.** Widening the cues to close a gap discovered by measuring against the
-answer key is exactly the tuning `working-agreements.md` §1 exists to prevent, and it would be visible
-in `git log`. Pass A and pass B are authored without reference to each other on purpose; that
-independence is what makes the miss rate honest.
+**It is published, not fixed — and the fix is not a wider lexicon.** Widening the cues to close a gap
+discovered by measuring against the answer key is exactly the tuning `working-agreements.md` §1 exists
+to prevent, and it would be visible in `git log`. Pass A and pass B are authored without reference to
+each other on purpose; that independence is what makes the miss rate honest. The fallback stays as
+weak as it measures. What closes the gap is the reader the system actually deploys, and the next
+section measures exactly how much of it closes.
 
-**Corpus-historical, and it is the gap in this page's lead claim.** The model arm of this comparison
-was measured on **2026-08-29, on the corpus that preceded the 2026-08-31 rebuild** (n=20 per
-trajectory, $0.4260): the dead Retention route went from 0 / 20 to 9 / 20 under Haiku, while
-Collections fell from 4 / 20 to 1 / 20 — a differently-shaped reader, not a uniformly better one,
-moving work between desks. Those figures are **stale and are not restated as current**. The direction
-is not in doubt, because 0.0357 against 0.8214 on CFPB is corpus-independent; the **magnitude on this
-corpus is unmeasured**, and re-measuring it costs about **$0.45**.
+#### The same 282 conversations, read by the model — and this is the entry's strongest evidence
+
+`--reader both --per-trajectory 20`, keyed Claude Haiku 4.5 on Bedrock, **measured 2026-08-31 on the
+shipping corpus for $0.445562**. Identical conversations, identical `SignalLedger`, identical scoring
+config, identical threshold. The only thing that changes is who reads.
+
+| trajectory → desk | crossed, offline lexicon | crossed, model reader |
+|---|---|---|
+| `complaint_escalation` → **Complaints** | **0 / 20** | **20 / 20** |
+| `life_event` → **Vulnerability** | **0 / 20** | **19 / 20** |
+| `churn_intent` → **Retention** | **1 / 20** | **16 / 20** |
+| `financial_distress` → Collections | 9 / 20 | 10 / 20 |
+
+**Two desks that received nothing now receive nearly everything.** That is the whole claim of this
+entry, measured: the evidence was in the conversations the entire time, and which desk exists is
+decided by whether anything can read it. Coverage moves with it — the model finds
+**177 / 282 planted conversations against the lexicon's 59 / 282** (complaint 0.92 vs 0.02, life event
+0.74 vs 0.13, churn 0.52 vs 0.21).
+
+**Read this before quoting the model column — it is an UPPER BOUND, and the tool prints so itself.**
+The threshold (0.2753) is a budget-derived top-K cut over the **offline** reader's ranking of the
+whole corpus, held fixed across both arms so the arms stay comparable. A reader that finds more raises
+every customer's score, so the same 10% review budget would settle at a **higher** cut than this one.
+Deriving the model's own cut means a keyed pass over all 8,429 conversations — **$13.96**, not spent.
+The model column is therefore what this budget surfaces *at the offline cut*, not what a
+model-thresholded deployment would surface. Never publish the row without this sentence.
+
+**Where the model loses, on the same run.** Its coverage of `financial_distress` is **0.38 (27 / 72)
+against the lexicon's 0.46 (33 / 72)** — worse, on the one family the lexicon was written to catch —
+and it is only ahead on Collections crossings 10 / 20 to 9 / 20. It also pushes **3 / 20 churn and
+6 / 20 distress customers over the line on a *different* signal family**, so those cases exist but
+arrive at the wrong desk. This is a differently-shaped reader, not a uniformly better one.
+
+Telemetry on the same 282 conversations: **$1.58 per 1,000 conversations** ($0.445562), p50
+**1,333 ms**, p95 **2,162 ms**, 272 signals emitted, **0 unparsable replies, 0 relocated quotes**, one
+quote dropped for not being a customer turn.
+
+Replay both arms with no key and no spend — a cache miss raises rather than calling out:
+
+```bash
+EARSHOT_CACHE_MODE=replay uv run python tools/reader_coverage.py --reader both --per-trajectory 20
+```
+
+**n = 20 customers per trajectory, one dataset, one seed.** It is a direction with a denominator on
+it, not an interval. Samples nest — first N by `customer_id` — so `--per-trajectory 40` re-reads
+nothing already cached and pays only the delta.
 
 ### Extraction fidelity on our own prose
 
@@ -454,35 +498,48 @@ so plainly in D-031. Any other single `p` under 0.05 is a hint, not a result.
 
 ## Part three: the agent
 
-> **Everything in this part was measured on 2026-08-28 / 2026-08-29, on the corpus that preceded the
-> 2026-08-31 rebuild.** It is **corpus-historical and stale**. It has not been re-measured because the
-> AWS SSO token is expired and LLM spend is stopped; re-measuring is a decision, not a technical
-> block. Read every figure here as "what this agent did on the previous corpus", never as current.
+> **Re-measured 2026-08-31 on the shipping corpus.** Every figure in this part is current, keyed
+> Claude Haiku 4.5 through Bedrock, and replays from the committed cache with no key. One conclusion
+> changed direction and it is called out where it sits.
 
 All from keyed runs, Claude Haiku 4.5 through Bedrock, every response committed for keyless replay.
 
-| | measured (corpus-historical, pre-rebuild) |
+| | measured 2026-08-31 |
 |---|---|
-| Reader, cost per 1,000 conversations | **$1.66** ($0.24845 over 150) |
-| Reader latency | p50 **1,244 ms**, p95 **2,212 ms** |
-| Investigation, cost per case | **$0.0295** (50 cases, $1.4733; p95 $0.0357, max $0.0368) |
-| Investigation latency, model time | p50 **19.8 s**, p95 **24.7 s** |
+| Reader, cost per 1,000 conversations | **$1.58** ($0.445562 over 282) |
+| Reader latency | p50 **1,333 ms**, p95 **2,162 ms** |
+| Investigation, cost per case | **$0.0306** (50 cases, $1.5305; p95 $0.0361, max $0.0384) |
+| Investigation latency, model time | p50 **20.8 s**, p95 **28.1 s** |
 | Evidence repairs (first-attempt groundedness) | **0 / 50** |
-| Loop exits | `decided` 50 / 50 — no `cost_cap`, no `max_steps`; 4–5 model calls per case |
+| Loop exits | `decided` 50 / 50 — no `cost_cap`, no `max_steps`; 4–6 model calls per case |
 
-**The agent does not discriminate, and this is the headline result of AT-57.** Fifty crossings — 25
-with a real outcome and 25 without — sampled deliberately, because the top of the queue is nearly all
-true positives and a run drawn from it cannot be wrong in the direction that matters:
+**AT-57: the agent discriminates, and that is a change of conclusion.** Fifty crossings — 25 with a
+real outcome and 25 without — sampled deliberately, because the top of the queue is nearly all true
+positives and a run drawn from it cannot be wrong in the direction that matters:
 
 | | verdict `genuine` | verdict `false_alarm` | abstained |
 |---|---|---|---|
-| outcome present (25) | **18** | 6 | 1 |
-| outcome absent (25) | **21** | **4** | 0 |
+| outcome present (25) | **16** | 9 | 0 |
+| outcome absent (25) | 12 | **13** | 0 |
 
-It caught 18 of 25 real cases and dismissed **4 of 25** false alarms, at a mean confidence of 0.86 on
-the wrong answers. **Overall 22 / 50.** An earlier 10-case run read 4 / 10, and a 50-case run on an
-earlier corpus also read 22 / 50 — five times the sample and a regenerated corpus moved the number by
-one case in each direction and did not move the conclusion.
+It caught 16 of 25 real cases and dismissed **13 of 25** false alarms, with **0 abstentions**.
+**Overall 29 / 50.**
+
+**This retracts a conclusion this page carried for weeks, and the agent is not the reason.** On the
+previous corpus the same tool read **22 / 50 with only 4 / 25 dismissals**, and the honest sentence
+next to that was *"the agent does not discriminate — it escalates rather than filters."* At 13 / 25
+dismissals that sentence is no longer true. **Not one line of the agent changed.** What changed is the
+corpus: the 2026-08-31 rebuild made decoys **paraphrase** the real thing instead of repeating it
+verbatim, stopped mangling quotes as though through speech recognition, and made each arc cohere as one
+relationship. The old corpus was leaking the answer through surface form — a verbatim decoy is a
+different task from a paraphrased one — and the agent was being marked on a test that was easier than
+it looked in one direction and noisier in the other. **A number that moves when the measurement gets
+more honest is a fact about the measurement.** We are not claiming an improved agent.
+
+29 / 50 is still 50 cases on one dataset. It is a result, not an interval. And **confidence is not
+diagnostic**: mean confidence is **0.837 on the 21 wrong verdicts against 0.852 on the 29 right ones**.
+A reviewer cannot use the number the model reports to decide which verdicts to trust, and no screen in
+this system invites them to.
 
 Replay it with no credentials and no network:
 
@@ -490,30 +547,49 @@ Replay it with no credentials and no network:
 EARSHOT_CACHE_MODE=replay uv run python tools/verdict_accuracy.py   --provider bedrock --per-arm 25 --customers 2400
 ```
 
-That reproduces 22 / 50 and $1.4733 from the committed cache, and it writes to a **separate**
+That reproduces 29 / 50 and $1.5305 from the committed cache, and it writes to a **separate**
 `-replay` artifact rather than over the recorded one. Both of those are scar tissue: a failed replay
 once overwrote the keyed run it was replaying — same seed, same config hash, same provider, same
 filename — and `config_hash` turned out not to cover the *code* that turns a seed into a queue, so
-manifests now also carry a `pipeline_sha`. **The replay reproduces the recorded run, not the current
-corpus:** it replays what the model said about conversations that no longer exist in this shape.
+manifests now also carry a `pipeline_sha`.
 
-**Routing accuracy, corpus-historical.** Each customer carries a seeded `trajectory`, so a correct
-owning team exists; `tools/routing_accuracy.py` grades the `owning_team` the investigator already
-recorded, making **zero further model calls**. On the same 50 cases: **36 of 49 routed to the right
-team, 2 wrong, 11 declined** (`owning_team="none"`). Its dominant failure mode is refusing to route
-rather than misrouting, and the declines concentrate in `collections` (8 of 22). Both wrong routes are
-the bad kind — neither matched the ledger's own dominant signal at the crossing. The 50th case is a
-decoy-accumulator customer with no seeded trajectory: no correct team exists for it, so it is reported
-separately and never enters the denominator.
+**AT-58 routing got worse, and the confusion matrix says why.** Each customer carries a seeded
+`trajectory`, so a correct owning team exists; `tools/routing_accuracy.py` grades the `owning_team` the
+investigator already recorded, making **zero further model calls**. On the same 50 cases:
+**27 of 48 routed to the right team, 2 wrong, 19 declined** (`owning_team="none"`). On the previous
+corpus this read 36 of 49 correct, 2 wrong, 11 declined. **It is worse and we publish it as worse.**
 
-**`retention` has no row in that table at all, and that is not sampling** — the route was structurally
-unreachable under the offline reader on that corpus, so the figure is really measured on three teams
-out of four. On the rebuilt corpus the same structural problem is **worse and wider**: see part one,
-where two desks receive nothing and a third receives one case in twenty.
+| truth \ routed | retention | collections | vulnerability | complaints | none |
+|---|---|---|---|---|---|
+| retention | **2** | 0 | 0 | 0 | 0 |
+| collections | 0 | **22** | 1 | 1 | 19 |
+| vulnerability | 0 | 0 | **3** | 0 | 0 |
+| **complaints** | 0 | 0 | 0 | **0** | 0 |
 
-So the D-025 cost argument for Haiku is **not yet earned**: it is cheap and it is fast, and on this
-sample it escalates everything. Read together, the two results say the investigator is a **router and
-an audit trail, not a filter**: it addresses the case correctly and escalates almost everything.
+**The `complaints` row is entirely empty, and that is the same failure as part one seen from the other
+side.** No complaint customer ever crossed the review threshold under the offline reader — 0 / 20 in
+the desk table — so no complaint case existed for the agent to route, correctly or otherwise. The 48
+scorable cases are **43 collections, 3 vulnerability, 2 retention, 0 complaints**: a routing figure
+measured on a queue that one reader's coverage gap had already flattened onto a single desk. The
+declines are the same story — all 19 sit in the `collections` row. Fix the reader and this number is
+measured on a different, harder distribution; it is not a number that improves by leaving the reader
+alone.
+
+Both wrong routes are the bad kind: **0 / 2 matched the ledger's own dominant signal at the crossing**,
+so neither was an evidence-consistent mistake — they were unmoored from the evidence on hand. Two of
+the 50 cases are decoy-accumulator customers with no seeded trajectory: no correct team exists for
+them, so they are reported separately (1 routed anyway at confidence 0.78, 1 declined) and never enter
+the denominator.
+
+Read together, the two results still say the investigator is a **router and an audit trail, not a
+filter** — but the reason has changed. It is no longer that it escalates everything; at 13 / 25
+dismissals it does discriminate. It is that a human decides every case either way, and that routing is
+graded on a queue the reader has already narrowed to one desk.
+
+The D-025 cost argument for Haiku is **better supported than it was and still not settled**: at
+$0.0306 per case it is cheap and it is fast, and it now sorts both arms of a balanced sample rather
+than escalating everything. What is missing is the comparison that would actually settle it — the same
+50 cases through a second model, which has never been run.
 
 **One more number, corpus-historical:** of the 240 customers the ledger surfaced at a 10% review budget
 over 2,400, **25 had a real outcome and 215 did not** — the ledger's own precision at the cut, and what
@@ -521,8 +597,8 @@ makes the agent's job hard. It is handed a queue that is **roughly 90% false ala
 and asked to sort it. Not re-measured since the rebuild.
 
 **Still not measured:** any of this at a sample size worth a confidence interval — 50 cases on one
-dataset is a result, not an interval — a second model through the same harness, and **all of part
-three on the current corpus**.
+dataset is a result, not an interval — a second model through the same harness, and **routing on a
+queue whose complaints desk is not empty**, which needs the model reader in front of it.
 
 **Provider-historical, superseded by D-025 (2026-08-25):** two live Claude Sonnet 4.5 investigations,
 recorded via OpenRouter on 2026-08-09, cost **$0.089 and $0.097** and took 30.3s and 33.4s — the only
@@ -533,47 +609,52 @@ than deleted. **They no longer replay.** `artifacts/cache/investigator-demo.json
 model string regardless. The old replay command now cache-misses and prints `provider_error` instead
 of reaching the network, so it is not reproduced here.
 
-### The streamed demo — recorded 2026-08-28, corpus-historical
-
-> **Recorded on the corpus that preceded the 2026-08-31 rebuild, and not re-recorded.** It replays
-> faithfully from the committed cache, so what you watch is real recorded model output — but it is
-> output about conversations the generator no longer produces in this shape. On the current corpus the
-> same offline Northwind stream goes from **1 crossing to 0** (`docs/corpus/06-phase-c-record.md` §6).
-> Re-recording it needs a key, and LLM spend is stopped.
+### The streamed demo — re-recorded 2026-08-31 on the shipping corpus
 
 One synthetic deployment, read end to end by Claude Haiku 4.5 on Bedrock. Every figure is counted
 from the run, and the whole thing replays from the committed cache with no key.
 
 | | |
 |---|---|
-| Conversations read | 133, across 44 customers over 179 days |
-| Signals kept | 63 |
+| Conversations read | 130, across 44 customers over 178 days |
+| Signals kept | 103 |
 | Threshold crossings | 9 (fixed cut at 0.60) |
 | Cases worked by the agent | 6 of 9 |
-| Read once — one call each | 127 conversations · **$0.187** · p50 1,101 ms · p95 1,564 ms |
-| Read turn-by-turn | 6 conversations · 54 calls · **$0.073** |
-| Agent investigations | 6 · **$0.209** |
-| **Total** | **$0.469** |
+| Reader, one call each | 130 conversations · **$0.1983** · p50 **1,230 ms** · p95 **1,786 ms** |
+| Reader, cost per 1,000 conversations | **$1.5256** |
+| Re-read turn-by-turn | 6 of those conversations · 32 further calls · **$0.0474** |
+| Agent investigations | 6 · **$0.2335** ($0.0389 per case) |
+| **Total** | **$0.4792** |
 
-**0 unparsable replies, 0 dropped quotes, 0 relocated quotes** across all 133 reads.
+**0 unparsable replies** across all 130 reads. The $1.5256 per 1,000 here and the $1.58 per 1,000 in
+part one are two independent keyed measurements of the same reader on the same corpus at different
+sample sizes (130 and 282 conversations); neither is a projection.
 
 #### Reading a call while it is still open
 
 Six conversations were read *again after each customer turn*, on the transcript heard so far, so a
-belief can be watched forming rather than arriving finished. On `CUST-0043-C3`:
+belief can be watched forming rather than arriving finished. On `CUST-0008-C3`:
 
 | After | Reader believes | Movement |
 |---|---|---|
-| 2 turns | — | |
-| 5 turns | `complaint_escalation` 0.65 | appeared |
-| 7 turns | `complaint_escalation` 0.70 | firmed |
-| 9 turns | `complaint_escalation` 0.70 | |
-| 10 turns | `complaint_escalation` 0.72 | firmed |
+| 2 turns | `complaint_escalation` 0.75 | appeared |
+| 4 turns | `complaint_escalation` 0.72 | faded |
+| 6 turns | `complaint_escalation` 0.72 | requoted |
+| 8 turns | `complaint_escalation` 0.78 | firmed, requoted |
+| 10 turns | `complaint_escalation` 0.78 | requoted |
+| 12 turns | `complaint_escalation` 0.78 | requoted |
+| 13 turns | `complaint_escalation` 0.78 | |
 
-Across the six, every movement type occurs in real output: **9 appeared, 7 firmed, 1 faded, 3
-withdrawn** (the model retracts a signal after hearing more) **and 1 requoted** (it moves its
-citation to better evidence). The browser does not decide any of that — `read_live._diff()` does,
-in Python, and the page animates the result.
+Across the six: **7 appeared, 9 firmed, 1 faded, 4 requoted** (the model moves its citation to better
+evidence) **and 0 withdrawn.** The browser does not decide any of that — `read_live._diff()` does, in
+Python, and the page animates the result.
+
+**Withdrawal did not occur in this recording, and the previous one is where the claim came from.** The
+pre-rebuild recording produced 3 withdrawals — the model retracting a signal outright after hearing
+more — and this page used to cite them as evidence that every movement type occurs in real output. On
+the shipping corpus it does not: the arcs cohere, so a belief formed early is rarely contradicted
+later. The `withdrawn` path is still implemented and still tested; it is simply not exercised by these
+six conversations, and 6 conversations is too small a sample to conclude anything else from that.
 
 Two properties make it a measurement rather than theatre, both tested: the model is handed a
 genuine **prefix**, never the full transcript with a smaller number attached; and the final step's
@@ -587,13 +668,13 @@ Four things that must be said next to those numbers, not after them:
   streaming consumer sees one conversation at a time and has no population to rank against, so it
   cannot take the top 10% of anything. This mirrors `aws/ingest.py`, the deployed path. The two
   numbers disagree about who crossed; they are labelled apart on every screen.
-- **Only 6 of 9 crossings were investigated**, to bound the cost of a re-record, and only 6 of 133
+- **Only 6 of 9 crossings were investigated**, to bound the cost of a re-record, and only 6 of 130
   conversations were read turn-by-turn, because that costs a call per customer turn. Both
   denominators are on the screen, not inferable from it.
-- **Routing is still not accuracy-measured, and what it shows is not flattering.** The agent
-  concentrates its routing and sometimes returns `owning_team: "none"`. That is on the deployment
-  screen because it is a finding, and it is consistent with AT-57: the agent escalates rather than
-  discriminates.
+- **Routing on this deployment is not accuracy-measured, and what it shows is not flattering.** The
+  agent concentrates its routing and sometimes returns `owning_team: "none"`. That is on the
+  deployment screen because it is a finding, and AT-58 measures the same behaviour properly on 48
+  scorable cases: **27 correct, 2 wrong, 19 declined**.
 - **There is no speech recognition anywhere in this system.** The transcripts are generated text,
   and a bank at this size already transcribes for QA and compliance — that is the seam we consume,
   not one we build. What the stream replays faithfully is the *arrival pattern*, and at 1× each
