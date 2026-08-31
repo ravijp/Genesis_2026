@@ -18,12 +18,25 @@ strict turn-taking, channel-correct language, complaints that are one author. Wh
 down in `../corpus/06-phase-c-record.md`; what the entry claims now is decided in
 `../corpus/07-framing-decision.md` and implemented across every published document as of today.
 
-**The claim leads with coverage, not ranking.** Between our two readers, strict recall on real CFPB
-complaint narratives is 0.0357 (4 / 112) against 0.8214 (92 / 112); on our own shipping corpus the
-keyless lexicon finds **59 of 282** planted arc conversations, and **two of four review desks receive
-no case at all** while a third receives one in twenty. That is a product fact a judge understands in
-one sentence, it is measured today at zero spend, and it explains why every ranking arm sits crowded
-near chance. Ranking is the second half of the story, not the first.
+**The claim leads with coverage, not ranking — and both halves of it are now measured.** Between our
+two readers, strict recall on real CFPB complaint narratives is 0.0357 (4 / 112) against 0.8214
+(92 / 112); on our own shipping corpus the keyless lexicon finds **59 of 282** planted arc
+conversations and the model reader finds **177 of 282**. Through the same ledger at the same threshold,
+crossings per desk:
+
+| Desk | offline lexicon | model reader |
+|---|---|---|
+| **Complaints** | **0 / 20** | **20 / 20** |
+| **Vulnerability** | **0 / 20** | **19 / 20** |
+| **Retention** | **1 / 20** | **16 / 20** |
+| Collections | 9 / 20 | 10 / 20 |
+
+Two desks receive nothing under the keyless reader. That is a product fact a judge understands in one
+sentence, it replays at zero spend, and it explains why every ranking arm sits crowded near chance.
+Ranking is the second half of the story, not the first. **The model column is an upper bound** — the
+threshold is a top-K cut over the offline reader's ranking held fixed across arms; the model's own cut
+costs $13.96 and was not spent. **The model also loses on `financial_distress` coverage** (0.38 vs the
+lexicon's 0.46) and pushes 3 churn / 6 distress customers over at the wrong desk.
 
 **Three published claims were false and are retracted; one was an underclaim and is corrected.**
 
@@ -59,15 +72,34 @@ write under the full ledger, **0 of 485** under an unweighted count
 chance's 0.113 (657 / 5796). Every arm sits between 0.113 and 0.145. That band is the reader's fault,
 not the ranking's.
 
-**LLM spend is stopped and the AWS SSO token is expired**, so every keyed figure in the repo is
-**corpus-historical**: 22 / 50 verdicts, 36 / 49 routing, $1.66 per 1,000 conversations, p50 1,244 ms,
-0 / 50 evidence repairs, the model arm of reader-coverage-by-desk, and the recorded streamed demo. All
-were measured before the 2026-08-31 rebuild. They are kept, labelled at the point of use, and never
-restated as current. Everything published as current today is offline and free.
+**Every keyed figure in the repo was re-measured on 2026-08-31 against the shipping corpus, and there
+is no corpus-historical bucket left.** All four replay from committed caches at zero spend
+(`EARSHOT_CACHE_MODE=replay`, where a miss raises rather than calling out):
+
+| | measured 2026-08-31 | was |
+|---|---|---|
+| Reader coverage by desk | **0 / 20 → 20 / 20** complaints, **0 / 20 → 19 / 20** vulnerability, 1 / 20 → 16 / 20 retention, 9 / 20 → 10 / 20 collections | model arm stale, offline-only |
+| Reader cost / latency | **$1.58 per 1,000** ($0.445562 / 282), p50 **1,333 ms**, p95 **2,162 ms**, 0 unparsable, 0 relocated | $1.66, p50 1,244, p95 2,212 |
+| AT-57 verdicts | **29 / 50** — 16 / 25 caught, **13 / 25 dismissed**, 0 abstained, $0.0306 per case | 22 / 50, 4 / 25 dismissed |
+| AT-58 routing | **27 / 48** correct, 2 wrong, **19 declined** | 36 / 49, 2 wrong, 11 declined |
+| Streamed demo | 130 conversations, 103 signals, 9 crossings, 6 worked, **$0.4792**, $1.5256 / 1,000, p50 1,230 / p95 1,786 | 133 / 63 / $0.469 |
+| Evidence repairs | **0 / 50** | unchanged |
+
+**Two of those changed a conclusion and both are published with the reason.** AT-57's jump is **the
+corpus getting more honest, not the agent getting better** — no line of the agent changed; the rebuild
+made decoys paraphrase instead of repeat verbatim, stopped mangling quotes, and made arcs cohere, so
+"the agent escalates rather than filters" is retracted at 13 / 25 dismissals. AT-58 **got worse and
+ships as worse**: its confusion matrix's `complaints` row is entirely empty because no complaint
+customer crossed under the offline reader, so 43 of 48 scorable cases are one desk — the coverage gap
+above, arriving through the routing door.
+
+**LLM spend: ~$2.42 of $12 for all four.** The AWS SSO token was re-minted 2026-08-29 and every keyed
+item ran. Total unspent and still open: the model's own coverage threshold ($13.96) and the 10-seed
+keyed sweep (~$10).
 
 **Health, measured 2026-08-31.** **850 passing, 5 skipped** (855 collected), ruff clean, separation
-guard over **45** modules with both exemption lists still capped at 3, **30 UI routes** and 31 crawled
-links (`ui/smoke.mjs`), a contrast gate over **650** colour pairs across 17 routes and 2 themes. Next
+guard over **45** modules with both exemption lists still capped at 3, **30 UI routes** and 26 crawled
+links (`ui/smoke.mjs`), a contrast gate over **674** colour pairs across 17 routes and 2 themes. Next
 gate **2026-09-07**.
 
 **AWS is real, correct, and inert.** 3 DynamoDB tables with PITR, 3 SQS queues with DLQ redrive, 3
@@ -85,10 +117,12 @@ client's own systems — the screen counts them rather than asserting it.
   merely inert, they are **unobservable**: no log group exists despite invocations already made.
   `iam:PutRolePolicy` was attempted and denied. Policy JSON and the reproducible error lines are in
   `aws-infrastructure.md`.
-- **LLM spend is stopped by the user's decision, not by a technical block**, and **the AWS SSO token
-  is expired** on top of it. Every keyed item below waits on both. `aws sts get-caller-identity` is a
-  lying probe — it answers from a cached role credential while the SSO token underneath is dead.
-  Probe Bedrock.
+- **Remaining LLM spend is a decision, not a technical block.** SSO was re-minted 2026-08-29 and every
+  keyed item that was queued has run (~$2.42 of $12). What is left is priced and unspent, not blocked:
+  the model's own coverage threshold ($13.96), the 10-seed keyed sweep (~$10), Arm B on Nova Lite
+  ($0.01), a keyed `earshot investigate` for `ui/data.js`. `aws sts get-caller-identity` is a **lying
+  probe** — it answers from a cached role credential while the SSO token underneath is dead. Probe
+  Bedrock.
 - CodeBuild/CodePipeline blocked by the same `iam:CreateRole` gap. Object Lock on `agentic-trio` is
   OFF and needs an AWS Support case. No SNS, no Budgets, no VPC subnets.
 
@@ -96,22 +130,25 @@ client's own systems — the screen counts them rather than asserting it.
 
 1. **The IAM ticket** — the only hard blocker that is not a spend decision. One inline policy and the
    deployed path stops being a diagram. It now also needs `logs:*`.
-2. **Re-measure reader coverage with the model arm, ~$0.45.** This is the cheapest repair of the
-   *lead* claim, and it is worth more than the $10 sweep: the "dark desks" beat is fully measured for
-   the lexicon on this corpus and its model half is stale. If one dollar of spend is ever released,
-   spend it here.
+2. **Extend the reader-coverage sample to n=40 per trajectory (~$0.45 delta).** The lead claim is
+   measured at n=20 on one seed — a direction, not an interval — and samples nest (first N by
+   `customer_id`), so doubling re-reads nothing already cached and pays only the delta. The
+   **collections row is the half most worth a bigger denominator**: it is the one family where the
+   model reader loses on coverage (0.38 vs 0.46) and wins by a single crossing (10 / 20 vs 9 / 20).
 3. **The per-mechanism tie-share ablation — free, offline, and the cheapest open item in the repo.**
    `mechanism_ablations()` already exists in `arms.py`. `dumb-ledger` switches five things off at
    once, so today's evidence justifies the *set*, not any member. Printing each mechanism's distinct-
    score count would let the entry say which one earns its keep instead of defending all four.
-4. **`ui/data.js` regeneration** — needs a keyed `earshot investigate` run. The recorded document
-   screens (queue, case, retro) are still the offline rule engine; `#/desk`, `#/desk/call` and
-   `#/stream` are keyed Haiku. Waits on spend.
+4. **The reader behind `ui/data.js` is still the offline lexicon.** Its verdicts are keyed as of
+   `4ec34cd` ($0.2326, 8 investigations, 0 / 8 evidence repairs), but `--extractor` does not apply
+   to `earshot investigate`, so the extraction under those verdicts is the 26-regex fallback. Given
+   §1's desk table, that is the gap most worth closing: the screens `ui/README.md` calls "the proof"
+   are running the reader we publish as leaving two desks empty. Needs a code path, not just spend.
 5. **The 10-seed keyed sweep** (~$10, ONE process on ONE cache path) — the single most valuable
    unspent measurement, because it is what would settle the chance gate. Deferred deliberately.
 6. **Arm B**: Nova Lite for the reader arm (~$0.01 alone, $0.28 both). Last item on
    `build-plan.md`'s "not measured" list. `extractor_cache_path()` is per-model, so it cannot pollute
-   the cache behind the published reader figures. Waits on spend.
+   the cache behind the published $1.58 / 1,000 reader figure.
 7. **The silence-permitting corpus** — pre-registered in D-031 as a declared second arm published
    beside the first, never a substitution. It is an experiment, not a fix. Free.
 8. **Observability (W11, EMF)** and **the UI's write path** — both need the IAM fix first.
@@ -152,8 +189,19 @@ client's own systems — the screen counts them rather than asserting it.
   instead of it.
 - **The ledger hands the agent a queue that is ~90% false alarm by construction** — 25 of 240
   crossings at a 10% budget had a real outcome. Corpus-historical; not re-measured since the rebuild.
-- **`ui/data.js` is still the offline rule engine**, printed on screen, pending a keyed
-  `earshot investigate` run that spend policy currently blocks.
+  It is the one figure in the agent story that still carries that label.
+- **AT-58 routing fell to 27 / 48 and the cause is a coverage gap, not the router.** The `complaints`
+  row of its confusion matrix is empty and all 19 declines sit in the `collections` row. Fixing the
+  reader means re-measuring routing on a distribution this figure has never seen; it will not improve
+  by leaving the reader alone.
+- **AT-57's 29 / 50 is n=50 on one dataset**, and reported confidence does not help a reviewer triage
+  it: 0.837 mean on the 21 wrong verdicts against 0.852 on the 29 right ones.
+- **The model reader's own threshold is unmeasured**, so every model-arm crossing figure in the repo
+  is an upper bound. $13.96, and the tool prints the caveat itself on every run.
+- **`ui/data.js` is half-upgraded and the screens say which half.** Verdicts are keyed Bedrock as of
+  `4ec34cd`; the reader under them is still the offline lexicon, because `--extractor` does not reach
+  `earshot investigate`. So the document screens demonstrate the agent on the reader whose coverage
+  gap those same screens exist to argue against.
 - **A keyed run's cache is isolated by path but not by prompt hash across a resume** — the $12.32
   lesson. See `handover.md`'s traps.
 - **No AT ticket covers any of the eleven AWS work packages.** 45 issues live, 28 In Progress,

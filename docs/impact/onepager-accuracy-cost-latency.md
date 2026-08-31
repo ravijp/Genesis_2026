@@ -8,62 +8,104 @@ stated wins.
 **Reproduce any of it with no API key and no network** — the model responses are committed:
 
 ```bash
-uv sync && uv run pytest                                # 817 tests
+uv sync && uv run pytest                                # the test suite
 uv run earshot sweep --seeds 30 --customers 1500        # every recall figure and p-value
+EARSHOT_CACHE_MODE=replay uv run python tools/reader_coverage.py \
+  --reader both --per-trajectory 20                     # the desk table in §1
 EARSHOT_CACHE_MODE=replay uv run python tools/verdict_accuracy.py \
-  --provider bedrock --per-arm 25 --customers 2400      # the agent table
+  --provider bedrock --per-arm 25 --customers 2400      # the agent table in §4
+uv run python tools/routing_accuracy.py                 # routing, zero model calls
 ```
 
 ---
 
-## 1. Reading a conversation
+## 1. Which review desks exist — the strongest result in the entry
 
-Claude Haiku 4.5 on Bedrock. Keyed run 2026-08-28, 150 CFPB complaint narratives, responses
-committed for keyless replay.
+**Measured 2026-08-31 on the shipping corpus, keyed Claude Haiku 4.5 on Bedrock, $0.445562.** The same
+282 planted conversations, 20 customers per trajectory, both readers' signals through the **same**
+`SignalLedger` at the **same** threshold and the same scoring config. One variable: who reads.
 
-| | measured |
+| Desk | crossed, offline lexicon | crossed, model reader |
+|---|---|---|
+| **Complaints** | **0 / 20** | **20 / 20** |
+| **Vulnerability** (life event) | **0 / 20** | **19 / 20** |
+| **Retention** (churn) | **1 / 20** | **16 / 20** |
+| Collections (distress) | 9 / 20 | 10 / 20 |
+
+**Two of four desks receive nothing at all under the keyless reader.** That is not an accuracy
+percentage — it is whether a queue exists for a vulnerable customer to appear in. Coverage of planted
+conversations moves **59 / 282 → 177 / 282** (complaint 0.02 → 0.92, life event 0.13 → 0.74, churn
+0.21 → 0.52). Unplanted fires: 0 in all four families, both arms.
+
+> **The model column is an UPPER BOUND. Do not present it without this.** The threshold (0.2753) is a
+> budget-derived top-K cut over the **offline** reader's ranking of the corpus, held fixed across both
+> arms so the arms stay comparable. A reader that finds more raises every customer's score, so the
+> same 10% review budget would settle at a **higher** cut than this one. Deriving the model's own cut
+> means a keyed pass over all 8,429 conversations — **$13.96**, not spent. The tool prints this line
+> itself on every run.
+
+**Where the model loses, on the same run.** `financial_distress` coverage is **0.38 (27 / 72) against
+the lexicon's 0.46 (33 / 72)** — worse on the one family the lexicon was written for — and it pushes
+**3 / 20 churn and 6 / 20 distress** customers over the line on a *different* signal family, so those
+cases exist but arrive at the wrong desk. This is a differently-shaped reader, not a uniformly better
+one, and choosing a reader is an operational decision about which desk you under-serve.
+
+**Sample: n=20 customers per trajectory, one dataset, one seed.** A direction with denominators on it,
+not a sweep. Samples nest (first N by `customer_id`), so doubling to n=40 re-reads nothing already
+cached.
+
+```bash
+EARSHOT_CACHE_MODE=replay uv run python tools/reader_coverage.py --reader both --per-trajectory 20
+```
+
+---
+
+## 2. Reading a conversation — cost, latency, fidelity
+
+| | measured 2026-08-31 |
 |---|---|
-| Cost per 1,000 conversations | **$1.66** ($0.24845 over 150) |
-| Latency p50 / p95 | **1,244 ms / 2,212 ms** |
-| Strict recall on real customer language | **0.8214 (92 / 112)** |
-| False-positive rate | 0.1598 (78 / 488) |
+| Cost per 1,000 conversations | **$1.58** ($0.445562 over 282) |
+| Latency p50 / p95 | **1,333 ms / 2,162 ms** |
+| Unparsable replies | **0 / 282** |
+| Relocated quotes | **0** — every citation stayed where the model put it |
+| Signals emitted | 272 (1 quote dropped for not being a customer turn) |
 
-**Against the offline fallback, on the identical gold set:** the 26-regex lexicon scores **0.0357
-(4 / 112)** at a false-positive rate of 0.0205 (10 / 488). The model is ~23× better at finding real
-signal and ~8× worse at firing where there is none.
+Corroborated independently on the streamed deployment demo, re-recorded the same day: **$1.5256 per
+1,000** over 130 conversations, p50 **1,230 ms**, p95 **1,786 ms**, 103 signals, 0 unparsable. Two
+keyed measurements of the same reader at different sample sizes; neither is a projection.
+
+**Strict recall on real customer language — 0.8214 (92 / 112)**, false-positive rate 0.1598
+(78 / 488), against the offline lexicon's **0.0357 (4 / 112)** at 0.0205 (10 / 488) on the identical
+gold set. The model is ~23× better at finding real signal and ~8× worse at firing where there is none.
+**That measurement is on 150 real CFPB complaint narratives — an external, public-domain corpus — so
+it does not move when ours does** and is not affected by the 2026-08-31 rebuild.
 
 **Why a regex fallback exists at all:** it needs no key, so a fresh clone runs the whole pipeline
 offline. Every screen and every table labels which reader produced it. Offline numbers are never a
 headline.
 
-**One measured trade, stated because it is operational rather than technical.** Swapping the offline
-reader for the model takes the Retention desk from **0 crossings to 9 of 20** — that desk received
-nothing at all under the lexicon — and drops Collections from **4 to 1**. Choosing a reader decides
-which desk you under-serve. One dataset, n=20 per trajectory; a direction with denominators, not a
-sweep.
-
 ---
 
-## 2. Investigating a crossing
+## 3. Investigating a crossing
 
-Keyed run 2026-08-29, 50 crossings, Haiku 4.5 through Bedrock.
+Keyed run 2026-08-31, 50 crossings, Haiku 4.5 through Bedrock.
 
-| | measured |
+| | measured 2026-08-31 |
 |---|---|
-| Cost per case | **$0.0295** (50 cases, $1.4733; p95 $0.0357, max $0.0368) |
-| Model latency p50 / p95 | **19.8 s / 24.7 s** |
-| Model calls per case | 4–5 |
+| Cost per case | **$0.0306** (50 cases, $1.5305; p95 $0.0361, max $0.0384) |
+| Model latency p50 / p95 | **20.8 s / 28.1 s** |
+| Model calls per case | 4–6 |
 | Loop exits | `decided` **50 / 50** — no budget exhaustion, no step-limit hit |
 | First-attempt evidence groundedness | **0 / 50 repairs** — every citation resolved on the first try |
 
-**Cost ceiling:** $0.10 per case, derived from this measurement at ~2.7× the worst observed case.
-A cap that cannot be reached is not a cap, so it was re-derived from data rather than guessed.
+**Cost ceiling:** $0.10 per case, ~2.6× the worst observed case, re-derived from this measurement. A
+cap that cannot be reached is not a cap, so it comes from data rather than a guess.
 
 ---
 
-## 3. Is the agent right?
+## 4. Is the agent right?
 
-**No, mostly. It escalates rather than discriminates, and that is the headline result.**
+**Yes on a balanced sample, and this reverses what this page said for weeks.** 29 / 50.
 
 50 crossings, sampled deliberately as 25 with a real downstream outcome and 25 without — the top of
 the queue is nearly all true positives, so a sample drawn from it could not be wrong in the
@@ -71,28 +113,55 @@ direction that matters.
 
 | | verdict `genuine` | verdict `false_alarm` | abstained |
 |---|---|---|---|
-| outcome present (25) | **18** | 6 | 1 |
-| outcome absent (25) | **21** | **4** | 0 |
+| outcome present (25) | **16** | 9 | 0 |
+| outcome absent (25) | 12 | **13** | 0 |
 
-**Overall 22 / 50.** It catches 18 of 25 real cases and dismisses only **4 of 25** false alarms, at a
-mean confidence of **0.86 on the answers it got wrong**.
+**Overall 29 / 50.** It catches 16 of 25 real cases and dismisses **13 of 25** false alarms, with
+**0 abstentions**.
 
-**Routing is the half that works: 36 / 49 correct, 2 wrong, 11 declined.** Its failure mode is
-declining to route rather than routing wrongly, which is the safe failure in a queue a human works.
-Both wrong routes were unmoored from the evidence on hand rather than near-misses.
+**Retraction, and the agent is not the reason.** This page published **22 / 50 with 4 / 25
+dismissals** and the conclusion *"it escalates rather than discriminates, and that is the headline
+result."* At 13 / 25 that conclusion is false. **Not one line of the agent changed.** The 2026-08-31
+corpus rebuild stopped leaking the answer through surface form: decoys now **paraphrase** the real
+signal instead of repeating it verbatim, quotes are no longer mangled as though through speech
+recognition, and each arc coheres as one relationship. The old task was easier to pass in one
+direction and noisier in the other. **A number that moves when the measurement gets more honest is a
+fact about the measurement**, and we are not claiming a better agent.
 
-**So what the investigator buys today is routing and an audit trail, not filtering.** The queue it is
-handed is ~90% false alarm by construction — 25 real outcomes in 240 crossings at a 10% review
-budget — and the agent removes 4 of 25 of that noise. Any ROI case has to rest on triage and
-evidence assembly, not on the agent shrinking the queue.
+**Confidence is not diagnostic.** Mean confidence is **0.837 on the 21 wrong verdicts against 0.852 on
+the 29 right ones**. A reviewer cannot use the reported number to decide which verdicts to trust, and
+no screen invites them to.
+
+**Routing got worse — 27 / 48 correct, 2 wrong, 19 declined, down from 36 / 49 — and it ships as
+worse.** The confusion matrix says why:
+
+| truth \ routed | retention | collections | vulnerability | complaints | none |
+|---|---|---|---|---|---|
+| retention | **2** | 0 | 0 | 0 | 0 |
+| collections | 0 | **22** | 1 | 1 | 19 |
+| vulnerability | 0 | 0 | **3** | 0 | 0 |
+| **complaints** | 0 | 0 | 0 | **0** | 0 |
+
+**The `complaints` row is entirely empty** — no complaint customer ever crossed under the offline
+reader (§1, 0 / 20), so no complaint case existed to route. The 48 scorable cases are **43 collections,
+3 vulnerability, 2 retention, 0 complaints**, and all 19 declines sit in the collections row. This is
+§1's coverage gap arriving through a second door, not an independent finding: routing is being graded
+on a queue one reader's blind spots had already flattened onto a single desk. Both wrong routes matched
+**neither** the seeded trajectory nor the ledger's own dominant signal at the crossing — unmoored from
+the evidence on hand, not near-misses.
+
+**So what the investigator buys is triage on a balanced sample, routing, and an audit trail — with a
+human deciding every case.** The queue it is handed is ~90% false alarm by construction (25 real
+outcomes in 240 crossings at a 10% review budget). Any ROI case rests on triage and evidence assembly
+plus the coverage in §1, never on the agent alone shrinking the queue.
 
 **Sampling caveat, disclosed:** the 50 are the highest-scoring 25 of each class, so the negatives are
-the *hardest* false alarms in the queue. The true dismissal rate across the whole cut is likely
-better than 4 / 25. The bias runs against us.
+the *hardest* false alarms in the queue. The true dismissal rate across the whole cut is likely better
+than 13 / 25. The bias runs against us.
 
 ---
 
-## 4. Does memory beat forgetting?
+## 5. Does memory beat forgetting?
 
 30 seeds × 1,500 customers, equal 10% review budget, paired by seed, exact two-sided sign test.
 
@@ -143,7 +212,7 @@ accumulate over**, which is a claim about history depth and is measurable.
 
 ---
 
-## 5. What is not measured
+## 6. What is not measured
 
 Listed because a checkable gap is worth more than a reassuring silence.
 
@@ -160,27 +229,26 @@ Listed because a checkable gap is worth more than a reassuring silence.
 
 ---
 
-## 6. What the numbers are worth
+## 7. What the numbers are worth
 
-**Load-bearing and reproducible today, at zero API spend:** the 30-seed recall comparison, the
-offline reader's coverage by desk, extraction fidelity, retro re-score direction. Every one of them
-re-runs from a fresh clone with no key.
+**All of it is on the shipping corpus, and all of it replays at zero API spend.** The 30-seed recall
+comparison, extraction fidelity and retro re-score direction run keyless from a fresh clone. Every
+keyed figure on this page — **both arms of reader-coverage-by-desk, reader cost and latency,
+investigator cost and latency, evidence groundedness, verdict accuracy, routing accuracy, the streamed
+demo** — was measured on **2026-08-31** against the corpus that ships, and replays from committed
+responses with `EARSHOT_CACHE_MODE=replay`, where a cache miss raises rather than calling out. Nothing
+on this page is a projection and nothing is corpus-historical.
 
-**Load-bearing but CORPUS-HISTORICAL — measured before the 2026-08-31 rebuild and not re-measured:**
-reader cost and latency ($1.66 / 1,000, p50 1,244 ms), investigator cost and latency, evidence
-groundedness (0 / 50), verdict accuracy (22 / 50), routing accuracy (36 / 49), the model arm of
-reader-coverage-by-desk, the streamed demo. They replay from committed responses with no key, but they
-replay what the model said about conversations the generator no longer produces in this shape.
-Re-measuring needs a key; the AWS SSO token is expired and LLM spend is stopped.
-
-**CFPB recall on real language (0.0357 vs 0.8214) is unaffected by any of this** — it is scored
-against an external gold set of 150 public narratives and never touches our corpus. It is the one
-number here that does not move when the corpus moves.
+**CFPB recall on real language (0.0357 vs 0.8214) is on an external corpus** — 150 public-domain
+narratives, scored against a gold set committed before any narrative was read. It never touches our
+corpus, so it does not move when ours does, and none of the above affects it.
 
 **Known weak, published anyway:** the ledger does not beat chance on any stratum at 30 seeds
 (18–8–4 `p=0.076` diffuse); the pre-registered headline died; our own ablation floor beats us on
-diffuse under the default tie-break; the agent's 22 / 50 verdict accuracy; the ~90%-false-alarm queue;
-the offline lexicon's 0.0357 on real language and 617 / 2,700 on our own.
+diffuse under the default tie-break; **routing fell to 27 / 48 on a queue whose complaints desk is
+empty**; the model reader's own threshold is unmeasured, so its coverage column is an upper bound; the
+model reader is **worse than the lexicon on `financial_distress` coverage** (0.38 vs 0.46); the
+~90%-false-alarm queue; the offline lexicon's 0.0357 on real language and 617 / 2,700 on our own.
 
 *Sweep figures measured 2026-08-31. `README.md` is the source of record; where this page and the
 README disagree, the README is right.*

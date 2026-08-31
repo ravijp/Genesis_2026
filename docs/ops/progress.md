@@ -47,7 +47,7 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 | W3 | Bedrock provider (`llm/bedrock.py`) | **DONE** | Converse both ways, Haiku 4.5 default, computed-not-charged cost, lazy client. 33 stub tests |
 | W1 | Persist case fields | **DONE** | `case_record.py` — one serializer for the disk artifact and the DynamoDB item. Unblocks W10 |
 | W4 | Spend cap in our own code | **DONE** | `llm/budget.py`. `CappedProvider` wraps every paid provider, refuses before the call, outside the cache. 15 tests |
-| W5 | First keyed reader run | **DONE** | 150 CFPB docs on Haiku 4.5. Strict recall 0.8214 (92 / 112) vs the lexicon's 0.0357, at 8x the false-positive rate. $1.66 per 1,000 |
+| W5 | First keyed reader run | **DONE** | 150 CFPB docs on Haiku 4.5. Strict recall 0.8214 (92 / 112) vs the lexicon's 0.0357, at 8x the false-positive rate. That run's rate was $1.66 per 1,000; **superseded — the published rate is $1.58**, measured 2026-08-31 over 282 conversations. The recall figures are external-gold-set and unaffected |
 | W6 | Ledger + case DynamoDB stores | **DONE (code); tables not created** | `aws/stores.py` + `tools/provision.py`. Conditional writes, no delete path on the ledger, scoring delegated. 39 stub tests. Dry-run verified against the real account |
 | W7 | Ingest path (SQS FIFO → handler) | **DONE** | `aws/ingest.py`. Partial batch failure, conditional append, scoring delegated. 18 tests, no AWS |
 | W8 | Investigate path | **DONE (code)** | `aws/investigate.py` + `aws/transcripts.py`. Loop unchanged, score recomputed not trusted, account data labelled synthetic. 29 tests |
@@ -78,13 +78,55 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 
 ## Log
 
+**2026-08-31 (late)** · **All four keyed figures re-measured on the shipping corpus and published
+across every document** (`9da4169`, then the docs commits on `wp/final-numbers`). ~$2.42 of $12.
+
+**Reader coverage is the result the entry rests on, and it is now measured on both arms.** Same 282
+planted arc conversations, same `SignalLedger`, same threshold, same scoring config; one variable, who
+reads. Crossings: **complaints 0 / 20 → 20 / 20, vulnerability 0 / 20 → 19 / 20**, retention
+1 / 20 → 16 / 20, collections 9 / 20 → 10 / 20. Coverage 59 / 282 → 177 / 282. Reader **$1.58 per
+1,000**, p50 1,333 ms, p95 2,162 ms, 272 signals, **0 unparsable, 0 relocated quotes**. Stated with it
+because the tool states it: the model arm is an **UPPER BOUND** — the threshold is a top-K cut over the
+OFFLINE reader's ranking, held fixed across arms, and the model's own cut costs $13.96, not spent.
+Published against us on the same run: distress coverage **0.38 vs the lexicon's 0.46**, and 3 churn /
+6 distress customers crossing on the wrong signal family.
+
+**AT-57 22 / 50 → 29 / 50, dismissals 4 / 25 → 13 / 25, and it is not our agent improving.** Not one
+line of it changed. The Phase C corpus stopped leaking the answer through surface form: decoys
+paraphrase instead of repeating verbatim, quotes are no longer ASR-mangled, arcs cohere. So "the agent
+escalates rather than filters" — the honest read at 4 / 25 — is **retracted**, with the reason attached
+everywhere it was published. New finding worth as much as the number: **confidence is not diagnostic**,
+0.837 mean on the 21 wrong verdicts against 0.852 on the 29 right ones.
+
+**AT-58 36 / 49 → 27 / 48 (2 wrong, 19 declined). Worse, published as worse.** The confusion matrix is
+the explanation: the `complaints` row is **entirely empty**, because no complaint customer ever crossed
+under the offline reader, so no complaint case existed to route. 43 of the 48 scorable cases are one
+desk and all 19 declines sit in it. The same coverage failure as above, arriving through a second door
+— it will not improve by leaving the reader alone.
+
+**Streamed demo re-recorded:** 130 conversations, 103 signals, 9 crossings, 6 worked, **$0.4792**,
+$1.5256 / 1,000, p50 1,230 / p95 1,786. Its turn-by-turn movement counts were recomputed from
+`ui/stream.js` rather than carried over, which caught a claim that had gone stale: the old recording's
+**3 withdrawals** were the README's evidence that every movement type occurs in real output, and the
+re-record has **0**. Withdrawn with its reason; 6 conversations cannot support the converse either.
+
+**Nine documents updated; no superseded figure survives outside a labelled retraction** (README,
+ORIENTATION, three one-pagers, architecture, build-plan, infrastructure, state-of-play, handover,
+INDEX). Two corrections found while doing it, both pre-existing: state-of-play still called
+`ui/data.js` an offline rule engine when `4ec34cd` had keyed its verdicts hours earlier (what is
+actually offline is the READER under them, because `--extractor` does not reach `earshot investigate`);
+and `infrastructure.md`'s $/mo tables are left at the old $0.0301 mean investigation cost with the
+1.7% bias named above them, rather than hand-retyping every arithmetic string.
+
 **2026-08-29 (late)** · **Every keyed measurement re-taken on the shipping corpus, and a design
 system** (`1a91e46`, `7359427`, `a459ee0`, `bcbcd8b`, `33c213c`, `74536fc`).
 
 **AT-57 22 / 50 and AT-58 36 / 49**, both on the post-fix corpus, both replaying — verified before
 publishing, which is the whole point of the README paragraph deleted a day earlier. The agent
 escalates: 18/25 caught, 4/25 dismissed. Routing is harder post-fix (41→36) and its two wrong routes
-are unmoored from the evidence rather than near-misses.
+are unmoored from the evidence rather than near-misses. *(Both figures superseded 2026-08-31 by
+29 / 50 and 27 / 48 on the Phase C corpus — see the entry at the top of this log. Nothing here is
+current; it is the record of what was true on this date.)*
 
 **A dead route, found and then explained.** The offline lexicon finds churn evidence in 0.43 of the
 conversations where it was planted, against 0.67–0.86 elsewhere; corroboration is cross-conversation,
@@ -142,7 +184,8 @@ proven to fail on the attacked code. Suite 559 → **774**, guarded surface 34 �
 19/25, dismissed 3/25, one abstention, $1.50, p50 18.4s). AT-58 routing measured for the first time and
 free, by scoring the artifact AT-57 already wrote: **41 / 49 correct, 0 wrong, 8 declined** — when it
 commits to a team it is never wrong. Together: the investigator is a **router and an audit trail, not
-a filter**.
+a filter**. *(Both superseded twice since; current is 29 / 50 and 27 / 48, and the "router not a
+filter" reading no longer rests on the agent escalating everything. Historical record only.)*
 
 **`config_hash` does not cover the code, and it cost $1.50.** The corpus fix changed who crosses with
 the hash identical on both sides. Manifests carry `pipeline_sha` now, a failed run refuses to write an
@@ -157,7 +200,8 @@ deltas rather than quietly dropped.
 
 **Owed to the next session:** the AT-57 re-run on the fixed corpus is **BLOCKED (Ravi)** on an expired
 SSO session — the published 22 / 50 was measured pre-fix and no longer replays, which the README states
-rather than hides.
+rather than hides. *(Discharged 2026-08-31: SSO was re-minted, the re-run landed at 29 / 50, and
+nothing on this line is a live blocker or a current figure.)*
 
 **2026-08-28 (late night)** · **The UI became the product in use** (`e0fb7f8`, `281e7c5`,
 `5b0633f`). Research into the consoles retail banks actually run found the finding that reframed
