@@ -129,7 +129,33 @@ five tools (ledger summary, conversation, transactions, account state, prior cas
 
 Measured on 112 real customer complaints from the US CFPB public database. The regex reader exists so
 the repo runs with no keys — it is **not** a serious reader, and every table says which one produced
-it.
+it. That measurement is on an **external** corpus and does not move when ours does.
+
+### The same two readers, and which review desks exist because of them
+
+**This is the single strongest number in the entry.** Measured 2026-08-31 on the shipping corpus:
+282 planted conversations, 20 customers per trajectory, both readers' signals through the **same**
+ledger at the **same** threshold and the same scoring config. The only variable is who reads.
+
+| Desk | offline lexicon | model reader |
+|---|---|---|
+| **Complaints** | **0 / 20** | **20 / 20** |
+| **Vulnerability** (life event) | **0 / 20** | **19 / 20** |
+| **Retention** (churn) | **1 / 20** | **16 / 20** |
+| Collections (distress) | 9 / 20 | 10 / 20 |
+
+Two desks receive **nothing** under the keyless reader. The evidence was in the conversations all
+along; whether a desk exists is decided by whether anything can read it. Reader cost
+**$1.58 per 1,000 conversations**, p50 1,333 ms, 0 unparsable replies.
+
+**The model column is an UPPER BOUND and must never be quoted without saying so.** The threshold is a
+budget-derived top-K cut over the *offline* reader's ranking, held fixed across both arms so the arms
+stay comparable. A reader that finds more raises every score, so the same 10% review budget would
+settle at a higher cut. Deriving the model's own cut costs **$13.96** and was not spent.
+
+**Where the model loses:** its `financial_distress` coverage is **0.38 (27 / 72) against the lexicon's
+0.46 (33 / 72)**, and it pushes 3 churn and 6 distress customers over the line on the *wrong* signal
+family. A differently-shaped reader, not a uniformly better one.
 
 ---
 
@@ -180,29 +206,47 @@ entry currently fails — D-031, and the dead row stays in every table permanent
   is decided alphabetically. Both records are published, always, and the deterministic one stays the
   default.
 - **The binding constraint is the reader, not the ranking.** The regex reader finds **617 of 2,700**
-  planted signals, and on our own corpus it leaves two of four desks receiving no case at all. With a
-  reader that weak, every arm crowds between 0.113 and 0.145 — a chance floor and a ceiling three
-  points above it. No ranking strategy escapes that.
+  planted signals, and on our own corpus it leaves two of four desks receiving no case at all — where
+  the model reader takes those same two desks to **20 / 20 and 19 / 20** (§4). With a reader that
+  weak, every arm crowds between 0.113 and 0.145 — a chance floor and a ceiling three points above it.
+  No ranking strategy escapes that. **Every sweep figure above is on the weak reader**, so the arm
+  comparison is internally valid and the absolute level is a floor, not the system's ceiling.
 - **These numbers moved when the corpus was rebuilt** on 2026-08-31, in both directions. They
   describe the corpus at least as much as the mechanism, and the README says so.
 
-### The agent, measured — and corpus-historical
+### The agent, measured 2026-08-31
 
-**Everything in this table was measured on 2026-08-28 / 2026-08-29, on the corpus that preceded the
-2026-08-31 rebuild.** It is stale. It has not been re-measured because the AWS SSO token is expired
-and LLM spend is stopped — a decision, not a technical block. Read it as "what the agent did on the
-previous corpus", never as current.
+Keyed Claude Haiku 4.5 through Bedrock, 50 crossings sampled evenly from both arms (25 with a real
+downstream outcome, 25 without). Replays from the committed cache with no key.
 
-| | measured (corpus-historical, pre-rebuild) |
+| | measured 2026-08-31 |
 |---|---|
-| Verdict accuracy | **22 / 50** — it escalates rather than discriminating |
-| Dismissing false alarms | **4 / 25** — and 0.86 mean confidence when wrong |
-| Routing to the right team | **36 / 49** correct, 2 wrong, 11 declined |
+| Verdict accuracy | **29 / 50** |
+| Catching real cases | **16 / 25** |
+| Dismissing false alarms | **13 / 25** |
+| Abstentions (`insufficient_evidence`) | **0 / 50** |
+| Routing to the right team | **27 / 48** correct, 2 wrong, 19 declined |
 | Evidence citations resolving first try | **50 / 50** |
-| Cost per investigation | **$0.0295** |
+| Cost per investigation | **$0.0306** — model time p50 20.8 s, p95 28.1 s |
 
-So the agent today buys **routing and an audit trail, not filtering**. That is written down rather
-than hidden.
+**Verdicts improved and the agent is not the reason.** This table used to read 22 / 50 with **4 / 25**
+false alarms dismissed, and the honest conclusion next to it was "it escalates rather than
+discriminating". At 13 / 25 that conclusion is retracted. **No part of the agent changed.** The
+2026-08-31 corpus rebuild stopped handing it the answer through surface form — decoys now paraphrase
+instead of repeating verbatim, quotes are no longer mangled as if by speech recognition, and arcs
+cohere as one relationship. A number that moves when the measurement gets more honest is a fact about
+the measurement, not a win.
+
+**Routing got worse, from 36 / 49 to 27 / 48, and it is published as worse.** The confusion matrix
+explains it: the `complaints` row is **entirely empty**, because no complaint customer ever crossed
+under the offline reader (the 0 / 20 above). There was no complaint case to route. The 48 scorable
+cases are 43 collections, 3 vulnerability, 2 retention, 0 complaints, and all 19 declines sit in the
+collections row — the coverage gap of the desk table, arriving from the other side. Both wrong routes
+matched neither the seeded trajectory nor the ledger's own dominant signal at the crossing.
+
+So the agent buys **routing, discrimination on a balanced sample, and an audit trail** — and a human
+still decides every case. Confidence does not help a reviewer triage: mean confidence is **0.837 on
+the 21 wrong verdicts against 0.852 on the 29 right ones**.
 
 ---
 
