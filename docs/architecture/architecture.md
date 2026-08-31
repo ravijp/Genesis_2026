@@ -202,9 +202,10 @@ rather than replacing them.
 | Does each scoring mechanism earn its place? | Per-mechanism ablation |
 | Does any of it beat chance? | `random-rank` — a seeded RNG that ignores every signal — is a shipped arm. **Measured 2026-08-31: full-ledger vs chance on diffuse arcs is 18–8–4, `p=0.076`. It does not.** |
 | Can a past conversation be worth more? | Each entry's marginal contribution at write against its contribution today. **Measured 2026-08-31: 239 / 485 rise under the full ledger, 0 / 485 under an unweighted count** |
-| Is the agent right? | Verdict and routing accuracy vs the seeded trajectory. **22 / 50 verdicts, 36 / 49 routing (2 wrong, 11 declined) — corpus-historical, measured 2026-08-28** |
-| Is the agent honest? | Share of decisions whose evidence resolves on the FIRST attempt (not after retries). **50 / 50, no repairs — corpus-historical** |
-| Can a bank afford it? | **$1.66 per 1,000 conversations read, $0.0295 per investigation; reader p50 1,244 ms / p95 2,212 ms — corpus-historical** |
+| **Which desks exist at all?** | Both readers' signals through the SAME ledger at the SAME threshold, denominators = planted counts. **Measured 2026-08-31: crossings go 0 / 20 → 20 / 20 complaints, 0 / 20 → 19 / 20 vulnerability, 1 / 20 → 16 / 20 retention, 9 / 20 → 10 / 20 collections; coverage 59 / 282 → 177 / 282. The model column is an UPPER BOUND — the threshold is a top-K cut over the OFFLINE reader's ranking, held fixed across arms** |
+| Is the agent right? | Verdict and routing accuracy vs the seeded trajectory. **Measured 2026-08-31: 29 / 50 verdicts (16 / 25 caught, 13 / 25 dismissed, 0 abstained), 27 / 48 routing (2 wrong, 19 declined)** |
+| Is the agent honest? | Share of decisions whose evidence resolves on the FIRST attempt (not after retries). **50 / 50, no repairs — measured 2026-08-31** |
+| Can a bank afford it? | **Measured 2026-08-31: $1.58 per 1,000 conversations read, $0.0306 per investigation; reader p50 1,333 ms / p95 2,162 ms** |
 
 Comparison numbers come from `earshot sweep` and are written to a run manifest with their seed list.
 
@@ -225,7 +226,14 @@ randomised, because 70.8% of that arm's queue is decided alphabetically against 
 Records have now reversed twice across two corpus rebuilds, so they describe the corpus at least as
 much as the mechanism. The binding constraint is the reader, not the ranking: the offline lexicon
 finds 617 of 2,700 planted signals and leaves two of four review desks receiving no case at all, which
-crowds every arm between 0.113 and 0.145.
+crowds every arm between 0.113 and 0.145. **Every arm figure on this page is on that weak reader** —
+the model reader takes those two dead desks to 20 / 20 and 19 / 20 — so the arm ordering is internally
+valid and the absolute level is a floor, not the system's ceiling.
+
+**AT-58's routing figure is measured on a queue that gap had already flattened.** Its confusion
+matrix's `complaints` row is entirely empty, because no complaint customer ever crossed under the
+offline reader; 43 of the 48 scorable cases are one desk. That is the same coverage failure, arriving
+through the routing door.
 
 So the arms answer *which trigger feeds the investigator best*, not *what the product is*. What
 never-discard buys over a cheap bounded window is now measured in all three directions: **won** on
