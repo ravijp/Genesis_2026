@@ -10,6 +10,7 @@ answer key can reach the payload.
 from __future__ import annotations
 
 import copy
+from dataclasses import replace as dc_replace
 
 import pytest
 
@@ -35,8 +36,22 @@ def run():
     `investigate_limit=0` because the agent is not what these tests are about: they check the
     accumulation path, which is pure code, and an investigation would make the fixture slow and
     provider-dependent for no gain.
+
+    **Run at 300 customers, not the tenant's shipped 44.** The shipped size is calibrated for the
+    MODEL reader (`#/stream` is recorded with Haiku, whose CFPB strict recall is 0.8214); driven
+    by the offline lexicon at 0.29 it produced exactly ONE crossing before the Phase C corpus
+    rewrite and zero after, so `run.crossings[0]` was an IndexError one corpus tweak away for as
+    long as this fixture has existed. Nothing here asserts anything about the tenant's size, and
+    every property tested -- day ordering, one case per customer, the payload's answer-key scan,
+    the bounded case record -- holds at any size. Scaling the fixture makes the fragility go away
+    without moving a demo artifact or relaxing a single assertion.
     """
-    t = NORTHWIND
+    t = dc_replace(
+        NORTHWIND,
+        run=dc_replace(
+            NORTHWIND.run, corpus=dc_replace(NORTHWIND.run.corpus, n_customers=300)
+        ),
+    )
     conversations, context_for, _ = stream_inputs(t)
     extractor = OfflineLexiconExtractor(
         miss_rate=t.run.offline_miss_rate, false_fire_rate=t.run.offline_false_fire_rate
@@ -205,8 +220,6 @@ def test_the_stream_case_record_is_case_record_plus_a_bounded_set_of_extras(run)
     module-scoped run is shared, and a guard test that corrupts its own fixture reports its
     failures somewhere else.
     """
-    from dataclasses import replace as dc_replace
-
     from earshot.agent.investigator import InvestigationTrace
     from earshot.agent.schemas import EvidenceRef, InvestigationDecision
     from earshot.case_record import case_record

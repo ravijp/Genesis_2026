@@ -247,13 +247,28 @@ def test_published_integers_are_counted_not_recovered_from_a_rate() -> None:
         assert result.stratum_outcomes["diffuse"] == len(diffuse_ids)
 
 
-def test_the_strongest_per_call_baseline_is_not_a_copy_of_the_weakest(swept) -> None:
+def test_the_strongest_per_call_baseline_is_not_a_copy_of_the_weakest() -> None:
     """`stateless-top2` exists to be a hard opponent, so it must actually differ from `max`.
 
     An arm that silently collapses into another arm turns a comparison into a tautology, which
     is what happened to `long-context` when its window never bound.
+
+    **Its own sweep, at 600 customers over 6 seeds, not the shared 150 x 3 fixture.** The metric
+    is `diffuse_recall`, whose denominator at 150 customers is 14 to 23 customers with an outcome
+    and whose numerator is two to four. At that resolution every arm ties every arm, so the test
+    could not tell a genuine collapse from a small sample -- it passed before Phase C by luck of
+    the draw and failed after for the same reason, while the arms differed on 13 to 15 of 20
+    seeds at n=300 both times. Enlarging the fixture is what gives the assertion something to
+    see; it costs 5 seconds. It is deliberately not `assert differing >= k`: the claim is that
+    the arms are not the same object, and one seed's difference proves that.
     """
-    _, by_arm = swept
+    from dataclasses import replace
+
+    from earshot.config import DEFAULT
+    from earshot.sweep import sweep
+
+    base = replace(DEFAULT, corpus=replace(DEFAULT.corpus, n_customers=600))
+    _summaries, by_arm = sweep(base, [20260809 + i for i in range(6)], budget=0.10)
     max_scores = {(s.seed, s.arm): s for s in by_arm["stateless-max"]}
     differing = sum(
         1
@@ -261,7 +276,7 @@ def test_the_strongest_per_call_baseline_is_not_a_copy_of_the_weakest(swept) -> 
         if s.diffuse_recall != max_scores[(s.seed, "stateless-max")].diffuse_recall
     )
     assert differing, (
-        "stateless-top2 scored identically to stateless-max on every seed — it has collapsed "
+        "stateless-top2 scored identically to stateless-max on every seed - it has collapsed "
         "into the arm it is supposed to be a stronger version of"
     )
 

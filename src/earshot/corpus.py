@@ -16,23 +16,38 @@ No third-party dependencies: Dirichlet is sampled via normalised Gamma draws fro
 
 from __future__ import annotations
 
+import datetime
 import random
 import warnings
+from dataclasses import dataclass
 
 from .config import CorpusConfig, RunConfig
 from .corpus_lexicon import (
+    ASIDE_CONNECTORS,
+    CHASE_ACK,
+    CHASE_FOLLOWUPS,
     BY_TYPE,
-    CLOSINGS,
+    COMPLAINT_ACK_GENERIC,
+    COMPLAINT_ASK,
+    COMPLAINT_FIRST_CONTACT,
+    COMPLAINT_IMPACT,
+    COMPLAINT_SUBJECT_LINES,
+    FORMAL_ACKNOWLEDGEMENT_FLOOR,
     DECOYS_ACCUMULATOR,
     DECOYS_EXTRACTOR,
     FILLER_AGENT,
-    FILLER_CUSTOMER,
     OPENINGS,
+    TOPICS,
+    VERIFY_ANSWER,
+    VERIFY_ASK,
+    VERIFY_DONE,
     Fragment,
-    agent_closing,
+    Topic,
     agent_opening,
     agent_reply_to_filler,
     agent_reply_to_signal,
+    complaint_chronology,
+    continuity_opening,
 )
 from .schema import (
     Channel,
@@ -66,11 +81,25 @@ def _pick_stratum(rng: random.Random, cfg: CorpusConfig) -> Stratum:
 
 
 def _nearest_fragment(
-    pool: tuple[Fragment, ...], target: float, used: set[str]
+    pool: tuple[Fragment, ...],
+    target: float,
+    used: set[str],
+    *,
+    position: int,
+    day: int,
+    prior_promise_broken: bool,
 ) -> Fragment | None:
-    """Pick the unused fragment whose intrinsic loudness best matches the mass allocated here.
+    """Pick the unused, TRUE fragment whose loudness best matches the mass allocated here.
 
     Returns None once the pool is exhausted, and the conversation is then left EMPTY.
+
+    "True" is the Phase C addition and it is a filter, not a preference. Twelve fragments assert
+    a prior contact with the bank and 34 of their 126 plantings landed in the customer's first
+    conversation, where there had been none; *"this is the fourth time I've called about this
+    and nobody has fixed it"* went into an arc with fewer than four contacts 9 times in 10. The
+    conditions live on the fragment (`Fragment.plantable_at`) and are evaluated against the arc
+    PLAN -- position, day, and whether the planner scheduled a broken promise last time -- so
+    the answer key is still authored before a word of prose exists.
 
     There used to be an `or list(pool)` fallback here, which re-planted an already-used
     fragment instead. That was a correctness defect, not a convenience: the identical sentence
@@ -83,14 +112,104 @@ def _nearest_fragment(
     Padding with an empty conversation dilutes an arc, which is a bias AGAINST the ledger and
     is visible in the diagnostics. Repeating a fragment inflated it, and was invisible.
     """
-    candidates = [f for f in pool if f.fragment_id not in used]
+    candidates = [
+        f
+        for f in pool
+        if f.fragment_id not in used
+        and f.plantable_at(
+            position=position, day=day, prior_promise_broken=prior_promise_broken
+        )
+    ]
     if not candidates:
         return None
     return min(candidates, key=lambda f: (abs(f.strength - target), f.fragment_id))
 
 
+CORPUS_EPOCH = datetime.date(2026, 2, 1)
+_MONTHS = (
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+)
+
+
+def month_name(day: int) -> str:
+    """The calendar month of a corpus day.
+
+    The horizon had no epoch, so seasonal text contradicted itself: "back in the spring" was
+    planted on days 40-142 and "passed away in June" on days 9-109 of the same unanchored 180
+    days. Two of those in one arc disagree with each other. Anchoring day 0 to 1 February makes
+    the generated back-references ("I rang in March") true by construction, and lets a fragment
+    that names a month declare the earliest day it can be said (`Fragment.earliest_day`).
+    """
+    return _MONTHS[(CORPUS_EPOCH + datetime.timedelta(days=day)).month - 1]
+
+
+@dataclass(frozen=True)
+class PriorContact:
+    """What the customer and the bank both remember from the last conversation."""
+
+    day: int
+    channel: Channel
+    topic: Topic
+    promise_made: bool
+    promise_kept: bool
+
+    @property
+    def continuity(self) -> str:
+        """"kept" / "broken" / "neutral" -- which story the next contact opens with."""
+        if not self.promise_made:
+            return "neutral"
+        return "kept" if self.promise_kept else "broken"
+
+
+@dataclass(frozen=True)
+class ArcContext:
+    """Where this conversation sits in one customer's relationship with the bank.
+
+    Everything here is decided by the PLANNER before any prose exists. `_render_conversation`
+    used to take none of it, which is why an arc read as N independent scenes sharing a customer
+    id: measured over 22,114 turns, "I called", "as I said" and "you said" appeared zero times.
+    """
+
+    position: int  # 0-based index of this conversation within the arc
+    total: int  # how many conversations the arc holds
+    topic: Topic  # the reason for THIS contact
+    prior: PriorContact | None  # None on first contact
+    promise_made: bool  # does this contact end with an undertaking rather than a resolution?
+
+    @property
+    def chasing(self) -> bool:
+        """Is this contact about the same thing as the last one, because it was not done?"""
+        return self.prior is not None and self.prior.topic is self.topic
+
+    @property
+    def prior_promise_broken(self) -> bool:
+        return self.prior is not None and self.prior.continuity == "broken"
+
+
+# The customer pivots from "here is what happened last time" to "here is why I'm calling today".
+# Only used when the previous thread was closed; a broken promise means they are still on it.
+# At most this many off-topic questions per conversation.
+_MAX_ASIDES = 2
+
+_PIVOTS: tuple[str, ...] = (
+    "Anyway. ",
+    "Today it's something else. ",
+    "Separate thing this time. ",
+    "Different thing today, though. ",
+)
+
+
 def _apply_asr_noise(rng: random.Random, text: str, rate: float) -> str:
-    """Transcription is never clean. Drop or mangle the occasional word."""
+    """Transcription is never clean. Drop or mangle the occasional word.
+
+    CALL ONLY, and never on a planted fragment -- both enforced by the caller, and both by
+    measurement rather than taste. 1,428 of 7,453 customer turns in chat and complaint used to
+    be speech-recognition damaged, which cannot happen to typed text and is the sort of thing a
+    contact-centre reader spots in ten seconds. And 212 of 973 planted signals (21.8%) shipped a
+    damaged evidence quote -- including `can't make the payment this month, I just` -- which is
+    the single most-looked-at string in the product, printed on the case screen as proof.
+    """
     if rate <= 0:
         return text
     words = text.split()
@@ -105,7 +224,102 @@ def _apply_asr_noise(rng: random.Random, text: str, rate: float) -> str:
     return " ".join(out) or text
 
 
-def _render_conversation(
+def _surface(rng: random.Random, fragment: Fragment, used_surfaces: set[str]) -> str:
+    """Which wording of this fragment to plant: the canonical one, unless it is already used.
+
+    The rule is about people, not about matchers. You say a thing once; when you say it again you
+    say it differently. So the first time a customer raises a piece of evidence they use the
+    fragment's canonical text, and a repeat inside the same arc reaches for a paraphrase.
+
+    That fixes the defect this exists for. 38 duplicate plantings across 33 of 400 customers put
+    the IDENTICAL sentence in two conversations of one arc -- `CUST-0002` said *"Cashflow's a bit
+    lumpy this quarter, it always is."* verbatim on day 175 and again on day 178. Those are all on
+    the decoy paths, which draw with replacement ON PURPOSE, because a recurring decoy earns a
+    corroboration bonus it does not deserve and so makes the trap harder. A paraphrase keeps the
+    trap exactly as hard -- the ledger corroborates across conversations of the same signal type,
+    not across identical strings -- and stops a human saying the same sentence twice.
+
+    WHAT THIS DELIBERATELY DOES NOT DO, and the measurement behind it. Plan item 8 wanted the
+    surface varied ACROSS customers too, because 222 of 303 customers with a signal share their
+    flagship quote with somebody else. Rotating all three surfaces uniformly was built and
+    measured on 2026-08-31: offline strict recall fell to 0.1972 (139 / 705) against 0.31 on
+    canonical text, because two thirds of every planting became prose the lexicon was not
+    co-developed with -- the same effect already published as "the reader finds 1 of the 32
+    blind-authored fragments". At the Northwind stream size (44 customers) that produced ZERO
+    crossings and a blank demo screen. Widening the pools is the non-destructive version of item
+    8 and is left for the owner to price.
+    """
+    if fragment.text not in used_surfaces:
+        return fragment.text
+    options = [s for s in fragment.paraphrases if s not in used_surfaces]
+    return rng.choice(options) if options else rng.choice(fragment.surfaces())
+
+
+def _body_turns(
+    rng: random.Random,
+    topic: Topic,
+    n: int,
+    said: set[str] | None = None,
+    chasing: bool = False,
+) -> list[tuple[str, str]]:
+    """`n` (customer line, agent reply) pairs, WITHOUT replacement, on topic first and last.
+
+    899 of 1,400 conversations repeated a customer line verbatim and 166 said one three or more
+    times, because filler was `rng.choice` over a 15-tuple on every turn. Sampling without
+    replacement is most of the fix; drawing the topic's OWN follow-ups first is the rest, because
+    the conversation is now about the reason the customer gave for calling.
+
+    Anything drawn from another topic is marked as an aside ("While I've got you -"). Real calls
+    drift; an unmarked drift is what made the old transcripts read as a bag of questions. Asides
+    are capped at two and are placed in the interior, never last, because the agent's closing --
+    the resolution or the undertaking -- is appended to the final reply and has to land on the
+    thing the customer actually rang about.
+    """
+    said = said or set()
+    # A chase is not a fresh enquiry. Its material is topic-independent -- what has actually been
+    # done, who owns it, why it stuck -- so it never exhausts however long the arc runs, and the
+    # topic's own three follow-ups do not get asked for a third time.
+    topical = list(CHASE_FOLLOWUPS if chasing else topic.followups)
+    rng.shuffle(topical)
+    # Prefer what this customer has not said yet. A broken undertaking means the NEXT contact is
+    # about the same topic, so without this a customer chasing one thing across four contacts
+    # asked "Do I need to set it up again from scratch?" four times.
+    unused = [pair for pair in topical if pair[0] not in said]
+    spent = [pair for pair in topical if pair[0] in said]
+    pairs = unused[:n]
+
+    wanted = min(n, len(unused) + _MAX_ASIDES) - len(pairs)
+    if wanted > 0:
+        others = [t for t in TOPICS if t is not topic]
+        rng.shuffle(others)
+        others.sort(key=lambda t: t.opener in said)
+        for other in others[:wanted]:
+            connector = rng.choice(ASIDE_CONNECTORS)
+            head = other.opener
+            # A connector that closes its own sentence keeps the capital; one that runs on
+            # ("While I've got you - ") does not.
+            if not connector.rstrip().endswith("."):
+                head = head[0].lower() + head[1:]
+            reply = agent_reply_to_filler(
+                other.opener, Channel.CALL, rng.choice(FILLER_AGENT)
+            )
+            # Interior only: index 0 sets up the topic, the last pair carries the closing.
+            # Interior strictly: the last pair's reply carries the closing, and a closing about
+            # the reason for contact glued to the answer to an off-topic question reads as two
+            # conversations spliced together.
+            at = rng.randint(1, len(pairs) - 1) if len(pairs) > 1 else len(pairs)
+            pairs.insert(at, (connector + head, reply))
+
+    # Only if there is genuinely nothing new left. A fourth contact about one unresolved thing
+    # SHOULD run shorter than the first -- a customer who has asked everything twice does not
+    # invent an eighth question -- so this runs out rather than looping, which is what put the
+    # same three chase questions into contacts 3 and 4 of `CUST-0007`.
+    if not pairs:
+        pairs = spent[:1] or list(topic.followups)[:1]
+    return pairs
+
+
+def _render_live(
     rng: random.Random,
     cfg: CorpusConfig,
     conversation_id: str,
@@ -113,58 +327,113 @@ def _render_conversation(
     channel: Channel,
     day: int,
     plant: Fragment | None,
+    arc: ArcContext,
+    used_surfaces: set[str],
 ) -> tuple[Conversation, int | None]:
-    """Build turns around an optional planted fragment. Returns (conversation, plant turn index)."""
+    """A call or a chat: strictly alternating, one move per turn, opened by the agent.
+
+    The choreography is fixed rather than sampled, and each step is here because the sampled
+    version was wrong. 1,106 of 1,400 conversations contained a run of two or more customer
+    turns nobody answered (the agent replied with probability 0.75) and 740 contained an
+    agent->agent run (a filler immediately followed by the closing). Verification fired 869 times
+    and was in the first three turns only 88 of them. The recording notice fired 893 times, 591
+    of them inside a typed channel.
+
+        0  agent     opening; on a call the recording notice is part of it
+        1  customer  the reason for contact, and what happened since last time
+        2  agent     one security check
+        3  customer  the answer
+        4  agent     verified, and an acknowledgement of the reason
+        5+ customer / agent, alternating, about the reason
+        N  agent     the same reply, plus either a resolution or a specific undertaking
+    """
+    topic = arc.topic
     turns: list[Turn] = []
     idx = 0
-    if channel != Channel.COMPLAINT:
-        turns.append(Turn(idx, "agent", agent_opening(channel, rng.choice(OPENINGS))))
-        idx += 1
 
-    n_filler = rng.randint(*cfg.filler_turns)
-    # Where the planted line lands. Never first, never last -- a signal buried mid-call is
-    # the realistic case and the one sampling-based QA misses.
-    plant_at = rng.randint(1, max(1, n_filler - 1)) if plant else -1
+    turns.append(Turn(idx, "agent", agent_opening(channel, rng.choice(OPENINGS))))
+    idx += 1
+
+    if arc.prior is None:
+        reason = topic.opener
+    else:
+        prior = arc.prior
+        continuity = continuity_opening(
+            kind=prior.continuity,
+            gap_days=day - prior.day,
+            month=month_name(prior.day),
+            prior_channel=prior.channel,
+            subject=prior.topic.subject,
+            undertaking=prior.topic.undertaking,
+            chase=rng.choice(prior.topic.chase),
+            pick=rng.randrange(3),
+        )
+        reason = continuity if arc.chasing else (
+            continuity + " " + rng.choice(_PIVOTS) + topic.opener
+        )
+    # Not through `_asr`: see its docstring. The reason for contact carries the continuity.
+    turns.append(Turn(idx, "customer", reason))
+    idx += 1
+
+    key = channel.value if channel.value in VERIFY_ASK else "call"
+    turns.append(Turn(idx, "agent", rng.choice(VERIFY_ASK[key])))
+    idx += 1
+    turns.append(Turn(idx, "customer", rng.choice(VERIFY_ANSWER[key])))
+    idx += 1
+    # A chase is acknowledged as a chase. Answering it with the same first-contact line is what
+    # made `CUST-0029` hear "No block that I can see, it may have been their terminal" in
+    # February, March and June -- an agent with no memory, on the demo screen of a product whose
+    # entire claim is memory.
+    acknowledgement = (
+        rng.choice(CHASE_ACK)
+        if arc.chasing
+        else agent_reply_to_filler(topic.opener, channel, rng.choice(FILLER_AGENT))
+    )
+    turns.append(Turn(idx, "agent", rng.choice(VERIFY_DONE) + " " + acknowledgement))
+    idx += 1
+    # The stated reason counts as said, so a topic settled in one contact does not come back as
+    # an aside in the next.
+    used_surfaces.add(topic.opener)
+
+    n_body = rng.randint(*cfg.body_turns)
+    body = _body_turns(rng, topic, n_body, used_surfaces, chasing=arc.chasing)
+    # Drawn against the body that was actually built, not against `n_body`. `_body_turns` caps
+    # its output at the topic's follow-ups plus `_MAX_ASIDES`, so for a long draw it returns
+    # fewer pairs than asked for -- and `randint(1, n_body - 1)` then pointed past the end, the
+    # loop never reached `i == plant_at`, and the fragment the PLAN had allocated was silently
+    # never spoken. Measured at 600 customers: 69 arc conversations, spread over all four
+    # trajectories, held no evidence the planner had allocated to them. The answer key stayed
+    # consistent -- nothing is seeded that was not placed -- so it diluted arcs invisibly, which
+    # is the failure mode `smallest_fragment_pool`'s docstring calls the safe direction and still
+    # spends a real signal. `test_every_allocated_fragment_is_actually_spoken` pins it.
+    plant_at = rng.randrange(len(body)) if plant is not None else -1
+    # Prefer a closing this customer has not been given before. A chased topic reuses its own
+    # `promised` lines, so without this the agent signed off two contacts running with the same
+    # sentence -- on the one turn that is supposed to be an undertaking.
+    closing_pool = topic.promised if arc.promise_made else topic.resolved
+    fresh = [line for line in closing_pool if line not in used_surfaces]
+    closing = rng.choice(fresh or list(closing_pool))
+    used_surfaces.add(closing)
 
     plant_turn_index: int | None = None
-    for i in range(n_filler):
+    for i, (customer_line, agent_line) in enumerate(body):
+        last = i == len(body) - 1
         if i == plant_at and plant is not None:
-            text = _apply_asr_noise(rng, plant.text, cfg.asr_error_rate)
-            turns.append(Turn(idx, "customer", text))
+            text = _surface(rng, plant, used_surfaces)
+            used_surfaces.add(text)
+            turns.append(Turn(idx, "customer", text))  # never ASR-damaged
             plant_turn_index = idx
             idx += 1
-            # The reply is keyed on the fragment, not on the (possibly ASR-mangled) text, and the
-            # `rng.choice` draw still happens so the stream is untouched. See the long note in
-            # `corpus_lexicon.py`.
-            turns.append(
-                Turn(
-                    idx,
-                    "agent",
-                    agent_reply_to_signal(
-                        plant.fragment_id,
-                        plant.signal_type,
-                        plant.strength,
-                        channel,
-                        rng.choice(FILLER_AGENT),
-                    ),
-                )
+            agent_line = agent_reply_to_signal(
+                plant.fragment_id, plant.signal_type, plant.strength, channel,
+                rng.choice(FILLER_AGENT),
             )
+        else:
+            used_surfaces.add(customer_line)
+            turns.append(Turn(idx, "customer", _asr(rng, cfg, channel, customer_line)))
             idx += 1
-            continue
-        # Hoisted, not inlined, so the reply can be keyed on what the customer ACTUALLY asked
-        # rather than on its ASR-mangled surface. Evaluation order is unchanged -- `rng.choice`
-        # ran before `_apply_asr_noise` when it was an argument too -- so the stream is untouched.
-        picked = rng.choice(FILLER_CUSTOMER)
-        turns.append(Turn(idx, "customer", _apply_asr_noise(rng, picked, cfg.asr_error_rate)))
+        turns.append(Turn(idx, "agent", agent_line + " " + closing if last else agent_line))
         idx += 1
-        if rng.random() < 0.75:
-            turns.append(
-                Turn(idx, "agent", agent_reply_to_filler(picked, channel, rng.choice(FILLER_AGENT)))
-            )
-            idx += 1
-
-    if channel != Channel.COMPLAINT:
-        turns.append(Turn(idx, "agent", agent_closing(channel, rng.choice(CLOSINGS))))
 
     return (
         Conversation(
@@ -176,6 +445,222 @@ def _render_conversation(
         ),
         plant_turn_index,
     )
+
+
+def _render_complaint(
+    rng: random.Random,
+    cfg: CorpusConfig,
+    conversation_id: str,
+    customer_id: str,
+    day: int,
+    plant: Fragment | None,
+    arc: ArcContext,
+    used_surfaces: set[str],
+) -> tuple[Conversation, int | None]:
+    """A written complaint: ONE author, no turn-taking, and one written answer at the end.
+
+    Fitted to the 150 real CFPB narratives committed at `benchmarks/cfpb/out/sample.jsonl` (CC0,
+    consumer-written, PII-scrubbed by the publisher) -- measured 2026-08-31: single author, no
+    agent, min 11 words, median 155, mean 184. Ours were 459 of 460 interleaved two-party
+    dialogues at a median of 84 customer words, i.e. a phone call with a different label. The
+    structure below -- subject, chronology, detail, impact, ask -- is the shape those narratives
+    take and the order a complaint-handling team reads them in. No sentence is taken from them.
+
+    The single trailing agent turn is the firm's written response, which the CFPB records as a
+    field of its own. That is not turn-taking; it is the reply to a letter.
+    """
+    paragraphs: list[str] = [
+        rng.choice(COMPLAINT_SUBJECT_LINES).format(subject=arc.topic.subject)
+    ]
+    if arc.prior is None:
+        paragraphs.append(rng.choice(COMPLAINT_FIRST_CONTACT))
+    else:
+        prior = arc.prior
+        paragraphs.append(
+            complaint_chronology(
+                kind=prior.continuity,
+                gap_days=day - prior.day,
+                month=month_name(prior.day),
+                prior_channel=prior.channel,
+                subject=prior.topic.subject,
+                undertaking=prior.topic.undertaking,
+                chase=rng.choice(prior.topic.chase),
+                pick=rng.randrange(2),
+            )
+        )
+
+    # How much this person writes. Drawn on its own rather than off `body_turns`, because the
+    # CFPB sample's shape is the target and it is not the shape of a phone call: min 11 words,
+    # median 155, mean 184, p90 354. Some people write three lines and some write an essay, so
+    # the number of paragraphs is drawn, not fixed.
+    size = rng.random()
+    n_detail, n_impact = (0, 0) if size < 0.30 else (1, 1) if size < 0.75 else (2, 2)
+    # Source order, never shuffled: the two narrative lines are setup then consequence ("I
+    # travelled to the branch on the strength of the hours I was given" / "when I rang to ask why
+    # I was told they had changed"), and shuffling them inverted the chronology of a letter whose
+    # whole job is to set out a chronology.
+    narrative = list(arc.topic.narrative)
+    if n_detail == 1:
+        detail = [next((line for line in narrative if line not in used_surfaces), narrative[0])]
+    else:
+        detail = narrative[:n_detail]
+    used_surfaces.update(detail)
+    paragraphs.extend(detail)
+
+    plant_turn_index: int | None = None
+    if plant is not None:
+        text = _surface(rng, plant, used_surfaces)
+        used_surfaces.add(text)
+        plant_turn_index = len(paragraphs)
+        paragraphs.append(text)
+
+    paragraphs.extend(rng.sample(COMPLAINT_IMPACT, n_impact))
+    paragraphs.append(rng.choice(COMPLAINT_ASK))
+
+    turns = [Turn(i, "customer", p) for i, p in enumerate(paragraphs)]
+    # A case handler writes back once, in writing. Routing this through
+    # `agent_reply_to_signal` would fall through to the SPOKEN reply for anything below the
+    # formal-acknowledgement floor -- "No problem. Anything you want me to record while we're
+    # here?" at the bottom of a complaint letter, which is worse than saying nothing.
+    if plant is not None and plant.strength >= FORMAL_ACKNOWLEDGEMENT_FLOOR:
+        answer = agent_reply_to_signal(
+            plant.fragment_id, plant.signal_type, plant.strength, Channel.COMPLAINT,
+            rng.choice(FILLER_AGENT),
+        )
+    else:
+        answer = rng.choice(COMPLAINT_ACK_GENERIC)
+    turns.append(Turn(len(turns), "agent", answer))
+
+    return (
+        Conversation(
+            conversation_id=conversation_id,
+            customer_id=customer_id,
+            channel=Channel.COMPLAINT,
+            day=day,
+            turns=tuple(turns),
+        ),
+        plant_turn_index,
+    )
+
+
+def _asr(rng: random.Random, cfg: CorpusConfig, channel: Channel, text: str) -> str:
+    """Speech-recognition damage: on the phone, on filler, and nowhere else.
+
+    Two exclusions, and both are the same rule. Damage may never fall on a sentence the product
+    reads a claim off. The planted evidence quote is one -- 212 of 973 plants used to ship
+    damaged, and it is the string the case screen prints as proof. The customer's statement of
+    why they are in touch is the other, because from the second contact on it carries the
+    continuity: `"I rang about the lost card about a month ago and nothing has come of it"` came
+    out as `"I about a month ago and nothing has come of it"`, which is not what a transcriber
+    produces and is not readable as the thing the whole entry is about.
+
+    Callers pass those two strings through untouched; everything else in a call comes here.
+    """
+    if channel is not Channel.CALL:
+        return text
+    return _apply_asr_noise(rng, text, cfg.asr_error_rate)
+
+
+def _render_conversation(
+    rng: random.Random,
+    cfg: CorpusConfig,
+    conversation_id: str,
+    customer_id: str,
+    channel: Channel,
+    day: int,
+    plant: Fragment | None,
+    arc: ArcContext,
+    used_surfaces: set[str],
+) -> tuple[Conversation, int | None]:
+    """Build one conversation around an optional planted fragment.
+
+    Returns (conversation, plant turn index). The signature gained `arc` and `used_surfaces` in
+    Phase C; before that it took no prior conversation at all and nothing could reference
+    anything.
+    """
+    if channel is Channel.COMPLAINT:
+        return _render_complaint(
+            rng, cfg, conversation_id, customer_id, day, plant, arc, used_surfaces
+        )
+    return _render_live(
+        rng, cfg, conversation_id, customer_id, channel, day, plant, arc, used_surfaces
+    )
+
+
+def _promise_schedule(
+    rng: random.Random, trajectory: SignalType | None, k: int
+) -> tuple[list[bool], list[bool]]:
+    """Which contacts end with an undertaking, and whether it was kept by the next one.
+
+    THE PLAN DECIDES THIS, NOT THE PROSE. That distinction is the whole reason it lives in
+    `generate()` and not in the renderer. A `complaint_escalation` arc is, by definition, an arc
+    in which the bank keeps not doing what it said it would; making the promises in that arc
+    break is what turns "this is the fourth time I've called" from an assertion the corpus
+    contradicts into a fact the corpus contains. The renderer then reads the schedule and writes
+    it down. It never writes the schedule.
+
+    Rates: a complaint arc breaks its promises 85% of the time, everything else keeps them 85%
+    of the time and only makes one at all on about half of contacts. Nothing here touches which
+    fragment is planted or how loud it is -- only `ce-s1` and `ce-m1`, which explicitly claim a
+    broken promise, are gated on it.
+    """
+    if trajectory is SignalType.COMPLAINT_ESCALATION:
+        made = [True] * k
+        kept = [rng.random() < 0.15 for _ in range(k)]
+    else:
+        made = [rng.random() < 0.55 for _ in range(k)]
+        kept = [rng.random() < 0.85 for _ in range(k)]
+    return made, kept
+
+
+def _topic_schedule(
+    rng: random.Random, k: int, made: list[bool], kept: list[bool]
+) -> list[Topic]:
+    """One reason for contact per conversation, and the thread between them.
+
+    A contact whose undertaking was broken is CHASED: the next conversation is about the same
+    thing. Otherwise the customer is in touch about something new, drawn without replacement so
+    an arc does not ask the same question twice by accident.
+    """
+    fresh = rng.sample(TOPICS, min(k, len(TOPICS)))
+    schedule: list[Topic] = []
+    j = 0
+    for i in range(k):
+        if i > 0 and made[i - 1] and not kept[i - 1]:
+            schedule.append(schedule[i - 1])
+        else:
+            schedule.append(fresh[j % len(fresh)])
+            j += 1
+    return schedule
+
+
+def _unused_decoy(
+    rng: random.Random, pool: tuple[Fragment, ...], used: set[str]
+) -> Fragment:
+    """Draw a decoy this customer has not used yet, falling back to the whole pool.
+
+    Both decoy paths used to draw with replacement, and that was DELIBERATE: a decoy that
+    recurs earns a cross-conversation corroboration bonus it does not deserve, which makes the
+    trap harder and biases the result against the ledger, i.e. the safe direction. What was not
+    deliberate was the prose. Measured at 400 customers: 33 customers carried the same fragment
+    twice, 38 duplicate plantings, and `CUST-0002` said *"Cashflow's a bit lumpy this quarter,
+    it always is."* verbatim on day 175 and again on day 178. Nobody says the same sentence
+    twice, three days apart, word for word.
+
+    So the fix is both halves. Drawing without replacement stops the repeat; `_surface()`
+    renders a paraphrase if the pool is small enough that a repeat happens anyway. The trap
+    survives because the ledger corroborates across CONVERSATIONS of the same signal type, and a
+    different decoy of the same type in the next conversation corroborates exactly as hard.
+
+    One honest side effect: `DECOYS_ACCUMULATOR` holds 3 financial-distress and 2 churn
+    fragments, so drawing without replacement makes an arc's decoy types slightly more mixed
+    than drawing with replacement did, which very slightly WEAKENS the trap. Direction stated
+    rather than hidden; it is visible in the decoy false-positive rate the sweep prints.
+    """
+    options = [f for f in pool if f.fragment_id not in used] or list(pool)
+    frag = rng.choice(options)
+    used.add(frag.fragment_id)
+    return frag
 
 
 class ArcCeilingWarning(UserWarning):
@@ -263,8 +748,22 @@ def generate(run: RunConfig | None = None) -> Corpus:
         latent_risk = 0.0
         plants: list[Fragment | None] = [None] * k
 
+        # Drawn before the trajectory so the schedule does not depend on which pool is used,
+        # only on whether the arc is a complaint arc. Both are pure plan.
+        provisional = (
+            rng.choice(_TRAJECTORY_CHOICES)
+            if stratum in (Stratum.CONCENTRATED, Stratum.DIFFUSE)
+            else None
+        )
+        promise_made, promise_kept = _promise_schedule(rng, provisional, k)
+        topics = _topic_schedule(rng, k, promise_made, promise_kept)
+        # True at conversation i when the undertaking given at i-1 was not delivered.
+        broken_before = [False] + [
+            promise_made[i - 1] and not promise_kept[i - 1] for i in range(1, k)
+        ]
+
         if stratum in (Stratum.CONCENTRATED, Stratum.DIFFUSE):
-            trajectory = rng.choice(_TRAJECTORY_CHOICES)
+            trajectory = provisional
             total_mass = rng.uniform(*cfg.total_arc_mass)
             alpha = (
                 cfg.alpha_concentrated
@@ -277,7 +776,14 @@ def generate(run: RunConfig | None = None) -> Corpus:
             for i, share in enumerate(shares):
                 # Mass allocated to this conversation, expressed on the fragment strength scale.
                 allocated = min(1.0, share * total_mass * k / max(1, k) * (1.0 if k == 1 else 1.6))
-                frag = _nearest_fragment(pool, allocated, used)
+                frag = _nearest_fragment(
+                    pool,
+                    allocated,
+                    used,
+                    position=i,
+                    day=days[i],
+                    prior_promise_broken=broken_before[i],
+                )
                 if frag is not None:
                     used.add(frag.fragment_id)
                     plants[i] = frag
@@ -285,16 +791,18 @@ def generate(run: RunConfig | None = None) -> Corpus:
 
         elif stratum is Stratum.DECOY_EXTRACTOR:
             trajectory = None
+            drawn: set[str] = set()
             for i in range(k):
                 if rng.random() < 0.6:
-                    plants[i] = rng.choice(DECOYS_EXTRACTOR)
+                    plants[i] = _unused_decoy(rng, DECOYS_EXTRACTOR, drawn)
 
         elif stratum is Stratum.DECOY_ACCUMULATOR:
             # Genuine weak signals that corroborate across time and channel -- and go nowhere.
             # Their whole job is to punish an over-eager accumulator. latent_risk stays 0.
             trajectory = None
+            drawn = set()
             for i in range(k):
-                plants[i] = rng.choice(DECOYS_ACCUMULATOR)
+                plants[i] = _unused_decoy(rng, DECOYS_ACCUMULATOR, drawn)
 
         # NULL: plants stay empty.
 
@@ -327,10 +835,29 @@ def generate(run: RunConfig | None = None) -> Corpus:
             )
             outcome_day = days[-1] + rng.randint(10, 60)
 
+        # One relationship, in day order. `prior` is what both parties remember; `surfaces`
+        # is every sentence this customer has already said, so nobody repeats themselves.
+        prior: PriorContact | None = None
+        surfaces: set[str] = set()
         for i in range(k):
             conversation_id = f"{customer_id}-C{i}"
+            arc = ArcContext(
+                position=i,
+                total=k,
+                topic=topics[i],
+                prior=prior,
+                promise_made=promise_made[i],
+            )
             conv, plant_turn = _render_conversation(
-                rng, cfg, conversation_id, customer_id, channels[i], days[i], plants[i]
+                rng, cfg, conversation_id, customer_id, channels[i], days[i], plants[i],
+                arc, surfaces,
+            )
+            prior = PriorContact(
+                day=days[i],
+                channel=channels[i],
+                topic=topics[i],
+                promise_made=promise_made[i],
+                promise_kept=promise_kept[i],
             )
             conversations.append(conv)
             frag = plants[i]
