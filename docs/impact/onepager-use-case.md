@@ -30,7 +30,7 @@ A **conversation signal layer** that sits over all customer conversations and tu
 living, per-customer memory that any team can read.
 
 **Listen.** Read 100% of conversations, not a sample. Overnight batch, so the cost that matters is
-cost per conversation — **$1.66 per 1,000, measured** — not latency on a live call.
+cost per conversation — **$1.58 per 1,000, measured** — not latency on a live call.
 
 **Extract.** Pull out what the customer said — intent to leave, money stress, a life event, a
 repeated complaint — with a confidence score and **the exact quote behind it**.
@@ -87,35 +87,60 @@ One purchase, many owners.
 
 **Stated plainly, because a client who discovers an overclaim stops believing the rest.**
 
-**Measured and reproducible, at zero cost, on the corpus that ships today:**
+**Measured on the corpus that ships today, every figure replaying at zero API spend:**
+
+- **Which desks exist at all.** Same 282 planted conversations, same ledger, same threshold, one
+  variable — who reads:
+
+  | Desk | keyless lexicon | model reader |
+  |---|---|---|
+  | **Complaints** | **0 / 20** | **20 / 20** |
+  | **Vulnerability** | **0 / 20** | **19 / 20** |
+  | **Retention** | **1 / 20** | **16 / 20** |
+  | Collections | 9 / 20 | 10 / 20 |
+
+  Two desks receive nothing under the keyless reader. The evidence was in the conversations the whole
+  time. **This is the claim of the entry, measured** — and the model column is an **upper bound**,
+  because the threshold is a top-K cut over the *offline* reader's ranking held fixed across both arms;
+  deriving the model's own cut costs $13.96 and was not spent.
 - Reads real customer language at **0.8214 recall (92 / 112)** on public complaint narratives, against
   the keyless lexicon's **0.0357 (4 / 112)**. Scored on an external gold set that no corpus change
   touches.
+- **$1.58 per 1,000 conversations** ($0.445562 over 282), p50 latency **1,333 ms**, **0 unparsable
+  replies, 0 relocated quotes**.
 - **Never-discard earns its place:** on thin evidence the two arms that keep every weak signal rank
   first and second of nine, and both capped-memory arms lose **30 – 0 – 0, p<0.001**.
 - **Retro re-scoring is real, not asserted:** 239 of 485 multi-signal ledger entries are worth more
   now than when they were written. Under an unweighted count it is **0 of 485** — the mechanism is
   what makes it possible at all.
-
-**Measured, but CORPUS-HISTORICAL — from before the 2026-08-31 rebuild, not re-measured since:**
-- **$1.66 per 1,000 conversations**, p50 latency 1,244 ms.
-- Routes to the right desk **36 / 49 correct, 2 wrong, 11 declined** — its failure mode is declining,
-  which is safe in a human-worked queue.
 - Every case cites a verbatim quote that resolves to a real conversation turn: **0 repairs in 50
-  investigations**.
+  investigations**. The agent judges a balanced sample at **29 / 50** — 16 of 25 real cases caught,
+  13 of 25 false alarms dismissed, 0 abstentions, **$0.0306 per case**.
 
 **Known limits:**
-- **The agent escalates rather than filters** — 22 / 50 on verdicts (also corpus-historical). What it
-  buys today is routing and an assembled audit trail, not a smaller queue.
-- The review queue is **~90% false alarm** at a 10% budget (25 real outcomes in 240 crossings).
+
+- **Routing to the right desk got worse, not better: 27 / 48 correct, 2 wrong, 19 declined**, down
+  from 36 / 49 on the previous corpus. The reason is the coverage gap above seen from the other side —
+  the confusion matrix's `complaints` row is **entirely empty**, because no complaint customer ever
+  crossed under the keyless reader, so no complaint case existed to route. 43 of the 48 scorable cases
+  are one desk.
+- **The 29 / 50 is not our agent improving.** It read 22 / 50 with 4 / 25 dismissals on the previous
+  corpus, and **no part of the agent changed**. The 2026-08-31 rebuild made decoys paraphrase instead
+  of repeat verbatim and stopped mangling quotes, so the task got harder to pass by surface form. The
+  measurement got more honest; that is all.
+- **The model reader is not uniformly better.** It is beaten by 26 regexes on `financial_distress`
+  coverage (0.38 vs 0.46) and pushes 3 churn and 6 distress customers over the line at the *wrong*
+  desk. Choosing a reader decides which desk you under-serve.
+- The review queue is **~90% false alarm** at a 10% budget (25 real outcomes in 240 crossings), and a
+  human works every case either way. Reported confidence does not help them triage: **0.837 mean on
+  wrong verdicts against 0.852 on right ones**.
 - **The ledger does not yet beat chance.** Against a seeded RNG that ignores every signal it is
   18 – 8 – 4, `p=0.076` on the stratum it is built for. We report that as a failure, not a trend.
 - **Unbounded memory beats a bounded window on diffuse arcs and loses on concentrated ones** —
   30 – 0 – 0 one way, 1 – 28 – 1 the other, and unproven across the whole portfolio. Our synthetic
   customers average ~3.5 conversations, far shorter than a real customer history.
-- **The keyless reader leaves desks empty.** On our own corpus it finds 59 of 282 planted arc
-  conversations, and two of four desks receive no case at all. That is the argument for the model
-  reader, and it is why coverage is the claim rather than ranking.
+- **n = 20 customers per trajectory and 50 cases, one dataset each.** Directions with denominators on
+  them, not intervals.
 
 **It never contacts a customer.** No outbound surface exists anywhere in the system — not disabled,
 absent.
@@ -132,5 +157,6 @@ Runs as an overnight batch on standard managed services. Ledger updates cost **n
 
 *Synthetic data only, per competition rules. Full numbers with denominators: `README.md`. Accuracy,
 cost and latency detail: `onepager-accuracy-cost-latency.md`. Deployment detail:
-`onepager-path-to-production.md`. Sweep and reader figures measured 2026-08-31; every cost, latency
-and agent figure is corpus-historical and labelled above.*
+`onepager-path-to-production.md`. Every figure above was measured on **2026-08-31** against the corpus
+that ships, and replays from committed model responses with no API key. The CFPB recall figures are
+scored on an external public gold set and are unaffected by any change to our corpus.*

@@ -66,11 +66,16 @@ rather than replacing any of them.
 
 From measured figures, not a price list.
 
-| | measured | at 1M conversations/year |
+| | measured 2026-08-31 | at 1M conversations/year |
 |---|---|---|
-| Reader | **$1.66 / 1,000 conversations** | ~$1,660 |
-| Investigation | **$0.0295 / case** | at a 10% review budget on 1M convs, ~$2,950 per 100k cases |
+| Reader | **$1.58 / 1,000 conversations** | ~$1,580 |
+| Investigation | **$0.0306 / case** | at a 10% review budget on 1M convs, ~$3,060 per 100k cases |
 | Ledger update | **no model call at all** | storage only |
+
+Both are keyed Claude Haiku 4.5 on Bedrock: the reader over 282 conversations ($0.445562), the
+investigator over 50 cases ($1.5305, p95 $0.0361, max $0.0384). The reader figure is corroborated
+independently at **$1.5256 / 1,000** over the 130 conversations of the streamed deployment demo,
+re-recorded the same day. Neither is a projection from a price list.
 
 **Batch, not real-time — and that is the choice that makes the economics work.** The cost that
 matters is per conversation, not latency on a live call. Updating a ledger costs nothing in model
@@ -135,10 +140,30 @@ reversed twice across two corpus rebuilds; they describe the corpus at least as 
 
 **What that means for a deployment.** The value proposition that is **measured** is coverage and
 triage: read 100% of conversations instead of a sample, assemble cited evidence, route to a desk. That
-is the claim to sell, and the sharpest number behind it is what happens without it — under the keyless
-lexicon reader, two of four review desks receive **no case at all** and a third receives one in
-twenty, while a model reader on real complaint narratives recovers 0.8214 (92 / 112) against the
-lexicon's 0.0357 (4 / 112).
+is the claim to sell, and the sharpest number behind it is what the reader decides on its own — the
+same 282 planted conversations through the same ledger at the same threshold:
+
+| Desk | keyless lexicon | model reader |
+|---|---|---|
+| **Complaints** | **0 / 20** | **20 / 20** |
+| **Vulnerability** | **0 / 20** | **19 / 20** |
+| **Retention** | **1 / 20** | **16 / 20** |
+| Collections | 9 / 20 | 10 / 20 |
+
+Two of four review desks receive **no case at all** under the keyless reader. Corroborated on external
+data: on real complaint narratives the model reader recovers 0.8214 (92 / 112) against the lexicon's
+0.0357 (4 / 112). **The model column is an upper bound** — the threshold is a top-K cut over the
+offline reader's ranking held fixed across arms, and deriving the model's own cut costs $13.96, not
+spent. **Read it as a deployment risk in both directions:** a reader this much stronger changes who
+lands in the queue, so a first deployment has to size the desks for the reader it actually runs, and
+the model reader is *worse* than the lexicon on `financial_distress` coverage (0.38 vs 0.46).
+
+**Routing accuracy is a caveat on the "route to a desk" half of that claim, and it moved against us:**
+**27 / 48 correct, 2 wrong, 19 declined**, down from 36 / 49 on the previous corpus. The cause is the
+coverage gap above, arriving from the other side — no complaint customer crossed under the keyless
+reader, so the confusion matrix's `complaints` row is empty and 43 of the 48 scorable cases are a
+single desk. A first deployment that fixes the reader is measuring routing on a distribution this
+figure has never seen.
 
 **What is now measured that this page previously called unproven:** unbounded memory *does* beat a
 cheap three-conversation window on diffuse arcs — **30-0-0, p<0.001**, under both tie-break rules. It
@@ -146,6 +171,7 @@ cheap three-conversation window on diffuse arcs — **30-0-0, p<0.001**, under b
 first, disclose the other two, and instrument a first deployment to test all three on real
 conversation histories, which are longer than any synthetic corpus we have built.
 
-*Sweep figures measured 2026-08-31; routing and cost figures are corpus-historical, measured before
-that rebuild. Infrastructure coordinates and the reproducible error lines:
+*Every figure on this page — sweep, reader coverage, cost, latency, routing — was measured on
+**2026-08-31** against the corpus that ships, and the keyed ones replay from committed model responses
+with no API key. Infrastructure coordinates and the reproducible error lines:
 `docs/ops/aws-infrastructure.md`.*
