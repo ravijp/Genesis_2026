@@ -3,16 +3,17 @@
 window.EARSHOT_DATA = {
   "manifest": {
     "seed": 20260809,
-    "config_hash": "07db21651cfa",
-    "git_sha": "2d4555f",
-    "provider": "offline-rules",
+    "config_hash": "61bd85b66be1",
+    "pipeline_sha": "4d71d37cae12",
+    "git_sha": "6e79046-dirty",
+    "provider": "bedrock+cache:record+cap:$3.00",
     "prompt_version": "v1",
     "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
     "cache_mode": "record",
     "budget": 0.1,
-    "threshold": 0.6938,
-    "elapsed_seconds": 2.78,
-    "total_cost_usd": 0.0
+    "threshold": 0.2612,
+    "elapsed_seconds": 170.83,
+    "total_cost_usd": 0.232552
   },
   "queue": {
     "status": "open",
@@ -21,250 +22,234 @@ window.EARSHOT_DATA = {
     "truncated": false,
     "cases": [
       {
-        "case_id": "CUST-0330#life_event#000112",
-        "customer_id": "CUST-0330",
-        "signal_type": "life_event",
-        "score": 0.9111516714494705,
-        "score_at_open": 0.6938598704031247,
-        "threshold": 0.6937601632200303,
-        "opened_on_day": 112,
-        "as_of_day": 135,
+        "case_id": "CUST-0376#financial_distress#000127",
+        "customer_id": "CUST-0376",
+        "signal_type": "financial_distress",
+        "score": 0.7402612748051212,
+        "score_at_open": 0.3750171758844848,
+        "threshold": 0.2612245286168665,
+        "opened_on_day": 127,
+        "as_of_day": 178,
         "status": "open",
-        "n_evidence": 4,
-        "verdict": "genuine",
-        "owning_team": "vulnerability",
-        "confidence": 0.53
+        "n_evidence": 3,
+        "verdict": "false_alarm",
+        "owning_team": "none",
+        "confidence": 0.82
       },
       {
-        "case_id": "CUST-0135#financial_distress#000119",
-        "customer_id": "CUST-0135",
+        "case_id": "CUST-0067#financial_distress#000100",
+        "customer_id": "CUST-0067",
         "signal_type": "financial_distress",
-        "score": 0.8990242784619252,
-        "score_at_open": 0.702730052023111,
-        "threshold": 0.6937601632200303,
-        "opened_on_day": 119,
-        "as_of_day": 154,
+        "score": 0.7218145445713826,
+        "score_at_open": 0.4717906650339081,
+        "threshold": 0.2612245286168665,
+        "opened_on_day": 100,
+        "as_of_day": 111,
         "status": "open",
-        "n_evidence": 5,
+        "n_evidence": 3,
+        "verdict": "false_alarm",
+        "owning_team": "none",
+        "confidence": 0.88
+      },
+      {
+        "case_id": "CUST-0305#financial_distress#000154",
+        "customer_id": "CUST-0305",
+        "signal_type": "financial_distress",
+        "score": 0.702257208134095,
+        "score_at_open": 0.4003970490308367,
+        "threshold": 0.2612245286168665,
+        "opened_on_day": 154,
+        "as_of_day": 160,
+        "status": "open",
+        "n_evidence": 3,
         "verdict": "genuine",
         "owning_team": "collections",
-        "confidence": 0.57
+        "confidence": 0.88
       },
       {
-        "case_id": "CUST-0231#complaint_escalation#000104",
-        "customer_id": "CUST-0231",
-        "signal_type": "complaint_escalation",
-        "score": 0.8963976989337855,
-        "score_at_open": 0.8963976989337855,
-        "threshold": 0.6937601632200303,
-        "opened_on_day": 104,
-        "as_of_day": 104,
+        "case_id": "CUST-0138#financial_distress#000099",
+        "customer_id": "CUST-0138",
+        "signal_type": "financial_distress",
+        "score": 0.6458316536402771,
+        "score_at_open": 0.37407329025215574,
+        "threshold": 0.2612245286168665,
+        "opened_on_day": 99,
+        "as_of_day": 140,
         "status": "open",
-        "n_evidence": 4,
-        "verdict": "genuine",
-        "owning_team": "complaints",
-        "confidence": 0.75
-      },
-      {
-        "case_id": "CUST-0166#life_event#000127",
-        "customer_id": "CUST-0166",
-        "signal_type": "life_event",
-        "score": 0.8943571020642426,
-        "score_at_open": 0.9090921547069258,
-        "threshold": 0.6937601632200303,
-        "opened_on_day": 127,
-        "as_of_day": 155,
-        "status": "open",
-        "n_evidence": 4,
-        "verdict": "insufficient_evidence",
+        "n_evidence": 3,
+        "verdict": "false_alarm",
         "owning_team": "none",
-        "confidence": 0.42
+        "confidence": 0.85
       },
       {
-        "case_id": "CUST-0229#life_event#000096",
-        "customer_id": "CUST-0229",
-        "signal_type": "life_event",
-        "score": 0.8761381142501691,
-        "score_at_open": 0.8761381142501691,
-        "threshold": 0.6937601632200303,
-        "opened_on_day": 96,
-        "as_of_day": 96,
+        "case_id": "CUST-0159#financial_distress#000121",
+        "customer_id": "CUST-0159",
+        "signal_type": "financial_distress",
+        "score": 0.6153101679913437,
+        "score_at_open": 0.4815980204718283,
+        "threshold": 0.2612245286168665,
+        "opened_on_day": 121,
+        "as_of_day": 167,
         "status": "open",
-        "n_evidence": 4,
-        "verdict": "insufficient_evidence",
+        "n_evidence": 3,
+        "verdict": "false_alarm",
         "owning_team": "none",
-        "confidence": 0.42
+        "confidence": 0.82
       },
       {
-        "case_id": "CUST-0045#life_event#000082",
-        "customer_id": "CUST-0045",
-        "signal_type": "life_event",
-        "score": 0.8755023269238796,
-        "score_at_open": 0.9174960299680984,
-        "threshold": 0.6937601632200303,
-        "opened_on_day": 82,
-        "as_of_day": 160,
+        "case_id": "CUST-0276#financial_distress#000115",
+        "customer_id": "CUST-0276",
+        "signal_type": "financial_distress",
+        "score": 0.591353469524787,
+        "score_at_open": 0.4292466602471027,
+        "threshold": 0.2612245286168665,
+        "opened_on_day": 115,
+        "as_of_day": 175,
         "status": "open",
-        "n_evidence": 4,
+        "n_evidence": 3,
         "verdict": "genuine",
-        "owning_team": "vulnerability",
-        "confidence": 0.75
+        "owning_team": "collections",
+        "confidence": 0.92
       },
       {
-        "case_id": "CUST-0064#complaint_escalation#000114",
-        "customer_id": "CUST-0064",
-        "signal_type": "complaint_escalation",
-        "score": 0.8740615337545781,
-        "score_at_open": 0.8951415744513048,
-        "threshold": 0.6937601632200303,
-        "opened_on_day": 114,
-        "as_of_day": 125,
+        "case_id": "CUST-0021#financial_distress#000040",
+        "customer_id": "CUST-0021",
+        "signal_type": "financial_distress",
+        "score": 0.5730988026715358,
+        "score_at_open": 0.29326010616598797,
+        "threshold": 0.2612245286168665,
+        "opened_on_day": 40,
+        "as_of_day": 44,
         "status": "open",
-        "n_evidence": 4,
-        "verdict": "insufficient_evidence",
+        "n_evidence": 3,
+        "verdict": "false_alarm",
         "owning_team": "none",
-        "confidence": 0.42
+        "confidence": 0.78
       },
       {
-        "case_id": "CUST-0119#life_event#000160",
-        "customer_id": "CUST-0119",
-        "signal_type": "life_event",
-        "score": 0.8731095773409309,
-        "score_at_open": 0.8731095773409309,
-        "threshold": 0.6937601632200303,
-        "opened_on_day": 160,
-        "as_of_day": 160,
+        "case_id": "CUST-0167#financial_distress#000142",
+        "customer_id": "CUST-0167",
+        "signal_type": "financial_distress",
+        "score": 0.5418577877185626,
+        "score_at_open": 0.5743675087830977,
+        "threshold": 0.2612245286168665,
+        "opened_on_day": 142,
+        "as_of_day": 168,
         "status": "open",
-        "n_evidence": 4,
-        "verdict": "genuine",
-        "owning_team": "vulnerability",
-        "confidence": 0.64
+        "n_evidence": 3,
+        "verdict": "false_alarm",
+        "owning_team": "none",
+        "confidence": 0.88
       }
     ]
   },
   "cases": {
-    "CUST-0330#life_event#000112": {
-      "case_id": "CUST-0330#life_event#000112",
-      "customer_id": "CUST-0330",
-      "signal_type": "life_event",
-      "score": 0.9111516714494705,
-      "score_at_open": 0.6938598704031247,
-      "threshold": 0.6937601632200303,
-      "opened_on_day": 112,
-      "as_of_day": 135,
-      "opened_by_conversation": "CUST-0330-C2",
+    "CUST-0376#financial_distress#000127": {
+      "case_id": "CUST-0376#financial_distress#000127",
+      "customer_id": "CUST-0376",
+      "signal_type": "financial_distress",
+      "score": 0.7402612748051212,
+      "score_at_open": 0.3750171758844848,
+      "threshold": 0.2612245286168665,
+      "opened_on_day": 127,
+      "as_of_day": 178,
+      "opened_by_conversation": "CUST-0376-C3",
       "evidence": [
         {
-          "conversation_id": "CUST-0330-C0",
-          "day": 36,
-          "channel": "chat",
-          "signal_type": "life_event",
-          "evidence_quote": "I'll be changing my address soon, I'm moving back in with family.",
-          "confidence": 0.3,
-          "turn_index": 4,
-          "cue_id": "l-move",
-          "contribution_at_write": 0.09967547741373439,
-          "contribution_now": 0.21049130596595322,
-          "score_at_write": 0.09967547741373439,
-          "score_now": 0.9111516714494705,
-          "retro_delta": 0.8114761940357361,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0330-C1",
-          "day": 90,
+          "conversation_id": "CUST-0376-C0",
+          "day": 62,
           "channel": "call",
-          "signal_type": "life_event",
-          "evidence_quote": "I'm on statutory pay at the moment so the numbers look odd.",
-          "confidence": 0.3,
-          "turn_index": 15,
-          "cue_id": "l-statpay",
-          "contribution_at_write": 0.1855125175255462,
-          "contribution_now": 0.08914932392990049,
-          "score_at_write": 0.2740308656053556,
-          "score_now": 0.9111516714494705,
-          "retro_delta": 0.6371208058441149,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0330-C2",
-          "day": 112,
-          "channel": "complaint",
-          "signal_type": "life_event",
-          "evidence_quote": "We're separating, so I need to look at what's in joint names.",
+          "signal_type": "financial_distress",
+          "evidence_quote": "My other half's hours got cut too, so it's both of us at once at the minute.",
           "confidence": 0.6,
-          "turn_index": 6,
-          "cue_id": "l-separate",
-          "contribution_at_write": 0.4314432556288208,
-          "contribution_now": 0.20847362610762876,
-          "score_at_write": 0.6938598704031247,
-          "score_now": 0.9111516714494705,
-          "retro_delta": 0.21729180104634582,
+          "turn_index": 7,
+          "cue_id": "f-hours",
+          "contribution_at_write": 0.18941575402981292,
+          "contribution_now": 0.3428631461287447,
+          "score_at_write": 0.18941575402981292,
+          "score_now": 0.7402612748051212,
+          "retro_delta": 0.5508455207753082,
           "load_bearing": false
         },
         {
-          "conversation_id": "CUST-0330-C3",
-          "day": 135,
-          "channel": "call",
-          "signal_type": "life_event",
-          "evidence_quote": "My husband passed away in June and I'm sorting out the accounts.",
-          "confidence": 0.85,
-          "turn_index": 8,
-          "cue_id": "l-bereave",
-          "contribution_at_write": 0.23663288640556934,
-          "contribution_now": 0.23663288640556934,
-          "score_at_write": 0.9111516714494705,
-          "score_now": 0.9111516714494705,
+          "conversation_id": "CUST-0376-C3",
+          "day": 127,
+          "channel": "complaint",
+          "signal_type": "financial_distress",
+          "evidence_quote": "None of this is a fortune in money terms. It is the being ignored that I object to, and the sense that nothing is written down anywhere.",
+          "confidence": 0.35,
+          "turn_index": 5,
+          "cue_id": "f-hours:false-fire",
+          "contribution_at_write": 0.22067314232753554,
+          "contribution_now": 0.30704273740215693,
+          "score_at_write": 0.3750171758844848,
+          "score_now": 0.7402612748051212,
+          "retro_delta": 0.36524409892063636,
+          "load_bearing": false
+        },
+        {
+          "conversation_id": "CUST-0376-C4",
+          "day": 178,
+          "channel": "chat",
+          "signal_type": "financial_distress",
+          "evidence_quote": "Things have been tight since my hours got cut.",
+          "confidence": 0.6,
+          "turn_index": 5,
+          "cue_id": "f-hours",
+          "contribution_at_write": 0.4146962422392054,
+          "contribution_now": 0.4146962422392054,
+          "score_at_write": 0.7402612748051212,
+          "score_now": 0.7402612748051212,
           "retro_delta": 0.0,
-          "load_bearing": true
+          "load_bearing": false
         }
       ],
       "status": "open",
       "decision": {
-        "customer_id": "CUST-0330",
-        "verdict": "genuine",
-        "owning_team": "vulnerability",
-        "confidence": 0.53,
-        "rationale": "Rule-based offline provider (no model call). The ledger holds 4 life_event entries across 4 conversation(s), scoring 0.911 against a 0.694 threshold. Account check found 17 days in overdraft. Counting 1 corroborating marker(s) gives 'genuine'. No natural-language reading of the conversations was performed.",
-        "recommended_action": "Flag for a vulnerability-trained agent; apply support measures, not sales.",
-        "what_would_change_my_mind": "A reading of the quoted turns showing the remark was about someone else, or a salary credit landing on schedule next cycle, would drop this to a false alarm. A second returned direct debit would raise it.",
+        "customer_id": "CUST-0376",
+        "verdict": "false_alarm",
+        "owning_team": "none",
+        "confidence": 0.82,
+        "rationale": "The ledger accumulated three signals across five conversations, with the most recent (C4, day 178) stating 'Things have been tight since my hours got cut.' The initial signal (C0, day 62) mentioned both the customer and their partner experiencing reduced hours. However, the account data over the past 90 days contradicts financial distress: the balance has improved from \u00a3758.64 to \u00a32,942.19, salary credits are arriving on schedule with minimal change (2.9%), there is zero overdraft use, zero returned direct debits, zero fees, and the customer continues to maintain savings standing orders and discretionary spending (gym, Amazon, pub visits). The lowest balance in the window was \u00a3212.29, which is low but not critical. The customer is also receiving regular family transfers (\u00a3258-\u00a3303), suggesting additional support. The statement 'things have been tight' appears to reflect a temporary adjustment to reduced hours rather than genuine financial distress. The account is stable and improving.",
+        "recommended_action": "No action required. Close the case. The customer experienced temporary reduced work hours but the account shows no signs of financial distress, missed payments, or deteriorating financial position.",
+        "what_would_change_my_mind": "Evidence of overdraft use, returned direct debits, a declining balance trajectory, or a significant drop in salary credits would indicate genuine financial distress. Alternatively, if the customer's salary had actually decreased by more than the observed 2.9%, that would suggest the hours cut were more severe than the account currently reflects.",
         "evidence": [
           {
-            "conversation_id": "CUST-0330-C3",
-            "turn_index": 8,
-            "quote": "My husband passed away in June and I'm sorting out the accounts."
+            "conversation_id": "CUST-0376-C4",
+            "turn_index": 5,
+            "quote": "Things have been tight since my hours got cut."
           },
           {
-            "conversation_id": "CUST-0330-C0",
-            "turn_index": 4,
-            "quote": "I'll be changing my address soon, I'm moving back in with family."
+            "conversation_id": "CUST-0376-C0",
+            "turn_index": 7,
+            "quote": "My other half's hours got cut too, so it's both of us at once at the minute."
           }
         ]
       },
       "trace": {
-        "customer_id": "CUST-0330",
-        "provider": "offline-rules",
-        "model": "offline-rules",
+        "customer_id": "CUST-0376",
+        "provider": "bedrock+cache:record+cap:$3.00",
+        "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
         "prompt_version": "v1",
         "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
-        "model_calls": 5,
-        "tool_calls": 4,
+        "model_calls": 4,
+        "tool_calls": 6,
         "schema_retries": 0,
         "evidence_repairs": 0,
         "stopped_because": "decided",
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "latency_ms": 0.3,
+        "prompt_tokens": 19358,
+        "completion_tokens": 1582,
+        "cost_usd": 0.027268,
+        "latency_ms": 24354.5,
         "steps": [
           {
             "index": 1,
             "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 6708.5,
+            "prompt_tokens": 2987,
+            "completion_tokens": 80,
+            "cost_usd": 0.003387,
             "detail": "tool_calls: get_ledger_summary"
           },
           {
@@ -275,17 +260,27 @@ window.EARSHOT_DATA = {
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "cost_usd": 0.0,
-            "detail": "1346 chars"
+            "detail": "1164 chars"
           },
           {
             "index": 2,
             "kind": "model",
-            "name": "offline-rules",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 2587.0,
+            "prompt_tokens": 3533,
+            "completion_tokens": 227,
+            "cost_usd": 0.004668,
+            "detail": "tool_calls: get_account_state, get_transactions, get_conversation"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_account_state",
             "latency_ms": 0.0,
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "cost_usd": 0.0,
-            "detail": "tool_calls: get_transactions"
+            "detail": "467 chars"
           },
           {
             "index": 2,
@@ -295,20 +290,1236 @@ window.EARSHOT_DATA = {
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "cost_usd": 0.0,
-            "detail": "2991 chars"
+            "detail": "4124 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1909 chars"
           },
           {
             "index": 3,
             "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_account_state"
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1933.3,
+            "prompt_tokens": 6124,
+            "completion_tokens": 123,
+            "cost_usd": 0.006739,
+            "detail": "tool_calls: get_conversation, get_prior_cases"
           },
           {
             "index": 3,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1236 chars"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_prior_cases",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "53 chars"
+          },
+          {
+            "index": 4,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 13125.7,
+            "prompt_tokens": 6714,
+            "completion_tokens": 1152,
+            "cost_usd": 0.012474,
+            "detail": "final answer"
+          }
+        ]
+      }
+    },
+    "CUST-0067#financial_distress#000100": {
+      "case_id": "CUST-0067#financial_distress#000100",
+      "customer_id": "CUST-0067",
+      "signal_type": "financial_distress",
+      "score": 0.7218145445713826,
+      "score_at_open": 0.4717906650339081,
+      "threshold": 0.2612245286168665,
+      "opened_on_day": 100,
+      "as_of_day": 111,
+      "opened_by_conversation": "CUST-0067-C3",
+      "evidence": [
+        {
+          "conversation_id": "CUST-0067-C1",
+          "day": 11,
+          "channel": "complaint",
+          "signal_type": "financial_distress",
+          "evidence_quote": "I'm juggling a few things at the moment, that's all.",
+          "confidence": 0.28,
+          "turn_index": 3,
+          "cue_id": "f-juggle",
+          "contribution_at_write": 0.09335109624607907,
+          "contribution_now": 0.21811302147326206,
+          "score_at_write": 0.09335109624607907,
+          "score_now": 0.7218145445713826,
+          "retro_delta": 0.6284634483253035,
+          "load_bearing": false
+        },
+        {
+          "conversation_id": "CUST-0067-C3",
+          "day": 100,
+          "channel": "chat",
+          "signal_type": "financial_distress",
+          "evidence_quote": "I can't make the payment this month, I just can't.",
+          "confidence": 0.92,
+          "turn_index": 5,
+          "cue_id": "f-cant-pay",
+          "contribution_at_write": 0.40233155198047055,
+          "contribution_now": 0.49369528117913497,
+          "score_at_write": 0.4717906650339081,
+          "score_now": 0.7218145445713826,
+          "retro_delta": 0.2500238795374745,
+          "load_bearing": true
+        },
+        {
+          "conversation_id": "CUST-0067-C4",
+          "day": 111,
+          "channel": "complaint",
+          "signal_type": "financial_distress",
+          "evidence_quote": "What happens if it bounces, does that show up anywhere?",
+          "confidence": 0.35,
+          "turn_index": 2,
+          "cue_id": "f-bounce",
+          "contribution_at_write": 0.26278639288375516,
+          "contribution_now": 0.26278639288375516,
+          "score_at_write": 0.7218145445713826,
+          "score_now": 0.7218145445713826,
+          "retro_delta": 0.0,
+          "load_bearing": false
+        }
+      ],
+      "status": "open",
+      "decision": {
+        "customer_id": "CUST-0067",
+        "verdict": "false_alarm",
+        "owning_team": "none",
+        "confidence": 0.88,
+        "rationale": "The ledger score of 0.722 is driven primarily by a single high-confidence signal from C3 (day 100): 'I can't make the payment this month, I just can't.' However, this quote is contextual and specific to a delayed gym standing order, not a general financial crisis. The agent immediately offered support and resolved the issue on the call. The account state contradicts any interpretation of ongoing financial distress: the customer has a healthy balance of \u00a32,513.13, no overdraft use, salary credits arriving on schedule (3 of 3 expected), zero returned direct debits, zero fees, and a positive balance trend of +\u00a32,057.53 over 90 days. Spending patterns are normal with modest discretionary spend and regular savings contributions. The current complaint (C4) references the gym payment pattern but does not indicate new financial distress. A prior case involving a payment plan was successfully resolved. The signal appears to be an artefact of context-dependent language rather than evidence of genuine financial distress.",
+        "recommended_action": "Close the case. No action required. The customer's account is healthy and the triggering signal was about a specific, resolved operational issue with a standing order, not financial distress.",
+        "what_would_change_my_mind": "Evidence of sustained overdraft use, returned direct debits, missed salary credits, or a falling balance trajectory over the past 30 days would indicate genuine distress. Alternatively, a new conversation in which the customer expresses inability to meet essential obligations (rent, utilities, groceries) would change the verdict.",
+        "evidence": [
+          {
+            "conversation_id": "CUST-0067-C3",
+            "turn_index": 5,
+            "quote": "I can't make the payment this month, I just can't."
+          },
+          {
+            "conversation_id": "CUST-0067-C3",
+            "turn_index": 6,
+            "quote": "Right - I'm glad you've rung rather than left it. We can work with this. What's changed?"
+          }
+        ]
+      },
+      "trace": {
+        "customer_id": "CUST-0067",
+        "provider": "bedrock+cache:record+cap:$3.00",
+        "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        "prompt_version": "v1",
+        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
+        "model_calls": 4,
+        "tool_calls": 6,
+        "schema_retries": 0,
+        "evidence_repairs": 0,
+        "stopped_because": "decided",
+        "prompt_tokens": 17830,
+        "completion_tokens": 1556,
+        "cost_usd": 0.02561,
+        "latency_ms": 18732.7,
+        "steps": [
+          {
+            "index": 1,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1368.5,
+            "prompt_tokens": 2987,
+            "completion_tokens": 80,
+            "cost_usd": 0.003387,
+            "detail": "tool_calls: get_ledger_summary"
+          },
+          {
+            "index": 1,
+            "kind": "tool",
+            "name": "get_ledger_summary",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1071 chars"
+          },
+          {
+            "index": 2,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1992.3,
+            "prompt_tokens": 3517,
+            "completion_tokens": 179,
+            "cost_usd": 0.004412,
+            "detail": "tool_calls: get_conversation, get_conversation, get_account_state"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1743 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "958 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_account_state",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "470 chars"
+          },
+          {
+            "index": 3,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1925.3,
+            "prompt_tokens": 4763,
+            "completion_tokens": 125,
+            "cost_usd": 0.005388,
+            "detail": "tool_calls: get_transactions, get_prior_cases"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_transactions",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "4042 chars"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_prior_cases",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "254 chars"
+          },
+          {
+            "index": 4,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 13446.6,
+            "prompt_tokens": 6563,
+            "completion_tokens": 1172,
+            "cost_usd": 0.012423,
+            "detail": "final answer"
+          }
+        ]
+      }
+    },
+    "CUST-0305#financial_distress#000154": {
+      "case_id": "CUST-0305#financial_distress#000154",
+      "customer_id": "CUST-0305",
+      "signal_type": "financial_distress",
+      "score": 0.702257208134095,
+      "score_at_open": 0.4003970490308367,
+      "threshold": 0.2612245286168665,
+      "opened_on_day": 154,
+      "as_of_day": 160,
+      "opened_by_conversation": "CUST-0305-C2",
+      "evidence": [
+        {
+          "conversation_id": "CUST-0305-C0",
+          "day": 73,
+          "channel": "chat",
+          "signal_type": "financial_distress",
+          "evidence_quote": "Can you tell me the very last day I can pay without a charge?",
+          "confidence": 0.4,
+          "turn_index": 5,
+          "cue_id": "f-late",
+          "contribution_at_write": 0.13064176460119414,
+          "contribution_now": 0.3136847732881304,
+          "score_at_write": 0.13064176460119414,
+          "score_now": 0.702257208134095,
+          "retro_delta": 0.5716154435329008,
+          "load_bearing": false
+        },
+        {
+          "conversation_id": "CUST-0305-C2",
+          "day": 154,
+          "channel": "call",
+          "signal_type": "financial_distress",
+          "evidence_quote": "My other half's hours got cut too, so it's both of us at once at the minute.",
+          "confidence": 0.6,
+          "turn_index": 11,
+          "cue_id": "f-hours",
+          "contribution_at_write": 0.3000618026868829,
+          "contribution_now": 0.4236853194495409,
+          "score_at_write": 0.4003970490308367,
+          "score_now": 0.702257208134095,
+          "retro_delta": 0.30186015910325825,
+          "load_bearing": false
+        },
+        {
+          "conversation_id": "CUST-0305-C3",
+          "day": 160,
+          "channel": "complaint",
+          "signal_type": "financial_distress",
+          "evidence_quote": "I'm juggling a few things at the moment, that's all.",
+          "confidence": 0.28,
+          "turn_index": 4,
+          "cue_id": "f-juggle",
+          "contribution_at_write": 0.30820507263659747,
+          "contribution_now": 0.30820507263659747,
+          "score_at_write": 0.702257208134095,
+          "score_now": 0.702257208134095,
+          "retro_delta": 0.0,
+          "load_bearing": false
+        }
+      ],
+      "status": "open",
+      "decision": {
+        "customer_id": "CUST-0305",
+        "verdict": "genuine",
+        "owning_team": "collections",
+        "confidence": 0.88,
+        "rationale": "The customer has crossed the financial distress threshold with strong corroborating evidence. The ledger contains three signals across 87 days: an early query about payment deadlines (day 73), a clear statement that both the customer and their partner have had hours cut (day 154), and a recent formal complaint about account management during financial difficulty (day 160). The account data strongly corroborates this narrative: the customer has received only 1 of 3 expected salary credits in the 90-day window, has spent 44 days in overdraft with a lowest balance of -\u00a31,563.53, and has had 3 direct debits returned unpaid (rent, utilities, utilities). The balance trajectory is severely negative (-\u00a31,560.61). The customer's statements about reduced household income align precisely with the missing salary credits and the pattern of returned payments. This is not an isolated remark but a sustained pattern of financial strain with concrete account evidence.",
+        "recommended_action": "Escalate to collections team for financial hardship assessment. Verify the stated reduction in household income (both customer and partner's hours cut), review the missing salary credits to confirm whether this is a temporary shortfall or ongoing reduced hours, and discuss payment arrangements or hardship support options. Note that a vulnerability case was opened on day 0 and referred to specialist team; coordinate with that team to ensure holistic support.",
+        "what_would_change_my_mind": "If the missing salary credits were recovered and the account returned to a positive balance with no further returned payments over the next 30 days, or if the customer confirmed that the hours reduction was temporary and income has since normalized, the verdict would shift to false_alarm. Alternatively, if the prior vulnerability case has already resulted in active support being provided, this may be a duplicate signal rather than a new case.",
+        "evidence": [
+          {
+            "conversation_id": "CUST-0305-C2",
+            "turn_index": 11,
+            "quote": "My other half's hours got cut too, so it's both of us at once at the minute."
+          },
+          {
+            "conversation_id": "CUST-0305-C3",
+            "turn_index": 4,
+            "quote": "I'm juggling a few things at the moment, that's all."
+          },
+          {
+            "conversation_id": "CUST-0305-C0",
+            "turn_index": 5,
+            "quote": "Can you tell me the very last day I can pay without a charge?"
+          }
+        ]
+      },
+      "trace": {
+        "customer_id": "CUST-0305",
+        "provider": "bedrock+cache:record+cap:$3.00",
+        "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        "prompt_version": "v1",
+        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
+        "model_calls": 4,
+        "tool_calls": 6,
+        "schema_retries": 0,
+        "evidence_repairs": 0,
+        "stopped_because": "decided",
+        "prompt_tokens": 19033,
+        "completion_tokens": 1801,
+        "cost_usd": 0.028038,
+        "latency_ms": 21890.5,
+        "steps": [
+          {
+            "index": 1,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1584.0,
+            "prompt_tokens": 2977,
+            "completion_tokens": 80,
+            "cost_usd": 0.003377,
+            "detail": "tool_calls: get_ledger_summary"
+          },
+          {
+            "index": 1,
+            "kind": "tool",
+            "name": "get_ledger_summary",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1082 chars"
+          },
+          {
+            "index": 2,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 2149.5,
+            "prompt_tokens": 3505,
+            "completion_tokens": 173,
+            "cost_usd": 0.00437,
+            "detail": "tool_calls: get_account_state, get_transactions, get_prior_cases"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_account_state",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "475 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_transactions",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "4179 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_prior_cases",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "466 chars"
+          },
+          {
+            "index": 3,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1879.0,
+            "prompt_tokens": 5642,
+            "completion_tokens": 137,
+            "cost_usd": 0.006327,
+            "detail": "tool_calls: get_conversation, get_conversation"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "2013 chars"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1769 chars"
+          },
+          {
+            "index": 4,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 16278.0,
+            "prompt_tokens": 6909,
+            "completion_tokens": 1411,
+            "cost_usd": 0.013964,
+            "detail": "final answer"
+          }
+        ]
+      }
+    },
+    "CUST-0138#financial_distress#000099": {
+      "case_id": "CUST-0138#financial_distress#000099",
+      "customer_id": "CUST-0138",
+      "signal_type": "financial_distress",
+      "score": 0.6458316536402771,
+      "score_at_open": 0.37407329025215574,
+      "threshold": 0.2612245286168665,
+      "opened_on_day": 99,
+      "as_of_day": 140,
+      "opened_by_conversation": "CUST-0138-C1",
+      "evidence": [
+        {
+          "conversation_id": "CUST-0138-C0",
+          "day": 53,
+          "channel": "complaint",
+          "signal_type": "financial_distress",
+          "evidence_quote": "Things have been tight since my hours got cut.",
+          "confidence": 0.5,
+          "turn_index": 2,
+          "cue_id": "f-tight",
+          "contribution_at_write": 0.16054297923079264,
+          "contribution_now": 0.3466421412705487,
+          "score_at_write": 0.16054297923079264,
+          "score_now": 0.6458316536402771,
+          "retro_delta": 0.4852886744094844,
+          "load_bearing": false
+        },
+        {
+          "conversation_id": "CUST-0138-C1",
+          "day": 99,
+          "channel": "call",
+          "signal_type": "financial_distress",
+          "evidence_quote": "Can you tell me the very last day I can pay without a charge?",
+          "confidence": 0.4,
+          "turn_index": 9,
+          "cue_id": "f-late",
+          "contribution_at_write": 0.2354605418872674,
+          "contribution_now": 0.3376283351134157,
+          "score_at_write": 0.37407329025215574,
+          "score_now": 0.6458316536402771,
+          "retro_delta": 0.2717583633881213,
+          "load_bearing": false
+        },
+        {
+          "conversation_id": "CUST-0138-C2",
+          "day": 140,
+          "channel": "chat",
+          "signal_type": "financial_distress",
+          "evidence_quote": "I'm juggling a few things at the moment, that's all.",
+          "confidence": 0.28,
+          "turn_index": 5,
+          "cue_id": "f-juggle",
+          "contribution_at_write": 0.3118347537174099,
+          "contribution_now": 0.3118347537174099,
+          "score_at_write": 0.6458316536402771,
+          "score_now": 0.6458316536402771,
+          "retro_delta": 0.0,
+          "load_bearing": false
+        }
+      ],
+      "status": "open",
+      "decision": {
+        "customer_id": "CUST-0138",
+        "verdict": "false_alarm",
+        "owning_team": "none",
+        "confidence": 0.85,
+        "rationale": "The ledger score of 0.646 was driven by three signals across 87 days: (1) 'Things have been tight since my hours got cut' (day 53), (2) 'Can you tell me the very last day I can pay without a charge?' regarding a \u00a34 charge (day 99), and (3) 'I'm juggling a few things at the moment' (day 140). However, account data over the 90-day window contradicts financial distress: the customer maintains a healthy balance of \u00a31,945.89 with no overdraft use, no returned direct debits, no fees, and salary credits arriving on schedule (\u00a32,075 median). The balance has improved from \u00a31,043.28 to \u00a31,945.89. Discretionary spending continues (Amazon, ASOS, Nandos), and the customer maintains a \u00a3191-225/month savings standing order. The hours reduction mentioned 87 days ago has not manifested in missed payments or account stress. The \u00a34 charge inquiry was resolved as a dispute. The standing order delay in C2 was resolved same-day. These are real utterances but do not describe genuine financial distress.",
+        "recommended_action": "No action required. Close the alert. The customer's account is healthy and stable.",
+        "what_would_change_my_mind": "Evidence of actual missed payments, returned direct debits, overdraft use, or a sustained downward balance trajectory would indicate genuine distress. Alternatively, if the salary reduction mentioned in C0 had materialized into lower actual deposits or if discretionary spending had ceased, that would corroborate the signal.",
+        "evidence": [
+          {
+            "conversation_id": "CUST-0138-C0",
+            "turn_index": 2,
+            "quote": "Things have been tight since my hours got cut."
+          },
+          {
+            "conversation_id": "CUST-0138-C1",
+            "turn_index": 9,
+            "quote": "Can you tell me the very last day I can pay without a charge?"
+          },
+          {
+            "conversation_id": "CUST-0138-C2",
+            "turn_index": 5,
+            "quote": "I'm juggling a few things at the moment, that's all."
+          }
+        ]
+      },
+      "trace": {
+        "customer_id": "CUST-0138",
+        "provider": "bedrock+cache:record+cap:$3.00",
+        "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        "prompt_version": "v1",
+        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
+        "model_calls": 4,
+        "tool_calls": 7,
+        "schema_retries": 0,
+        "evidence_repairs": 0,
+        "stopped_because": "decided",
+        "prompt_tokens": 18929,
+        "completion_tokens": 1710,
+        "cost_usd": 0.027479,
+        "latency_ms": 20789.5,
+        "steps": [
+          {
+            "index": 1,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 2590.7,
+            "prompt_tokens": 2967,
+            "completion_tokens": 80,
+            "cost_usd": 0.003367,
+            "detail": "tool_calls: get_ledger_summary"
+          },
+          {
+            "index": 1,
+            "kind": "tool",
+            "name": "get_ledger_summary",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1034 chars"
+          },
+          {
+            "index": 2,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1920.7,
+            "prompt_tokens": 3473,
+            "completion_tokens": 173,
+            "cost_usd": 0.004338,
+            "detail": "tool_calls: get_account_state, get_transactions, get_prior_cases"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_account_state",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "470 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_transactions",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "4091 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_prior_cases",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "53 chars"
+          },
+          {
+            "index": 3,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 2132.3,
+            "prompt_tokens": 5458,
+            "completion_tokens": 169,
+            "cost_usd": 0.006303,
+            "detail": "tool_calls: get_conversation, get_conversation, get_conversation"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "859 chars"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1767 chars"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1728 chars"
+          },
+          {
+            "index": 4,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 14145.8,
+            "prompt_tokens": 7031,
+            "completion_tokens": 1288,
+            "cost_usd": 0.013471,
+            "detail": "final answer"
+          }
+        ]
+      }
+    },
+    "CUST-0159#financial_distress#000121": {
+      "case_id": "CUST-0159#financial_distress#000121",
+      "customer_id": "CUST-0159",
+      "signal_type": "financial_distress",
+      "score": 0.6153101679913437,
+      "score_at_open": 0.4815980204718283,
+      "threshold": 0.2612245286168665,
+      "opened_on_day": 121,
+      "as_of_day": 167,
+      "opened_by_conversation": "CUST-0159-C2",
+      "evidence": [
+        {
+          "conversation_id": "CUST-0159-C1",
+          "day": 75,
+          "channel": "call",
+          "signal_type": "financial_distress",
+          "evidence_quote": "I'm juggling a few things at the moment, that's all.",
+          "confidence": 0.28,
+          "turn_index": 7,
+          "cue_id": "f-juggle",
+          "contribution_at_write": 0.09335109624607907,
+          "contribution_now": 0.14090824790967005,
+          "score_at_write": 0.09335109624607907,
+          "score_now": 0.6153101679913437,
+          "retro_delta": 0.5219590717452647,
+          "load_bearing": false
+        },
+        {
+          "conversation_id": "CUST-0159-C2",
+          "day": 121,
+          "channel": "complaint",
+          "signal_type": "financial_distress",
+          "evidence_quote": "I can't make the payment this month, I just can't.",
+          "confidence": 0.92,
+          "turn_index": 3,
+          "cue_id": "f-cant-pay",
+          "contribution_at_write": 0.4014355532010878,
+          "contribution_now": 0.3851634831923515,
+          "score_at_write": 0.4815980204718283,
+          "score_now": 0.6153101679913437,
+          "retro_delta": 0.13371214751951543,
+          "load_bearing": true
+        },
+        {
+          "conversation_id": "CUST-0159-C4",
+          "day": 167,
+          "channel": "call",
+          "signal_type": "financial_distress",
+          "evidence_quote": "What happens if it bounces, does that show up anywhere?",
+          "confidence": 0.35,
+          "turn_index": 11,
+          "cue_id": "f-bounce",
+          "contribution_at_write": 0.18641368023550287,
+          "contribution_now": 0.18641368023550287,
+          "score_at_write": 0.6153101679913437,
+          "score_now": 0.6153101679913437,
+          "retro_delta": 0.0,
+          "load_bearing": false
+        }
+      ],
+      "status": "open",
+      "decision": {
+        "customer_id": "CUST-0159",
+        "verdict": "false_alarm",
+        "owning_team": "none",
+        "confidence": 0.82,
+        "rationale": "The ledger score was driven primarily by a high-confidence signal from conversation C2 (day 121): 'I can't make the payment this month, I just can't.' However, this statement was made in the context of a formal complaint about transaction visibility and service failures, not as a genuine expression of financial inability. The agent immediately resolved the complaint by placing a hold on the account and explicitly told the customer 'You don't need to do anything today.' The most recent conversation (C4, day 167\u201446 days later) shows the customer inquiring about better savings rates and asking technical questions about transfer mechanics, which is inconsistent with ongoing financial distress. The account state corroborates recovery: current balance is positive (\u00a3878.30), salary credits are arriving on schedule (3 of 3 expected), there are no returned direct debits, and the customer is actively maintaining a savings account (\u00a3130.02). While the customer experienced an overdraft period earlier in the window and has seen a 22.6% salary reduction, the account has stabilized and the customer is managing regular payments (rent, utilities, groceries) and discretionary spending. No prior cases exist on file.",
+        "recommended_action": "Close the case. No action required. The signal was triggered by a complaint-context statement that was immediately resolved by the agent. Subsequent account behavior and the most recent conversation indicate the customer has recovered from the earlier stress period and is managing their finances normally.",
+        "what_would_change_my_mind": "Evidence that the customer has missed a payment or had a direct debit returned after day 121, or a new conversation showing renewed distress or inability to pay despite the earlier resolution.",
+        "evidence": [
+          {
+            "conversation_id": "CUST-0159-C2",
+            "turn_index": 3,
+            "quote": "I can't make the payment this month, I just can't."
+          },
+          {
+            "conversation_id": "CUST-0159-C2",
+            "turn_index": 6,
+            "quote": "I've read this and put a hold on the account while we sort it out. You don't need to do anything today."
+          },
+          {
+            "conversation_id": "CUST-0159-C4",
+            "turn_index": 1,
+            "quote": "Hello again - I wrote in about a month ago about the pending transfer. That got sorted, so thank you. Anyway. Someone told me there's a better savings rate now."
+          }
+        ]
+      },
+      "trace": {
+        "customer_id": "CUST-0159",
+        "provider": "bedrock+cache:record+cap:$3.00",
+        "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        "prompt_version": "v1",
+        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
+        "model_calls": 4,
+        "tool_calls": 6,
+        "schema_retries": 0,
+        "evidence_repairs": 0,
+        "stopped_because": "decided",
+        "prompt_tokens": 18022,
+        "completion_tokens": 1738,
+        "cost_usd": 0.026712,
+        "latency_ms": 20464.0,
+        "steps": [
+          {
+            "index": 1,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1557.9,
+            "prompt_tokens": 2987,
+            "completion_tokens": 80,
+            "cost_usd": 0.003387,
+            "detail": "tool_calls: get_ledger_summary"
+          },
+          {
+            "index": 1,
+            "kind": "tool",
+            "name": "get_ledger_summary",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1067 chars"
+          },
+          {
+            "index": 2,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 2722.1,
+            "prompt_tokens": 3517,
+            "completion_tokens": 221,
+            "cost_usd": 0.004622,
+            "detail": "tool_calls: get_conversation, get_conversation, get_account_state"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1283 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1746 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_account_state",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "469 chars"
+          },
+          {
+            "index": 3,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1822.6,
+            "prompt_tokens": 4891,
+            "completion_tokens": 134,
+            "cost_usd": 0.005561,
+            "detail": "tool_calls: get_transactions, get_prior_cases"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_transactions",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "4193 chars"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_prior_cases",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "53 chars"
+          },
+          {
+            "index": 4,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 14361.4,
+            "prompt_tokens": 6627,
+            "completion_tokens": 1303,
+            "cost_usd": 0.013142,
+            "detail": "final answer"
+          }
+        ]
+      }
+    },
+    "CUST-0276#financial_distress#000115": {
+      "case_id": "CUST-0276#financial_distress#000115",
+      "customer_id": "CUST-0276",
+      "signal_type": "financial_distress",
+      "score": 0.591353469524787,
+      "score_at_open": 0.4292466602471027,
+      "threshold": 0.2612245286168665,
+      "opened_on_day": 115,
+      "as_of_day": 175,
+      "opened_by_conversation": "CUST-0276-C1",
+      "evidence": [
+        {
+          "conversation_id": "CUST-0276-C0",
+          "day": 107,
+          "channel": "complaint",
+          "signal_type": "financial_distress",
+          "evidence_quote": "Can you tell me the very last day I can pay without a charge?",
+          "confidence": 0.4,
+          "turn_index": 2,
+          "cue_id": "f-late",
+          "contribution_at_write": 0.13064176460119414,
+          "contribution_now": 0.1790889677491947,
+          "score_at_write": 0.13064176460119414,
+          "score_now": 0.591353469524787,
+          "retro_delta": 0.4607117049235928,
+          "load_bearing": false
+        },
+        {
+          "conversation_id": "CUST-0276-C1",
+          "day": 115,
+          "channel": "call",
+          "signal_type": "financial_distress",
+          "evidence_quote": "My other half's hours got cut too, so it's both of us at once at the minute.",
+          "confidence": 0.6,
+          "turn_index": 5,
+          "cue_id": "f-hours",
+          "contribution_at_write": 0.30193944494618485,
+          "contribution_now": 0.2876756603267674,
+          "score_at_write": 0.4292466602471027,
+          "score_now": 0.591353469524787,
+          "retro_delta": 0.16210680927768428,
+          "load_bearing": false
+        },
+        {
+          "conversation_id": "CUST-0276-C2",
+          "day": 175,
+          "channel": "complaint",
+          "signal_type": "financial_distress",
+          "evidence_quote": "I had to put the shopping on the credit card again.",
+          "confidence": 0.45,
+          "turn_index": 4,
+          "cue_id": "f-credit",
+          "contribution_at_write": 0.22547818310598433,
+          "contribution_now": 0.22547818310598433,
+          "score_at_write": 0.591353469524787,
+          "score_now": 0.591353469524787,
+          "retro_delta": 0.0,
+          "load_bearing": false
+        }
+      ],
+      "status": "open",
+      "decision": {
+        "customer_id": "CUST-0276",
+        "verdict": "genuine",
+        "owning_team": "collections",
+        "confidence": 0.92,
+        "rationale": "Customer has crossed the financial distress threshold with strong corroborating evidence. The ledger captures three distinct signals: (1) concern about payment deadlines and fees (C0, day 107); (2) explicit statement that both household earners' hours were cut simultaneously (C1, day 115); (3) resort to credit card for groceries due to insufficient current account funds (C2, day 175). Account data strongly corroborates: customer is in sustained overdraft (37 of 90 days, currently -\u00a3436.65 of \u00a3500 limit), salary has declined 14% (from ~\u00a31,154 to ~\u00a31,048), two direct debits have been returned unpaid (Vodafone on days 136 and 166), and the account shows a deteriorating balance trend of -\u00a3576.73. Family is supplementing income with transfers (\u00a31,017.98 over 90 days). The pattern is not a one-off but sustained financial pressure across multiple months. No prior cases on file, so this is a fresh escalation requiring intervention.",
+        "recommended_action": "Route to collections team for financial hardship assessment. Prioritize understanding: (1) whether the hours-cut situation is temporary or permanent; (2) whether customer is aware of hardship support options; (3) whether the returned direct debits (Vodafone) can be rescheduled; (4) whether overdraft limit adjustment or payment plan would help stabilize the account. Address the service complaint (C2) separately but do not let it delay financial support assessment.",
+        "what_would_change_my_mind": "If account transactions over the next 30 days show salary returning to pre-cut levels (\u00a31,154+) and balance stabilizing above -\u00a3200, or if customer confirms the hours cut was temporary and has already been reversed, the distress signal would be materially weakened. Alternatively, if prior case records show this was already handled by another team, the verdict would shift to false_alarm.",
+        "evidence": [
+          {
+            "conversation_id": "CUST-0276-C1",
+            "turn_index": 5,
+            "quote": "My other half's hours got cut too, so it's both of us at once at the minute."
+          },
+          {
+            "conversation_id": "CUST-0276-C2",
+            "turn_index": 4,
+            "quote": "I had to put the shopping on the credit card again."
+          },
+          {
+            "conversation_id": "CUST-0276-C0",
+            "turn_index": 2,
+            "quote": "Can you tell me the very last day I can pay without a charge?"
+          }
+        ]
+      },
+      "trace": {
+        "customer_id": "CUST-0276",
+        "provider": "bedrock+cache:record+cap:$3.00",
+        "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        "prompt_version": "v1",
+        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
+        "model_calls": 4,
+        "tool_calls": 6,
+        "schema_retries": 0,
+        "evidence_repairs": 0,
+        "stopped_because": "decided",
+        "prompt_tokens": 18622,
+        "completion_tokens": 1721,
+        "cost_usd": 0.027227,
+        "latency_ms": 19007.4,
+        "steps": [
+          {
+            "index": 1,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1395.7,
+            "prompt_tokens": 2967,
+            "completion_tokens": 80,
+            "cost_usd": 0.003367,
+            "detail": "tool_calls: get_ledger_summary"
+          },
+          {
+            "index": 1,
+            "kind": "tool",
+            "name": "get_ledger_summary",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1070 chars"
+          },
+          {
+            "index": 2,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1758.2,
+            "prompt_tokens": 3481,
+            "completion_tokens": 173,
+            "cost_usd": 0.004346,
+            "detail": "tool_calls: get_account_state, get_transactions, get_prior_cases"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_account_state",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "472 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_transactions",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "4182 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_prior_cases",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "53 chars"
+          },
+          {
+            "index": 3,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1434.5,
+            "prompt_tokens": 5469,
+            "completion_tokens": 123,
+            "cost_usd": 0.006084,
+            "detail": "tool_calls: get_conversation, get_conversation"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "2030 chars"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1629 chars"
+          },
+          {
+            "index": 4,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 14419.0,
+            "prompt_tokens": 6705,
+            "completion_tokens": 1345,
+            "cost_usd": 0.01343,
+            "detail": "final answer"
+          }
+        ]
+      }
+    },
+    "CUST-0021#financial_distress#000040": {
+      "case_id": "CUST-0021#financial_distress#000040",
+      "customer_id": "CUST-0021",
+      "signal_type": "financial_distress",
+      "score": 0.5730988026715358,
+      "score_at_open": 0.29326010616598797,
+      "threshold": 0.2612245286168665,
+      "opened_on_day": 40,
+      "as_of_day": 44,
+      "opened_by_conversation": "CUST-0021-C2",
+      "evidence": [
+        {
+          "conversation_id": "CUST-0021-C1",
+          "day": 21,
+          "channel": "chat",
+          "signal_type": "financial_distress",
+          "evidence_quote": "I'm juggling a few things at the moment, that's all.",
+          "confidence": 0.28,
+          "turn_index": 9,
+          "cue_id": "f-juggle",
+          "contribution_at_write": 0.09335109624607907,
+          "contribution_now": 0.24733965771601052,
+          "score_at_write": 0.09335109624607907,
+          "score_now": 0.5730988026715358,
+          "retro_delta": 0.4797477064254567,
+          "load_bearing": false
+        },
+        {
+          "conversation_id": "CUST-0021-C2",
+          "day": 40,
+          "channel": "complaint",
+          "signal_type": "financial_distress",
+          "evidence_quote": "I want to raise a complaint regarding setting up the new payee. Please treat this letter as the start of your complaints process.",
+          "confidence": 0.35,
+          "turn_index": 0,
+          "cue_id": "f-job:false-fire",
+          "contribution_at_write": 0.20558904056793392,
+          "contribution_now": 0.3232065049606958,
+          "score_at_write": 0.29326010616598797,
+          "score_now": 0.5730988026715358,
+          "retro_delta": 0.2798386965055478,
+          "load_bearing": true
+        },
+        {
+          "conversation_id": "CUST-0021-C4",
+          "day": 44,
+          "channel": "chat",
+          "signal_type": "financial_distress",
+          "evidence_quote": "What happens if it bounces, does that show up anywhere?",
+          "confidence": 0.35,
+          "turn_index": 5,
+          "cue_id": "f-bounce",
+          "contribution_at_write": 0.2832239533932682,
+          "contribution_now": 0.2832239533932682,
+          "score_at_write": 0.5730988026715358,
+          "score_now": 0.5730988026715358,
+          "retro_delta": 0.0,
+          "load_bearing": false
+        }
+      ],
+      "status": "open",
+      "decision": {
+        "customer_id": "CUST-0021",
+        "verdict": "false_alarm",
+        "owning_team": "none",
+        "confidence": 0.78,
+        "rationale": "The ledger score crossed the threshold primarily driven by two signals: a formal complaint about payee setup failure (day 40) and a question about payment bouncing (day 44). However, examination of the account and conversation context reveals no genuine financial distress. The complaint is about a service failure (payee not set up, name check issue), not inability to pay. The bounce question appears contextual to a small pending charge the customer was tracking, not a major payment failure. The account shows: current balance of \u00a31,258.96 (healthy), salary credits on schedule (3 of 3 expected), zero returned direct debits, minimal fees (\u00a323.75 total), and improving balance trend (+\u00a3832.53 over 90 days). The customer briefly used overdraft (23 days, lowest -\u00a3417.63) but recovered and is currently out of overdraft. Notably, the customer maintains a savings balance of \u00a3415.22 and continues regular savings standing orders (\u00a396-211/month), which is inconsistent with genuine financial distress. The vague statement 'juggling a few things' from day 21 is low-confidence and not load-bearing.",
+        "recommended_action": "No action required. Close the alert. The signals reflect service frustration and prudent financial management, not financial distress. The complaint should be handled through normal complaints process if not already resolved.",
+        "what_would_change_my_mind": "Evidence of returned direct debits, sustained overdraft use beyond the current limit, missed salary credits, or explicit statements about inability to pay bills or meet obligations would indicate genuine distress.",
+        "evidence": [
+          {
+            "conversation_id": "CUST-0021-C2",
+            "turn_index": 0,
+            "quote": "I want to raise a complaint regarding setting up the new payee. Please treat this letter as the start of your complaints process."
+          },
+          {
+            "conversation_id": "CUST-0021-C2",
+            "turn_index": 2,
+            "quote": "I asked for a new payee to be set up so that I could pay a tradesman four hundred pounds, and I was told the name check had not come back clean."
+          },
+          {
+            "conversation_id": "CUST-0021-C4",
+            "turn_index": 5,
+            "quote": "What happens if it bounces, does that show up anywhere?"
+          },
+          {
+            "conversation_id": "CUST-0021-C4",
+            "turn_index": 1,
+            "quote": "Me again. Last time, earlier this week, it was the four pound charge, and that did come through in the end."
+          }
+        ]
+      },
+      "trace": {
+        "customer_id": "CUST-0021",
+        "provider": "bedrock+cache:record+cap:$3.00",
+        "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        "prompt_version": "v1",
+        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
+        "model_calls": 5,
+        "tool_calls": 6,
+        "schema_retries": 0,
+        "evidence_repairs": 0,
+        "stopped_because": "decided",
+        "prompt_tokens": 24988,
+        "completion_tokens": 1888,
+        "cost_usd": 0.034428,
+        "latency_ms": 22097.8,
+        "steps": [
+          {
+            "index": 1,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1387.6,
+            "prompt_tokens": 2987,
+            "completion_tokens": 83,
+            "cost_usd": 0.003402,
+            "detail": "tool_calls: get_ledger_summary"
+          },
+          {
+            "index": 1,
+            "kind": "tool",
+            "name": "get_ledger_summary",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1142 chars"
+          },
+          {
+            "index": 2,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1863.4,
+            "prompt_tokens": 3532,
+            "completion_tokens": 135,
+            "cost_usd": 0.004207,
+            "detail": "tool_calls: get_account_state, get_transactions"
+          },
+          {
+            "index": 2,
             "kind": "tool",
             "name": "get_account_state",
             "latency_ms": 0.0,
@@ -318,13 +1529,53 @@ window.EARSHOT_DATA = {
             "detail": "471 chars"
           },
           {
-            "index": 4,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
+            "index": 2,
+            "kind": "tool",
+            "name": "get_transactions",
+            "latency_ms": 0.0,
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "cost_usd": 0.0,
+            "detail": "4118 chars"
+          },
+          {
+            "index": 3,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 2007.4,
+            "prompt_tokens": 5425,
+            "completion_tokens": 148,
+            "cost_usd": 0.006165,
+            "detail": "tool_calls: get_conversation, get_conversation"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1404 chars"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1524 chars"
+          },
+          {
+            "index": 4,
+            "kind": "model",
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1515.0,
+            "prompt_tokens": 6469,
+            "completion_tokens": 71,
+            "cost_usd": 0.006824,
             "detail": "tool_calls: get_prior_cases"
           },
           {
@@ -340,568 +1591,127 @@ window.EARSHOT_DATA = {
           {
             "index": 5,
             "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 15324.4,
+            "prompt_tokens": 6575,
+            "completion_tokens": 1451,
+            "cost_usd": 0.01383,
             "detail": "final answer"
           }
         ]
       }
     },
-    "CUST-0135#financial_distress#000119": {
-      "case_id": "CUST-0135#financial_distress#000119",
-      "customer_id": "CUST-0135",
+    "CUST-0167#financial_distress#000142": {
+      "case_id": "CUST-0167#financial_distress#000142",
+      "customer_id": "CUST-0167",
       "signal_type": "financial_distress",
-      "score": 0.8990242784619252,
-      "score_at_open": 0.702730052023111,
-      "threshold": 0.6937601632200303,
-      "opened_on_day": 119,
-      "as_of_day": 154,
-      "opened_by_conversation": "CUST-0135-C3",
+      "score": 0.5418577877185626,
+      "score_at_open": 0.5743675087830977,
+      "threshold": 0.2612245286168665,
+      "opened_on_day": 142,
+      "as_of_day": 168,
+      "opened_by_conversation": "CUST-0167-C2",
       "evidence": [
         {
-          "conversation_id": "CUST-0135-C0",
-          "day": 39,
-          "channel": "chat",
-          "signal_type": "financial_distress",
-          "evidence_quote": "I'm juggling a few things at the moment, all.",
-          "confidence": 0.28,
-          "turn_index": 9,
-          "cue_id": "f-juggle",
-          "contribution_at_write": 0.09335109624607907,
-          "contribution_now": 0.06940981092889376,
-          "score_at_write": 0.09335109624607907,
-          "score_now": 0.8990242784619252,
-          "retro_delta": 0.8056731822158462,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0135-C1",
-          "day": 58,
+          "conversation_id": "CUST-0167-C0",
+          "day": 30,
           "channel": "call",
-          "signal_type": "financial_distress",
-          "evidence_quote": "What happens if it bounces, does that show up anywhere?",
-          "confidence": 0.35,
-          "turn_index": 14,
-          "cue_id": "f-bounce",
-          "contribution_at_write": 0.20558904056793392,
-          "contribution_now": 0.01750172417297713,
-          "score_at_write": 0.29326010616598797,
-          "score_now": 0.8990242784619252,
-          "retro_delta": 0.6057641722959373,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0135-C2",
-          "day": 86,
-          "channel": "chat",
-          "signal_type": "financial_distress",
-          "evidence_quote": "Is there any way to change the date it comes out?",
-          "confidence": 0.35,
-          "turn_index": 3,
-          "cue_id": "f-date",
-          "contribution_at_write": 0.20594813919211508,
-          "contribution_now": 0.08526061814385688,
-          "score_at_write": 0.47615427813891553,
-          "score_now": 0.8990242784619252,
-          "retro_delta": 0.4228700003230097,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0135-C3",
-          "day": 119,
-          "channel": "complaint",
           "signal_type": "financial_distress",
           "evidence_quote": "Can you tell me the very last day I can pay without a charge?",
           "confidence": 0.4,
-          "turn_index": 6,
+          "turn_index": 11,
           "cue_id": "f-late",
-          "contribution_at_write": 0.26448836205796633,
-          "contribution_now": 0.15220446454005476,
-          "score_at_write": 0.702730052023111,
-          "score_now": 0.8990242784619252,
-          "retro_delta": 0.19629422643881422,
+          "contribution_at_write": 0.13064176460119414,
+          "contribution_now": 0.24281231900653977,
+          "score_at_write": 0.13064176460119414,
+          "score_now": 0.5418577877185626,
+          "retro_delta": 0.4112160231173685,
           "load_bearing": false
         },
         {
-          "conversation_id": "CUST-0135-C4",
-          "day": 154,
+          "conversation_id": "CUST-0167-C1",
+          "day": 130,
           "channel": "call",
           "signal_type": "financial_distress",
-          "evidence_quote": "I was made redundant in March and nothing's come in since.",
-          "confidence": 0.88,
-          "turn_index": 9,
-          "cue_id": "f-job",
-          "contribution_at_write": 0.24047990593030533,
-          "contribution_now": 0.24047990593030533,
-          "score_at_write": 0.8990242784619252,
-          "score_now": 0.8990242784619252,
-          "retro_delta": 0.0,
-          "load_bearing": true
-        }
-      ],
-      "status": "open",
-      "decision": {
-        "customer_id": "CUST-0135",
-        "verdict": "genuine",
-        "owning_team": "collections",
-        "confidence": 0.57,
-        "rationale": "Rule-based offline provider (no model call). The ledger holds 5 financial_distress entries across 5 conversation(s), scoring 0.899 against a 0.694 threshold. Account check found 19 days in overdraft. Counting 1 corroborating marker(s) gives 'genuine'. No natural-language reading of the conversations was performed.",
-        "recommended_action": "Offer a pre-arrears affordability conversation; suppress automated chasing.",
-        "what_would_change_my_mind": "A reading of the quoted turns showing the remark was about someone else, or a salary credit landing on schedule next cycle, would drop this to a false alarm. A second returned direct debit would raise it.",
-        "evidence": [
-          {
-            "conversation_id": "CUST-0135-C4",
-            "turn_index": 9,
-            "quote": "I was made redundant in March and nothing's come in since."
-          },
-          {
-            "conversation_id": "CUST-0135-C3",
-            "turn_index": 6,
-            "quote": "Can you tell me the very last day I can pay without a charge?"
-          }
-        ]
-      },
-      "trace": {
-        "customer_id": "CUST-0135",
-        "provider": "offline-rules",
-        "model": "offline-rules",
-        "prompt_version": "v1",
-        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
-        "model_calls": 5,
-        "tool_calls": 4,
-        "schema_retries": 0,
-        "evidence_repairs": 0,
-        "stopped_because": "decided",
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "latency_ms": 0.3,
-        "steps": [
-          {
-            "index": 1,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_ledger_summary"
-          },
-          {
-            "index": 1,
-            "kind": "tool",
-            "name": "get_ledger_summary",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "1600 chars"
-          },
-          {
-            "index": 2,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_transactions"
-          },
-          {
-            "index": 2,
-            "kind": "tool",
-            "name": "get_transactions",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "3042 chars"
-          },
-          {
-            "index": 3,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_account_state"
-          },
-          {
-            "index": 3,
-            "kind": "tool",
-            "name": "get_account_state",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "474 chars"
-          },
-          {
-            "index": 4,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_prior_cases"
-          },
-          {
-            "index": 4,
-            "kind": "tool",
-            "name": "get_prior_cases",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "262 chars"
-          },
-          {
-            "index": 5,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "final answer"
-          }
-        ]
-      }
-    },
-    "CUST-0231#complaint_escalation#000104": {
-      "case_id": "CUST-0231#complaint_escalation#000104",
-      "customer_id": "CUST-0231",
-      "signal_type": "complaint_escalation",
-      "score": 0.8963976989337855,
-      "score_at_open": 0.8963976989337855,
-      "threshold": 0.6937601632200303,
-      "opened_on_day": 104,
-      "as_of_day": 104,
-      "opened_by_conversation": "CUST-0231-C3",
-      "evidence": [
-        {
-          "conversation_id": "CUST-0231-C0",
-          "day": 23,
-          "channel": "chat",
-          "signal_type": "complaint_escalation",
-          "evidence_quote": "Is there a reference number from the last time I rang?",
-          "confidence": 0.3,
-          "turn_index": 10,
-          "cue_id": "e-ref",
-          "contribution_at_write": 0.09967547741373439,
-          "contribution_now": 0.07677294071890173,
-          "score_at_write": 0.09967547741373439,
-          "score_now": 0.8963976989337855,
-          "retro_delta": 0.7967222215200511,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0231-C1",
-          "day": 62,
-          "channel": "complaint",
-          "signal_type": "complaint_escalation",
-          "evidence_quote": "I did raise this before, I think in the spring.",
+          "evidence_quote": "Is there any way to change the date it comes out?",
           "confidence": 0.35,
-          "turn_index": 12,
-          "cue_id": "e-before",
-          "contribution_at_write": 0.2022401860419697,
-          "contribution_now": 0.14660124036610767,
-          "score_at_write": 0.27705154083179295,
-          "score_now": 0.8963976989337855,
-          "retro_delta": 0.6193461581019926,
+          "turn_index": 13,
+          "cue_id": "f-date",
+          "contribution_at_write": 0.16420135582171036,
+          "contribution_now": 0.2666047486374754,
+          "score_at_write": 0.2584540732117989,
+          "score_now": 0.5418577877185626,
+          "retro_delta": 0.2834037145067637,
           "load_bearing": false
         },
         {
-          "conversation_id": "CUST-0231-C2",
-          "day": 102,
+          "conversation_id": "CUST-0167-C2",
+          "day": 142,
           "channel": "chat",
-          "signal_type": "complaint_escalation",
-          "evidence_quote": "I was promised a callback last week and it never came.",
-          "confidence": 0.55,
-          "turn_index": 3,
-          "cue_id": "e-callback",
-          "contribution_at_write": 0.28776698992459593,
-          "contribution_now": 0.24530682751845945,
-          "score_at_write": 0.4998824180593743,
-          "score_now": 0.8963976989337855,
-          "retro_delta": 0.39651528087441124,
-          "load_bearing": true
-        },
-        {
-          "conversation_id": "CUST-0231-C3",
-          "day": 104,
-          "channel": "call",
-          "signal_type": "complaint_escalation",
-          "evidence_quote": "This is the fourth time I've called about this and nobody has fixed it.",
-          "confidence": 0.85,
-          "turn_index": 17,
-          "cue_id": "e-nth",
-          "contribution_at_write": 0.4018403420862058,
-          "contribution_now": 0.4018403420862058,
-          "score_at_write": 0.8963976989337855,
-          "score_now": 0.8963976989337855,
-          "retro_delta": 0.0,
+          "signal_type": "financial_distress",
+          "evidence_quote": "We're doing a proper look at the outgoings this month, spring clean sort of thing.",
+          "confidence": 0.35,
+          "turn_index": 7,
+          "cue_id": "f-juggle:false-fire",
+          "contribution_at_write": 0.32500127123316225,
+          "contribution_now": 0.3112756686723659,
+          "score_at_write": 0.5743675087830977,
+          "score_now": 0.5418577877185626,
+          "retro_delta": -0.03250972106453509,
           "load_bearing": true
         }
       ],
       "status": "open",
       "decision": {
-        "customer_id": "CUST-0231",
-        "verdict": "genuine",
-        "owning_team": "complaints",
-        "confidence": 0.75,
-        "rationale": "Rule-based offline provider (no model call). The ledger holds 4 complaint_escalation entries across 4 conversation(s), scoring 0.896 against a 0.694 threshold. Account check found 25 days in overdraft, 2 of 3 expected salary credits, balance down 432 over the window. Counting 3 corroborating marker(s) gives 'genuine'. No natural-language reading of the conversations was performed.",
-        "recommended_action": "Escalate to a complaints handler with the full evidence chain attached.",
-        "what_would_change_my_mind": "A reading of the quoted turns showing the remark was about someone else, or a salary credit landing on schedule next cycle, would drop this to a false alarm. A second returned direct debit would raise it.",
-        "evidence": [
-          {
-            "conversation_id": "CUST-0231-C3",
-            "turn_index": 17,
-            "quote": "This is the fourth time I've called about this and nobody has fixed it."
-          },
-          {
-            "conversation_id": "CUST-0231-C2",
-            "turn_index": 3,
-            "quote": "I was promised a callback last week and it never came."
-          }
-        ]
-      },
-      "trace": {
-        "customer_id": "CUST-0231",
-        "provider": "offline-rules",
-        "model": "offline-rules",
-        "prompt_version": "v1",
-        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
-        "model_calls": 5,
-        "tool_calls": 4,
-        "schema_retries": 0,
-        "evidence_repairs": 0,
-        "stopped_because": "decided",
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "latency_ms": 0.3,
-        "steps": [
-          {
-            "index": 1,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_ledger_summary"
-          },
-          {
-            "index": 1,
-            "kind": "tool",
-            "name": "get_ledger_summary",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "1337 chars"
-          },
-          {
-            "index": 2,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_transactions"
-          },
-          {
-            "index": 2,
-            "kind": "tool",
-            "name": "get_transactions",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "3034 chars"
-          },
-          {
-            "index": 3,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_account_state"
-          },
-          {
-            "index": 3,
-            "kind": "tool",
-            "name": "get_account_state",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "471 chars"
-          },
-          {
-            "index": 4,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_prior_cases"
-          },
-          {
-            "index": 4,
-            "kind": "tool",
-            "name": "get_prior_cases",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "254 chars"
-          },
-          {
-            "index": 5,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "final answer"
-          }
-        ]
-      }
-    },
-    "CUST-0166#life_event#000127": {
-      "case_id": "CUST-0166#life_event#000127",
-      "customer_id": "CUST-0166",
-      "signal_type": "life_event",
-      "score": 0.8943571020642426,
-      "score_at_open": 0.9090921547069258,
-      "threshold": 0.6937601632200303,
-      "opened_on_day": 127,
-      "as_of_day": 155,
-      "opened_by_conversation": "CUST-0166-C3",
-      "evidence": [
-        {
-          "conversation_id": "CUST-0166-C0",
-          "day": 30,
-          "channel": "complaint",
-          "signal_type": "life_event",
-          "evidence_quote": "I'm on statutory pay at the moment so the numbers look odd.",
-          "confidence": 0.3,
-          "turn_index": 5,
-          "cue_id": "l-statpay",
-          "contribution_at_write": 0.09967547741373439,
-          "contribution_now": 0.1658179181601206,
-          "score_at_write": 0.09967547741373439,
-          "score_now": 0.8943571020642426,
-          "retro_delta": 0.7946816246505082,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0166-C1",
-          "day": 80,
-          "channel": "complaint",
-          "signal_type": "life_event",
-          "evidence_quote": "I'll be changing my address soon, I'm moving back in with family.",
-          "confidence": 0.3,
-          "turn_index": 5,
-          "cue_id": "l-move",
-          "contribution_at_write": 0.14581652164713965,
-          "contribution_now": 0.09599865241322181,
-          "score_at_write": 0.23511890858540707,
-          "score_now": 0.8943571020642426,
-          "retro_delta": 0.6592381934788355,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0166-C2",
-          "day": 90,
-          "channel": "call",
-          "signal_type": "life_event",
-          "evidence_quote": "We're separating, so I need to look at what's in joint names.",
-          "confidence": 0.6,
-          "turn_index": 10,
-          "cue_id": "l-separate",
-          "contribution_at_write": 0.4126511754701453,
-          "contribution_now": 0.2151894958175028,
-          "score_at_write": 0.6430731766668067,
-          "score_now": 0.8943571020642426,
-          "retro_delta": 0.2512839253974358,
-          "load_bearing": true
-        },
-        {
-          "conversation_id": "CUST-0166-C3",
-          "day": 127,
-          "channel": "chat",
-          "signal_type": "life_event",
-          "evidence_quote": "My husband passed away in June and sorting out the accounts.",
-          "confidence": 0.85,
-          "turn_index": 8,
-          "cue_id": "l-bereave",
-          "contribution_at_write": 0.29745622988783305,
-          "contribution_now": 0.3064274611448623,
-          "score_at_write": 0.9090921547069258,
-          "score_now": 0.8943571020642426,
-          "retro_delta": -0.014735052642683266,
-          "load_bearing": true
-        }
-      ],
-      "status": "open",
-      "decision": {
-        "customer_id": "CUST-0166",
-        "verdict": "insufficient_evidence",
+        "customer_id": "CUST-0167",
+        "verdict": "false_alarm",
         "owning_team": "none",
-        "confidence": 0.42,
-        "rationale": "Rule-based offline provider (no model call). The ledger holds 4 life_event entries across 4 conversation(s), scoring 0.894 against a 0.694 threshold. Account check found no account-side corroboration. Counting 0 corroborating marker(s) gives 'insufficient_evidence'. No natural-language reading of the conversations was performed.",
-        "recommended_action": "Route to a human reviewer unassisted; the signals stay in the ledger and are re-scored next batch either way.",
-        "what_would_change_my_mind": "A reading of the quoted turns showing the remark was about someone else, or a salary credit landing on schedule next cycle, would drop this to a false alarm. A second returned direct debit would raise it.",
+        "confidence": 0.88,
+        "rationale": "The ledger score crossed the threshold based on three signals: (1) asking about payment deadlines (C0, day 30), (2) requesting to change a standing order date (C1, day 130), and (3) mentioning a 'spring clean' review of outgoings (C2, day 142). However, account data strongly contradicts financial distress. The customer maintains a healthy balance of \u00a33,810.89 with a positive trend (+\u00a32,735.68 over 90 days), receives salary on schedule (3 of 3 expected credits), has zero overdraft use, zero returned direct debits, and zero fees. The customer continues discretionary spending (\u00a31,141.91) and maintains savings (\u00a3321.94). The conversation quotes, in context, describe routine banking activities: inquiring about payment deadlines, adjusting standing order timing, and conducting routine financial housekeeping. The card decline mentioned in C2 was a temporary security flag that was resolved by the agent, not a genuine account issue. The signals appear to be artefacts of normal banking behavior rather than indicators of genuine financial distress.",
+        "recommended_action": "No action required. Close this alert as a false positive. The customer's account is healthy and the conversation signals reflect routine banking activities, not distress.",
+        "what_would_change_my_mind": "Evidence of actual payment failures (returned direct debits), sustained overdraft use, missed salary credits, or explicit statements of financial hardship in conversation would change this verdict to genuine.",
         "evidence": [
           {
-            "conversation_id": "CUST-0166-C3",
-            "turn_index": 8,
-            "quote": "My husband passed away in June and sorting out the accounts."
+            "conversation_id": "CUST-0167-C2",
+            "turn_index": 7,
+            "quote": "We're doing a proper look at the outgoings this month, spring clean sort of thing."
           },
           {
-            "conversation_id": "CUST-0166-C2",
-            "turn_index": 10,
-            "quote": "We're separating, so I need to look at what's in joint names."
+            "conversation_id": "CUST-0167-C0",
+            "turn_index": 11,
+            "quote": "Can you tell me the very last day I can pay without a charge?"
+          },
+          {
+            "conversation_id": "CUST-0167-C1",
+            "turn_index": 13,
+            "quote": "Is there any way to change the date it comes out?"
           }
         ]
       },
       "trace": {
-        "customer_id": "CUST-0166",
-        "provider": "offline-rules",
-        "model": "offline-rules",
+        "customer_id": "CUST-0167",
+        "provider": "bedrock+cache:record+cap:$3.00",
+        "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
         "prompt_version": "v1",
         "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
         "model_calls": 5,
-        "tool_calls": 4,
+        "tool_calls": 7,
         "schema_retries": 0,
         "evidence_repairs": 0,
         "stopped_because": "decided",
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "latency_ms": 0.4,
+        "prompt_tokens": 27185,
+        "completion_tokens": 1721,
+        "cost_usd": 0.03579,
+        "latency_ms": 19638.8,
         "steps": [
           {
             "index": 1,
             "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1296.3,
+            "prompt_tokens": 2977,
+            "completion_tokens": 80,
+            "cost_usd": 0.003377,
             "detail": "tool_calls: get_ledger_summary"
           },
           {
@@ -912,37 +1722,57 @@ window.EARSHOT_DATA = {
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "cost_usd": 0.0,
-            "detail": "1361 chars"
+            "detail": "1081 chars"
           },
           {
             "index": 2,
             "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_transactions"
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1987.3,
+            "prompt_tokens": 3502,
+            "completion_tokens": 191,
+            "cost_usd": 0.004457,
+            "detail": "tool_calls: get_conversation, get_conversation, get_conversation"
           },
           {
             "index": 2,
             "kind": "tool",
-            "name": "get_transactions",
+            "name": "get_conversation",
             "latency_ms": 0.0,
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "cost_usd": 0.0,
-            "detail": "3045 chars"
+            "detail": "2029 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "1852 chars"
+          },
+          {
+            "index": 2,
+            "kind": "tool",
+            "name": "get_conversation",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "2052 chars"
           },
           {
             "index": 3,
             "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_account_state"
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1743.2,
+            "prompt_tokens": 5564,
+            "completion_tokens": 139,
+            "cost_usd": 0.006259,
+            "detail": "tool_calls: get_account_state, get_transactions"
           },
           {
             "index": 3,
@@ -952,16 +1782,26 @@ window.EARSHOT_DATA = {
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "cost_usd": 0.0,
-            "detail": "472 chars"
+            "detail": "473 chars"
+          },
+          {
+            "index": 3,
+            "kind": "tool",
+            "name": "get_transactions",
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "detail": "4195 chars"
           },
           {
             "index": 4,
             "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 1511.9,
+            "prompt_tokens": 7485,
+            "completion_tokens": 71,
+            "cost_usd": 0.00784,
             "detail": "tool_calls: get_prior_cases"
           },
           {
@@ -977,839 +1817,11 @@ window.EARSHOT_DATA = {
           {
             "index": 5,
             "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.2,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "final answer"
-          }
-        ]
-      }
-    },
-    "CUST-0229#life_event#000096": {
-      "case_id": "CUST-0229#life_event#000096",
-      "customer_id": "CUST-0229",
-      "signal_type": "life_event",
-      "score": 0.8761381142501691,
-      "score_at_open": 0.8761381142501691,
-      "threshold": 0.6937601632200303,
-      "opened_on_day": 96,
-      "as_of_day": 96,
-      "opened_by_conversation": "CUST-0229-C3",
-      "evidence": [
-        {
-          "conversation_id": "CUST-0229-C0",
-          "day": 35,
-          "channel": "chat",
-          "signal_type": "life_event",
-          "evidence_quote": "be changing my address soon, I'm moving back in with family.",
-          "confidence": 0.3,
-          "turn_index": 8,
-          "cue_id": "l-move",
-          "contribution_at_write": 0.09967547741373439,
-          "contribution_now": 0.09939148661415553,
-          "score_at_write": 0.09967547741373439,
-          "score_now": 0.8761381142501691,
-          "retro_delta": 0.7764626368364347,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0229-C1",
-          "day": 49,
-          "channel": "call",
-          "signal_type": "life_event",
-          "evidence_quote": "We're separating, so I need to look at what's in joint names.",
-          "confidence": 0.6,
-          "turn_index": 4,
-          "cue_id": "l-separate",
-          "contribution_at_write": 0.299764031738209,
-          "contribution_now": 0.1621833410161807,
-          "score_at_write": 0.39642552165924705,
-          "score_now": 0.8761381142501691,
-          "retro_delta": 0.479712592590922,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0229-C2",
-          "day": 84,
-          "channel": "call",
-          "signal_type": "life_event",
-          "evidence_quote": "I'm on statutory pay at the moment so the numbers look odd.",
-          "confidence": 0.3,
-          "turn_index": 5,
-          "cue_id": "l-statpay",
-          "contribution_at_write": 0.17865496500736477,
-          "contribution_now": 0.1842607955285368,
-          "score_at_write": 0.5509370428058937,
-          "score_now": 0.8761381142501691,
-          "retro_delta": 0.32520107144427535,
-          "load_bearing": true
-        },
-        {
-          "conversation_id": "CUST-0229-C3",
-          "day": 96,
-          "channel": "chat",
-          "signal_type": "life_event",
-          "evidence_quote": "My husband passed away in June and I'm sorting out the accounts.",
-          "confidence": 0.85,
-          "turn_index": 4,
-          "cue_id": "l-bereave",
-          "contribution_at_write": 0.3351404642028354,
-          "contribution_now": 0.3351404642028354,
-          "score_at_write": 0.8761381142501691,
-          "score_now": 0.8761381142501691,
-          "retro_delta": 0.0,
-          "load_bearing": true
-        }
-      ],
-      "status": "open",
-      "decision": {
-        "customer_id": "CUST-0229",
-        "verdict": "insufficient_evidence",
-        "owning_team": "none",
-        "confidence": 0.42,
-        "rationale": "Rule-based offline provider (no model call). The ledger holds 4 life_event entries across 4 conversation(s), scoring 0.876 against a 0.694 threshold. Account check found no account-side corroboration. Counting 0 corroborating marker(s) gives 'insufficient_evidence'. No natural-language reading of the conversations was performed.",
-        "recommended_action": "Route to a human reviewer unassisted; the signals stay in the ledger and are re-scored next batch either way.",
-        "what_would_change_my_mind": "A reading of the quoted turns showing the remark was about someone else, or a salary credit landing on schedule next cycle, would drop this to a false alarm. A second returned direct debit would raise it.",
-        "evidence": [
-          {
-            "conversation_id": "CUST-0229-C3",
-            "turn_index": 4,
-            "quote": "My husband passed away in June and I'm sorting out the accounts."
-          },
-          {
-            "conversation_id": "CUST-0229-C2",
-            "turn_index": 5,
-            "quote": "I'm on statutory pay at the moment so the numbers look odd."
-          }
-        ]
-      },
-      "trace": {
-        "customer_id": "CUST-0229",
-        "provider": "offline-rules",
-        "model": "offline-rules",
-        "prompt_version": "v1",
-        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
-        "model_calls": 5,
-        "tool_calls": 4,
-        "schema_retries": 0,
-        "evidence_repairs": 0,
-        "stopped_because": "decided",
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "latency_ms": 0.3,
-        "steps": [
-          {
-            "index": 1,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_ledger_summary"
-          },
-          {
-            "index": 1,
-            "kind": "tool",
-            "name": "get_ledger_summary",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "1332 chars"
-          },
-          {
-            "index": 2,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_transactions"
-          },
-          {
-            "index": 2,
-            "kind": "tool",
-            "name": "get_transactions",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "3020 chars"
-          },
-          {
-            "index": 3,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_account_state"
-          },
-          {
-            "index": 3,
-            "kind": "tool",
-            "name": "get_account_state",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "468 chars"
-          },
-          {
-            "index": 4,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_prior_cases"
-          },
-          {
-            "index": 4,
-            "kind": "tool",
-            "name": "get_prior_cases",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "261 chars"
-          },
-          {
-            "index": 5,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "final answer"
-          }
-        ]
-      }
-    },
-    "CUST-0045#life_event#000082": {
-      "case_id": "CUST-0045#life_event#000082",
-      "customer_id": "CUST-0045",
-      "signal_type": "life_event",
-      "score": 0.8755023269238796,
-      "score_at_open": 0.9174960299680984,
-      "threshold": 0.6937601632200303,
-      "opened_on_day": 82,
-      "as_of_day": 160,
-      "opened_by_conversation": "CUST-0045-C3",
-      "evidence": [
-        {
-          "conversation_id": "CUST-0045-C0",
-          "day": 32,
-          "channel": "complaint",
-          "signal_type": "life_event",
-          "evidence_quote": "I'll be changing my address soon, I'- moving back in with family.",
-          "confidence": 0.3,
-          "turn_index": 14,
-          "cue_id": "l-move",
-          "contribution_at_write": 0.09967547741373439,
-          "contribution_now": 0.0996716071690652,
-          "score_at_write": 0.09967547741373439,
-          "score_now": 0.8755023269238796,
-          "retro_delta": 0.7758268495101452,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0045-C1",
-          "day": 49,
-          "channel": "complaint",
-          "signal_type": "life_event",
-          "evidence_quote": "I'm on statutory pay at the moment so the numbers look odd.",
-          "confidence": 0.3,
-          "turn_index": 4,
-          "cue_id": "l-statpay",
-          "contribution_at_write": 0.14670669785303103,
-          "contribution_now": 0.10176835560088526,
-          "score_at_write": 0.24273363838791828,
-          "score_now": 0.8755023269238796,
-          "retro_delta": 0.6327686885359614,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0045-C2",
-          "day": 76,
-          "channel": "call",
-          "signal_type": "life_event",
-          "evidence_quote": "We're separating, so I need to look at what's in joint names.",
-          "confidence": 0.6,
-          "turn_index": 15,
-          "cue_id": "l-separate",
-          "contribution_at_write": 0.3310567456218859,
-          "contribution_now": 0.31071549827343736,
-          "score_at_write": 0.5609492078279473,
-          "score_now": 0.8755023269238796,
-          "retro_delta": 0.3145531190959323,
-          "load_bearing": true
-        },
-        {
-          "conversation_id": "CUST-0045-C3",
-          "day": 82,
-          "channel": "chat",
-          "signal_type": "life_event",
-          "evidence_quote": "My husband passed away in June and I'm sorting out the accounts.",
-          "confidence": 0.85,
-          "turn_index": 21,
-          "cue_id": "l-bereave",
-          "contribution_at_write": 0.3615506265266586,
-          "contribution_now": 0.3831686699074024,
-          "score_at_write": 0.9174960299680984,
-          "score_now": 0.8755023269238796,
-          "retro_delta": -0.04199370304421879,
-          "load_bearing": true
-        }
-      ],
-      "status": "open",
-      "decision": {
-        "customer_id": "CUST-0045",
-        "verdict": "genuine",
-        "owning_team": "vulnerability",
-        "confidence": 0.75,
-        "rationale": "Rule-based offline provider (no model call). The ledger holds 4 life_event entries across 4 conversation(s), scoring 0.875 against a 0.694 threshold. Account check found 38 days in overdraft, 1 of 3 expected salary credits, 4 returned direct debit(s), balance down 1753 over the window. Counting 4 corroborating marker(s) gives 'genuine'. No natural-language reading of the conversations was performed.",
-        "recommended_action": "Flag for a vulnerability-trained agent; apply support measures, not sales.",
-        "what_would_change_my_mind": "A reading of the quoted turns showing the remark was about someone else, or a salary credit landing on schedule next cycle, would drop this to a false alarm. A second returned direct debit would raise it.",
-        "evidence": [
-          {
-            "conversation_id": "CUST-0045-C3",
-            "turn_index": 21,
-            "quote": "My husband passed away in June and I'm sorting out the accounts."
-          },
-          {
-            "conversation_id": "CUST-0045-C2",
-            "turn_index": 15,
-            "quote": "We're separating, so I need to look at what's in joint names."
-          }
-        ]
-      },
-      "trace": {
-        "customer_id": "CUST-0045",
-        "provider": "offline-rules",
-        "model": "offline-rules",
-        "prompt_version": "v1",
-        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
-        "model_calls": 5,
-        "tool_calls": 4,
-        "schema_retries": 0,
-        "evidence_repairs": 0,
-        "stopped_because": "decided",
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "latency_ms": 0.4,
-        "steps": [
-          {
-            "index": 1,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_ledger_summary"
-          },
-          {
-            "index": 1,
-            "kind": "tool",
-            "name": "get_ledger_summary",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "1367 chars"
-          },
-          {
-            "index": 2,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_transactions"
-          },
-          {
-            "index": 2,
-            "kind": "tool",
-            "name": "get_transactions",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "3132 chars"
-          },
-          {
-            "index": 3,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_account_state"
-          },
-          {
-            "index": 3,
-            "kind": "tool",
-            "name": "get_account_state",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "474 chars"
-          },
-          {
-            "index": 4,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_prior_cases"
-          },
-          {
-            "index": 4,
-            "kind": "tool",
-            "name": "get_prior_cases",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "53 chars"
-          },
-          {
-            "index": 5,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.2,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "final answer"
-          }
-        ]
-      }
-    },
-    "CUST-0064#complaint_escalation#000114": {
-      "case_id": "CUST-0064#complaint_escalation#000114",
-      "customer_id": "CUST-0064",
-      "signal_type": "complaint_escalation",
-      "score": 0.8740615337545781,
-      "score_at_open": 0.8951415744513048,
-      "threshold": 0.6937601632200303,
-      "opened_on_day": 114,
-      "as_of_day": 125,
-      "opened_by_conversation": "CUST-0064-C3",
-      "evidence": [
-        {
-          "conversation_id": "CUST-0064-C0",
-          "day": 33,
-          "channel": "call",
-          "signal_type": "complaint_escalation",
-          "evidence_quote": "Is there a reference number from the last time I rang?",
-          "confidence": 0.3,
-          "turn_index": 9,
-          "cue_id": "e-ref",
-          "contribution_at_write": 0.09967547741373439,
-          "contribution_now": 0.13566518913082626,
-          "score_at_write": 0.09967547741373439,
-          "score_now": 0.8740615337545781,
-          "retro_delta": 0.7743860563408437,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0064-C1",
-          "day": 85,
-          "channel": "chat",
-          "signal_type": "complaint_escalation",
-          "evidence_quote": "I did raise this before, I think in the spring.",
-          "confidence": 0.35,
-          "turn_index": 5,
-          "cue_id": "e-before",
-          "contribution_at_write": 0.20039105050337835,
-          "contribution_now": 0.1625214278736382,
-          "score_at_write": 0.26832302144914466,
-          "score_now": 0.8740615337545781,
-          "retro_delta": 0.6057385123054334,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0064-C2",
-          "day": 103,
-          "channel": "complaint",
-          "signal_type": "complaint_escalation",
-          "evidence_quote": "I was promised a callback last week and it never came.",
-          "confidence": 0.55,
-          "turn_index": 10,
-          "cue_id": "e-callback",
-          "contribution_at_write": 0.41960082658490805,
-          "contribution_now": 0.16495930153982896,
-          "score_at_write": 0.6577267982457322,
-          "score_now": 0.8740615337545781,
-          "retro_delta": 0.21633473550884585,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0064-C3",
-          "day": 114,
-          "channel": "complaint",
-          "signal_type": "complaint_escalation",
-          "evidence_quote": "This is the fourth time I've called about this and nobody has fixed it.",
-          "confidence": 0.85,
-          "turn_index": 4,
-          "cue_id": "e-nth",
-          "contribution_at_write": 0.2685594962010912,
-          "contribution_now": 0.2785863475324293,
-          "score_at_write": 0.8951415744513048,
-          "score_now": 0.8740615337545781,
-          "retro_delta": -0.021080040696726754,
-          "load_bearing": true
-        }
-      ],
-      "status": "open",
-      "decision": {
-        "customer_id": "CUST-0064",
-        "verdict": "insufficient_evidence",
-        "owning_team": "none",
-        "confidence": 0.42,
-        "rationale": "Rule-based offline provider (no model call). The ledger holds 4 complaint_escalation entries across 4 conversation(s), scoring 0.874 against a 0.694 threshold. Account check found no account-side corroboration. Counting 0 corroborating marker(s) gives 'insufficient_evidence'. No natural-language reading of the conversations was performed.",
-        "recommended_action": "Route to a human reviewer unassisted; the signals stay in the ledger and are re-scored next batch either way.",
-        "what_would_change_my_mind": "A reading of the quoted turns showing the remark was about someone else, or a salary credit landing on schedule next cycle, would drop this to a false alarm. A second returned direct debit would raise it.",
-        "evidence": [
-          {
-            "conversation_id": "CUST-0064-C3",
-            "turn_index": 4,
-            "quote": "This is the fourth time I've called about this and nobody has fixed it."
-          },
-          {
-            "conversation_id": "CUST-0064-C2",
-            "turn_index": 10,
-            "quote": "I was promised a callback last week and it never came."
-          }
-        ]
-      },
-      "trace": {
-        "customer_id": "CUST-0064",
-        "provider": "offline-rules",
-        "model": "offline-rules",
-        "prompt_version": "v1",
-        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
-        "model_calls": 5,
-        "tool_calls": 4,
-        "schema_retries": 0,
-        "evidence_repairs": 0,
-        "stopped_because": "decided",
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "latency_ms": 0.4,
-        "steps": [
-          {
-            "index": 1,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_ledger_summary"
-          },
-          {
-            "index": 1,
-            "kind": "tool",
-            "name": "get_ledger_summary",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "1356 chars"
-          },
-          {
-            "index": 2,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_transactions"
-          },
-          {
-            "index": 2,
-            "kind": "tool",
-            "name": "get_transactions",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "2959 chars"
-          },
-          {
-            "index": 3,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_account_state"
-          },
-          {
-            "index": 3,
-            "kind": "tool",
-            "name": "get_account_state",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "465 chars"
-          },
-          {
-            "index": 4,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_prior_cases"
-          },
-          {
-            "index": 4,
-            "kind": "tool",
-            "name": "get_prior_cases",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "53 chars"
-          },
-          {
-            "index": 5,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.2,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "final answer"
-          }
-        ]
-      }
-    },
-    "CUST-0119#life_event#000160": {
-      "case_id": "CUST-0119#life_event#000160",
-      "customer_id": "CUST-0119",
-      "signal_type": "life_event",
-      "score": 0.8731095773409309,
-      "score_at_open": 0.8731095773409309,
-      "threshold": 0.6937601632200303,
-      "opened_on_day": 160,
-      "as_of_day": 160,
-      "opened_by_conversation": "CUST-0119-C3",
-      "evidence": [
-        {
-          "conversation_id": "CUST-0119-C0",
-          "day": 72,
-          "channel": "call",
-          "signal_type": "life_event",
-          "evidence_quote": "I'm on statutory pay at the moment so the numbers look odd.",
-          "confidence": 0.3,
-          "turn_index": 13,
-          "cue_id": "l-statpay",
-          "contribution_at_write": 0.09967547741373439,
-          "contribution_now": 0.09769938753364982,
-          "score_at_write": 0.09967547741373439,
-          "score_now": 0.8731095773409309,
-          "retro_delta": 0.7734340999271965,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0119-C1",
-          "day": 102,
-          "channel": "call",
-          "signal_type": "life_event",
-          "evidence_quote": "We're separating, so I need to look at what's in joint names.",
-          "confidence": 0.6,
-          "turn_index": 9,
-          "cue_id": "l-separate",
-          "contribution_at_write": 0.24683718537036836,
-          "contribution_now": 0.1614456774715859,
-          "score_at_write": 0.3401596891867459,
-          "score_now": 0.8731095773409309,
-          "retro_delta": 0.532949888154185,
-          "load_bearing": false
-        },
-        {
-          "conversation_id": "CUST-0119-C2",
-          "day": 158,
-          "channel": "call",
-          "signal_type": "life_event",
-          "evidence_quote": "I'll be changing my address soon, I'm moving back in with family.",
-          "confidence": 0.3,
-          "turn_index": 9,
-          "cue_id": "l-move",
-          "contribution_at_write": 0.16590842554860996,
-          "contribution_now": 0.18773844945155316,
-          "score_at_write": 0.471918880233697,
-          "score_now": 0.8731095773409309,
-          "retro_delta": 0.4011906971072339,
-          "load_bearing": true
-        },
-        {
-          "conversation_id": "CUST-0119-C3",
-          "day": 160,
-          "channel": "chat",
-          "signal_type": "life_event",
-          "evidence_quote": "My husband passed away in June and I'm sorting out the accounts.",
-          "confidence": 0.85,
-          "turn_index": 3,
-          "cue_id": "l-bereave",
-          "contribution_at_write": 0.40274750751730193,
-          "contribution_now": 0.40274750751730193,
-          "score_at_write": 0.8731095773409309,
-          "score_now": 0.8731095773409309,
-          "retro_delta": 0.0,
-          "load_bearing": true
-        }
-      ],
-      "status": "open",
-      "decision": {
-        "customer_id": "CUST-0119",
-        "verdict": "genuine",
-        "owning_team": "vulnerability",
-        "confidence": 0.64,
-        "rationale": "Rule-based offline provider (no model call). The ledger holds 4 life_event entries across 4 conversation(s), scoring 0.873 against a 0.694 threshold. Account check found balance down 643 over the window, income down 42%. Counting 2 corroborating marker(s) gives 'genuine'. No natural-language reading of the conversations was performed.",
-        "recommended_action": "Flag for a vulnerability-trained agent; apply support measures, not sales.",
-        "what_would_change_my_mind": "A reading of the quoted turns showing the remark was about someone else, or a salary credit landing on schedule next cycle, would drop this to a false alarm. A second returned direct debit would raise it.",
-        "evidence": [
-          {
-            "conversation_id": "CUST-0119-C3",
-            "turn_index": 3,
-            "quote": "My husband passed away in June and I'm sorting out the accounts."
-          },
-          {
-            "conversation_id": "CUST-0119-C2",
-            "turn_index": 9,
-            "quote": "I'll be changing my address soon, I'm moving back in with family."
-          }
-        ]
-      },
-      "trace": {
-        "customer_id": "CUST-0119",
-        "provider": "offline-rules",
-        "model": "offline-rules",
-        "prompt_version": "v1",
-        "prompt_sha": "94897d67127d511abffcd5f46de8f4205e66b55a9d90ffc50f6a63849bd1f319",
-        "model_calls": 5,
-        "tool_calls": 4,
-        "schema_retries": 0,
-        "evidence_repairs": 0,
-        "stopped_because": "decided",
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "latency_ms": 0.4,
-        "steps": [
-          {
-            "index": 1,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_ledger_summary"
-          },
-          {
-            "index": 1,
-            "kind": "tool",
-            "name": "get_ledger_summary",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "1342 chars"
-          },
-          {
-            "index": 2,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_transactions"
-          },
-          {
-            "index": 2,
-            "kind": "tool",
-            "name": "get_transactions",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "2992 chars"
-          },
-          {
-            "index": 3,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_account_state"
-          },
-          {
-            "index": 3,
-            "kind": "tool",
-            "name": "get_account_state",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "467 chars"
-          },
-          {
-            "index": 4,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "tool_calls: get_prior_cases"
-          },
-          {
-            "index": 4,
-            "kind": "tool",
-            "name": "get_prior_cases",
-            "latency_ms": 0.0,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "detail": "53 chars"
-          },
-          {
-            "index": 5,
-            "kind": "model",
-            "name": "offline-rules",
-            "latency_ms": 0.1,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
+            "name": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "latency_ms": 13100.1,
+            "prompt_tokens": 7657,
+            "completion_tokens": 1240,
+            "cost_usd": 0.013857,
             "detail": "final answer"
           }
         ]
@@ -1817,3271 +1829,2125 @@ window.EARSHOT_DATA = {
     }
   },
   "conversations": {
-    "CUST-0330-C0": {
-      "conversation_id": "CUST-0330-C0",
-      "customer_id": "CUST-0330",
-      "channel": "chat",
-      "day": 36,
+    "CUST-0376-C0": {
+      "conversation_id": "CUST-0376-C0",
+      "customer_id": "CUST-0376",
+      "channel": "call",
+      "day": 62,
       "turns": [
         {
           "index": 0,
           "speaker": "agent",
-          "text": "Thank you for calling, you're speaking with Sam, how can I help?"
+          "text": "Good afternoon, you're speaking with Daniel, and this call is recorded. How can I help?"
         },
         {
           "index": 1,
           "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don'- have."
+          "text": "I want to set up a new payee, a plumber."
         },
         {
           "index": 2,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
+          "speaker": "agent",
+          "text": "Thanks. Before I bring anything up - can I take the first and third character of your memorable word?"
         },
         {
           "index": 3,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
+          "speaker": "customer",
+          "text": "It's E and then R."
         },
         {
           "index": 4,
-          "speaker": "customer",
-          "text": "I'll be changing my address soon, I'm moving back in with family."
+          "speaker": "agent",
+          "text": "That's you verified, thank you. I can do that. Do you have the sort code and account number?"
         },
         {
           "index": 5,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
+          "speaker": "customer",
+          "text": "Can I send it today or is there a wait on new ones?"
         },
         {
           "index": 6,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
+          "speaker": "agent",
+          "text": "New payees can hold for a few hours the first time. After that it's instant."
         },
         {
           "index": 7,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
+          "speaker": "customer",
+          "text": "My other half's hours got cut too, so it's both of us at once at the minute."
         },
         {
           "index": 8,
           "speaker": "agent",
-          "text": "Glad we got that sorted, take care."
+          "text": "Both of you at the same time is hard. I'll note it - and tell me if it gets worse. I'll have it set up and confirmed rather than send four hundred pounds on a maybe."
         }
       ]
     },
-    "CUST-0330-C1": {
-      "conversation_id": "CUST-0330-C1",
-      "customer_id": "CUST-0330",
-      "channel": "call",
-      "day": 90,
+    "CUST-0376-C1": {
+      "conversation_id": "CUST-0376-C1",
+      "customer_id": "CUST-0376",
+      "channel": "chat",
+      "day": 69,
       "turns": [
         {
           "index": 0,
           "speaker": "agent",
-          "text": "Hi there, thanks for getting in touch."
+          "text": "Hi there, thanks for messaging. Marcus here - what's happened?"
         },
         {
           "index": 1,
           "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
+          "text": "Right - I rang about setting up the new payee back in April. I was promised the payee set up and confirmed, and the payee still isn't set up."
         },
         {
           "index": 2,
           "speaker": "agent",
-          "text": "That's now updated on our side."
+          "text": "One security check before I look: can you confirm the postcode on the account?"
         },
         {
           "index": 3,
           "speaker": "customer",
-          "text": "I'v- los- the card, I think it's in the car actually."
+          "text": "Yes, it's the one starting NW3."
         },
         {
           "index": 4,
           "speaker": "agent",
-          "text": "That's now updated on our side."
+          "text": "That's you verified, thank you. I can see the note from last time, so you don't have to go through it again. Let me pick it up from there."
         },
         {
           "index": 5,
           "speaker": "customer",
-          "text": "Can you read me the last transactions?"
+          "text": "Is there a reference on there from last time, or does this start again?"
         },
         {
           "index": 6,
           "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
+          "text": "There is, and it doesn't start again. I'm working from what's already on the account."
         },
         {
           "index": 7,
           "speaker": "customer",
-          "text": "Can yo- me the last three transactions?"
+          "text": "Is there a minimum you have to pay off the card, or can it just be whatever?"
         },
         {
           "index": 8,
           "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
+          "text": "There is a minimum. Do you want me to go through what happens if you only pay that?"
         },
         {
           "index": 9,
           "speaker": "customer",
-          "text": "I just need to check balance on the current account."
+          "text": "I don't want to have to explain this all again next time."
         },
         {
           "index": 10,
           "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
+          "text": "You won't. It's written down, and the next person will see it before you say a word."
         },
         {
           "index": 11,
           "speaker": "customer",
-          "text": "Someone told m- there's a better savings rate now."
+          "text": "Who do I speak to if it doesn't get sorted this time?"
         },
         {
           "index": 12,
           "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 13,
-          "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
-        },
-        {
-          "index": 14,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 15,
-          "speaker": "customer",
-          "text": "I'm on statutory pay at the moment so the numbers look odd."
-        },
-        {
-          "index": 16,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 17,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 18,
-          "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
-        },
-        {
-          "index": 19,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 20,
-          "speaker": "agent",
-          "text": "If anything else comes up, just give us a ring."
+          "text": "Me, and if I'm not here it goes to my team leader. I'll put both on the note. The name check didn't come back clean, so I'll get it set up and confirm it back to you."
         }
       ]
     },
-    "CUST-0330-C2": {
-      "conversation_id": "CUST-0330-C2",
-      "customer_id": "CUST-0330",
+    "CUST-0376-C2": {
+      "conversation_id": "CUST-0376-C2",
+      "customer_id": "CUST-0376",
+      "channel": "call",
+      "day": 117,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Thanks for calling, you're through to Priya. The call's recorded for training. Who am I speaking with?"
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "Hello again - I messaged about a month ago about setting up the new payee. That got sorted, so thank you. Different thing today, though. The card reader at the shop wouldn't take it, is there a block?"
+        },
+        {
+          "index": 2,
+          "speaker": "agent",
+          "text": "Thanks. Before I bring anything up - can I take the first and third character of your memorable word?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "It's E and then R."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "Perfect, thank you - that's you through security. No block that I can see. It may have been their terminal. Try it once more and ring me if it fails again."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "It went through fine on Saturday, it's only since then."
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "That fits - something's flagged on it since the weekend."
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "We're doing a proper look at the outgoings this month, spring clean sort of thing."
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "I can send you the last three months of regular payments if it's useful. It's cleared now, and I've noted why so it doesn't flag again."
+        }
+      ]
+    },
+    "CUST-0376-C3": {
+      "conversation_id": "CUST-0376-C3",
+      "customer_id": "CUST-0376",
       "channel": "complaint",
-      "day": 112,
+      "day": 127,
       "turns": [
         {
           "index": 0,
           "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is ther- a block?"
+          "text": "This is a formal complaint about the pending transfer. I have tried to resolve it in the ordinary way and got nowhere."
         },
         {
           "index": 1,
           "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is ther- a block?"
+          "text": "By way of background, I rang in May, a couple of weeks back, about the card being declined in the shop. I mention it because there is a pattern here, not a one-off."
         },
         {
           "index": 2,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
+          "speaker": "customer",
+          "text": "A transfer left my account and did not arrive at the other end, and the person waiting for it has been chasing me ever since."
         },
         {
           "index": 3,
           "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
+          "text": "I asked for a trace to be put on it and I was told I would hear the outcome either way, and I have heard nothing."
         },
         {
           "index": 4,
           "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
-        },
-        {
-          "index": 5,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "We're separating, so I need to look at what's in joint names."
-        },
-        {
-          "index": 7,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        }
-      ]
-    },
-    "CUST-0330-C3": {
-      "conversation_id": "CUST-0330-C3",
-      "customer_id": "CUST-0330",
-      "channel": "call",
-      "day": 135,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Hi there, thanks for getting in touch."
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "There's a charge for four pounds I don't recognise."
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 4,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
+          "text": "I'm juggling a few things at the moment, that's all."
         },
         {
           "index": 5,
           "speaker": "customer",
-          "text": "Can you rea- me the last three transactions?"
+          "text": "None of this is a fortune in money terms. It is the being ignored that I object to, and the sense that nothing is written down anywhere."
         },
         {
           "index": 6,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
+          "speaker": "customer",
+          "text": "The practical effect is that I have had to arrange things around a problem that is not of my making, and I have spent a good deal of time on it that I do not have."
         },
         {
           "index": 7,
           "speaker": "customer",
-          "text": "Can you send - replacement card to th- new address?"
+          "text": "I want it fixed, I want it confirmed in writing, and I want to know how to escalate it if that does not happen."
         },
         {
           "index": 8,
-          "speaker": "customer",
-          "text": "My husband passed away in June and I'm sorting out the accounts."
-        },
-        {
-          "index": 9,
           "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 10,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
-        },
-        {
-          "index": 11,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
-        },
-        {
-          "index": 13,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 14,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
-        },
-        {
-          "index": 15,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 16,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 17,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 18,
-          "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
-        },
-        {
-          "index": 19,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 20,
-          "speaker": "customer",
-          "text": "There's a charge for four pounds I don't recognise."
-        },
-        {
-          "index": 21,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 22,
-          "speaker": "agent",
-          "text": "Thanks for your time, have a good day."
+          "text": "Thank you for writing in. I have opened a case and logged this as a complaint. You will get a written response, and I will be handling it myself."
         }
       ]
     },
-    "CUST-0135-C0": {
-      "conversation_id": "CUST-0135-C0",
-      "customer_id": "CUST-0135",
+    "CUST-0376-C4": {
+      "conversation_id": "CUST-0376-C4",
+      "customer_id": "CUST-0376",
       "channel": "chat",
-      "day": 39,
+      "day": 178,
       "turns": [
         {
           "index": 0,
           "speaker": "agent",
-          "text": "Hi there, thanks for getting in touch."
+          "text": "Hi, you're chatting with Priya. How can I help today?"
         },
         {
           "index": 1,
           "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
+          "text": "Me again. Last time, last month, it was the pending transfer, and that did come through in the end. Today it's something else. I need a mortgage statement for the accountant."
         },
         {
           "index": 2,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
+          "speaker": "agent",
+          "text": "Thanks. Before I open the account - can you confirm the postcode we hold for you?"
         },
         {
           "index": 3,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
+          "speaker": "customer",
+          "text": "Yes, it's the one starting NW3."
         },
         {
           "index": 4,
-          "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
+          "speaker": "agent",
+          "text": "That's you verified, thank you. I can order that. Do you need the current year or the last full one?"
         },
         {
           "index": 5,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
+          "speaker": "customer",
+          "text": "Things have been tight since my hours got cut."
         },
         {
           "index": 6,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
+          "speaker": "agent",
+          "text": "Thanks for telling me. Do you want me to look at whether the payment dates could work better for you?"
         },
         {
           "index": 7,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
+          "speaker": "customer",
+          "text": "Sorry, unrelated, but - is the branch on the high street still open on Saturdays?"
         },
         {
           "index": 8,
-          "speaker": "customer",
-          "text": "Can you send a replacement card t- new address?"
+          "speaker": "agent",
+          "text": "It is, mornings only - nine till one."
         },
         {
           "index": 9,
           "speaker": "customer",
-          "text": "I'm juggling a few things at the moment, all."
+          "text": "It needs to cover the whole of last tax year."
         },
         {
           "index": 10,
           "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
+          "text": "Understood - April to April, not the calendar year."
         },
         {
           "index": 11,
           "speaker": "customer",
-          "text": "There's a charge for four pounds I don't recognise."
+          "text": "Oh, and before I forget - has the standing order to the gym gone out yet?"
         },
         {
           "index": 12,
           "speaker": "agent",
-          "text": "I can see that here on the account."
+          "text": "Let me look - yes, that went out on the second."
         },
         {
           "index": 13,
           "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
+          "text": "How long do these normally take to come?"
         },
         {
           "index": 14,
           "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 15,
-          "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
-        },
-        {
-          "index": 16,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 17,
-          "speaker": "customer",
-          "text": "The app logged me out an- now it wants a code I don't have."
-        },
-        {
-          "index": 18,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 19,
-          "speaker": "agent",
-          "text": "Thanks for your time, have a good day."
+          "text": "Ten working days if it's posted, quicker if it's the secure message. That's it in your secure messages now. Nothing to wait for."
         }
       ]
     },
-    "CUST-0135-C1": {
-      "conversation_id": "CUST-0135-C1",
-      "customer_id": "CUST-0135",
-      "channel": "call",
-      "day": 58,
+    "CUST-0067-C0": {
+      "conversation_id": "CUST-0067-C0",
+      "customer_id": "CUST-0067",
+      "channel": "complaint",
+      "day": 10,
       "turns": [
         {
           "index": 0,
-          "speaker": "agent",
-          "text": "Good afternoon, how can I help today?"
+          "speaker": "customer",
+          "text": "This is a formal complaint about the savings rate. I have tried to resolve it in the ordinary way and got nowhere."
         },
         {
           "index": 1,
           "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
+          "text": "I have not contacted you about this before, so there is nothing on file, and I am setting it out from the beginning."
         },
         {
           "index": 2,
           "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
+          "text": "I asked to see how the rate on my savings compared with what is currently on offer, having been on the same one for several years."
         },
         {
           "index": 3,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
+          "speaker": "customer",
+          "text": "We're doing a proper look at the outgoings this month, spring clean sort of thing."
         },
         {
           "index": 4,
           "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
+          "text": "It has cost me time and, more to the point, it has cost me confidence that anything I am told by your staff will actually happen."
         },
         {
           "index": 5,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
+          "speaker": "customer",
+          "text": "What I want is a written answer setting out what went wrong, what you are doing about it, and by when."
         },
         {
           "index": 6,
+          "speaker": "agent",
+          "text": "I have read your letter and opened a case. This is recorded as a complaint and it will not be closed until you have a written answer."
+        }
+      ]
+    },
+    "CUST-0067-C1": {
+      "conversation_id": "CUST-0067-C1",
+      "customer_id": "CUST-0067",
+      "channel": "complaint",
+      "day": 11,
+      "turns": [
+        {
+          "index": 0,
           "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
+          "text": "I am writing to complain about the branch opening hours, and I would like this dealt with properly rather than passed around."
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "I should say that when I wrote in earlier this week about the savings rate, it was sorted out. That is why it is worth putting this one in writing before it drifts."
+        },
+        {
+          "index": 2,
+          "speaker": "customer",
+          "text": "I travelled to the branch on a Saturday on the strength of the opening hours I was given, and it was closed."
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "I'm juggling a few things at the moment, that's all."
+        },
+        {
+          "index": 4,
+          "speaker": "customer",
+          "text": "None of this is a fortune in money terms. It is the being ignored that I object to, and the sense that nothing is written down anywhere."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "Please confirm in writing that this is logged as a complaint, and tell me what happens next and how long it takes."
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "Thank you for writing in. I have opened a case and logged this as a complaint. You will get a written response, and I will be handling it myself."
+        }
+      ]
+    },
+    "CUST-0067-C2": {
+      "conversation_id": "CUST-0067-C2",
+      "customer_id": "CUST-0067",
+      "channel": "chat",
+      "day": 67,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Hello - Daniel here on chat. What can I help you with?"
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "Me again. Last time, last month, it was the branch opening hours, and that did come through in the end. Anyway. The card reader at the shop wouldn't take it, is there a block?"
+        },
+        {
+          "index": 2,
+          "speaker": "agent",
+          "text": "One security check before I look: can you confirm the postcode on the account?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "Yes, it's the one starting NW3."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "That's you verified, thank you. No block that I can see. It may have been their terminal. Try it once more and ring me if it fails again."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "I moved the gym membership to yearly, works out cheaper that way."
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "Sensible. Do you want me to check for anything else going out you're not using?"
         },
         {
           "index": 7,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
+          "speaker": "customer",
+          "text": "Sorry, unrelated, but - has the standing order to the gym gone out yet?"
         },
         {
           "index": 8,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
+          "speaker": "agent",
+          "text": "Let me look - yes, that went out on the second."
         },
         {
           "index": 9,
           "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
+          "text": "Will it work at the cash machine, or is that stopped as well?"
         },
         {
           "index": 10,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
+          "speaker": "agent",
+          "text": "Cash machines are on the same block, so no, not until it's lifted."
         },
         {
           "index": 11,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
+          "speaker": "customer",
+          "text": "It went through fine on Saturday, it's only since then."
         },
         {
           "index": 12,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
+          "speaker": "agent",
+          "text": "That fits - something's flagged on it since the weekend. I can't lift it myself, so I've asked for the block to be taken off and a note put on the account."
+        }
+      ]
+    },
+    "CUST-0067-C3": {
+      "conversation_id": "CUST-0067-C3",
+      "customer_id": "CUST-0067",
+      "channel": "chat",
+      "day": 100,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Hi there, thanks for messaging. Marcus here - what's happened?"
         },
         {
-          "index": 13,
+          "index": 1,
           "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
+          "text": "Hello again - I messaged about a month ago about the card being declined in the shop. That got sorted, so thank you. Anyway. Has the standing order to the gym gone out yet?"
         },
         {
-          "index": 14,
+          "index": 2,
+          "speaker": "agent",
+          "text": "One security check before I look: can you confirm the postcode on the account?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "Yes, it's the one starting NW3."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "That's you verified, thank you. Let me look - yes, that went out on the second."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "I can't make the payment this month, I just can't."
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "Right - I'm glad you've rung rather than left it. We can work with this. What's changed?"
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "It normally leaves on the second, and it's the fifth today."
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "You're right, it should have gone on the second. Let me see what's happened."
+        },
+        {
+          "index": 9,
+          "speaker": "customer",
+          "text": "One other thing while you're there. Can you read me the last three transactions?"
+        },
+        {
+          "index": 10,
+          "speaker": "agent",
+          "text": "Yes - a card payment, a direct debit and a transfer in. Do you want the amounts?"
+        },
+        {
+          "index": 11,
+          "speaker": "customer",
+          "text": "The gym have emailed me saying they've not had it."
+        },
+        {
+          "index": 12,
+          "speaker": "agent",
+          "text": "I can see why they'd say that - it hasn't left us. It's left the account this morning. I've noted why it was late."
+        }
+      ]
+    },
+    "CUST-0067-C4": {
+      "conversation_id": "CUST-0067-C4",
+      "customer_id": "CUST-0067",
+      "channel": "complaint",
+      "day": 111,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "customer",
+          "text": "I want to raise a complaint regarding the last few transactions. Please treat this letter as the start of your complaints process."
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "By way of background, I messaged in May, a couple of weeks back, about the standing order to the gym. I mention it because there is a pattern here, not a one-off."
+        },
+        {
+          "index": 2,
           "speaker": "customer",
           "text": "What happens if it bounces, does that show up anywhere?"
         },
         {
-          "index": 15,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 16,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 17,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
-        },
-        {
-          "index": 18,
-          "speaker": "agent",
-          "text": "Thanks for your time, have a good day."
-        }
-      ]
-    },
-    "CUST-0135-C2": {
-      "conversation_id": "CUST-0135-C2",
-      "customer_id": "CUST-0135",
-      "channel": "chat",
-      "day": 86,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Hi there, thanks for getting in touch."
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
           "index": 3,
           "speaker": "customer",
-          "text": "Is there any way to change the date it comes out?"
+          "text": "Please confirm in writing that this is logged as a complaint, and tell me what happens next and how long it takes."
         },
         {
           "index": 4,
           "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
+          "text": "Thank you for writing in. I have opened a case and logged this as a complaint. You will get a written response, and I will be handling it myself."
+        }
+      ]
+    },
+    "CUST-0305-C0": {
+      "conversation_id": "CUST-0305-C0",
+      "customer_id": "CUST-0305",
+      "channel": "chat",
+      "day": 73,
+      "turns": [
         {
-          "index": 5,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 6,
+          "index": 0,
           "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
+          "text": "Hi, you're chatting with Priya. How can I help today?"
         },
         {
-          "index": 7,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 9,
-          "speaker": "customer",
-          "text": "Can you read me the last three transactions?"
-        },
-        {
-          "index": 10,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 11,
+          "index": 1,
           "speaker": "customer",
           "text": "I want to set up a new payee, a plumber."
         },
         {
-          "index": 12,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 13,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
-        },
-        {
-          "index": 14,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 15,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 16,
-          "speaker": "agent",
-          "text": "Thanks for your time, have a good day."
-        }
-      ]
-    },
-    "CUST-0135-C3": {
-      "conversation_id": "CUST-0135-C3",
-      "customer_id": "CUST-0135",
-      "channel": "complaint",
-      "day": 119,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 1,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
           "index": 2,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
+          "speaker": "agent",
+          "text": "Thanks. Before I open the account - can you confirm the postcode we hold for you?"
         },
         {
           "index": 3,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
+          "speaker": "customer",
+          "text": "Yes, it's the one starting NW3."
         },
         {
           "index": 4,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
+          "speaker": "agent",
+          "text": "Perfect, thank you - that's you through security. Yes - I'll need their details, and I'll confirm them back to you before it saves."
         },
         {
           "index": 5,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 6,
           "speaker": "customer",
           "text": "Can you tell me the very last day I can pay without a charge?"
         },
         {
-          "index": 7,
+          "index": 6,
           "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
+          "text": "I'll get you the exact date. Is it tight this month?"
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "Can I send it today or is there a wait on new ones?"
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "New payees can hold for a few hours the first time. After that it's instant. Payee's on. First payment may hold a couple of hours, then it's normal."
         }
       ]
     },
-    "CUST-0135-C4": {
-      "conversation_id": "CUST-0135-C4",
-      "customer_id": "CUST-0135",
+    "CUST-0305-C1": {
+      "conversation_id": "CUST-0305-C1",
+      "customer_id": "CUST-0305",
+      "channel": "complaint",
+      "day": 82,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "customer",
+          "text": "This is a formal complaint about the branch opening hours. I have tried to resolve it in the ordinary way and got nowhere."
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "I have contacted you before about this account - I messaged earlier this week regarding setting up the new payee - so there should be a record on file."
+        },
+        {
+          "index": 2,
+          "speaker": "customer",
+          "text": "I travelled to the branch on a Saturday on the strength of the opening hours I was given, and it was closed."
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "We're doing a proper look at the outgoings this month, spring clean sort of thing."
+        },
+        {
+          "index": 4,
+          "speaker": "customer",
+          "text": "The practical effect is that I have had to arrange things around a problem that is not of my making, and I have spent a good deal of time on it that I do not have."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "What I want is a written answer setting out what went wrong, what you are doing about it, and by when."
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "I have read your letter and opened a case. This is recorded as a complaint and it will not be closed until you have a written answer."
+        }
+      ]
+    },
+    "CUST-0305-C2": {
+      "conversation_id": "CUST-0305-C2",
+      "customer_id": "CUST-0305",
       "channel": "call",
       "day": 154,
       "turns": [
         {
           "index": 0,
           "speaker": "agent",
-          "text": "Thank you for calling, you're speaking with Sam, how can I help?"
+          "text": "Hello, Marcus here - the call's recorded for training and monitoring. What can I do for you today?"
         },
         {
           "index": 1,
           "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
+          "text": "Hello again - I wrote in a couple of months ago about the branch opening hours. That got sorted, so thank you. Different thing today, though. Can you send a replacement card to the new address?"
         },
         {
           "index": 2,
           "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
+          "text": "Before I look at that, I'll need to check it's you. First and third character of the memorable word, please."
         },
         {
           "index": 3,
           "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
+          "text": "It's E and then R."
         },
         {
           "index": 4,
           "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
+          "text": "Perfect, thank you - that's you through security. Yes - let me confirm the address with you before I order it."
         },
         {
           "index": 5,
           "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
+          "text": "The address on your system is old one, I moved in February."
         },
         {
           "index": 6,
           "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
+          "text": "It is, so we'd have posted it to the wrong door."
         },
         {
           "index": 7,
           "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
+          "text": "Sorry, unrelated, but - has the standing order to the gym gone out yet?"
         },
         {
           "index": 8,
           "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
+          "text": "Checking now. I can see it's set up and due, but it hasn't left yet."
         },
         {
           "index": 9,
           "speaker": "customer",
-          "text": "I was made redundant in March and nothing's come in since."
+          "text": "What do I do with the old card when it comes?"
         },
         {
           "index": 10,
           "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
+          "text": "Cut through the chip and bin it. Don't post it back."
         },
         {
           "index": 11,
-          "speaker": "agent",
-          "text": "If anything else comes up, just give us a ring."
-        }
-      ]
-    },
-    "CUST-0231-C0": {
-      "conversation_id": "CUST-0231-C0",
-      "customer_id": "CUST-0231",
-      "channel": "chat",
-      "day": 23,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Hi there, thanks for getting in touch."
-        },
-        {
-          "index": 1,
           "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 4,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
-        },
-        {
-          "index": 6,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 7,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
-        },
-        {
-          "index": 8,
-          "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
-        },
-        {
-          "index": 9,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 10,
-          "speaker": "customer",
-          "text": "Is there a reference number from the last time I rang?"
-        },
-        {
-          "index": 11,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
+          "text": "My other half's hours got cut too, so it's both of us at once at the minute."
         },
         {
           "index": 12,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
+          "speaker": "agent",
+          "text": "That's a lot at once, I'm sorry. Do you want to go through what's coming out?"
         },
         {
           "index": 13,
           "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
+          "text": "Does the PIN come with it or separately?"
         },
         {
           "index": 14,
           "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 15,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 16,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 17,
-          "speaker": "agent",
-          "text": "If anything else comes up, just give us a ring."
+          "text": "Separately, and usually a day apart. I've put the address change through and ordered the card to the new one - five working days."
         }
       ]
     },
-    "CUST-0231-C1": {
-      "conversation_id": "CUST-0231-C1",
-      "customer_id": "CUST-0231",
+    "CUST-0305-C3": {
+      "conversation_id": "CUST-0305-C3",
+      "customer_id": "CUST-0305",
       "channel": "complaint",
-      "day": 62,
+      "day": 160,
       "turns": [
         {
           "index": 0,
           "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there - block-"
+          "text": "I am writing to complain about the balance on the current account, and I would like this dealt with properly rather than passed around."
         },
         {
           "index": 1,
           "speaker": "customer",
-          "text": "Can you read me the last three transactions?"
+          "text": "For completeness: I rang in July about the replacement card to the new address, and that particular thing was dealt with. This is a separate matter and I am writing because I do not want it going the same way as things that are not chased."
         },
         {
           "index": 2,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
+          "speaker": "customer",
+          "text": "I was given a figure that turned out to include items that had not yet come off, so I budgeted against money that was not there."
         },
         {
           "index": 3,
           "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
+          "text": "When I asked for the pending items to be set out separately I was told that was not something that could be done over the phone."
         },
         {
           "index": 4,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
+          "speaker": "customer",
+          "text": "I'm juggling a few things at the moment, that's all."
         },
         {
           "index": 5,
           "speaker": "customer",
-          "text": "- want to set u- a ne- payee, a plumber."
+          "text": "I have had to explain the same set of facts to a different person every time, which is exactly what your own literature says will not happen."
+        },
+        {
+          "index": 6,
+          "speaker": "customer",
+          "text": "The practical effect is that I have had to arrange things around a problem that is not of my making, and I have spent a good deal of time on it that I do not have."
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "What I want is a written answer setting out what went wrong, what you are doing about it, and by when."
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "I have read your letter and opened a case. This is recorded as a complaint and it will not be closed until you have a written answer."
+        }
+      ]
+    },
+    "CUST-0138-C0": {
+      "conversation_id": "CUST-0138-C0",
+      "customer_id": "CUST-0138",
+      "channel": "complaint",
+      "day": 53,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "customer",
+          "text": "This is a formal complaint about using the card abroad. I have tried to resolve it in the ordinary way and got nowhere."
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "This is the first time I have put anything in writing to you, and I would rather not have had to."
+        },
+        {
+          "index": 2,
+          "speaker": "customer",
+          "text": "Things have been tight since my hours got cut."
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "I would like this acknowledged in writing, a named person to deal with it, and a date by which it will be resolved."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "Thank you for telling us. I've paused any further letters while I look at this, and I'll come back to you within five working days."
+        }
+      ]
+    },
+    "CUST-0138-C1": {
+      "conversation_id": "CUST-0138-C1",
+      "customer_id": "CUST-0138",
+      "channel": "call",
+      "day": 99,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Thanks for calling, you're through to Priya. The call's recorded for training. Who am I speaking with?"
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "I wrote in in March about using the card abroad. You said you'd sort it and you did. Separate thing this time. There's a charge for four pounds I don't recognise."
+        },
+        {
+          "index": 2,
+          "speaker": "agent",
+          "text": "Before I look at that, I'll need to check it's you. First and third character of the memorable word, please."
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "It's E and then R."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "Perfect, thank you - that's you through security. I can see it. Give me a second and I'll tell you where it's come from."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "Can you stop it going out again next month?"
         },
         {
           "index": 6,
           "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
+          "text": "I can block that merchant, yes, and I'll tell you what it's called."
         },
         {
           "index": 7,
+          "speaker": "customer",
+          "text": "I've not signed up to anything, not that I remember."
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "They're easy to sign up to by accident. Let's find out who it is."
+        },
+        {
+          "index": 9,
+          "speaker": "customer",
+          "text": "Can you tell me the very last day I can pay without a charge?"
+        },
+        {
+          "index": 10,
+          "speaker": "agent",
+          "text": "I'll get you the exact date. Is it tight this month?"
+        },
+        {
+          "index": 11,
+          "speaker": "customer",
+          "text": "It's small, I know, but it's the third month it's been there."
+        },
+        {
+          "index": 12,
+          "speaker": "agent",
+          "text": "Then it's a subscription of some sort, and that's worth stopping. It's raised as a dispute now. Don't cancel the card, it won't help."
+        }
+      ]
+    },
+    "CUST-0138-C2": {
+      "conversation_id": "CUST-0138-C2",
+      "customer_id": "CUST-0138",
+      "channel": "chat",
+      "day": 140,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Hi there, thanks for messaging. Marcus here - what's happened?"
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "Me again. Last time, last month, it was the four pound charge, and that did come through in the end. Anyway. Has the standing order to the gym gone out yet?"
+        },
+        {
+          "index": 2,
+          "speaker": "agent",
+          "text": "Thanks. Before I open the account - can you confirm the postcode we hold for you?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "Postcode's the same one, ends 7QB."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "That's you verified, thank you. Let me look - yes, that went out on the second."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "I'm juggling a few things at the moment, that's all."
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "Okay. If any of it's to do with us, tell me and I'll see what I can do."
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "The gym have emailed me saying they've not had it."
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "I can see why they'd say that - it hasn't left us."
+        },
+        {
+          "index": 9,
+          "speaker": "customer",
+          "text": "Oh, and before I forget - the app logged me out and now it wants a code I don't have."
+        },
+        {
+          "index": 10,
+          "speaker": "agent",
+          "text": "That'll be the new device check. I can send a fresh code now if you're by your phone."
+        },
+        {
+          "index": 11,
+          "speaker": "customer",
+          "text": "It normally leaves on the second, and it's the fifth today."
+        },
+        {
+          "index": 12,
+          "speaker": "agent",
+          "text": "You're right, it should have gone on the second. Let me see what's happened. It's left the account this morning. I've noted why it was late."
+        }
+      ]
+    },
+    "CUST-0159-C0": {
+      "conversation_id": "CUST-0159-C0",
+      "customer_id": "CUST-0159",
+      "channel": "chat",
+      "day": 16,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Hello - Daniel here on chat. What can I help you with?"
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "Do I need to tell you if I'm going abroad these days?"
+        },
+        {
+          "index": 2,
+          "speaker": "agent",
+          "text": "One security check before I look: can you confirm the postcode on the account?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "Yes, it's the one starting NW3."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "That's you verified, thank you. No need. Only worth a word if you want to know about the charges."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "What do I do if it stops working while I'm away?"
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "There's a number that works from abroad. I'll make sure you've got it."
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "We're doing a proper look at the outgoings this month, spring clean sort of thing."
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "Good idea. I can list the direct debits and standing orders if that helps."
+        },
+        {
+          "index": 9,
+          "speaker": "customer",
+          "text": "Sorry, unrelated, but - i want to set up a new payee, a plumber."
+        },
+        {
+          "index": 10,
+          "speaker": "agent",
+          "text": "I can do that. Do you have the sort code and account number?"
+        },
+        {
+          "index": 11,
+          "speaker": "customer",
+          "text": "It's two weeks, back at the end of the month."
+        },
+        {
+          "index": 12,
+          "speaker": "agent",
+          "text": "That's fine, and it's worth me noting the dates either way."
+        },
+        {
+          "index": 13,
+          "speaker": "customer",
+          "text": "Will I get charged for using it out there?"
+        },
+        {
+          "index": 14,
+          "speaker": "agent",
+          "text": "There's a non-sterling fee on purchases - I'll tell you the rate. I'll get a travel note added to the account so nothing blocks while you're away."
+        }
+      ]
+    },
+    "CUST-0159-C1": {
+      "conversation_id": "CUST-0159-C1",
+      "customer_id": "CUST-0159",
+      "channel": "call",
+      "day": 75,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Thanks for calling, you're through to Priya. The call's recorded for training. Who am I speaking with?"
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "Right - I messaged about using the card abroad back in February. I was promised a travel note on the account, and that travel note clearly never went on."
+        },
+        {
+          "index": 2,
+          "speaker": "agent",
+          "text": "Thanks. Before I bring anything up - can I take the first and third character of your memorable word?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "It's E and then R."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "Perfect, thank you - that's you through security. I've read what happened last time before you say anything. Sorry -- that should have been finished."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "Is there a reference on there from last time, or does this start again?"
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "There is, and it doesn't start again. I'm working from what's already on the account."
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "I'm juggling a few things at the moment, that's all."
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "Okay. If any of it's to do with us, tell me and I'll see what I can do. There's a travel note going on now - you should see no difference out there."
+        }
+      ]
+    },
+    "CUST-0159-C2": {
+      "conversation_id": "CUST-0159-C2",
+      "customer_id": "CUST-0159",
+      "channel": "complaint",
+      "day": 121,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "customer",
+          "text": "This is a formal complaint about the last few transactions. I have tried to resolve it in the ordinary way and got nowhere."
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "I should say that when I rang last month about using the card abroad, it was sorted out. That is why it is worth putting this one in writing before it drifts."
+        },
+        {
+          "index": 2,
+          "speaker": "customer",
+          "text": "I asked for a list of recent transactions because one of them was not familiar to me, and I was read three of them and told the rest were not available."
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "I can't make the payment this month, I just can't."
+        },
+        {
+          "index": 4,
+          "speaker": "customer",
+          "text": "None of this is a fortune in money terms. It is the being ignored that I object to, and the sense that nothing is written down anywhere."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "I want it fixed, I want it confirmed in writing, and I want to know how to escalate it if that does not happen."
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "I've read this and put a hold on the account while we sort it out. You don't need to do anything today."
+        }
+      ]
+    },
+    "CUST-0159-C3": {
+      "conversation_id": "CUST-0159-C3",
+      "customer_id": "CUST-0159",
+      "channel": "complaint",
+      "day": 139,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "customer",
+          "text": "I am writing to complain about the pending transfer, and I would like this dealt with properly rather than passed around."
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "By way of background, I wrote in in June, a couple of weeks back, about the last few transactions. I mention it because there is a pattern here, not a one-off."
+        },
+        {
+          "index": 2,
+          "speaker": "customer",
+          "text": "I moved the gym membership to yearly, works out cheaper that way."
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "I would like this acknowledged in writing, a named person to deal with it, and a date by which it will be resolved."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "Thank you for writing in. I have opened a case and logged this as a complaint. You will get a written response, and I will be handling it myself."
+        }
+      ]
+    },
+    "CUST-0159-C4": {
+      "conversation_id": "CUST-0159-C4",
+      "customer_id": "CUST-0159",
+      "channel": "call",
+      "day": 167,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Good afternoon, you're speaking with Daniel, and this call is recorded. How can I help?"
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "Hello again - I wrote in about a month ago about the pending transfer. That got sorted, so thank you. Anyway. Someone told me there's a better savings rate now."
+        },
+        {
+          "index": 2,
+          "speaker": "agent",
+          "text": "Thanks. Before I bring anything up - can I take the first and third character of your memorable word?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "It's E and then R."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "That's you verified, thank you. Depends what you're after. Do you need to get at the money, or can it sit?"
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "Would I lose the interest I've already earned?"
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "No, what's accrued stays yours whatever you move to."
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "Is there catch, do I have to lock it away?"
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "Some of them yes, some no. That's the bit worth comparing."
+        },
+        {
+          "index": 9,
+          "speaker": "customer",
+          "text": "Sorry, but - what's the code again, I never remember it."
+        },
+        {
+          "index": 10,
+          "speaker": "agent",
+          "text": "It's in the app under account details too, if that's easier next time."
+        },
+        {
+          "index": 11,
+          "speaker": "customer",
+          "text": "What happens if it bounces, does that show up anywhere?"
+        },
+        {
+          "index": 12,
+          "speaker": "agent",
+          "text": "Let me explain what happens - and if you think one might, say so now and we'll avoid it. So you're on the older rate and there is a better one. I've noted we discussed it."
+        }
+      ]
+    },
+    "CUST-0276-C0": {
+      "conversation_id": "CUST-0276-C0",
+      "customer_id": "CUST-0276",
+      "channel": "complaint",
+      "day": 107,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "customer",
+          "text": "This is a formal complaint about the last few transactions. I have tried to resolve it in the ordinary way and got nowhere."
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "This is the first time I have put anything in writing to you, and I would rather not have had to."
+        },
+        {
+          "index": 2,
+          "speaker": "customer",
+          "text": "Can you tell me the very last day I can pay without a charge?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "What I want is a written answer setting out what went wrong, what you are doing about it, and by when."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "I have read your letter and opened a case. This is recorded as a complaint and it will not be closed until you have a written answer."
+        }
+      ]
+    },
+    "CUST-0276-C1": {
+      "conversation_id": "CUST-0276-C1",
+      "customer_id": "CUST-0276",
+      "channel": "call",
+      "day": 115,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Hello, Marcus here - the call's recorded for training and monitoring. What can I do for you today?"
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "I wrote in in May about the last few transactions. You said you'd sort it and you did. Separate thing this time. Someone told me there's a better savings rate now."
+        },
+        {
+          "index": 2,
+          "speaker": "agent",
+          "text": "Thanks. Before I bring anything up - can I take the first and third character of your memorable word?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "It's E and then R."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "Perfect, thank you - that's you through security. Depends what you're after. Do you need to get at the money, or can it sit?"
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "My other half's hours got cut too, so it's both of us at once at the minute."
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "That's a lot at once, I'm sorry. Do you want to go through what's coming out?"
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "Would I lose the interest I've already earned-"
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "No, what's accrued stays yours whatever you move to."
+        },
+        {
+          "index": 9,
+          "speaker": "customer",
+          "text": "Oh, and before I forget - just checking the transfer landed, it says pending."
+        },
+        {
+          "index": 10,
+          "speaker": "agent",
+          "text": "I can see it here. It should be with them today."
+        },
+        {
+          "index": 11,
+          "speaker": "customer",
+          "text": "Sorry, unrelated, but - i just need to check the balance on the current account."
+        },
+        {
+          "index": 12,
+          "speaker": "agent",
+          "text": "Of course. Do you want the available balance or the cleared one?"
+        },
+        {
+          "index": 13,
+          "speaker": "customer",
+          "text": "Is there a catch, do I have to lock it away?"
+        },
+        {
+          "index": 14,
+          "speaker": "agent",
+          "text": "Some of them yes, some no. That's the bit worth comparing. So you're on the older rate and there is a better one. I've noted we discussed it."
+        }
+      ]
+    },
+    "CUST-0276-C2": {
+      "conversation_id": "CUST-0276-C2",
+      "customer_id": "CUST-0276",
+      "channel": "complaint",
+      "day": 175,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "customer",
+          "text": "This is a formal complaint about the balance on the current account. I have tried to resolve it in the ordinary way and got nowhere."
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "By way of background, I rang in May, a couple of months ago, about the savings rate. I mention it because there is a pattern here, not a one-off."
+        },
+        {
+          "index": 2,
+          "speaker": "customer",
+          "text": "I was given a figure that turned out to include items that had not yet come off, so I budgeted against money that was not there."
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "When I asked for the pending items to be set out separately I was told that was not something that could be done over the phone."
+        },
+        {
+          "index": 4,
+          "speaker": "customer",
+          "text": "I had to put the shopping on the credit card again."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "It has cost me time and, more to the point, it has cost me confidence that anything I am told by your staff will actually happen."
+        },
+        {
+          "index": 6,
+          "speaker": "customer",
+          "text": "The practical effect is that I have had to arrange things around a problem that is not of my making, and I have spent a good deal of time on it that I do not have."
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "What I want is a written answer setting out what went wrong, what you are doing about it, and by when."
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "I've read this and put a hold on the account while we sort it out. You don't need to do anything today."
+        }
+      ]
+    },
+    "CUST-0021-C0": {
+      "conversation_id": "CUST-0021-C0",
+      "customer_id": "CUST-0021",
+      "channel": "call",
+      "day": 11,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Good afternoon, you're speaking with Daniel, and this call is recorded. How can I help?"
+        },
+        {
+          "index": 1,
           "speaker": "customer",
           "text": "Can you send a replacement card to the new address?"
         },
         {
+          "index": 2,
+          "speaker": "agent",
+          "text": "Thanks. Before I bring anything up - can I take the first and third character of your memorable word?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "First is H, third is L."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "That's you verified, thank you. I'll need to update the address first, then order it. Is the new one already on file?"
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "The address on your system is the old one, I moved in February."
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "It is, so we'd have posted it to the wrong door."
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "We're doing a proper look at the outgoings this month, spring clean sort of thing."
+        },
+        {
           "index": 8,
           "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
+          "text": "Good idea. I can list the direct debits and standing orders if that helps."
         },
         {
           "index": 9,
           "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
+          "text": "Does the PIN come with it or separately?"
         },
         {
           "index": 10,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 11,
           "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "I did raise this before, I think in the spring."
-        },
-        {
-          "index": 13,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 14,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
-        },
-        {
-          "index": 15,
-          "speaker": "customer",
-          "text": "Can you send a card to the new address?"
-        },
-        {
-          "index": 16,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
+          "text": "Separately, and usually a day apart. Address changed and the card's ordered to the new one."
         }
       ]
     },
-    "CUST-0231-C2": {
-      "conversation_id": "CUST-0231-C2",
-      "customer_id": "CUST-0231",
+    "CUST-0021-C1": {
+      "conversation_id": "CUST-0021-C1",
+      "customer_id": "CUST-0021",
       "channel": "chat",
-      "day": 102,
+      "day": 21,
       "turns": [
         {
           "index": 0,
           "speaker": "agent",
-          "text": "Good afternoon, how can I help today?"
+          "text": "Hello - Daniel here on chat. What can I help you with?"
         },
         {
           "index": 1,
           "speaker": "customer",
-          "text": "There's a charge for four pounds I don't recognise."
+          "text": "I rang a couple of weeks back about the replacement card to the new address, just so you've got the background. Anyway. I want to set up a new payee, a plumber."
         },
         {
           "index": 2,
           "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
+          "text": "One security check before I look: can you confirm the postcode on the account?"
         },
         {
           "index": 3,
           "speaker": "customer",
-          "text": "I was promised a callback last week and it never came."
+          "text": "Postcode's the same one, ends 7QB."
         },
         {
           "index": 4,
           "speaker": "agent",
-          "text": "I can see that here on the account."
+          "text": "Perfect, thank you - that's you through security. Yes - I'll need their details, and I'll confirm them back to you before it saves."
         },
         {
           "index": 5,
           "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
+          "text": "He's given me the details on a scrap of paper, is that alright?"
         },
         {
           "index": 6,
           "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
+          "text": "It's fine, as long as the name matches what his bank holds."
         },
         {
           "index": 7,
           "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
+          "text": "Can I send it today or is there a wait on new ones?"
         },
         {
           "index": 8,
           "speaker": "agent",
-          "text": "That's now updated on our side."
+          "text": "New payees can hold for a few hours the first time. After that it's instant."
         },
         {
           "index": 9,
           "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
+          "text": "I'm juggling a few things at the moment, that's all."
         },
         {
           "index": 10,
           "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
+          "text": "Okay. If any of it's to do with us, tell me and I'll see what I can do."
         },
         {
           "index": 11,
           "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
+          "text": "While I've got you - i just need to check the balance on the current account."
         },
         {
           "index": 12,
           "speaker": "agent",
-          "text": "I can see that here on the account."
+          "text": "I've got it here. There's one payment still to clear, so I'll give you both figures."
         },
         {
           "index": 13,
           "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
+          "text": "It's four hundred, so I don't want it going astray."
         },
         {
           "index": 14,
           "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 15,
-          "speaker": "agent",
-          "text": "If anything else comes up, just give us a ring."
+          "text": "Understood. We'll check the name against his account before it goes. I'll have it set up and confirmed rather than send four hundred pounds on a maybe."
         }
       ]
     },
-    "CUST-0231-C3": {
-      "conversation_id": "CUST-0231-C3",
-      "customer_id": "CUST-0231",
-      "channel": "call",
-      "day": 104,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Hi there, thanks for getting in touch."
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
-        },
-        {
-          "index": 4,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 6,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 7,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 9,
-          "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
-        },
-        {
-          "index": 10,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 11,
-          "speaker": "customer",
-          "text": "Can you read me the last three transactions?"
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
-        },
-        {
-          "index": 13,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
-        },
-        {
-          "index": 14,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 15,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't"
-        },
-        {
-          "index": 16,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 17,
-          "speaker": "customer",
-          "text": "This is the fourth time I've called about this and nobody has fixed it."
-        },
-        {
-          "index": 18,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 19,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 20,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 21,
-          "speaker": "agent",
-          "text": "Glad we got that sorted, take care."
-        }
-      ]
-    },
-    "CUST-0166-C0": {
-      "conversation_id": "CUST-0166-C0",
-      "customer_id": "CUST-0166",
+    "CUST-0021-C2": {
+      "conversation_id": "CUST-0021-C2",
+      "customer_id": "CUST-0021",
       "channel": "complaint",
+      "day": 40,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "customer",
+          "text": "I want to raise a complaint regarding setting up the new payee. Please treat this letter as the start of your complaints process."
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "The history is this. I messaged about setting up the new payee in February, and I was promised the payee set up and confirmed. The payee still isn't set up. I have heard nothing since."
+        },
+        {
+          "index": 2,
+          "speaker": "customer",
+          "text": "I asked for a new payee to be set up so that I could pay a tradesman four hundred pounds, and I was told the name check had not come back clean."
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "Is there a minimum you have to pay off the card, or can it just be whatever?"
+        },
+        {
+          "index": 4,
+          "speaker": "customer",
+          "text": "The practical effect is that I have had to arrange things around a problem that is not of my making, and I have spent a good deal of time on it that I do not have."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "Please confirm in writing that this is logged as a complaint, and tell me what happens next and how long it takes."
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "Thank you for writing in. I have opened a case and logged this as a complaint. You will get a written response, and I will be handling it myself."
+        }
+      ]
+    },
+    "CUST-0021-C3": {
+      "conversation_id": "CUST-0021-C3",
+      "customer_id": "CUST-0021",
+      "channel": "call",
+      "day": 43,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Hello, Marcus here - the call's recorded for training and monitoring. What can I do for you today?"
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "Me again. Last time, earlier this week, it was setting up the new payee, and that did come through in the end. Today it's something else. There's a charge for four pounds I don't recognise."
+        },
+        {
+          "index": 2,
+          "speaker": "agent",
+          "text": "Thanks. Before I bring anything up - can I take the first and third character of your memorable word?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "First is H, third is L."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "That's you verified, thank you. Let me look at it. Do you want me to raise a dispute while I'm here?"
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "I've not signed up to anything, not that I remember."
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "They're easy to sign up to by accident. Let's find out who it is."
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "It's small, I know, but it's the third month it's been there."
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "Then it's a subscription of some sort, and that's worth stopping."
+        },
+        {
+          "index": 9,
+          "speaker": "customer",
+          "text": "One other thing while you're there. Can you read me the last three transactions?"
+        },
+        {
+          "index": 10,
+          "speaker": "agent",
+          "text": "Of course. Do you want them from today, or from the start of the week?"
+        },
+        {
+          "index": 11,
+          "speaker": "customer",
+          "text": "I moved the gym membership to yearly, works out cheaper that way."
+        },
+        {
+          "index": 12,
+          "speaker": "agent",
+          "text": "Sensible. Do you want me to check for anything else going out you're not using?"
+        },
+        {
+          "index": 13,
+          "speaker": "customer",
+          "text": "Can you stop it going out again next"
+        },
+        {
+          "index": 14,
+          "speaker": "agent",
+          "text": "I can block that merchant, yes, and I'll tell you what it's called. I've had the charge raised as a dispute - you'll get a decision in writing."
+        }
+      ]
+    },
+    "CUST-0021-C4": {
+      "conversation_id": "CUST-0021-C4",
+      "customer_id": "CUST-0021",
+      "channel": "chat",
+      "day": 44,
+      "turns": [
+        {
+          "index": 0,
+          "speaker": "agent",
+          "text": "Hi there, thanks for messaging. Marcus here - what's happened?"
+        },
+        {
+          "index": 1,
+          "speaker": "customer",
+          "text": "Me again. Last time, earlier this week, it was the four pound charge, and that did come through in the end. Anyway. I just need to check the balance on the current account."
+        },
+        {
+          "index": 2,
+          "speaker": "agent",
+          "text": "One security check before I look: can you confirm the postcode on the account?"
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "Yes, it's the one starting NW3."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "That's you verified, thank you. Of course. Do you want the available balance or the cleared one?"
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "What happens if it bounces, does that show up anywhere?"
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "Let me explain what happens - and if you think one might, say so now and we'll avoid it."
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "There's something showing as pending, does that count in it?"
+        },
+        {
+          "index": 8,
+          "speaker": "agent",
+          "text": "Not yet - pending items come off once the retailer claims them."
+        },
+        {
+          "index": 9,
+          "speaker": "customer",
+          "text": "Can you tell me what it was at the start of the month?"
+        },
+        {
+          "index": 10,
+          "speaker": "agent",
+          "text": "I can, give me a second to pull the statement up. I'll get a written breakdown of the pending items out to you rather than guess at it now."
+        }
+      ]
+    },
+    "CUST-0167-C0": {
+      "conversation_id": "CUST-0167-C0",
+      "customer_id": "CUST-0167",
+      "channel": "call",
       "day": 30,
       "turns": [
         {
           "index": 0,
-          "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
+          "speaker": "agent",
+          "text": "Thanks for calling, you're through to Priya. The call's recorded for training. Who am I speaking with?"
         },
         {
           "index": 1,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 2,
-          "speaker": "customer",
-          "text": "What's the sort code again, - never remember it."
-        },
-        {
-          "index": 3,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "I'm on statutory pay at the moment so the numbers look odd."
-        },
-        {
-          "index": 6,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 7,
           "speaker": "customer",
           "text": "What's the sort code again, I never remember it."
         },
         {
+          "index": 2,
+          "speaker": "agent",
+          "text": "Before I look at that, I'll need to check it's you. First and third character of the memorable word, please."
+        },
+        {
+          "index": 3,
+          "speaker": "customer",
+          "text": "It's E and then R."
+        },
+        {
+          "index": 4,
+          "speaker": "agent",
+          "text": "Perfect, thank you - that's you through security. No problem, nobody does. Let me get that for you now."
+        },
+        {
+          "index": 5,
+          "speaker": "customer",
+          "text": "Is that the same one for the savings, or different code?"
+        },
+        {
+          "index": 6,
+          "speaker": "agent",
+          "text": "Different account number, same sort code."
+        },
+        {
+          "index": 7,
+          "speaker": "customer",
+          "text": "Oh, and before I forget - i want to set up a new payee, a plumber."
+        },
+        {
           "index": 8,
           "speaker": "agent",
-          "text": "That's now updated on our side."
+          "text": "I can do that. Do you have the sort code and account number?"
         },
         {
           "index": 9,
           "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
+          "text": "While I've got you - i've lost the card, I think it's in the car actually."
         },
         {
           "index": 10,
           "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
+          "text": "Have a look before I cancel it - if it's gone for good I'll order you a new one."
         },
         {
           "index": 11,
           "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
+          "text": "Can you tell me the very last day I can pay without a charge?"
         },
         {
           "index": 12,
           "speaker": "agent",
-          "text": "You should receive that within three to five working days."
+          "text": "I'll get you the exact date. Is it tight this month?"
         },
         {
           "index": 13,
           "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
+          "text": "Does it change if I move branch?"
         },
         {
           "index": 14,
           "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 15,
-          "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
-        },
-        {
-          "index": 16,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 17,
-          "speaker": "customer",
-          "text": "I jus- need to check the balance on the current account."
-        },
-        {
-          "index": 18,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 19,
-          "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
-        },
-        {
-          "index": 20,
-          "speaker": "customer",
-          "text": "Th- card reader at the shop wouldn't tak- it, is there a block?"
-        },
-        {
-          "index": 21,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
+          "text": "No, it stays with the account wherever you are. Rather than give it out here, I'll have the account details sent to you in writing."
         }
       ]
     },
-    "CUST-0166-C1": {
-      "conversation_id": "CUST-0166-C1",
-      "customer_id": "CUST-0166",
-      "channel": "complaint",
-      "day": 80,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
-        },
-        {
-          "index": 2,
-          "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
-        },
-        {
-          "index": 3,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "I'll be changing my address soon, I'm moving back in with family."
-        },
-        {
-          "index": 6,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 7,
-          "speaker": "customer",
-          "text": "Has the standing order to the gone out yet?"
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        }
-      ]
-    },
-    "CUST-0166-C2": {
-      "conversation_id": "CUST-0166-C2",
-      "customer_id": "CUST-0166",
+    "CUST-0167-C1": {
+      "conversation_id": "CUST-0167-C1",
+      "customer_id": "CUST-0167",
       "channel": "call",
-      "day": 90,
+      "day": 130,
       "turns": [
         {
           "index": 0,
           "speaker": "agent",
-          "text": "Thank you for calling, you're speaking with Sam, how can I help?"
+          "text": "Thanks for calling, you're through to Priya. The call's recorded for training. Who am I speaking with?"
         },
         {
           "index": 1,
           "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
+          "text": "Me again. Last time, a good two months ago, it was the sort code and account number, and that did come through in the end. Different thing today, though. Has the standing order to the gym gone out yet?"
         },
         {
           "index": 2,
           "speaker": "agent",
-          "text": "You should receive that within three to five working days."
+          "text": "Before I look at that, I'll need to check it's you. First and third character of the memorable word, please."
         },
         {
           "index": 3,
           "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
+          "text": "First is H, third is L."
         },
         {
           "index": 4,
           "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
+          "text": "That's you verified, thank you. Let me look - yes, that went out on the second."
         },
         {
           "index": 5,
           "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
+          "text": "The gym have emailed me saying they've not had it."
         },
         {
           "index": 6,
           "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
+          "text": "I can see why they'd say that - it hasn't left us."
         },
         {
           "index": 7,
           "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
+          "text": "While I've got you - i just need to check the balance on the current account."
         },
         {
           "index": 8,
           "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
+          "text": "I've got it here. There's one payment still to clear, so I'll give you both figures."
         },
         {
           "index": 9,
           "speaker": "customer",
-          "text": "the standing order to the gym gone out yet?"
+          "text": "One othe- thing while you're there. I've lost the card, I think it's in the car actually."
         },
         {
           "index": 10,
-          "speaker": "customer",
-          "text": "We're separating, so I need to look at what's in joint names."
+          "speaker": "agent",
+          "text": "I can freeze it rather than cancel it, so if it turns up you just unfreeze it."
         },
         {
           "index": 11,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
+          "speaker": "customer",
+          "text": "It normally leaves on the second, and it's the fifth today."
         },
         {
           "index": 12,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
+          "speaker": "agent",
+          "text": "You're right, it should have gone on the second. Let me see what's happened."
         },
         {
           "index": 13,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
+          "speaker": "customer",
+          "text": "Is there any way to change the date it comes out?"
         },
         {
           "index": 14,
           "speaker": "agent",
-          "text": "Glad we got that sorted, take care."
+          "text": "We can do that. Is it landing before payday at the moment? That's gone now, so nothing more for you to do."
         }
       ]
     },
-    "CUST-0166-C3": {
-      "conversation_id": "CUST-0166-C3",
-      "customer_id": "CUST-0166",
+    "CUST-0167-C2": {
+      "conversation_id": "CUST-0167-C2",
+      "customer_id": "CUST-0167",
       "channel": "chat",
-      "day": 127,
+      "day": 142,
       "turns": [
         {
           "index": 0,
           "speaker": "agent",
-          "text": "Hi there, thanks for getting in touch."
+          "text": "Hi, you're chatting with Priya. How can I help today?"
         },
         {
           "index": 1,
           "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
+          "text": "I rang a couple of weeks back about the standing order to the gym, just so you've got the background. Anyway. The card reader at the shop wouldn't take it, is there a block?"
         },
         {
           "index": 2,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
+          "speaker": "agent",
+          "text": "One security check before I look: can you confirm the postcode on the account?"
         },
         {
           "index": 3,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
+          "speaker": "customer",
+          "text": "Yes, it's the one starting NW3."
         },
         {
           "index": 4,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
+          "speaker": "agent",
+          "text": "That's you verified, thank you. No block that I can see. It may have been their terminal. Try it once more and ring me if it fails again."
         },
         {
           "index": 5,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
+          "speaker": "customer",
+          "text": "It went through fine on Saturday, it's only since then."
         },
         {
           "index": 6,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
+          "speaker": "agent",
+          "text": "That fits - something's flagged on it since the weekend."
         },
         {
           "index": 7,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
+          "speaker": "customer",
+          "text": "We're doing a proper look at the outgoings this month, spring clean sort of thing."
         },
         {
           "index": 8,
-          "speaker": "customer",
-          "text": "My husband passed away in June and sorting out the accounts."
+          "speaker": "agent",
+          "text": "Good idea. I can list the direct debits and standing orders if that helps."
         },
         {
           "index": 9,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
+          "speaker": "customer",
+          "text": "Sorry, unrelated, but - the app logged me out and now it wants a code I don't have."
         },
         {
           "index": 10,
           "speaker": "agent",
-          "text": "Thanks for your time, have a good day."
-        }
-      ]
-    },
-    "CUST-0166-C4": {
-      "conversation_id": "CUST-0166-C4",
-      "customer_id": "CUST-0166",
-      "channel": "complaint",
-      "day": 155,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 1,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 2,
-          "speaker": "customer",
-          "text": "I jus- need to check the balance on the current account."
-        },
-        {
-          "index": 3,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
-        },
-        {
-          "index": 5,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "I need a mortgage for the accountant."
-        },
-        {
-          "index": 7,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        }
-      ]
-    },
-    "CUST-0229-C0": {
-      "conversation_id": "CUST-0229-C0",
-      "customer_id": "CUST-0229",
-      "channel": "chat",
-      "day": 35,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Thank you for calling, you're speaking with Sam, how can I help?"
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have-"
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it-"
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
-        },
-        {
-          "index": 5,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
-        },
-        {
-          "index": 7,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 8,
-          "speaker": "customer",
-          "text": "be changing my address soon, I'm moving back in with family."
-        },
-        {
-          "index": 9,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 10,
-          "speaker": "customer",
-          "text": "I just need to check the balance o- the current account."
+          "text": "Annoying, I know. Let me reset it from this end for you."
         },
         {
           "index": 11,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
+          "speaker": "customer",
+          "text": "Will it work at the cash machine, or is that stopped as well?"
         },
         {
           "index": 12,
-          "speaker": "customer",
-          "text": "Can you read me the last three transactions?"
+          "speaker": "agent",
+          "text": "Cash machines are on the same block, so no, not until it's lifted."
         },
         {
           "index": 13,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
+          "speaker": "customer",
+          "text": "It was embarrassing, to be honest, there was a queue behind me."
         },
         {
           "index": 14,
-          "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
-        },
-        {
-          "index": 15,
           "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 16,
-          "speaker": "customer",
-          "text": "There's a charge for four pounds I don't recognise."
-        },
-        {
-          "index": 17,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 18,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 19,
-          "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
-        },
-        {
-          "index": 20,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 21,
-          "speaker": "customer",
-          "text": "Ca- you read me the last three transactions?"
-        },
-        {
-          "index": 22,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 23,
-          "speaker": "agent",
-          "text": "Glad we got that sorted, take care."
+          "text": "I'm sorry, that shouldn't happen without us telling you first. I've requested it is lifted and noted why. Use another card today if you can."
         }
       ]
     },
-    "CUST-0229-C1": {
-      "conversation_id": "CUST-0229-C1",
-      "customer_id": "CUST-0229",
+    "CUST-0167-C3": {
+      "conversation_id": "CUST-0167-C3",
+      "customer_id": "CUST-0167",
       "channel": "call",
-      "day": 49,
+      "day": 168,
       "turns": [
         {
           "index": 0,
           "speaker": "agent",
-          "text": "Good afternoon, how can I help today?"
+          "text": "Thanks for calling, you're through to Priya. The call's recorded for training. Who am I speaking with?"
         },
         {
           "index": 1,
           "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
+          "text": "This is about the card being declined in the shop again. I messaged about a month ago and nothing has come of it - the card is still being declined."
         },
         {
           "index": 2,
           "speaker": "agent",
-          "text": "That's now updated on our side."
+          "text": "Before I look at that, I'll need to check it's you. First and third character of the memorable word, please."
         },
         {
           "index": 3,
           "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "We're separating, so I need to look at what's in joint names."
-        },
-        {
-          "index": 5,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "Can you send - replacement card to the new address?"
-        },
-        {
-          "index": 7,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "If anything else comes up, just give us a ring."
-        }
-      ]
-    },
-    "CUST-0229-C2": {
-      "conversation_id": "CUST-0229-C2",
-      "customer_id": "CUST-0229",
-      "channel": "call",
-      "day": 84,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Thank you for calling, you're speaking with Sam, how can I help?"
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it pending."
+          "text": "It's E and then R."
         },
         {
           "index": 4,
           "speaker": "agent",
-          "text": "That's now updated on our side."
+          "text": "Perfect, thank you - that's you through security. I can see the note from last time, so you don't have to go through it again. Let me pick it up from there."
         },
         {
           "index": 5,
           "speaker": "customer",
-          "text": "I'm on statutory pay at the moment so the numbers look odd."
+          "text": "Is there a reference on there from last time, or does this start again?"
         },
         {
           "index": 6,
           "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
+          "text": "There is, and it doesn't start again. I'm working from what's already on the account."
         },
         {
           "index": 7,
           "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
+          "text": "Is this going to keep happening?"
         },
         {
           "index": 8,
           "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
+          "text": "Not if I can help it. I'd rather find out why it stuck than just push it through again."
         },
         {
           "index": 9,
           "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
+          "text": "Is there a minimum you have to pay off the card, or can it just be whatever?"
         },
         {
           "index": 10,
           "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
+          "text": "There is a minimum. Do you want me to go through what happens if you only pay that?"
         },
         {
           "index": 11,
           "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
+          "text": "Has anything actually been done since I last got in touch?"
         },
         {
           "index": 12,
           "speaker": "agent",
-          "text": "You should receive that within three to five working days."
+          "text": "There's a note, and no action against it. I'm not going to dress that up."
         },
         {
           "index": 13,
           "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
+          "text": "Who do I speak to if it doesn't get sorted this time?"
         },
         {
           "index": 14,
           "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
+          "text": "Me, and if I'm not here it goes to my team leader. I'll put both on the note."
         },
         {
           "index": 15,
           "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
+          "text": "What happened to the last request, do you know?"
         },
         {
           "index": 16,
           "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 17,
-          "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
-        },
-        {
-          "index": 18,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 19,
-          "speaker": "customer",
-          "text": "The card reader at shop wouldn't take it, is there a block?"
-        },
-        {
-          "index": 20,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 21,
-          "speaker": "agent",
-          "text": "If anything else comes up, just give us a ring."
-        }
-      ]
-    },
-    "CUST-0229-C3": {
-      "conversation_id": "CUST-0229-C3",
-      "customer_id": "CUST-0229",
-      "channel": "chat",
-      "day": 96,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Hi there, thanks for getting in touch."
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "My husband passed away in June and I'm sorting out the accounts."
-        },
-        {
-          "index": 5,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
-        },
-        {
-          "index": 7,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 8,
-          "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
-        },
-        {
-          "index": 9,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 10,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 11,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
-        },
-        {
-          "index": 13,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 14,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 15,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 16,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 17,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 18,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
-        },
-        {
-          "index": 19,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 20,
-          "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
-        },
-        {
-          "index": 21,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 22,
-          "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, there a block?"
-        },
-        {
-          "index": 23,
-          "speaker": "agent",
-          "text": "Glad we got that sorted, take care."
-        }
-      ]
-    },
-    "CUST-0045-C0": {
-      "conversation_id": "CUST-0045-C0",
-      "customer_id": "CUST-0045",
-      "channel": "complaint",
-      "day": 32,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "customer",
-          "text": "There's a charge for four pounds I don't recognise."
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
-        },
-        {
-          "index": 2,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 3,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
-        },
-        {
-          "index": 5,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 7,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 8,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
-        },
-        {
-          "index": 9,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 10,
-          "speaker": "customer",
-          "text": "There's a charge for four I don't recognise."
-        },
-        {
-          "index": 11,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "Someone told me there's a better rate now."
-        },
-        {
-          "index": 13,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 14,
-          "speaker": "customer",
-          "text": "I'll be changing my address soon, I'- moving back in with family."
-        },
-        {
-          "index": 15,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        }
-      ]
-    },
-    "CUST-0045-C1": {
-      "conversation_id": "CUST-0045-C1",
-      "customer_id": "CUST-0045",
-      "channel": "complaint",
-      "day": 49,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
-        },
-        {
-          "index": 1,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 2,
-          "speaker": "customer",
-          "text": "There's a charge for four pounds I don't recognise."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "I'm on statutory pay at the moment so the numbers look odd."
-        },
-        {
-          "index": 5,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
-        },
-        {
-          "index": 7,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 8,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 9,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 10,
-          "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
-        },
-        {
-          "index": 11,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 12,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 13,
-          "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
-        },
-        {
-          "index": 14,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 15,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 16,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 17,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 18,
-          "speaker": "customer",
-          "text": "Can you sen- a replacement card to the new address?"
-        },
-        {
-          "index": 19,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        }
-      ]
-    },
-    "CUST-0045-C2": {
-      "conversation_id": "CUST-0045-C2",
-      "customer_id": "CUST-0045",
-      "channel": "call",
-      "day": 76,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Thank you for calling, you're speaking with Sam, how can I help?"
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
-        },
-        {
-          "index": 5,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
-        },
-        {
-          "index": 7,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 8,
-          "speaker": "customer",
-          "text": "There's a charge for four pounds I don't recognise."
-        },
-        {
-          "index": 9,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 10,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
-        },
-        {
-          "index": 11,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 13,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 14,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 15,
-          "speaker": "customer",
-          "text": "We're separating, so I need to look at what's in joint names."
-        },
-        {
-          "index": 16,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 17,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 18,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
-        {
-          "index": 19,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 20,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
-        },
-        {
-          "index": 21,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 22,
-          "speaker": "agent",
-          "text": "Thanks for your time, have a good day."
-        }
-      ]
-    },
-    "CUST-0045-C3": {
-      "conversation_id": "CUST-0045-C3",
-      "customer_id": "CUST-0045",
-      "channel": "chat",
-      "day": 82,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Thank you for calling, you're speaking with Sam, how can I help?"
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "Someone told me there's a better saving- rate now."
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
-        },
-        {
-          "index": 4,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "Can you read me the last three transactions?"
-        },
-        {
-          "index": 6,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 7,
-          "speaker": "customer",
-          "text": "I wan- to set up new payee, a plumber."
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
-        {
-          "index": 9,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 10,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 11,
-          "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 13,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 14,
-          "speaker": "customer",
-          "text": "Can you read me the last three transactions?"
-        },
-        {
-          "index": 15,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 16,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 17,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
-        },
-        {
-          "index": 18,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 19,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 20,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 21,
-          "speaker": "customer",
-          "text": "My husband passed away in June and I'm sorting out the accounts."
-        },
-        {
-          "index": 22,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 23,
-          "speaker": "agent",
-          "text": "If anything else comes up, just give us a ring."
-        }
-      ]
-    },
-    "CUST-0045-C4": {
-      "conversation_id": "CUST-0045-C4",
-      "customer_id": "CUST-0045",
-      "channel": "chat",
-      "day": 160,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Thank you for calling, you're speaking with Sam, how can I help?"
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 4,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "There's a charge for four pounds I don't recognise."
-        },
-        {
-          "index": 6,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 7,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 9,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 10,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 11,
-          "speaker": "customer",
-          "text": "Can you send - replacement card to the new address?"
-        },
-        {
-          "index": 12,
-          "speaker": "agent",
-          "text": "Thanks for your time, have a good day."
-        }
-      ]
-    },
-    "CUST-0064-C0": {
-      "conversation_id": "CUST-0064-C0",
-      "customer_id": "CUST-0064",
-      "channel": "call",
-      "day": 33,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Good afternoon, how can I help today?"
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
-        },
-        {
-          "index": 4,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
-        },
-        {
-          "index": 6,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 7,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
-        {
-          "index": 9,
-          "speaker": "customer",
-          "text": "Is there a reference number from the last time I rang?"
-        },
-        {
-          "index": 10,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 11,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "I just need to chec- the balance on the current account."
-        },
-        {
-          "index": 13,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 14,
-          "speaker": "agent",
-          "text": "If anything else comes up, just give us a ring."
-        }
-      ]
-    },
-    "CUST-0064-C1": {
-      "conversation_id": "CUST-0064-C1",
-      "customer_id": "CUST-0064",
-      "channel": "chat",
-      "day": 85,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Hi there, thanks for getting in touch."
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
-        },
-        {
-          "index": 2,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
-        },
-        {
-          "index": 3,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "I did raise this before, I think in the spring."
-        },
-        {
-          "index": 6,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 7,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 9,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
-        },
-        {
-          "index": 10,
-          "speaker": "customer",
-          "text": "Has the standing order to gym gone out yet?"
-        },
-        {
-          "index": 11,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "Someon- told me there's a better savings rate now."
-        },
-        {
-          "index": 13,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 14,
-          "speaker": "customer",
-          "text": "Is the branch on the high still open on Saturdays?"
-        },
-        {
-          "index": 15,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 16,
-          "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
-        },
-        {
-          "index": 17,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 18,
-          "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
-        },
-        {
-          "index": 19,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 20,
-          "speaker": "agent",
-          "text": "Glad we got that sorted, take care."
-        }
-      ]
-    },
-    "CUST-0064-C2": {
-      "conversation_id": "CUST-0064-C2",
-      "customer_id": "CUST-0064",
-      "channel": "complaint",
-      "day": 103,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "customer",
-          "text": "Just checking th- transfer landed, it says pending."
-        },
-        {
-          "index": 1,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 2,
-          "speaker": "customer",
-          "text": "The car- reader at the shop wouldn't take it, is there a block?"
-        },
-        {
-          "index": 3,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
-        },
-        {
-          "index": 5,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "There's a charge for four pounds I don't recognise."
-        },
-        {
-          "index": 7,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 8,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 9,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 10,
-          "speaker": "customer",
-          "text": "I was promised a callback last week and it never came."
-        },
-        {
-          "index": 11,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
-        },
-        {
-          "index": 13,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 14,
-          "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
-        },
-        {
-          "index": 15,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        }
-      ]
-    },
-    "CUST-0064-C3": {
-      "conversation_id": "CUST-0064-C3",
-      "customer_id": "CUST-0064",
-      "channel": "complaint",
-      "day": 114,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
-        },
-        {
-          "index": 1,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 2,
-          "speaker": "customer",
-          "text": "The app logged me and now it wants a code I don't have."
-        },
-        {
-          "index": 3,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "This is the fourth time I've called about this and nobody has fixed it."
-        },
-        {
-          "index": 5,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "Someone told me there's a better savings rate now."
-        },
-        {
-          "index": 7,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 8,
-          "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
-        },
-        {
-          "index": 9,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        }
-      ]
-    },
-    "CUST-0064-C4": {
-      "conversation_id": "CUST-0064-C4",
-      "customer_id": "CUST-0064",
-      "channel": "chat",
-      "day": 125,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Good afternoon, how can I help today?"
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 4,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
-        },
-        {
-          "index": 6,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 7,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 9,
-          "speaker": "customer",
-          "text": "I've lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 10,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 11,
-          "speaker": "agent",
-          "text": "If anything else comes up, just give us a ring."
-        }
-      ]
-    },
-    "CUST-0119-C0": {
-      "conversation_id": "CUST-0119-C0",
-      "customer_id": "CUST-0119",
-      "channel": "call",
-      "day": 72,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Hi there, thanks for getting in touch."
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
-        },
-        {
-          "index": 4,
-          "speaker": "customer",
-          "text": "Can you read me the last three transactions?"
-        },
-        {
-          "index": 5,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
-        },
-        {
-          "index": 7,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 8,
-          "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
-        },
-        {
-          "index": 9,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 10,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 11,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "Can you read me the last three transactions?"
-        },
-        {
-          "index": 13,
-          "speaker": "customer",
-          "text": "I'm on statutory pay at the moment so the numbers look odd."
-        },
-        {
-          "index": 14,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 15,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 16,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 17,
-          "speaker": "customer",
-          "text": "There's a charge for four pounds I don't recognise."
-        },
-        {
-          "index": 18,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 19,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, it says pending."
-        },
-        {
-          "index": 20,
-          "speaker": "agent",
-          "text": "Glad we got that sorted, take care."
-        }
-      ]
-    },
-    "CUST-0119-C1": {
-      "conversation_id": "CUST-0119-C1",
-      "customer_id": "CUST-0119",
-      "channel": "call",
-      "day": 102,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Good afternoon, how can I help today?"
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "Let me check that with the relevant team, bear with me."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "The app logged me out and now it wants a code I don't have."
-        },
-        {
-          "index": 4,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
-        },
-        {
-          "index": 6,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 7,
-          "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 9,
-          "speaker": "customer",
-          "text": "We're separating, so I need to look at what's in joint names."
-        },
-        {
-          "index": 10,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 11,
-          "speaker": "customer",
-          "text": "The app logge- me out and now it wants a code I don't have."
-        },
-        {
-          "index": 12,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
-        },
-        {
-          "index": 13,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 14,
-          "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
-        },
-        {
-          "index": 15,
-          "speaker": "agent",
-          "text": "Can I take the first and third character of your memorable word?"
-        },
-        {
-          "index": 16,
-          "speaker": "customer",
-          "text": "lost the card, I think it's in the car actually."
-        },
-        {
-          "index": 17,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 18,
-          "speaker": "customer",
-          "text": "Just checking the transfer landed, says pending."
-        },
-        {
-          "index": 19,
-          "speaker": "agent",
-          "text": "If anything else comes up, just give us a ring."
-        }
-      ]
-    },
-    "CUST-0119-C2": {
-      "conversation_id": "CUST-0119-C2",
-      "customer_id": "CUST-0119",
-      "channel": "call",
-      "day": 158,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Thank you for calling, you're speaking with Sam, how can I help?"
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "Do I need to tell you if I'm going abroad these days?"
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "Of course, let me pull that up for you."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "What's the sort code again, I never remember it."
-        },
-        {
-          "index": 4,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "Has the standing order to the gym gone out yet?"
-        },
-        {
-          "index": 6,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 7,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
-        {
-          "index": 9,
-          "speaker": "customer",
-          "text": "I'll be changing my address soon, I'm moving back in with family."
-        },
-        {
-          "index": 10,
-          "speaker": "agent",
-          "text": "I'm sorry to hear that, let me see what I can do."
-        },
-        {
-          "index": 11,
-          "speaker": "customer",
-          "text": "I need a mortgage statement for the accountant."
-        },
-        {
-          "index": 12,
-          "speaker": "agent",
-          "text": "Thanks for holding, I appreciate your patience."
-        },
-        {
-          "index": 13,
-          "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
-        },
-        {
-          "index": 14,
-          "speaker": "agent",
-          "text": "Is there anything else I can help you with today?"
-        },
-        {
-          "index": 15,
-          "speaker": "customer",
-          "text": "Can you send a replacement card to the new address?"
-        },
-        {
-          "index": 16,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
-        {
-          "index": 17,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 18,
-          "speaker": "agent",
-          "text": "Thanks for your time, have a good day."
-        }
-      ]
-    },
-    "CUST-0119-C3": {
-      "conversation_id": "CUST-0119-C3",
-      "customer_id": "CUST-0119",
-      "channel": "chat",
-      "day": 160,
-      "turns": [
-        {
-          "index": 0,
-          "speaker": "agent",
-          "text": "Hi there, thanks for getting in touch."
-        },
-        {
-          "index": 1,
-          "speaker": "customer",
-          "text": "I want to set up a new payee, a plumber."
-        },
-        {
-          "index": 2,
-          "speaker": "agent",
-          "text": "That's now updated on our side."
-        },
-        {
-          "index": 3,
-          "speaker": "customer",
-          "text": "My husband passed away in June and I'm sorting out the accounts."
-        },
-        {
-          "index": 4,
-          "speaker": "agent",
-          "text": "I can see that here on the account."
-        },
-        {
-          "index": 5,
-          "speaker": "customer",
-          "text": "The card reader at the shop wouldn't take it, is there a block?"
-        },
-        {
-          "index": 6,
-          "speaker": "customer",
-          "text": "Is the branch on the high street still open on Saturdays?"
-        },
-        {
-          "index": 7,
-          "speaker": "customer",
-          "text": "Someone told me a better savings rate now."
-        },
-        {
-          "index": 8,
-          "speaker": "agent",
-          "text": "You should receive that within three to five working days."
-        },
-        {
-          "index": 9,
-          "speaker": "customer",
-          "text": "I just need to check the balance on the current account."
-        },
-        {
-          "index": 10,
-          "speaker": "agent",
-          "text": "Just so you know, this call may be recorded for training purposes."
-        },
-        {
-          "index": 11,
-          "speaker": "agent",
-          "text": "If anything else comes up, just give us a ring."
+          "text": "It was raised and then it sat. I can see where it stopped. It's cleared now, and I've noted why so it doesn't flag again."
         }
       ]
     }
