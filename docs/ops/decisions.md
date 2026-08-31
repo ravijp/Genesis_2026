@@ -26,6 +26,27 @@ for something listed under "rejected", read the reason first.
 
 ---
 
+### D-031 · 2026-08-31 · The diffuse headline is re-registered against `window3-top2`, with a chance gate we currently fail `ACCEPTED`
+Phase C rebuilt the corpus and the pre-registered headline died: `full-ledger` vs `stateless-max` on
+diffuse recall went 29–0–1 `p<0.001` to **15–13–2 `p=0.851`** (17–9–4 `p=0.169` randomised, so the
+death is not a tie-break artefact). Measured cause, not guessed: before Phase C a diffuse customer's
+loudest extracted signal was *anti*-correlated with their outcome (0.320 for the outcome group against
+0.329 overall) and is now correlated (0.341 against 0.292) — a large part of the win was measuring an
+opponent the old corpus had crippled. **The new primary is `full-ledger` vs `window3-top2` on diffuse
+recall (30–0–0, `p<0.001`, both tie-breaks)**, chosen because it is the only arm bounded in both time
+and capacity and therefore the literal negation of the D-006 claim — not because it is the largest
+record available. **A co-primary chance gate is declared with it: `full-ledger` vs `random-rank` on
+diffuse. Today that is 18–8–4, `p=0.076` — we FAIL it, and say so.** The claim holds only if both pass.
+Consequences that are not style choices: the dead headline keeps its row in every table forever, its
+`cli.py` label becoming `PRE-REGISTERED HEADLINE (2026-08-09) — DIED 2026-08-31`; the randomised
+tie-break record prints beside every headline, not only the original; and the silence-permitting corpus
+(`docs/corpus/04-plan.md`) is pre-registered NOW, unseen, as a declared second arm published beside the
+first. **Rejected:** quietly promoting `stateless-top2` (also 30–0–0) and not mentioning the death —
+misconduct, and `earshot sweep` prints all 144 comparisons anyway. **Rejected:** dropping the chance
+gate because we fail it, which is the specific dishonesty that makes every other number unbelievable.
+**Rejected:** re-registering with no forward commitment; a re-pick after seeing the matrix is only
+defensible next to an experiment that has not been run.
+
 ### D-030 · 2026-08-28 · The console's primary user is the specialist reviewer, not the agent on the call `ACCEPTED`
 Accumulation across conversations is the product, and a live-call panel structurally cannot show it —
 the agent on the call has one conversation and no standing ledger to re-read. The four teams our routes
