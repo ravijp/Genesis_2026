@@ -291,9 +291,11 @@ window.EARSHOT_CONSOLE = (function () {
   /* ---- the team-scoped queue ----------------------------------------------------------------
    *
    * Three teams reading one feed is the horizontal claim in the submitted brief. `owning_team` is
-   * already on every case row, and routing was measured at 36 / 49 correct, 2 wrong, 11 declined
-   * (`tools/routing_accuracy.py`), so this is a view over a graded field rather than new
-   * inference. (Read 41 / 49, 0 wrong before 2026-08-30; that was the pre-fix corpus.)
+   * already on every case row, and routing was measured at 27 / 48 correct, 2 wrong, 19 declined
+   * (`tools/routing_accuracy.py`, 2026-08-31), so this is a view over a graded field rather than
+   * new inference. (Read 41 / 49 then 36 / 49 on earlier corpora. The current figure is WORSE, and
+   * for a reason that is not the router's: no complaint customer crosses under the offline reader,
+   * so the `complaints` row of the confusion matrix is empty and 43 of 48 cases are one desk.)
    *
    * **The buckets are a partition.** Every worked case lands in exactly one, and `none` catches
    * anything the tenant profile does not map — the same `else: unrouted` branch

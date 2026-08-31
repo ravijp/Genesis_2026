@@ -98,8 +98,8 @@ item ran. Total unspent and still open: the model's own coverage threshold ($13.
 keyed sweep (~$10).
 
 **Health, measured 2026-08-31.** **850 passing, 5 skipped** (855 collected), ruff clean, separation
-guard over **45** modules with both exemption lists still capped at 3, **30 UI routes** and 31 crawled
-links (`ui/smoke.mjs`), a contrast gate over **650** colour pairs across 17 routes and 2 themes. Next
+guard over **45** modules with both exemption lists still capped at 3, **30 UI routes** and 26 crawled
+links (`ui/smoke.mjs`), a contrast gate over **674** colour pairs across 17 routes and 2 themes. Next
 gate **2026-09-07**.
 
 **AWS is real, correct, and inert.** 3 DynamoDB tables with PITR, 3 SQS queues with DLQ redrive, 3

@@ -5,7 +5,7 @@ Rewritten in place at each handover. **Keep it under ~60 lines.** It is a baton,
 next action, live blockers, traps already paid for. History goes in `progress.md` or git.
 
 **2026-08-31 (late)** · commit `bd375a4` · branch `build/ear-on-every-call` · **855 tests** (850
-pass, 5 skip), separation guard over 45 modules, contrast gate over 650 colour pairs / 17 routes,
+pass, 5 skip), separation guard over 45 modules, contrast gate over 674 colour pairs / 17 routes,
 ruff clean, **30 UI routes**
 
 ## First turn

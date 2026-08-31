@@ -200,7 +200,8 @@ deltas rather than quietly dropped.
 
 **Owed to the next session:** the AT-57 re-run on the fixed corpus is **BLOCKED (Ravi)** on an expired
 SSO session — the published 22 / 50 was measured pre-fix and no longer replays, which the README states
-rather than hides.
+rather than hides. *(Discharged 2026-08-31: SSO was re-minted, the re-run landed at 29 / 50, and
+nothing on this line is a live blocker or a current figure.)*
 
 **2026-08-28 (late night)** · **The UI became the product in use** (`e0fb7f8`, `281e7c5`,
 `5b0633f`). Research into the consoles retail banks actually run found the finding that reframed

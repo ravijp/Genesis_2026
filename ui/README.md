@@ -31,10 +31,12 @@ teaser.
 The submitted brief promises that **three teams read the same feed**
 (`docs/sources/submission-ear-on-every-call.md:75-79`, and `:124` makes it a Sprint 3
 deliverable). The shipped set is four and different, so `#/desk/team/<slot>` is a filter over
-`owning_team` — a field every case row already carries, graded at **36 / 49 correct, 2 wrong, 11
-declined** (`tools/routing_accuracy.py`). It is a view over a measured field, not new inference.
-(This read 41 / 49 with 0 wrong until 2026-08-30; that figure was measured on the pre-fix corpus
-and did not survive the corpus fix. See `docs/architecture/build-plan.md` §4.)
+`owning_team` — a field every case row already carries, graded at **27 / 48 correct, 2 wrong, 19
+declined** (`tools/routing_accuracy.py`, 2026-08-31). It is a view over a measured field, not new
+inference. (This read 41 / 49 then 36 / 49 before the Phase C corpus; the figure has moved twice for
+corpus reasons and the current one is **worse**, because no complaint customer crosses under the
+offline reader so the confusion matrix's `complaints` row is empty. See
+`docs/architecture/build-plan.md` §4.)
 
 Four things about it are load-bearing:
 
@@ -219,16 +221,17 @@ reader's *own measured latency on that conversation*. `manifest.asr` is `"none"`
 it, and `ui/smoke.mjs` fails the build if it ever says otherwise.
 
 **Everything downstream of the transcript is real.** A Bedrock Haiku 4.5 call read every one of the
-133 conversations; six were read *again after each customer turn* so a belief can be watched
+130 conversations; six were read *again after each customer turn* so a belief can be watched
 forming; `memory.py` scored them; the investigator worked six crossings with its five tools. Costs
-and latencies on screen are measured.
+and latencies on screen are measured — $0.4792 total, $1.5256 per 1,000 conversations read, reader
+p50 1,230 ms / p95 1,786 ms (re-recorded 2026-08-31).
 
 **The threshold is a fixed cut, and it is not the number the recorded investigate run uses.** A
 streaming consumer has no population to rank against, so it cannot take the top 10% of anything.
 This mirrors `aws/ingest.py`, the deployed path. The two disagree about who crossed; both are
 labelled on their own screen.
 
-**Not everything is worked.** 6 of 9 crossings were investigated and 6 of 133 conversations were
+**Not everything is worked.** 6 of 9 crossings were investigated and 6 of 130 conversations were
 read turn-by-turn — the first to bound a re-record's cost, the second because narration costs a
 model call per customer turn. Both denominators are on the screen.
 
