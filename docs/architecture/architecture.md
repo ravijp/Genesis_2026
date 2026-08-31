@@ -200,24 +200,34 @@ rather than replacing them.
 | Does the extractor find what was planted? | Conversation-level recall vs seeded signals — matched on (conversation, signal type), not on character spans; **published miss rate** |
 | Does memory beat forgetting? | **Nine arms** at equal alert budget, broken out per stratum, paired seed by seed with an exact sign test |
 | Does each scoring mechanism earn its place? | Per-mechanism ablation |
-| Does any of it beat chance? | `random-rank` — a seeded RNG that ignores every signal — is a shipped arm. **Measured 2026-08-30: full-ledger vs chance on diffuse arcs is 17–11–2, `p=0.345`** |
-| Is the agent right? | Verdict and routing accuracy vs the seeded trajectory. **Measured: 22 / 50 verdicts, 36 / 49 routing (2 wrong, 11 declined)** |
-| Is the agent honest? | Share of decisions whose evidence resolves on the FIRST attempt (not after retries). **Measured: 50 / 50, no repairs** |
-| Can a bank afford it? | **Measured: $1.66 per 1,000 conversations read, $0.0295 per investigation; reader p50 1,244 ms / p95 2,212 ms** |
+| Does any of it beat chance? | `random-rank` — a seeded RNG that ignores every signal — is a shipped arm. **Measured 2026-08-31: full-ledger vs chance on diffuse arcs is 18–8–4, `p=0.076`. It does not.** |
+| Can a past conversation be worth more? | Each entry's marginal contribution at write against its contribution today. **Measured 2026-08-31: 239 / 485 rise under the full ledger, 0 / 485 under an unweighted count** |
+| Is the agent right? | Verdict and routing accuracy vs the seeded trajectory. **22 / 50 verdicts, 36 / 49 routing (2 wrong, 11 declined) — corpus-historical, measured 2026-08-28** |
+| Is the agent honest? | Share of decisions whose evidence resolves on the FIRST attempt (not after retries). **50 / 50, no repairs — corpus-historical** |
+| Can a bank afford it? | **$1.66 per 1,000 conversations read, $0.0295 per investigation; reader p50 1,244 ms / p95 2,212 ms — corpus-historical** |
 
 Comparison numbers come from `earshot sweep` and are written to a run manifest with their seed list.
 
-**Where the numbers stand — 30 seeds, 5,834 outcome customers, regenerated 2026-08-30.** On diffuse
-arcs the ledger beats every competing arm, including the two that beat it on the previous corpus
-(`26–2–2` against each, `p<0.001`). **And it does not beat chance there: `17–11–2`, `p=0.345`.**
-Whole-portfolio it is 7th of 9 arms — recall 0.119 against random ranking's 0.109 — and on
-concentrated arcs it loses `0–30–0` to four separate arms.
+**Where the numbers stand — 30 seeds, 5,796 outcome customers, corpus rebuilt 2026-08-31.** On
+diffuse arcs the ledger beats both capped-memory arms (`stateless-top2`, `window3-top2`) `30–0–0` at `p<0.001` under both tie-break
+rules, and the two arms that never discard a weak signal rank first and second of nine. **It does not
+beat chance there: `18–8–4`, `p=0.076`**, nor on any other stratum. Whole-portfolio it is 8th of 9
+arms — recall 0.115 (665 / 5796) against random ranking's 0.113 (657 / 5796) — and on concentrated
+arcs it loses `0–30–0` to three separate arms.
 
-A change to how many fragments exist to plant reversed a published headline in *both* directions, so
-these records describe the corpus at least as much as the mechanism. The binding constraint is the
-reader, not the ranking: the offline lexicon finds 1 of 32 fragments written outside its vocabulary,
-which crowds every arm between 0.109 and 0.138.
+Two results are published as losses rather than smoothed away. The headline pre-registered on
+2026-08-09 (`full-ledger` vs `stateless-max` on diffuse) **died** on the rebuilt corpus, 29–0–1 to
+`15–13–2`, `p=0.851`; it is re-registered against `window3-top2` and bound to a chance gate the entry
+currently fails (D-031). And `dumb-ledger` — every mechanism in `memory.py` switched off — beats the
+full ledger on diffuse arcs, `18–7–5`, `p=0.043`, which becomes 13–11–6 `p=0.839` once ties are
+randomised, because 70.8% of that arm's queue is decided alphabetically against the full ledger's 0.0%.
 
-So the arms answer *which trigger feeds the investigator best*, not *what the product is*, and what
-never-discard buys over a cheap bounded window is currently unproven. Full table and method in the
-README, which is the source of record.
+Records have now reversed twice across two corpus rebuilds, so they describe the corpus at least as
+much as the mechanism. The binding constraint is the reader, not the ranking: the offline lexicon
+finds 617 of 2,700 planted signals and leaves two of four review desks receiving no case at all, which
+crowds every arm between 0.113 and 0.145.
+
+So the arms answer *which trigger feeds the investigator best*, not *what the product is*. What
+never-discard buys over a cheap bounded window is now measured in all three directions: **won** on
+diffuse (30–0–0), **lost** on concentrated (1–28–1), unproven whole-portfolio (9–17–4, `p=0.169`).
+Full table and method in the README, which is the source of record.

@@ -65,11 +65,12 @@ uv run earshot sweep --seeds 10 --customers 1500   # the evaluation numbers
 ```
 
 **Why 3,000 and not 400.** The demo needs at least one customer the ledger catches while per-call
-detection stays silent throughout. After the fragment pools were widened on 2026-08-30 the offline
-lexicon finds only 1 of the 32 new fragments, so at 400 customers **no such customer exists** and the
-command says so twice rather than showing you a near-miss and letting you assume. At 3,000 it finds
-6 of 150. That honesty branch is deliberate (`cli.py`, and `tests/test_cli.py` pins it) — but it
-means the small demo is not a demo any more.
+detection stays silent throughout. The offline lexicon finds 617 of 2,700 planted signals, so at 400
+customers **no such customer exists** and the command says so twice rather than showing you a
+near-miss and letting you assume. At 3,000 there are **7 of 132** such customers — and, printed
+beside it, **10 of 132** going the other way, which per-call detection catches and the ledger misses.
+That honesty branch is deliberate (`cli.py`, and `tests/test_cli.py` pins it) — but it means the small
+demo is not a demo any more.
 
 Then open **`ui/index.html`** in a browser. No server, no npm, no network. That is the product:
 a reviewer's queue, a case with its evidence, and a live stream showing the ledger filling up.
@@ -143,36 +144,56 @@ identical signal stream, so the comparison is fair regardless of which reader pr
 ### The good news
 
 On **diffuse arcs** — evidence spread thin, nothing alarming in any single conversation, which is
-exactly the case memory exists for — the full ledger beats every competing strategy, most at
-`p<0.001`. That includes two cheap strategies that had beaten it on an earlier version of the corpus.
+exactly the case memory exists for — the full ledger beats **both** capped-memory arms (`stateless-top2`, `window3-top2`) **30–0–0** at
+`p<0.001`, under both tie-break rules. The two arms that never discard a weak signal (`full-ledger`
+and `dumb-ledger`) rank **first and second of nine** on this stratum. That is never-discard earning
+its place, and it is the entry's originality claim measured rather than asserted.
 
 ### The bad news, and it is more important
 
 One of the nine arms is **`random-rank`**: it ignores every signal and ranks customers by a random
 number generator. It exists to answer *"does any of this beat chance?"*
 
-**On diffuse arcs, the full ledger versus random ranking is 17–11–2, `p=0.345`.** The ledger is
+**On diffuse arcs, the full ledger versus random ranking is 18–8–4, `p=0.076`.** The ledger is
 **not statistically distinguishable from chance** on the stratum it was built for.
 
-Across the whole customer population the ledger ranks **7th of 9 arms**, with recall 0.119 against
-chance at 0.109. On **concentrated arcs** (one loud conversation) it loses 0–30–0 to four different
-arms — accumulating dilutes a single decisive signal.
+Across the whole customer population the ledger ranks **8th of 9 arms** at the 10% budget, with recall
+0.115 (665 / 5796) against chance at 0.113 (657 / 5796). On **concentrated arcs** (one loud
+conversation) it loses 0–30–0 to three different arms and does not beat chance there either
+(16–12–2, `p=0.572`) — accumulating dilutes a single decisive signal.
+
+**The pre-registered headline died.** `full-ledger` vs `stateless-max` on diffuse recall was 29–0–1
+`p<0.001`; on the rebuilt corpus it is **15–13–2, `p=0.851`**. The cause is measured: the old corpus
+had crippled that opponent. It is re-registered against `window3-top2` and bound to a chance gate the
+entry currently fails — D-031, and the dead row stays in every table permanently.
 
 ### What that means, honestly
 
-- **Aggregating a few conversations beats aggregating one**, when evidence is genuinely spread out.
-  That is supported.
-- **That *unbounded* memory beats a cheap three-conversation window is unproven.** On the previous
-  corpus, the cheap window was *better*.
-- **The binding constraint is the reader, not the ranking.** The regex reader finds 1 of 32 fragments
-  written without sight of its vocabulary. With a reader that weak, every arm crowds between 0.109
-  and 0.138 — a chance floor and a ceiling three points above it. No ranking strategy escapes that.
-- **These numbers moved when the corpus changed shape** on 2026-08-30, in both directions. They
+- **Won on diffuse: unbounded memory beats a cheap three-conversation window.** 30–0–0, `p<0.001`,
+  both tie-break rules. This page called it *unproven* for weeks; it is proven on this stratum.
+- **Lost on concentrated: 1–28–1** to the same bounded window, and **not proven whole-portfolio**
+  (9–17–4, `p=0.169`). The honest summary is all three directions, not the first one.
+- **Retracted: "aggregating a few conversations beats aggregating one."** The arm that aggregates one
+  now ties us on diffuse and beats us on the whole portfolio. The rebuilt corpus refutes it.
+- **Our own ablation floor beats us on diffuse** — `dumb-ledger`, every mechanism off, 18–7–5
+  `p=0.043`. Under a randomised tie-break it is 13–11–6 `p=0.839`, because 70.8% of that arm's queue
+  is decided alphabetically. Both records are published, always, and the deterministic one stays the
+  default.
+- **The binding constraint is the reader, not the ranking.** The regex reader finds **617 of 2,700**
+  planted signals, and on our own corpus it leaves two of four desks receiving no case at all. With a
+  reader that weak, every arm crowds between 0.113 and 0.145 — a chance floor and a ceiling three
+  points above it. No ranking strategy escapes that.
+- **These numbers moved when the corpus was rebuilt** on 2026-08-31, in both directions. They
   describe the corpus at least as much as the mechanism, and the README says so.
 
-### The agent, measured
+### The agent, measured — and corpus-historical
 
-| | measured |
+**Everything in this table was measured on 2026-08-28 / 2026-08-29, on the corpus that preceded the
+2026-08-31 rebuild.** It is stale. It has not been re-measured because the AWS SSO token is expired
+and LLM spend is stopped — a decision, not a technical block. Read it as "what the agent did on the
+previous corpus", never as current.
+
+| | measured (corpus-historical, pre-rebuild) |
 |---|---|
 | Verdict accuracy | **22 / 50** — it escalates rather than discriminating |
 | Dismissing false alarms | **4 / 25** — and 0.86 mean confidence when wrong |
@@ -207,16 +228,17 @@ better than any prose file, and it never goes stale.
 
 ## 7. The parts most likely to surprise you
 
-**The tests are unusually load-bearing.** 827 collected, 817 passing and 10 deliberately
-skipped with a stated reason. Several exist because a specific mistake was
+**The tests are unusually load-bearing.** Measured 2026-08-31: **855 collected, 850 passing, 5
+deliberately skipped** with a stated reason. `uv run pytest -q` is where that number lives — if this
+sentence and the command disagree, the command is right. Several exist because a specific mistake was
 made once and must never recur — for example, a test that scans every module to prove the extractor
 *cannot* import the answer key, and a test that fails if the UI dims a sub-threshold row, because
 dimming retained evidence would draw exactly the behaviour this product inverts.
 
 **The UI has no build step.** Plain HTML/CSS/JS opened from `file://`. A judging room with no wifi and
 a laptop with no toolchain can still see the product. Two automated gates check it: one renders every
-screen against a stub DOM and crawls the links it emits, another computes WCAG contrast for all 650
-colour pairs in both themes.
+screen against a stub DOM and crawls the links it emits, another computes WCAG contrast for all **650**
+colour pairs across 17 routes in both themes.
 
 **Documented failures are kept, not deleted.** A keyed model run on 2026-08-30 cost **$12.32 and
 produced no artifact** — it hit a spend ceiling half way, and the resume re-bought reads because a

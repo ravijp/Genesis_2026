@@ -248,3 +248,74 @@ def test_the_investigate_artifact_carries_the_transcripts_behind_its_quotes(cli,
 
     leaked = _all_keys(conversations) & ANSWER_KEY_FIELDS
     assert not leaked, f"answer-key fields on a transcript: {sorted(leaked)}"
+
+
+def test_demo_opens_its_case_on_planted_evidence_not_a_false_fire(cli, capsys) -> None:
+    """Every quote on screen must sit on a turn the planner planted, or the demo must say it does not.
+
+    `false_fire_rate` picks a uniformly random customer turn, and the corpus now asks a security
+    question, so the spurious fire can land on *"Postcode's the same one, ends 7QB."* — the demo
+    then opens its case on a verification answer. The selection prefers an arc carried by seeded
+    signals; the escape hatch is saying so, never showing one silently.
+
+    3,000 customers because that is the invocation the README and ORIENTATION document, and it is
+    the size at which the defect appeared.
+    """
+    big = replace(SMALL, corpus=replace(SMALL.corpus, n_customers=3000))
+    assert cli.cmd_demo(big) == 0
+    out = capsys.readouterr().out
+
+    quoted_false_fires = [li for li in out.splitlines() if ":false-fire" in li]
+    if quoted_false_fires:
+        assert "FALSE FIRE" in out, (
+            "the demo quoted a synthetic false fire as evidence and did not say so: "
+            f"{quoted_false_fires}"
+        )
+
+    # And at the documented size the escape hatch must not be needed: a fully-planted arc exists
+    # here, so picking one is the test. Without the preference this run opens on
+    # `l-separate:false-fire` quoting *"Postcode's the same one, ends 7QB."* — a security answer.
+    assert not quoted_false_fires and "FALSE FIRE" not in out, (
+        "a fully-planted arc exists at 3,000 customers and the demo did not choose it"
+    )
+
+
+def test_demo_selection_does_not_move_its_own_population_ratio(cli, capsys) -> None:
+    """The counts the demo closes on are the claim; the customer on screen is only an illustration.
+
+    Preferring a better-quoted arc must therefore change *which* arc is shown and nothing else. A
+    selection rule that also moved `clean` or `catchable` would be choosing its own denominator.
+    """
+    big = replace(SMALL, corpus=replace(SMALL.corpus, n_customers=3000))
+    assert cli.cmd_demo(big) == 0
+    out = capsys.readouterr().out
+
+    line = next(li for li in out.splitlines() if "thin-evidence customers with a real outcome" in li)
+    clean, catchable = int(line.split()[0]), int(line.split()[2])
+    other = next(li for li in out.splitlines() if "Going the other way" in li)
+    per_call_only = int(other.split("catches")[1].split()[0])
+
+    assert (clean, catchable, per_call_only) == (7, 132, 10), (
+        "the demo's population counts moved; selection must order the instance, not the counts"
+    )
+
+
+def test_sized_is_exactly_the_config_every_other_caller_builds_by_hand() -> None:
+    """`config.sized(n)` must equal `replace(DEFAULT, corpus=replace(DEFAULT.corpus, ...))`.
+
+    Not cosmetic. `RunConfig.hash()` names the artifact a run writes and is asserted against
+    committed manifests, so a helper that built a subtly different config would fork the
+    published corpus in two while every number still looked plausible. The sweep behind the
+    README's tables is `2d916ad3ceb0`; the helper has to land on it.
+    """
+    from earshot.config import DEFAULT, sized
+
+    for n in (400, 1500, 2400, 3000):
+        by_hand = replace(DEFAULT, corpus=replace(DEFAULT.corpus, n_customers=n))
+        assert sized(n) == by_hand, f"sized({n}) diverged from the hand-built config"
+        assert sized(n).hash() == by_hand.hash()
+
+    assert sized(1500).hash() == "2d916ad3ceb0", (
+        "the 30x1500 config hash moved — every committed sweep artifact is named after it"
+    )
+    assert sized(1500, seed=20260810) != sized(1500), "sized() ignores its seed argument"

@@ -98,31 +98,45 @@ better than 4 / 25. The bias runs against us.
 
 | comparison, diffuse arcs | record | p |
 |---|---|---|
-| full ledger vs score-each-call-and-forget *(pre-registered)* | **29–0–1** | **<0.001** |
-| full ledger vs `stateless-top2` — sum the two loudest calls | **26–2–2** | **<0.001** |
-| full ledger vs `window3-top2` — last three calls, best two | **26–2–2** | **<0.001** |
-| **full ledger vs `random-rank`** — a seeded RNG, ignores every signal | **17–11–2** | **0.345** |
+| full ledger vs `window3-top2` — last three calls, best two *(re-registered, D-031)* | **30–0–0** | **<0.001** |
+| full ledger vs `stateless-top2` — sum the two loudest calls | **30–0–0** | **<0.001** |
+| **full ledger vs `random-rank`** — a seeded RNG, ignores every signal *(chance gate)* | **18–8–4** | **0.076** |
+| full ledger vs score-each-call-and-forget *(pre-registered 2026-08-09 — DIED)* | **15–13–2** | **0.851** |
+| **full ledger vs `dumb-ledger`** — our own ablation floor | **7–18–5** | **0.043 (a loss)** |
 
-**Read the last row first.** On the stratum this entry is built for, the ledger is **not
-statistically distinguishable from ranking customers at random.** It wins on diffuse arcs against
-every real baseline and cannot separate itself from chance.
+**Read the last three rows first.** On the stratum this entry is built for the ledger is **not
+statistically distinguishable from ranking customers at random**; the comparison pre-registered on
+2026-08-09 **died** when the corpus was rebuilt on 2026-08-31, because a large part of that win was
+measuring an opponent the old corpus had crippled; and our own ablation floor — every mechanism in
+`memory.py` switched off — beats us here. All three are printed by `earshot sweep` itself.
 
-**Whole-portfolio, the ledger is 7th of 9 arms** — recall 0.119 (695 / 5834) against chance at 0.109
-(633 / 5834) and a ceiling of 0.138. **On concentrated arcs it loses 0–30–0** to four separate arms.
+**What does hold, and it is the originality claim:** the two arms that never discard a weak signal
+rank **first and second of nine** on this stratum, and both capped-memory arms lose 30–0–0 under
+both tie-break rules.
 
-**And these records reversed when the corpus changed.** On the pre-2026-08-30 corpus `stateless-top2`
-and `window3-top2` *beat* the ledger on diffuse arcs (`p=0.023`, `p=0.002`); widening the fragment
-pools reversed both. A change to how many fragments exist to plant flipped a headline in both
-directions, so these numbers describe the corpus at least as much as the mechanism.
+**Whole-portfolio, the ledger is 8th of 9 arms** at the 10% budget — recall 0.115 (665 / 5796) against
+chance at 0.113 (657 / 5796) and a ceiling of 0.145. **On concentrated arcs it loses 0–30–0** to three
+separate arms and does not beat chance there either (16–12–2, `p=0.572`).
 
-**The binding constraint is the reader.** The offline lexicon finds **1 of the 32** fragments written
-without sight of its vocabulary. With a reader that weak every arm crowds between 0.109 and 0.138,
-and no ranking strategy escapes it. That is why the model reader's 0.8214 matters more than any row
-in this table.
+**And these records reverse when the corpus changes.** They have now reversed twice, in both
+directions, across two corpus rebuilds. Treat them as statements about a regime, not laws.
+
+**The ablation loss, answered with two measurements rather than an argument.** `dumb-ledger` produces
+**5 distinct scores across 1,500 customers**, so **70.8%** of its queue is decided alphabetically by
+customer id; the full ledger produces 236 and 0.0%. Randomise the tie-break and the loss becomes
+13–11–6, `p=0.839`. The harness that does this (`randomise_ties`, `random-rank`) landed in `04aa24a`
+on 2026-08-30, the day *before* the loss existed, applies to all nine arms symmetrically, and the
+deterministic record stays the default. Both records are published, always.
+
+**The binding constraint is the reader.** The offline lexicon finds **617 of 2,700** planted signals
+on our own prose, and leaves two of four review desks receiving no case at all. With a reader that
+weak every arm crowds between 0.113 and 0.145, and no ranking strategy escapes it. That is why the
+model reader's 0.8214 matters more than any row in this table.
 
 **One objection, answered by measurement rather than argument.** *"Your diffuse stratum is defined by
 the parameter that spread the evidence thin, so an aggregator winning there is arithmetic."* A
-tenfold change in that parameter does not swing the comparison, on either corpus — pinned by
+tenfold change in that parameter moves the ledger's record against `stateless-top2` by +4 / +8 / +9 —
+a swing of 5 — pinned by
 `test_the_diffuse_result_is_not_a_restatement_of_the_dirichlet_alpha`. The stratum sets how thinly
 evidence is spread; what decides whether accumulation pays is **how many conversations there are to
 accumulate over**, which is a claim about history depth and is measurable.
@@ -148,16 +162,25 @@ Listed because a checkable gap is worth more than a reassuring silence.
 
 ## 6. What the numbers are worth
 
-**Load-bearing and reproducible:** reader cost and latency, investigator cost and latency, evidence
-groundedness, the 30-seed recall comparison, CFPB recall on real language. All replay from committed
-responses with no key.
+**Load-bearing and reproducible today, at zero API spend:** the 30-seed recall comparison, the
+offline reader's coverage by desk, extraction fidelity, retro re-score direction. Every one of them
+re-runs from a fresh clone with no key.
 
-**Directional, quoted with denominators, never as headlines:** reader-coverage-by-desk (n=20 per
-trajectory, one dataset), the widened-corpus result (6 seeds).
+**Load-bearing but CORPUS-HISTORICAL — measured before the 2026-08-31 rebuild and not re-measured:**
+reader cost and latency ($1.66 / 1,000, p50 1,244 ms), investigator cost and latency, evidence
+groundedness (0 / 50), verdict accuracy (22 / 50), routing accuracy (36 / 49), the model arm of
+reader-coverage-by-desk, the streamed demo. They replay from committed responses with no key, but they
+replay what the model said about conversations the generator no longer produces in this shape.
+Re-measuring needs a key; the AWS SSO token is expired and LLM spend is stopped.
 
-**Known weak, published anyway:** the agent's 22 / 50 verdict accuracy; the ~90%-false-alarm queue;
-the two cheaper baselines that beat the ledger on the pre-registered stratum; the offline lexicon's
-0.0357 on real language.
+**CFPB recall on real language (0.0357 vs 0.8214) is unaffected by any of this** — it is scored
+against an external gold set of 150 public narratives and never touches our corpus. It is the one
+number here that does not move when the corpus moves.
 
-*Figures current to 2026-08-30. `README.md` is the source of record; where this page and the README
-disagree, the README is right.*
+**Known weak, published anyway:** the ledger does not beat chance on any stratum at 30 seeds
+(18–8–4 `p=0.076` diffuse); the pre-registered headline died; our own ablation floor beats us on
+diffuse under the default tie-break; the agent's 22 / 50 verdict accuracy; the ~90%-false-alarm queue;
+the offline lexicon's 0.0357 on real language and 617 / 2,700 on our own.
+
+*Sweep figures measured 2026-08-31. `README.md` is the source of record; where this page and the
+README disagree, the README is right.*

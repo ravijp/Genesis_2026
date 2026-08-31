@@ -301,15 +301,38 @@ def cmd_demo(run: RunConfig) -> int:
         if c.stratum is Stratum.DIFFUSE and c.outcome is not Outcome.NONE
     ]
 
-    # Prefer an arc that actually ended in an outcome, then a longer arc, then a bigger climb.
-    # A real outcome lets the demo close on lead time instead of trailing off.
-    best = max(
-        accumulation_only,
-        default=None,
-        key=lambda b: (truth[b[1]].outcome is not Outcome.NONE, len(b[3]), b[0]),
-    )
+    # Every quote this command prints is drawn from the arc it picks, so an arc carried by the
+    # extractor's synthetic false fires opens the case on a security answer. Matched on the
+    # TURN, not the conversation: `false_fire_rate` picks a uniformly random customer turn, so
+    # a spurious fire inside a conversation that does hold a plant still quotes the wrong
+    # sentence.
+    #
+    # Reading `corpus.seeded` here is on the evaluation side, which D-009 permits. The same
+    # preference inside `extract.py` would be pass-B tuned toward pass A and is refused.
+    seeded_turns = {
+        (s.customer_id, s.conversation_id, s.signal_type, s.turn_index) for s in corpus.seeded
+    }
+
+    def carried_by_planted_evidence(timeline: list) -> bool:
+        """True when every quote the demo will print sits on a turn the planner planted."""
+        for breakdown in timeline:
+            sig = max(breakdown.entries, key=lambda e: e.signal.day).signal
+            key = (sig.customer_id, sig.conversation_id, sig.signal_type, sig.turn_index)
+            if key not in seeded_turns:
+                return False
+        return True
+
+    # This orders the INSTANCE on screen and nothing else. `clean`, `per_call_only` and
+    # `catchable` are computed over the unfiltered population above and are what the command
+    # closes on -- a selection rule that moved them would guarantee its own conclusion.
+    # Planted evidence first, then a longer arc, then a bigger climb.
+    def preference(candidate: tuple) -> tuple:
+        return (carried_by_planted_evidence(candidate[3]), len(candidate[3]), candidate[0])
+
+    best = max(accumulation_only, default=None, key=preference)
     if best is None:
         # Say so rather than quietly showing a weaker case as though it were the strong one.
+        fallbacks: list[tuple[float, str, object, list]] = []
         for customer_id in ledger.customers():
             t = truth.get(customer_id)
             if t is None or t.stratum is not Stratum.DIFFUSE:
@@ -319,8 +342,8 @@ def cmd_demo(run: RunConfig) -> int:
                 if len(points) < 3:
                     continue
                 climb = points[-1].score - points[0].score
-                if best is None or climb > best[0]:
-                    best = (climb, customer_id, signal_type, points)
+                fallbacks.append((climb, customer_id, signal_type, points))
+        best = max(fallbacks, default=None, key=preference)
 
     if best is None:
         print("No multi-conversation arc in this corpus. Increase n_customers and re-run.")
@@ -332,6 +355,13 @@ def cmd_demo(run: RunConfig) -> int:
     print(f"THE ACCUMULATION MOMENT — {customer_id}  ({signal_type.value})")
     print(f"{'=' * 78}")
     print(f"stratum={t.stratum.value}  outcome={t.outcome.value}  outcome_day={t.outcome_day}\n")
+
+    if not carried_by_planted_evidence(points):
+        # A demo that opens on a false positive undercuts itself, so it says so instead.
+        print("*** At least one quote below is a synthetic FALSE FIRE, not planted evidence:")
+        print("*** no arc in this dataset is carried end to end by seeded signals. The")
+        print("*** mechanism still holds; this instance is a poor illustration of it. Try a")
+        print("*** larger --customers.\n")
 
     # The threshold comes from the SAME equal-alert-budget operating point the evaluation uses,
     # so the demo and the published numbers agree. Deriving it from the customer's own final
@@ -1092,7 +1122,8 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
     w, lost, tied = paired_record(
         by_arm, "full-ledger", "stateless-max", metric="diffuse_recall"
     )
-    print("\nPRE-REGISTERED HEADLINE — full-ledger vs stateless-max on diffuse arcs")
+    print("\nPRE-REGISTERED HEADLINE (2026-08-09) — DIED 2026-08-31, see D-031")
+    print("  full-ledger vs stateless-max on diffuse arcs")
     print(f"  deterministic tie-break (customer_id, the default): {w}-{lost}-{tied}  "
           f"p={_p(sign_test_p(w, lost))}   (declared before the run; everything below is "
           f"exploratory)")
@@ -1116,6 +1147,27 @@ def cmd_sweep(run: RunConfig, n_seeds: int, extractor: Extractor | None = None) 
     else:
         print("  -> record MOVED: part of the headline depends on how ties are broken. "
               "Reported plainly, not softened.")
+
+    # D-031. The re-registration is bound to two gates, and BOTH tie-break records print for
+    # every one of them -- not only for the original headline. Reporting one rule for the
+    # comparison we win and two for the comparison we lose is the asymmetry that makes a
+    # tie-break argument look motivated. Free: `by_arm_random` is already computed above.
+    def _both_ways(label: str, a: str, b: str, note: str = "") -> None:
+        wd, ld, td = paired_record(by_arm, a, b, metric="diffuse_recall")
+        wx, lx, tx = paired_record(by_arm_random, a, b, metric="diffuse_recall")
+        print(f"  {label}: {a} vs {b}{note}")
+        print(f"      deterministic: {wd}-{ld}-{td}  p={_p(sign_test_p(wd, ld))}"
+              f"      randomised: {wx}-{lx}-{tx}  p={_p(sign_test_p(wx, lx))}")
+
+    print("\nHEADLINE, RE-REGISTERED 2026-08-31 (D-031) — diffuse arcs, both tie-break rules")
+    _both_ways("  primary", "full-ledger", "window3-top2",
+               "   (bounded in BOTH time and capacity)")
+    _both_ways("  CHANCE GATE", "full-ledger", "random-rank",
+               "   (co-primary; the claim holds only if this passes too)")
+    _both_ways("  ablation floor", "dumb-ledger", "full-ledger",
+               "   (every mechanism in memory.py off)")
+    print("  -> The claim is declared to hold only if BOTH gates pass. Read the chance gate's")
+    print("     p-value before the primary's: as of 2026-08-31 we FAIL it, and say so.")
 
     n_diffuse = _matrix(
         "DIFFUSE ARCS — evidence spread thin, every pairing, paired by seed",
