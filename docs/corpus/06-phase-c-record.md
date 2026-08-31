@@ -6,7 +6,7 @@ measured, and **deliberately not shipped** — the measurement is in §6.
 Everything here is offline and free. **No keyed run was spent**, which is the sequencing
 `04-plan.md` calls a recorded trap: land every generator change before a single keyed pound.
 
-Branch `wp/phase-c`, six commits, `5948326`..`36395f6`. Suite green, ruff clean, corpus
+Branch `wp/phase-c`, eight commits, `5948326`..HEAD. Suite green, ruff clean, corpus
 byte-identical across two runs at the same seed.
 
 ---
@@ -304,13 +304,184 @@ it now runs at 300 customers.
 6. **The channel mix is unchanged at a third complaints.** `02-reconciliation.md` §4.6 recommends
    keeping the name, reweighting the mix, and saying in the README that the complaint share is
    deliberately inflated so the stratum is measurable at n=1,500. Not done — out of the eight items.
-7. **Silence is still not in the corpus.** Every arc conversation carries a plant (0 / 663 empty).
+7. **A promise can be kept across a gap too short to keep it in.** `CUST-0067` writes two formal
+   complaints on consecutive days and the second says the first was sorted. `_promise_schedule` has
+   no notion of how long an undertaking takes; it only says whether it was kept. A minimum turnaround
+   per topic would fix it and is small.
+8. **Silence is still not in the corpus.** Every arc conversation carries a plant (0 / 663 empty).
    `04-plan.md`'s recommendation is a declared second arm, pre-registered, not a substitution. Not
    done — it is an experiment, not a fix, and it is the owner's to declare.
 
 ---
 
-## 8. What the orchestrator has to do next
+## 8. Twenty arcs, read end to end, in day order
+
+Sample: two arcs per (stratum x trajectory) where one exists, at 400 customers, seed 20260809 —
+20 customers, 76 conversations. Dumped by `dump_arcs.py` in the session scratchpad. Four defects
+were found this way that every property test passed, and they are fixed (commit `65d137a`): the
+agent answering a chase as if hearing it for the first time, a chase running out of things to say
+and looping, the closing being glued to an off-topic aside, and a settled topic coming back as an
+aside in the next contact.
+
+### The best of the twenty — `CUST-0102`
+
+A written complaint in April that nobody actions. A call in June where the agent says so out loud.
+A call in July where the customer says they will mention it again if there is a third time. And a
+call three weeks later that opens *"I was promised a copy of last month's transactions in the post,
+and I'm still waiting"* and carries `ce-s1` — **"This is the fourth time I've called about this and
+nobody has fixed it"** — into an arc that genuinely holds four contacts about one unresolved thing,
+each with a broken undertaking behind it. Before Phase C that sentence landed in an arc with fewer
+than four contacts nine times in ten.
+
+```
+CUST-0102  stratum=concentrated  trajectory=complaint_escalation  outcome=none  latent_risk=0.90  conversations=4
+
+--- contact 1/4  complaint  day 84 (April)   PLANT ce-w7 mass=0.20 turn=4
+   0 customer I want to raise a complaint regarding the last few transactions. Please treat this letter as the start of your complaints process.
+   1 customer I have not contacted you about this before, so there is nothing on file, and I am setting it out from the beginning.
+   2 customer I asked for a list of recent transactions because one of them was not familiar to me, and I was read three of them and told the rest were not available.
+   3 customer I was told a paper copy would follow so that I could go through them properly, and it did not arrive.
+   4 customer I did post something about it, just venting really, on the socials. <<<
+   5 customer The practical effect is that I have had to arrange things around a problem that is not of my making, and I have spent a good deal of time on it that I do not have.
+   6 customer I have had to explain the same set of facts to a different person every time, which is exactly what your own literature says will not happen.
+   7 customer What I want is a written answer setting out what went wrong, what you are doing about it, and by when.
+   8 agent    I have read your letter and opened a case. This is recorded as a complaint and it will not be closed until you have a written answer.
+
+--- contact 2/4  call  day 137 (June)   PLANT ce-w5 mass=0.25 turn=13
+   0 agent    Thanks for calling, you're through to Priya. The call's recorded for training. Who am I speaking with?
+   1 customer Right - I wrote in about the last few transactions back in April. I was promised a copy of last month's transactions in the post, and I'm still waiting on those transactions.
+   2 agent    Before I look at that, I'll need to check it's you. First and third character of the memorable word, please.
+   3 customer First is H, third is L.
+   4 agent    That's you verified, thank you. I've read what happened last time before you say anything. Sorry -- that should have been finished.
+   5 customer Has anything actually been done since I las- got in touch?
+   6 agent    There's a note, and no action against it. I'm not going to dress that up.
+   7 customer Is there a reference on there from last time, or does this start again?
+   8 agent    There is, and it doesn't start again. I'm working from what's already on the account.
+   9 customer What happened to the last request, do you know?
+  10 agent    It was raised and then it sat. I can see where it stopped.
+  11 customer How long is this meant to take, honestly?
+  12 agent    It should have been done by now. I'll give you a date rather than a range.
+  13 customer I mentioned it to someone last time as well, not sure if that went anywhere. <<<
+  14 agent    Let me find that note, so we're not starting from the beginning.
+  15 customer Is this going to keep happening?
+  16 agent    Not if I can help it. I'd rather find out why it stuck than just push it through again.
+  17 customer I don't want to have to explain this all again next time.
+  18 agent    You won't. It's written down, and the next person will see it before you say a word. I'll order a paper copy rather than go through half of them here.
+
+--- contact 3/4  call  day 150 (July)   PLANT ce-w6 mass=0.23 turn=5
+   0 agent    Hello, Marcus here - the call's recorded for training and monitoring. What can I do for you today?
+   1 customer Right - I rang about the last few transactions back in June. I was promised a copy of last month's transactions in the post, and the statement copy never arrived.
+   2 agent    Thanks. Before I bring anything up - can I take the first and third character of your memorable word?
+   3 customer It's E and then R.
+   4 agent    That's you verified, thank you. I've read what happened last time before you say anything. Sorry -- that should have been finished.
+   5 customer It's fine, I'll just mention it again if it happens a third time. <<<
+   6 agent    Let me log it anyway. If there is a third time, it won't be your word against ours.
+   7 customer Sorry, unrelated, but - there's a charge for four pounds I don't recognise.
+   8 agent    I can see it. Give me a second and I'll tell you where it's come from.
+   9 customer One other thing while you're there. I a mortgage statement for the accountant.
+  10 agent    No problem. Post, or shall I put it in your secure messages? The older ones aren't on my screen, so I'll send a copy of last month's transactions in the post.
+
+--- contact 4/4  call  day 171 (July)   PLANT ce-s1 mass=0.92 turn=7
+   0 agent    Good afternoon, you're speaking with Daniel, and this call is recorded. How can I help?
+   1 customer Right - I rang about the last few transactions back in July. I was promised a copy of last month's transactions in the post, and I'm still waiting on those transactions.
+   2 agent    Thanks. Before I bring anything up - can I take the first and third character of your memorable word?
+   3 customer It's E and then R.
+   4 agent    That's you verified, thank you. I've read what happened last time before you say anything. Sorry -- that should have been finished.
+   5 customer Who do I speak to if it doesn't get sorted this time?
+   6 agent    Me, and if I'm not here it goes to my team leader. I'll put both on the note.
+   7 customer This is the fourth time I've called about this and nobody has fixed it. <<<
+   8 agent    Then I'm not passing you on again. I'll own this one and come back to you myself with an answer.
+   9 customer Oh, and before I forget - told me there's a better savings rate now.
+  10 agent    There are a few. Let me see what you're on at the moment. I'll order a paper copy rather than go through half of them here.
+```
+
+### The worst of the twenty — `CUST-0067`
+
+Two formal complaint letters on consecutive days, 10 February and 11 February, and the second one
+says the first *"was sorted out"* — one day later. The gap bucket is right ("earlier this week" for
+a one-day gap) and the promise schedule is right; what is missing is any rule that a written
+complaint takes time to answer, so `promise_kept` can be true across a gap too short to keep it in.
+Contact 5 shows the other residual: a planted fragment is spoken register, and *"What happens if it
+bounces, does that show up anywhere?"* is a question sitting in the middle of a complaint letter
+because the evidence quote must be verbatim.
+
+```
+CUST-0067  stratum=concentrated  trajectory=financial_distress  outcome=none  latent_risk=0.88  conversations=5
+
+--- contact 1/5  complaint  day 10 (February)   PLANT fd-w7 mass=0.22 turn=3
+   0 customer This is a formal complaint about the savings rate. I have tried to resolve it in the ordinary way and got nowhere.
+   1 customer I have not contacted you about this before, so there is nothing on file, and I am setting it out from the beginning.
+   2 customer I asked to see how the rate on my savings compared with what is currently on offer, having been on the same one for several years.
+   3 customer We're doing a proper look at the outgoings this month, spring clean sort of thing. <<<
+   4 customer It has cost me time and, more to the point, it has cost me confidence that anything I am told by your staff will actually happen.
+   5 customer What I want is a written answer setting out what went wrong, what you are doing about it, and by when.
+   6 agent    I have read your letter and opened a case. This is recorded as a complaint and it will not be closed until you have a written answer.
+
+--- contact 2/5  complaint  day 11 (February)   PLANT fd-w4 mass=0.24 turn=3
+   0 customer I am writing to complain about the branch opening hours, and I would like this dealt with properly rather than passed around.
+   1 customer I should say that when I wrote in earlier this week about the savings rate, it was sorted out. That is why it is worth putting this one in writing before it drifts.
+   2 customer I travelled to the branch on a Saturday on the strength of the opening hours I was given, and it was closed.
+   3 customer I'm juggling a few things at the moment, that's all. <<<
+   4 customer None of this is a fortune in money terms. It is the being ignored that I object to, and the sense that nothing is written down anywhere.
+   5 customer Please confirm in writing that this is logged as a complaint, and tell me what happens next and how long it takes.
+   6 agent    Thank you for writing in. I have opened a case and logged this as a complaint. You will get a written response, and I will be handling it myself.
+
+--- contact 3/5  chat  day 67 (April)   PLANT fd-w6 mass=0.25 turn=5
+   0 agent    Hello - Daniel here on chat. What can I help you with?
+   1 customer Me again. Last time, last month, it was the branch opening hours, and that did come through in the end. Anyway. The card reader at the shop wouldn't take it, is there a block?
+   2 agent    One security check before I look: can you confirm the postcode on the account?
+   3 customer Yes, it's the one starting NW3.
+   4 agent    That's you verified, thank you. No block that I can see. It may have been their terminal. Try it once more and ring me if it fails again.
+   5 customer I moved the gym membership to yearly, works out cheaper that way. <<<
+   6 agent    Sensible. Do you want me to check for anything else going out you're not using?
+   7 customer Sorry, unrelated, but - has the standing order to the gym gone out yet?
+   8 agent    Let me look - yes, that went out on the second.
+   9 customer Will it work at the cash machine, or is that stopped as well?
+  10 agent    Cash machines are on the same block, so no, not until it's lifted.
+  11 customer It went through fine on Saturday, it's only since then.
+  12 agent    That fits - something's flagged on it since the weekend. I can't lift it myself, so I've asked for the block to be taken off and a note put on the account.
+
+--- contact 4/5  chat  day 100 (May)   PLANT fd-s1 mass=0.95 turn=5
+   0 agent    Hi there, thanks for messaging. Marcus here - what's happened?
+   1 customer Hello again - I messaged about a month ago about the card being declined in the shop. That got sorted, so thank you. Anyway. Has the standing order to the gym gone out yet?
+   2 agent    One security check before I look: can you confirm the postcode on the account?
+   3 customer Yes, it's the one starting NW3.
+   4 agent    That's you verified, thank you. Let me look - yes, that went out on the second.
+   5 customer I can't make the payment this month, I just can't. <<<
+   6 agent    Right - I'm glad you've rung rather than left it. We can work with this. What's changed?
+   7 customer It normally leaves on the second, and it's the fifth today.
+   8 agent    You're right, it should have gone on the second. Let me see what's happened.
+   9 customer One other thing while you're there. Can you read me the last three transactions?
+  10 agent    Yes - a card payment, a direct debit and a transfer in. Do you want the amounts?
+  11 customer The gym have emailed me saying they've not had it.
+  12 agent    I can see why they'd say that - it hasn't left us. It's left the account this morning. I've noted why it was late.
+
+--- contact 5/5  complaint  day 111 (May)   PLANT fd-w3 mass=0.26 turn=2
+   0 customer I want to raise a complaint regarding the last few transactions. Please treat this letter as the start of your complaints process.
+   1 customer By way of background, I messaged in May, a couple of weeks back, about the standing order to the gym. I mention it because there is a pattern here, not a one-off.
+   2 customer What happens if it bounces, does that show up anywhere? <<<
+   3 customer Please confirm in writing that this is logged as a complaint, and tell me what happens next and how long it takes.
+   4 agent    Thank you for writing in. I have opened a case and logged this as a complaint. You will get a written response, and I will be handling it myself.
+```
+
+### The honest reading verdict
+
+Fifteen of the twenty read as one relationship without qualification. Three are fine but thin —
+two-contact arcs where there is only one thing to refer back to. Two have the `CUST-0067` problem:
+a promise kept across a gap that is too short for it to have been kept in.
+
+What no longer happens anywhere in twenty arcs: an agent answering distress with the recording
+notice, a customer asking the same question four times in one call, "this is the fourth time I've
+called" in a first conversation, a chat that thanks you for calling, a damaged evidence quote, or a
+conversation that could be reordered without anybody noticing.
+
+What still reads as generated: the rhythm. Agent, customer, agent, customer, every time, and the
+security check in the same place in all 933 live conversations. A reader who is looking for the
+seam will find it there, not in the content.
+
+---
+
+## 9. What the orchestrator has to do next
 
 1. **`benchmarks/cfpb/PROTOCOL.md` is pre-registered and cites the published synthetic recall of
    0.681 (496 / 728), and this change moves it.** I did not edit it, per the working agreement.

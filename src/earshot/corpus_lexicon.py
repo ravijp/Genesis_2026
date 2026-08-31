@@ -988,7 +988,7 @@ AGENT_REPLIES_TO_SIGNAL: dict[str, tuple[str, ...]] = {
         "I'll explain it properly - it's worth knowing either way.",
     ),
     "ce-w5": (
-        "Let me check the chat notes so we're not starting from the beginning.",
+        "Let me find that note, so we're not starting from the beginning.",
         "I'll look for it. If it wasn't logged, I'll log it now.",
     ),
     "ce-w6": (

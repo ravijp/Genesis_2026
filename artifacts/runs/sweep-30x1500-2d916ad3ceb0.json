@@ -35,9 +35,9 @@
     "n_customers": 1500,
     "budget": 0.1,
     "config_hash": "2d916ad3ceb0",
-    "pipeline_sha": "906fb59e9387",
-    "git_sha": "36395f6",
-    "elapsed_seconds": 134.91,
+    "pipeline_sha": "4d71d37cae12",
+    "git_sha": "d024540-dirty",
+    "elapsed_seconds": 120.94,
     "provider": "offline-lexicon",
     "extraction_telemetry": null
   },
