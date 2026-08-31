@@ -45,7 +45,7 @@ owning team, a recommendation and cited evidence. **A person decides every actio
 
 ## The moment that shows it
 
-One customer, four months, four ordinary conversations. None alarming on its own.
+One customer, three months, three ordinary conversations. None alarming on its own.
 
 Printed by `uv run earshot demo --customers 3000`, not written for this page — customer `CUST-2688`,
 review budget 10%, ledger threshold 0.307:
@@ -56,8 +56,8 @@ review budget 10%, ledger threshold 0.307:
 | **day 150**, call | "Things have been tight since my hours got cut." | **0.400** | **case opened** |
 | **day 160**, call | "My other half's hours got cut too, so it's both of us at once at the minute." | 0.731 | case stands |
 
-No single-conversation tool catches this, because no single conversation is alarming: a per-call
-scorer never rises above 0.189 and never enters the queue. And when the case opens, **the day-69
+No single-conversation tool catches this, because no single conversation is alarming: the per-call
+arm only ever reaches 0.189, its own cut, and is ranked out of the queue at every point. And when the case opens, **the day-69
 question is re-read in light of day 160** — the ledger records that it supported 0.131 when it arrived
 and supports **0.731** now. Remove any one of the load-bearing quotes and the case falls back below
 the threshold.
