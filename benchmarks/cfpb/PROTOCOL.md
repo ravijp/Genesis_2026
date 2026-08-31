@@ -1,5 +1,17 @@
 # AT-43 — pre-registration
 
+> **Dated note, added 2026-08-31. Nothing below this note has been altered.**
+> This protocol cites a synthetic recall of **0.681 (496 / 728)** as the comparison point for the
+> CFPB figures (§2, §8, §9). **That figure was measured on a corpus that has since been rebuilt
+> twice** — pools widened 2026-08-30, then Phase C's realism rebuild on 2026-08-31 — and it is no
+> longer what the shipping corpus produces. The same measurement today reads **0.2285 (617 / 2,700)**
+> at n=1,500. The CFPB numbers themselves are unaffected: they are scored against an external,
+> unchanged gold set of 150 public narratives and do not touch our corpus. Only the synthetic
+> comparison point moved. **`README.md` is the source of record for current numbers.**
+>
+> This note is additive by design. §1–§7 were frozen before any narrative was read and correcting a
+> stale cross-reference inside them would destroy the only thing pre-registration is worth.
+
 **Frozen 2026-08-09, before any narrative was read.** §1–§7 were decided in advance and none of them
 has been altered since.
 
