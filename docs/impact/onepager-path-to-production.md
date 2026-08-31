@@ -126,18 +126,26 @@ re-scoring path.
 ## 7. The honest risk
 
 **The mechanism is not yet proven to beat chance.** On the stratum the entry is built for, the full
-ledger vs a seeded-RNG control is **17-11-2, p=0.345** — it beats every real baseline there and
-cannot separate itself from random ranking. Whole-portfolio it is 7th of 9 arms, one point above
-chance (0.119 vs 0.109). And the records reversed when the corpus changed shape on 2026-08-30: two
-cheaper baselines that previously beat the ledger now lose to it. These numbers describe the corpus
-at least as much as the mechanism.
+ledger vs a seeded-RNG control is **18-8-4, p=0.076** — and it is no better on the other strata
+(13-11-6, p=0.839 whole-portfolio; 16-12-2, p=0.572 concentrated). Whole-portfolio it is **8th of 9
+arms**, two thousandths above chance (0.115 vs 0.113). The headline pre-registered on 2026-08-09
+**died** when the corpus was rebuilt on 2026-08-31 (29-0-1 to 15-13-2, p=0.851), and our own ablation
+floor beats us on diffuse arcs under the default tie-break (7-18-5, p=0.043). These records have now
+reversed twice across two corpus rebuilds; they describe the corpus at least as much as the mechanism.
 
-**What that means for a deployment:** the value proposition that is *measured* is coverage and
-triage — read 100% of conversations instead of a sample, assemble cited evidence, route to the right
-desk (36 / 49 correct, 2 wrong). The value proposition that is *claimed but unproven* is that
-unbounded memory beats a three-conversation window. A first deployment should be sold on the first
-and instrumented to test the second on real conversation histories, which are longer than any
-synthetic corpus we have built.
+**What that means for a deployment.** The value proposition that is **measured** is coverage and
+triage: read 100% of conversations instead of a sample, assemble cited evidence, route to a desk. That
+is the claim to sell, and the sharpest number behind it is what happens without it — under the keyless
+lexicon reader, two of four review desks receive **no case at all** and a third receives one in
+twenty, while a model reader on real complaint narratives recovers 0.8214 (92 / 112) against the
+lexicon's 0.0357 (4 / 112).
 
-*Current to 2026-08-30. Infrastructure coordinates and the reproducible error lines:
+**What is now measured that this page previously called unproven:** unbounded memory *does* beat a
+cheap three-conversation window on diffuse arcs — **30-0-0, p<0.001**, under both tie-break rules. It
+**loses** on concentrated arcs (1-28-1) and is unproven whole-portfolio (9-17-4, p=0.169). Sell the
+first, disclose the other two, and instrument a first deployment to test all three on real
+conversation histories, which are longer than any synthetic corpus we have built.
+
+*Sweep figures measured 2026-08-31; routing and cost figures are corpus-historical, measured before
+that rebuild. Infrastructure coordinates and the reproducible error lines:
 `docs/ops/aws-infrastructure.md`.*
