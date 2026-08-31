@@ -4,8 +4,9 @@
 Rewritten in place at each handover. **Keep it under ~60 lines.** It is a baton, not a history:
 next action, live blockers, traps already paid for. History goes in `progress.md` or git.
 
-**2026-08-30** · commit `35e5bdf` · branch `build/ear-on-every-call` · **827 tests**, separation
-guard over 44 modules, contrast gate over 650 colour pairs / 17 routes, ruff clean, **30 UI routes**
+**2026-08-31** · commit `31cc1ca` · branch `build/ear-on-every-call` · **855 tests** (850 pass, 5
+skip), separation guard over 45 modules, contrast gate over 650 colour pairs / 17 routes, ruff
+clean, **30 UI routes**
 
 ## First turn
 
@@ -16,34 +17,45 @@ guard over 44 modules, contrast gate over 650 colour pairs / 17 routes, ruff cle
 
 ## Next action
 
-**The corpus was widened 2026-08-30** (pools 8/8/4/4 → 14/14/14/14); every published number was
-regenerated free and offline. Read `state-of-play.md` — the numbers moved, some across zero.
-Everything keyed is on hold. What does NOT need spend, in order:
+**THE ONE THING THAT NEEDS A HUMAN: `source tools/aws-login.sh`.** The SSO token expired 2026-08-31
+and minting one needs a browser. Everything below it costs **under $1** and closes the last real gap.
+Nothing else is blocked on money — the $12 budget is untouched.
 
-1. **The IAM ticket** — the only hard blocker that isn't a spend decision. One inline policy, now
-   also needing `logs:*`: the deployed Lambdas are **unobservable**, not merely inert. JSON in
-   `aws-infrastructure.md`.
-2. Corpus/lexicon, UI, docs, CI work — all free. `state-of-play.md`'s "Next, in order" splits what
-   waits on spend (Arm B, `ui/data.js` regen, the 10-seed keyed sweep, a bigger reader-coverage
-   sample) from what does not.
+Once logged in, in this order, **ONE process at a time, one cache path** (see the traps):
 
-**When spend resumes:** 10-seed keyed sweep (~$10, ONE process, one cache path) on the widened corpus;
-Arm B on Nova Lite (~$0.01–$0.28); reader-coverage past n=20/trajectory (~$0.45 for +20);
-`ui/data.js` regen from a keyed `investigate` run.
+1. **Regenerate `ui/stream.js` and `ui/data.js`** (~$0.80). They were recorded 2026-08-28, so **the
+   demo screens still show pre-Phase-C transcripts** — chats opening "Thank you for calling",
+   repeated lines, ASR noise in typed text. Phase C fixed all of that in the generator and none of
+   it on screen. This is the highest-value dollar in the project.
+2. **Re-measure AT-57 / AT-58** (~$1.50, routing is free). 22 / 50 and 36 / 49 are labelled
+   corpus-historical everywhere they appear; this makes them current.
+3. **Reader coverage** (~$0.45) — the coverage claim the whole entry now rests on is one corpus old.
 
-**Delegate file-writing work with `isolation: "worktree"`** — `git worktree add -b wp/<name>
-/c/tmp/<name> HEAD`, tell the agent the absolute path.
+**Free and unblocked:** the IAM ticket (one inline policy plus `logs:*` — the Lambdas are
+*unobservable*, not merely inert; JSON is in `aws-infrastructure.md`), the video and social
+deliverable, and Phase C's leftovers in `../corpus/04-plan.md`.
 
 ## State
 
-**`random-rank` is a shipped chance-floor arm; full-ledger is indistinguishable from it on diffuse
-arcs** (17–11–2, `p=0.345`) and is **7th of 9 whole-portfolio**. The pre-registered diffuse win over
-`stateless-max` holds (29–0–1); `stateless-top2`/`window3-top2`, which beat the ledger on the old
-corpus, now lose to it (26–2–2 each) — a corpus change flipped a headline both ways. Lexicon finds
-1 of 32 fragments authored for the widened pools (21 of the original 24): reader, not ranking, is
-the binding constraint. One deployment (Northwind), nine seams, five the client's own. One model,
-Haiku 4.5 (D-025): **22/50** verdicts, **36/49** routing, router-not-filter. CDK doesn't work here
-(D-024); `provision.py`/`deploy.py` are the path.
+**The corpus was rebuilt 2026-08-31 (Phase C) and the pre-registered headline died.** `full-ledger`
+vs `stateless-max` on diffuse: 29–0–1 → **15–13–2, `p=0.851`**. Cause was measured, not guessed: a
+`plant_at` bug meant the planted fragment was **silently never spoken** in 69 of 600 arc
+conversations, which had crippled the opponent. Fixing it un-crippled it. **D-031 re-registers** the
+primary as `full-ledger` vs `window3-top2` (**30–0–0**, both tie-breaks) bound to a **co-primary
+chance gate the entry currently FAILS** (18–8–4, `p=0.076`). The dead row keeps its place forever.
+
+**The claim is now coverage, not ranking.** The keyless lexicon finds 59 / 282 planted arc
+conversations and leaves **two of four desks with no case at all**; the model reader scores 0.8214
+(92 / 112) on real CFPB language against the lexicon's 0.0357 (4 / 112). Every ranking arm sits in a
+0.113–0.145 band whose floor is an RNG — that argument was never the winnable one.
+
+**AT-52 answered: keep all four mechanisms.** The `dumb-ledger` "loss" (7–18–5, `p=0.043`) is a
+tie-break artefact — that arm makes 5 distinct scores over 1,500 customers, and randomised it is
+11–13–6, `p=0.839`. Structural leg: **239 / 485 ledger entries are worth more now than at write;
+0 / 485 under a plain count.** Retro re-scoring cannot exist in a count.
+
+One deployment (Northwind), nine seams, **five** the client's own. **One model, Haiku 4.5** (D-025).
+**CDK does not work here** (D-024). `boto3` stays optional; a fresh clone runs keyless.
 
 ## Traps already paid for
 
@@ -58,11 +70,10 @@ Haiku 4.5 (D-025): **22/50** verdicts, **36/49** routing, router-not-filter. CDK
   the corrected version.)*
 - **`CachingProvider` counts hits/misses and never prints them** (`llm/cache.py:127-128`). A 47% miss
   rate stayed invisible for 3,275 paid calls. Print the counter before spending.
-- **A keyed run's cache is one file per provider AND per model AND per measurement** — a second
-  reader arm through the shared path appends behind a published figure, silently. **`config_hash`
-  does not cover the code** — manifests carry `pipeline_sha` now (`7b525d8`); a config-hash-only
-  guard blesses a stale artifact. **A failed replay used to overwrite the run it was replaying** —
-  cache mode is in the filename and an all-`provider_error` run refuses to write; keep both.
+- **One cache file per provider AND per model AND per measurement.** A second reader arm through a
+  shared path appends behind a published figure silently — keys do not collide, nothing errors.
+  **`config_hash` does not cover the code**: it was byte-identical across two corpora that disagreed
+  about who crosses. Manifests carry `pipeline_sha`. Land generator changes *before* spending.
 - **Two thresholds disagree on purpose** — stream/`aws/ingest.py` use a fixed cut, `investigate`
   a budget-derived top-K. Never merge them.
 - **The arc ceiling is gone; a test now pins its absence, not its presence.** Pools are 14/14/14/14;
