@@ -90,42 +90,73 @@ and ties elsewhere, so the trigger is a routing question and the agent is the pr
 extraction fidelity against planted signals at conversation level, with the miss rate published ·
 multi-seed spread and paired significance · tokens, steps, latency and cost per investigation.
 
-**Four things on this list were unmeasured until 2026-08-28 and are now measured.** They are recorded
-here with their denominators because three of the four go against us, and because the point of the
-section is that it is checkable rather than reassuring.
+**Five things on this list were unmeasured and are now measured, all re-run on 2026-08-31 against the
+shipping corpus.** They are recorded here with their denominators because several go against us, and
+because the point of the section is that it is checkable rather than reassuring.
 
-- **Agent verdict accuracy: 22 / 50.** `tools/verdict_accuracy.py`, keyed Haiku 4.5 run, 50 crossings
+- **Which review desks exist at all: 0 / 20 → 20 / 20 complaints, 0 / 20 → 19 / 20 vulnerability,
+  1 / 20 → 16 / 20 retention, 9 / 20 → 10 / 20 collections.** `tools/reader_coverage.py --reader both
+  --per-trajectory 20`, keyed Haiku 4.5, \$0.445562. Both readers' signals through the SAME
+  `SignalLedger` at the SAME threshold and scoring config, denominators = planted counts. Coverage
+  59 / 282 → 177 / 282. **The model column is an UPPER BOUND**: the threshold is a budget-derived
+  top-K cut over the OFFLINE reader's ranking, held fixed across arms so the arms stay comparable, and
+  deriving the model's own cut costs \$13.96 over all 8,429 conversations — not spent. Against us on
+  the same run: the model's `financial_distress` coverage is **0.38 (27 / 72) against the lexicon's
+  0.46 (33 / 72)**, and it pushes 3 / 20 churn and 6 / 20 distress customers over the line on a
+  different signal family, so those cases arrive at the wrong desk.
+- **Agent verdict accuracy: 29 / 50.** `tools/verdict_accuracy.py`, keyed Haiku 4.5 run, 50 crossings
   drawn evenly from customers who went on to have a real outcome and customers who did not. It caught
-  **19 of 25** real cases and dismissed only **3 of 25** false alarms, abstaining once
-  (`insufficient_evidence`, which the scorer counts as wrong on both arms deliberately). **The agent
-  barely discriminates: it escalates.** That is the honest read, it is worse than the earlier 4 / 10
-  sample suggested on the dismissal arm, and it means the investigator currently buys routing and an
-  audit trail rather than filtering.
-- **Routing accuracy: 36 / 49 correct, 2 wrong, 11 declined.** `tools/routing_accuracy.py`, scored
-  against each customer's seeded trajectory via `schema.TRAJECTORY_TEAM`, over the customers that
-  have a seeded family at all. Customers with no seeded trajectory are reported separately and never
-  folded into this denominator — they have no correct team, so including them would manufacture
-  either errors or free accuracy. The failure mode is still mostly declining to route
-  (`owning_team: "none"`), which is safe in a human-in-the-loop queue, but **it is no longer zero
-  wrong**: both wrong routes are unmoored from the evidence on hand rather than near-misses.
+  **16 of 25** real cases and dismissed **13 of 25** false alarms, with **0 abstentions**.
 
-  **This number was 41 / 49 with 0 wrong until 2026-08-30, and the earlier figure was measured on
-  the pre-fix corpus** (`config_hash 3ebd9fb57097`, the one whose planter re-used fragments and paid
-  a corroboration bonus for one utterance copied twice). Both artifacts are in `artifacts/runs/`;
-  they differ by corpus, not by prompt. It is the second time a stale figure survived a corpus fix
-  because `config_hash` alone did not distinguish the two — which is why every manifest now carries
-  `pipeline_sha`.
-- **Cost per 1,000 conversations: \$1.6563.** Reader, on-demand rate, from the 150-document CFPB keyed
-  run of 2026-08-28 (`benchmarks/cfpb/RUNLOG.md`). Computed from published Bedrock prices, not charged.
-- **p50 / p95 reader latency: 1,244 ms / 2,212 ms.** Same run.
+  **This read 22 / 50 with 4 / 25 dismissals on the corpus that preceded the 2026-08-31 rebuild, and
+  the conclusion printed here was "the agent barely discriminates: it escalates."** That conclusion is
+  retracted. **No part of the agent changed** — the rebuild made decoys paraphrase the real signal
+  instead of repeating it verbatim, stopped mangling quotes as though through speech recognition, and
+  made each arc cohere, so the old corpus had been leaking the answer through surface form. A number
+  that moves when the measurement gets more honest is a fact about the measurement. Reported
+  confidence is not diagnostic either way: **0.837 mean on the 21 wrong verdicts against 0.852 on the
+  29 right ones**.
+- **Routing accuracy: 27 / 48 correct, 2 wrong, 19 declined — worse than the 36 / 49 it replaces, and
+  published as worse.** `tools/routing_accuracy.py`, scored against each customer's seeded trajectory
+  via `schema.TRAJECTORY_TEAM`, over the customers that have a seeded family at all. Customers with no
+  seeded trajectory are reported separately and never folded into this denominator — they have no
+  correct team, so including them would manufacture either errors or free accuracy.
+
+  **The confusion matrix explains the drop and it is not the router's fault: the `complaints` row is
+  entirely empty.** No complaint customer ever crossed the review threshold under the offline reader
+  (0 / 20 above), so no complaint case existed to route. The 48 scorable cases are **43 collections,
+  3 vulnerability, 2 retention, 0 complaints**, and all 19 declines sit in the collections row. This
+  is the coverage failure of the first bullet arriving through a second door, and it will not improve
+  by leaving the reader alone — fixing the reader means re-measuring routing on a distribution this
+  figure has never seen. Both wrong routes matched **neither** the seeded trajectory nor the ledger's
+  own dominant signal at the crossing, so neither was an evidence-consistent near-miss.
+
+  This figure has now moved twice for corpus reasons (41 / 49 → 36 / 49 → 27 / 48). The first move
+  happened because `config_hash` alone did not distinguish two corpora that disagreed about who
+  crosses, which is why every manifest now carries `pipeline_sha`.
+- **Cost per 1,000 conversations: \$1.58.** Reader, \$0.445562 measured over the 282 conversations of
+  the coverage run. Corroborated independently at **\$1.5256 / 1,000** over the 130 conversations of
+  the re-recorded streamed demo. Charged, not projected from a price list.
+- **p50 / p95 reader latency: 1,333 ms / 2,162 ms**, on the same 282-conversation run — 1,230 / 1,786
+  on the demo's 130. **0 unparsable replies and 0 relocated quotes** on both.
 
 **Still not measured, and not pretended otherwise:** **a second model arm through the same harness** —
 arm B has never been run, and under D-022 it is now a Bedrock model (Nova Lite or Llama 3 8B) rather
 than GPT-4o-mini. It costs ~\$0.01 of model spend and one run to close; it is unclosed because of
-scheduling, not difficulty, and §8 logs it as an open delta against the brief. Also still open:
-first-attempt evidence groundedness against a known answer — the loop rejects unresolvable citations
-before they can leave, so the honest signal is the repair rate `earshot investigate` prints, and
-measuring it at volume against a key has not been done.
+scheduling, not difficulty, and §8 logs it as an open delta against the brief. It is now the **last**
+item on this list that a single cheap run would close.
+
+Also still open, and each one is priced: **the model reader's own threshold** (\$13.96 — until it is
+spent, every model-arm crossing figure above is an upper bound, and the tool prints that itself);
+**routing on a queue whose complaints desk is not empty**, which needs the model reader in front of
+the investigator rather than more spend on the agent; **any of the agent figures at a sample size
+worth a confidence interval** — 50 cases and n=20 per trajectory on one dataset each are results, not
+intervals.
+
+First-attempt evidence groundedness **is** now measured — **0 / 50 repairs** on the 2026-08-31 run,
+where the honest signal is the repair rate `earshot investigate` prints, because the loop rejects
+unresolvable citations before they can leave. What that figure cannot tell you is whether a resolvable
+quote was the *right* quote; that remains unmeasured.
 
 **Also not built:** ROC/PR curves, dev-split probability calibration, and the four negative controls
 (time-shuffle, outcome-shuffle, volume confound, held-out generator config). v2 promised all of these;

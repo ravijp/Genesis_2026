@@ -217,15 +217,21 @@ Two reasons, and only one of them is cost:
    **`COST_CAP_PER_CASE_USD` was re-derived from that run and is now \$0.10**
    ([cli.py](../../src/earshot/cli.py)). At \$0.25 it sat at 6.8× the worst of those 50 cases and
    never bound once — a ceiling that cannot be reached is not a ceiling, and D-025 said so at the
-   time. \$0.10 is ~2.7× the worst observed case and ~2.5× a full `MAX_STEPS` loop at the measured
+   time. \$0.10 is ~2.6× the worst observed case and ~2.5× a full `MAX_STEPS` loop at the measured
    per-call rate, so an honest case still cannot trip it while a runaway stops at roughly three
    cases' worth of spend instead of eight. A test ties the cap to `MAX_STEPS`, so raising the step
    budget without revisiting the cap fails loudly.
 
-**The cost argument is not yet earned.** Cheap is only a win if the verdicts are right, and on the same
-50-case run Haiku's verdict accuracy is **22 / 50** (2026-08-28, `tools/verdict_accuracy.py`). A model
-that escalates almost everything is cheap per call and expensive per reviewer-hour. Do not present
-D-025 as a cost win on stage until that number moves.
+**The cost argument is better supported than it was, and still not settled.** Cheap is only a win if
+the verdicts are right, and on the same 50-case run Haiku's verdict accuracy is **29 / 50** — 16 / 25
+real cases caught, **13 / 25 false alarms dismissed**, 0 abstentions (2026-08-31,
+`tools/verdict_accuracy.py`). That replaces **22 / 50 with 4 / 25 dismissals**, where the honest read
+was "a model that escalates almost everything is cheap per call and expensive per reviewer-hour".
+**The agent did not change; the corpus stopped leaking the answer through surface form** (decoys
+paraphrase rather than repeat verbatim, quotes are no longer ASR-mangled, arcs cohere). So D-025 may
+now be presented as cheap *and* discriminating on a balanced sample — but not as a cost *win*, because
+the comparison that would settle it is the same 50 cases through a second model, which has never been
+run.
 
 **Cache note.** `artifacts/cache/investigator-demo.jsonl` is keyed on the model, so the Sonnet-era
 entries in it replay only a Sonnet run. The Haiku work has its own cache,
@@ -368,10 +374,14 @@ that argument survives intact.
   never-discard.
 - **Q4.** Ordering guarantee under retry: if event N+1 is processed before a retried event N, is
   `score_at_write` still honest? Per-customer ordering protects the happy path, not the retry path.
-- **Q5.** Which reader wins? **Half answered.** Arm A is measured — 0.8214 strict recall (92 / 112) at
-  \$1.6563 per 1,000 conversations, p50 1,244.4 ms, p95 2,212.0 ms (2026-08-28,
-  [benchmarks/cfpb/RUNLOG.md](../../benchmarks/cfpb/RUNLOG.md)). Arm B has never been run, so the
-  comparison the two-arm design exists for still does not exist. ~\$0.30 closes it (§1.5).
+- **Q5.** Which reader wins? **Half answered, and the half that is answered is the entry's strongest
+  result.** Arm A is measured — 0.8214 strict recall (92 / 112) on the external CFPB gold set, and on
+  our own corpus it takes two dead review desks from **0 / 20 to 20 / 20 and 0 / 20 to 19 / 20** at
+  **\$1.58 per 1,000 conversations**, p50 1,333 ms, p95 2,162 ms (2026-08-31,
+  `tools/reader_coverage.py`; 0 unparsable, 0 relocated quotes). Its crossing figures are an **upper
+  bound** — the threshold is a top-K cut over the offline reader's ranking, held fixed across arms.
+  Arm B has never been run, so the comparison the two-arm design exists for still does not exist.
+  ~\$0.30 closes it (§1.5).
 
 ---
 
@@ -492,7 +502,7 @@ committee refuses a second vendor key, this is the fallback and it costs one day
 |---|---|---|---|
 | Reader arm A | **Claude Haiku 4.5** | Cheapest capable Claude on a short-input, short-output, schema-constrained task. | **Sonnet for extraction** — several times the cost for a reading task we have not shown needs it. Measure, don't assume. |
 | Reader arm B | **GPT-4o-mini** | Deliberately not the newest. Effective, and the cheapest credible OpenAI reader. | **GPT-4.1 / frontier GPT** — the brief asks for a second model, not a second frontier bill. **GPT-4.1-mini** is the one-step-up option if 4o-mini's recall is unacceptable. |
-| Investigator | **Claude Haiku 4.5**, pinned to the model id in [llm/bedrock.py:72](../../src/earshot/llm/bedrock.py#L72) | §1.5, D-025 (2026-08-25). Sonnet 4.5 is dropped: it needs an Anthropic use-case form this account has not filed and returns `ResourceNotFoundException` until it does, while Haiku needs none. Measured \$0.0301 per investigation. | **Sonnet 4.5** — blocked on a form, and 3× the cost for a discrimination gain nobody has measured. **Opus** — same argument, more money. |
+| Investigator | **Claude Haiku 4.5**, pinned to the model id in [llm/bedrock.py:72](../../src/earshot/llm/bedrock.py#L72) | §1.5, D-025 (2026-08-25). Sonnet 4.5 is dropped: it needs an Anthropic use-case form this account has not filed and returns `ResourceNotFoundException` until it does, while Haiku needs none. Measured \$0.0306 per investigation (2026-08-31, 50 cases). | **Sonnet 4.5** — blocked on a form, and 3× the cost for a discrimination gain nobody has measured. **Opus** — same argument, more money. |
 
 ### Two provider gotchas that must be designed around
 
@@ -662,31 +672,42 @@ and it is why arm B belongs on the volume path rather than being a token second 
 closing it is cheap: 150 gold-set documents on Nova Lite is **\$0.01** (150 × \$0.000096), and the
 whole gold set through *both* arms is **\$0.28** (150 × \$0.001846).
 
-**The reader unit price is now checkable against a measurement, and it is conservative.** The keyed
-CFPB run (2026-08-28, [benchmarks/cfpb/RUNLOG.md](../../benchmarks/cfpb/RUNLOG.md)) spent \$0.24845
-over 150 conversations = **\$1.6563 per 1,000**, i.e. **\$0.0016563 per conversation** against the
-\$0.00175 this table projects. The projection is **5.7% high**, because real CFPB narratives run
-slightly shorter than the 1,000-in / 150-out shape assumed above. **The tables below keep \$0.00175
-deliberately** — it is the conservative number and it is the one that stays comparable to the arm B
-rows, which have no measurement at all. Measured reader latency on the same run: **p50 1,244.4 ms, p95
-2,212.0 ms.**
+**The reader unit price is now checkable against two independent measurements, and the projection is
+conservative against both.** The keyed coverage run (2026-08-31, `tools/reader_coverage.py`) spent
+\$0.445562 over 282 conversations = **\$1.58 per 1,000**, i.e. **\$0.00158 per conversation**; the
+re-recorded streamed demo spent \$0.198324 over 130 = **\$1.5256 per 1,000**. Against the \$0.00175
+this table projects, the projection is **10.8% high**. **The tables below keep \$0.00175 deliberately**
+— it is the conservative number and it is the one that stays comparable to the arm B rows, which have
+no measurement at all. Measured reader latency: **p50 1,333 ms, p95 2,162 ms** on the 282-conversation
+run, 1,230 / 1,786 on the demo's 130, with **0 unparsable replies and 0 relocated quotes** on both.
 
-**One investigation: \$0.0301, measured over 50 cases.** Claude Haiku 4.5 on Bedrock, keyed run
-2026-08-28, artifact `artifacts/runs/verdict-accuracy-20260809-3ebd9fb57097-bedrock.json`:
+*(The superseded figure was \$1.6563 per 1,000 from the 150-document CFPB run of 2026-08-28, at p50
+1,244.4 ms / p95 2,212.0 ms. It is not restated as current anywhere. The CFPB **recall** figures are
+unaffected — they are scored against an external gold set that no change to our corpus touches.)*
+
+**One investigation: \$0.0306, measured over 50 cases.** Claude Haiku 4.5 on Bedrock, keyed run
+2026-08-31:
 
 | | min | p50 | mean | p95 | max |
 |---|---|---|---|---|---|
-| \$ per investigation | 0.0241 | 0.0314 | **0.0301** | 0.0351 | 0.0388 |
+| \$ per investigation | 0.0234 | 0.0308 | **0.0306** | 0.0361 | 0.0384 |
 
 4–6 model calls per case, and **all 50 stopped `decided`** — none hit the step limit, the schema-retry
-limit or the cost cap. Every figure below uses the **\$0.0301 mean**.
+limit or the cost cap. Model time p50 20.8 s, p95 28.1 s.
+
+**The \$/mo tables below were computed at the previous \$0.0301 mean and are NOT re-derived here.**
+The two differ by 1.7%, which moves no monthly total by a dollar at any scale in this document and
+changes no conclusion, and re-deriving every arithmetic string by hand is exactly the kind of bulk
+edit that introduces an error the reader cannot see. Read every investigation row below as
+\$0.0301 × volume, ~1.7% low.
 
 This replaces the previous **\$0.093** (the mean of two live Sonnet 4.5 investigations, \$0.089 and
 \$0.097). Two caveats, because the swap is not purely good news: the sample is 25× larger and therefore
 much better, but the Sonnet figure was *charged* by OpenRouter while the Haiku figure is **computed
 from published prices** (G1) — a real reduction in the standing of the number, not a footnote. And a
-cheaper investigation is only a saving if its verdicts are usable; at **22 / 50** on the same run, they
-are not yet (§1.5).
+cheaper investigation is only a saving if its verdicts are usable — at **29 / 50** with 13 / 25 false
+alarms dismissed (2026-08-31) they now are, on a balanced 50-case sample, which was not true of the
+**22 / 50** this section previously carried (§1.5).
 
 ## B.2 Build scale (~1,800 conversations per dataset, 400 customers)
 
@@ -771,14 +792,13 @@ Call* ~\$1.44 per 1,000 conversations against a transcription bill already paid.
 
 **This ratio is now half measured rather than wholly projected.**
 `ExtractionTelemetry.cost_per_1000_conversations`
-([extract_model.py:111-117](../../src/earshot/extract_model.py#L111-L117)) reported **\$1.6563 per
-1,000** on the first keyed run (150 CFPB conversations, 2026-08-28,
-[benchmarks/cfpb/RUNLOG.md](../../benchmarks/cfpb/RUNLOG.md)) — our half of the ratio, from a run, on
-real customer language. It is *higher* than B.3's \$1.44 for a reason worth stating: the \$1.6563 is
-reader spend alone at the **on-demand** rate, while B.3's \$1.44 spreads reader, investigator and all
-infrastructure over the same 1,000 conversations at the **batch** rate. The two are not competing
-estimates of one quantity. The ASR side stays a list-price projection; nobody here has bought a minute
-of transcription.
+([extract_model.py:111-117](../../src/earshot/extract_model.py#L111-L117)) reported **\$1.58 per
+1,000** on the 2026-08-31 coverage run (282 conversations) and **\$1.5256** on the re-recorded streamed
+demo (130 conversations) — our half of the ratio, from two runs. It is *higher* than B.3's \$1.44 for a
+reason worth stating: the \$1.58 is reader spend alone at the **on-demand** rate, while B.3's \$1.44
+spreads reader, investigator and all infrastructure over the same 1,000 conversations at the **batch**
+rate. The two are not competing estimates of one quantity. The ASR side stays a list-price projection;
+nobody here has bought a minute of transcription.
 
 *Previously stated as 55–140× here and 55–80× in §1.2. Neither figure followed from B.3's totals in
 any version of them.*
