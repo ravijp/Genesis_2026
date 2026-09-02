@@ -27,19 +27,27 @@ metrics flowing. **That was the missing feasibility evidence and it now exists.*
 
 In order:
 
-1. **The UI write path — the largest open item, and it needs a decision, not code.** A static page
-   cannot sign an `AuthType=AWS_IAM` Function URL. The buttons print the body they *would* send and
-   say so. Options: a signing proxy · `AuthType=NONE` behind a shared secret (bad) · stay honestly
-   read-only. Ask Ravi; do not pick silently.
+1. ~~**The UI write path**~~ — **decided 2026-09-03: stays read-only, labelled on screen.** Ravi's
+   call. A static page cannot sign an `AuthType=AWS_IAM` Function URL, and "HITL enforced by
+   absence" being literally true is a judging asset rather than a gap. The buttons keep printing
+   the body they *would* send. **Worth one check:** confirm the on-screen label actually says this
+   plainly, since it is now a deliberate demo answer rather than a known limitation.
 2. **Deploy the model reader and re-run the feed.** `deploy.py --extractor bedrock` has never run on
    AWS. Today's 1-crossing-in-44 is the *keyless lexicon's* real rate, so the deployed figures and
    the published reader figures come from different readers and **must not be quoted together**.
    Costs real money per conversation — price it before running.
-3. **Prove an alarm fires.** No alarm has ever transitioned to ALARM, so all six thresholds are
-   reasoned, not observed. Free. Do this before item 4, which is worth less.
-4. **Give the alarms an action, or decide not to.** No SNS; the EventBridge → Lambda route would be
-   the first outward-reaching thing in a system whose HITL guarantee is absence. `alarms.py`'s
-   docstring argues both sides. A decision, not a task.
+3. **Prove an alarm fires — WRITTEN AND READY, one command, free.** No alarm has ever transitioned
+   to ALARM, so all six thresholds are reasoned rather than observed. `uv run --with boto3 python
+   tools/feed.py --stage dev --poison 1 --no-dry-run` sends one malformed transcript on a throwaway
+   FIFO group, then polls `describe_alarms` until `earshot-dev-ingest-failures` (`Failed >= 1`, Sum
+   over 300s) crosses. It exercises four things at once: the `Failed` EMF metric, the alarm, the
+   `batchItemFailures` isolation, and the transcripts DLQ added today. **Not yet run** — AWS was
+   unreachable at the end of 2026-09-03 (see the trap below). Ravi chose "prove one fires, no
+   action" over wiring a notifier, so item 4 below is settled as a deliberate no.
+4. ~~**Give the alarms an action**~~ — **decided 2026-09-03: no.** Ravi's call. The EventBridge →
+   Lambda route would be the first outward-reaching thing in a system whose HITL guarantee is
+   absence, and CloudWatch already keeps two weeks of alarm history, so a recorder would be
+   ceremony. Document the routing as target-state; do not build it.
 5. **`GET /cases/{id}` leaks `pk` / `gsi1pk` / `gsi1sk`** into the client body. The list route does
    not. Not an answer-key leak, so `test_api.py` is right to pass.
 
@@ -73,6 +81,22 @@ One deployment (Northwind), nine seams, five the client's own. **One model, Haik
 
 ## Traps already paid for
 
+- **A hanging AWS call is usually credential resolution, and `Config` timeouts do not cover it.**
+  On 2026-09-03 every AWS call began hanging: `sts:GetCallerIdentity` timed out at 70s, and
+  `botocore.config.Config(connect_timeout=8, ...)` did **not** help, because it governs the service
+  client and not the SSO credential fetch underneath it. The token was **live** (checked locally
+  against `~/.aws/sso/cache/*.json`, ~40 minutes remaining), so this was the network, not the token.
+  **Diagnose in this order, cheapest first:** read `expiresAt` out of the SSO cache locally (no
+  network, instant) → then one short-timeout call. Do not re-run a 200s command to find out.
+- **Redirecting Python's stdout to a file makes it block-buffered**, so a killed run leaves an
+  EMPTY log and tells you nothing about where it stopped. Use `python -u` (or
+  `PYTHONUNBUFFERED=1`) on anything you might have to kill. This cost two blind timeouts.
+- **Patch scripts in this shell must use RAW strings (`r'''...'''`) for any text containing a
+  backslash.** A `
+` inside a quoted heredoc arrives at Python as `
+` and becomes a real
+  newline, so the match silently finds nothing. Cost four failed patches on 2026-09-03. The
+  asserts caught every one, which is why every patch here asserts its match count.
 - **Worktree isolation is BROKEN in this environment.** `Agent` with `isolation: "worktree"` either
   refuses ("git could not be run to resolve it") or checks out **commit `4b71039`, the obsolete
   ideation-phase tree** with no `tools/` or `src/`. One locked worktree is parked at

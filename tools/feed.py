@@ -206,6 +206,54 @@ def send(sqs: Any, queue_url: str, grouped: dict[str, list[Conversation]], dry_r
     return sent
 
 
+def send_poison(sqs: Any, queue_url: str, count: int, dry_run: bool) -> int:
+    """Publish deliberately malformed transcripts, to prove the failure path actually works.
+
+    Six alarms existed for a week and not one had ever transitioned to ALARM, so every threshold
+    was reasoned rather than observed. One bad record exercises four things at once: the `Failed`
+    EMF metric, the `earshot-dev-ingest-failures` alarm crossing (`Failed >= 1`, Sum over 300s),
+    `batchItemFailures` isolating the bad record from its healthy neighbours, and the transcripts
+    DLQ -- which did not exist before 2026-09-03.
+
+    **Safe by construction, and each part matters.** The payload is missing required fields, so
+    `parse_conversation` raises before anything is archived or scored -- nothing reaches the ledger.
+    `MessageGroupId` is a throwaway, NOT a customer id, because a FIFO group is ordered and a poison
+    message blocks its own group: putting this on a real customer's group would stall that
+    customer's stream for as long as the retries last. With `maxReceiveCount` 3 and a 360s
+    visibility timeout it retries for ~18 minutes and then moves to the DLQ, rather than the 4 days
+    it would have taken before that queue had one.
+    """
+    group = f"POISON-TEST-{int(time.time())}"
+    entries = [
+        {
+            "Id": str(i),
+            # Missing `customer_id`, `channel`, `day` and `turns`. `parse_conversation` rejects
+            # rather than defaulting, which is the property being exercised.
+            "MessageBody": json.dumps({"conversation_id": f"{group}-{i}", "malformed": True}),
+            "MessageGroupId": group,
+            "MessageDeduplicationId": f"{group}-{i}",
+        }
+        for i in range(count)
+    ]
+    if dry_run:
+        _record("sqs:poison", "SEND", f"DRY-RUN -- would publish {count} malformed message(s)")
+        return count
+    response = sqs.send_message_batch(QueueUrl=queue_url, Entries=entries)
+    sent = len(response.get("Successful") or [])
+    _record("sqs:poison", "SEND", f"published {sent} malformed message(s) as group {group}")
+    return sent
+
+
+def alarm_states(cw: Any, stage: str) -> list[tuple[str, str]]:
+    """Every earshot alarm and its state, so "it fired" is read off AWS rather than asserted."""
+    try:
+        alarms = cw.describe_alarms(AlarmNamePrefix=f"earshot-{stage}-")["MetricAlarms"]
+    except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
+        _record("cloudwatch:alarms", "CHECK", f"FAILED {type(exc).__name__}")
+        return []
+    return sorted((a["AlarmName"], a["StateValue"]) for a in alarms)
+
+
 def _count(ddb: Any, table: str) -> int | None:
     """`Select=COUNT` rather than `describe_table`'s ItemCount, which AWS refreshes roughly every
     six hours and would report 0 long after a feed landed."""
@@ -366,6 +414,14 @@ def main() -> int:
         help="read the deployed state and verify it, without sending anything",
     )
     parser.add_argument(
+        "--poison",
+        type=int,
+        default=0,
+        help="publish N malformed transcripts INSTEAD of the book, to prove the failure path and "
+        "the ingest-failures alarm actually fire. Safe: its own throwaway message group, and the "
+        "DLQ catches it after 3 attempts.",
+    )
+    parser.add_argument(
         "--settle",
         type=int,
         default=180,
@@ -390,12 +446,54 @@ def main() -> int:
               f"type={signal_type} as_of_day={as_of_day}")
 
     import boto3  # noqa: PLC0415 -- the AWS path is the whole point; keep the import at the edge
+    from botocore.config import Config  # noqa: PLC0415 -- same reason
 
-    sqs = boto3.client("sqs", region_name=REGION)
-    ddb = boto3.client("dynamodb", region_name=REGION)
-    lam = boto3.client("lambda", region_name=REGION)
+    # boto3 defaults to a 60s connect timeout with retries behind it, so an unreachable endpoint
+    # hangs for minutes and reads as a slow run rather than a broken one. On 2026-09-03 that cost
+    # ~10 minutes of wall clock across a handful of calls before anyone questioned the network.
+    timeouts = Config(connect_timeout=8, read_timeout=20, retries={"max_attempts": 3})
+    sqs = boto3.client("sqs", region_name=REGION, config=timeouts)
+    ddb = boto3.client("dynamodb", region_name=REGION, config=timeouts)
+    lam = boto3.client("lambda", region_name=REGION, config=timeouts)
+    cw = boto3.client("cloudwatch", region_name=REGION, config=timeouts)
 
     print(f"\n  {'ACTION':<9} {'RESOURCE':<40} RESULT\n")
+    if args.poison:
+        # The failure path, not the happy one. Verification is different in kind: nothing should
+        # reach the ledger, and an alarm should cross -- so `verify()` does not apply here.
+        queue_url = sqs.get_queue_url(QueueName=f"earshot-{args.stage}-transcripts.fifo")[
+            "QueueUrl"
+        ]
+        if args.dry_run:
+            # Deliberately before any CloudWatch read: a preview that needs a reachable endpoint
+            # to say what it would do is not much of a preview.
+            send_poison(sqs, queue_url, args.poison, args.dry_run)
+            print("\nDRY-RUN -- nothing was published. Pass --no-dry-run to send it.")
+            return 0
+        for name, state in alarm_states(cw, args.stage):
+            _record(f"cloudwatch:{name}", "BEFORE", state)
+        send_poison(sqs, queue_url, args.poison, args.dry_run)
+        print(f"\n  waiting up to {args.settle}s for the alarm to evaluate "
+              f"(Failed >= 1, Sum over a 300s period)...")
+        deadline = time.monotonic() + args.settle
+        fired: list[tuple[str, str]] = []
+        while time.monotonic() < deadline:
+            fired = [(n, st) for n, st in alarm_states(cw, args.stage) if st == "ALARM"]
+            if fired:
+                break
+            time.sleep(15)
+        for name, state in alarm_states(cw, args.stage):
+            _record(f"cloudwatch:{name}", "AFTER", state)
+        print("\n" + "-" * 78)
+        if fired:
+            print(f"ALARM CROSSED: {', '.join(n for n, _ in fired)} -- a threshold that was "
+                  "reasoned is now observed.")
+            return 0
+        print(f"No alarm reached ALARM inside {args.settle}s. `Failed` is a Sum over a 300s "
+              "period, so this may simply be too early. Check the metric in CloudWatch before "
+              "concluding the alarm is broken.")
+        return 1
+
     if not args.observe_only:
         queue_url = sqs.get_queue_url(QueueName=f"earshot-{args.stage}-transcripts.fifo")[
             "QueueUrl"

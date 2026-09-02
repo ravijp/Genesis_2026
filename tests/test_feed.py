@@ -16,6 +16,8 @@ Nothing here touches AWS. The prediction runs the real generator, the real lexic
 
 from __future__ import annotations
 
+import json
+
 import feed
 import pytest
 
@@ -209,3 +211,53 @@ def test_an_unreadable_table_is_not_silently_treated_as_a_match() -> None:
     assert failures == [], "the API and drain checks still passed, so there is nothing to report"
     failures = feed.verify(_state(ledger=None, cases=None, api={"status": 500, "body": {}}))
     assert any("returned 500" in f for f in failures)
+
+
+# ---- the failure path ------------------------------------------------------------------------
+
+
+def test_a_poison_payload_is_rejected_by_the_deployed_parser() -> None:
+    """`--poison` is only a useful alarm test if the payload really does fail, and fails at the
+    parse step -- before anything is archived or written to the ledger."""
+    from earshot.aws.transcripts import TranscriptError, parse_conversation
+
+    sent: list[dict] = []
+
+    class Recorder:
+        def send_message_batch(self, **kw):
+            sent.extend(kw["Entries"])
+            return {"Successful": kw["Entries"], "Failed": []}
+
+    feed.send_poison(Recorder(), "https://sqs.test/q", 2, dry_run=False)
+    assert len(sent) == 2
+    for entry in sent:
+        with pytest.raises(TranscriptError):
+            parse_conversation(json.loads(entry["MessageBody"]))
+
+
+def test_poison_never_borrows_a_real_customers_message_group() -> None:
+    """A FIFO group is ordered, so a poison message blocks its own group until it is set aside.
+    On a real customer's group that stalls their whole stream for the length of the retries."""
+    sent: list[dict] = []
+
+    class Recorder:
+        def send_message_batch(self, **kw):
+            sent.extend(kw["Entries"])
+            return {"Successful": kw["Entries"], "Failed": []}
+
+    feed.send_poison(Recorder(), "https://sqs.test/q", 3, dry_run=False)
+    groups = {e["MessageGroupId"] for e in sent}
+    assert len(groups) == 1
+    group = groups.pop()
+    assert group.startswith("POISON-TEST-")
+    assert not group.startswith("CUST-")
+    # Distinct dedup ids, or SQS collapses the batch into one message and the test proves nothing.
+    assert len({e["MessageDeduplicationId"] for e in sent}) == 3
+
+
+def test_a_poison_dry_run_publishes_nothing() -> None:
+    class Exploding:
+        def send_message_batch(self, **kw):
+            raise AssertionError("a dry run must not publish")
+
+    assert feed.send_poison(Exploding(), "https://sqs.test/q", 1, dry_run=True) == 1
