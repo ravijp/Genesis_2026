@@ -118,7 +118,7 @@ replies on both — so it is paraphrasing evidence it was told to quote, and the
 all 20. **D-025 stands on evidence now instead of convenience:** for a bank, an evidence chain a
 reviewer cannot verify word-for-word is not evidence, and that is what the 16× buys.
 
-**Health, measured 2026-09-03.** **902 passing, 5 skipped** (907 collected), ruff clean, separation
+**Health, measured 2026-09-03.** **903 passing, 5 skipped** (908 collected), ruff clean, separation
 guard over **45** modules with both exemption lists still capped at 3, **30 UI routes** and 26 crawled
 links (`ui/smoke.mjs`), a contrast gate over **674** colour pairs across 17 routes and 2 themes. Next
 gate **2026-09-07**. Of the 49 new tests, 44 were written today — `test_provision.py` (19),
@@ -167,6 +167,13 @@ client's own systems — the screen counts them rather than asserting it.
 
 ## Next, in order
 
+0. **Finish the `demo` stage — half-deployed, the only untidy state in the repo.** Ravi authorised
+   the model reader on real infrastructure (~$0.21) on 2026-09-03; the SSO token expired mid-deploy.
+   Tables, all four queues and `earshot-demo-ingest` (with its mapping) exist; `investigate` and
+   `api` do not. Both tools are idempotent — the exact resume commands are in `handover.md`.
+   **`dev` = keyless lexicon, `demo` = Haiku 4.5, same book, same infrastructure**, which is a better
+   comparison than overwriting `dev` and is also the only option: `dev`'s ledger cannot be cleared,
+   because `dynamodb:DeleteItem` is absent from the role by design.
 1. **The reviewer UI's write path — now the largest open item, and it needs a decision.** A static
    page cannot sign an `AuthType=AWS_IAM` Function URL, so the decision buttons currently print the
    request body they *would* send and say so on screen. The options are a signing proxy, switching

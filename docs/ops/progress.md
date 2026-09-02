@@ -78,6 +78,52 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 
 ## Log
 
+**2026-09-03 (late)** · **Ravi's two calls executed; `demo` stage started for the model reader.**
+Commits `03f8450`, `5f6e348`. No spend.
+
+**Decided and recorded, not to be reopened:** the reviewer UI's write path **stays read-only and
+labelled** (a static page cannot sign an `AuthType=AWS_IAM` Function URL, and HITL-enforced-by-absence
+being literally true is a judging asset rather than a gap), and the six alarms get **no action**
+(EventBridge → Lambda would be the first outward-reaching thing in the system, and CloudWatch already
+retains two weeks of alarm history). The real alarm gap is narrower and now has a tool:
+`feed.py --poison 1` sends one malformed transcript on a throwaway FIFO group and polls until
+`earshot-dev-ingest-failures` crosses — no alarm here has ever transitioned to ALARM, so all six
+thresholds are reasoned rather than observed. Written and tested; **not yet run.**
+
+**`GET /cases/{id}` stopped serving DynamoDB key attributes.** It returned `pk`, `gsi1pk` and `gsi1sk`
+in the body because it served the raw item, while the list route only avoided it by projecting through
+`api._queue_row`. Stripped in `CaseStore.get_case`/`list_queue` so no route can forget; the test walks
+every route through the existing `_keys` helper. Not an answer-key leak — storage internals that pin
+us to one table design in public.
+
+**The `demo` stage is provisioned and half-deployed, deliberately as a second stage.** `dev`'s ledger
+holds 34 lexicon-derived signals; mixing two readers in one ledger is not a thing anyone deploys and
+would destroy the clean artifact from this morning. It also **cannot** be cleared — `dynamodb:DeleteItem`
+is absent from the role, so never-discard is enforced at the IAM layer, which is the design working
+rather than an obstacle. So `dev` = keyless lexicon, `demo` = Haiku 4.5, same book, same
+infrastructure. Three tables with PITR and all four queues created; `earshot-demo-ingest` created with
+`EARSHOT_EXTRACTOR=bedrock` and its mapping Enabled; `investigate` and `api` not yet created, because
+the SSO token expired with the zip build eating the window. Nothing charged, no partial ledger written.
+
+**Two things the fresh stage proved that a repair could not.** The transcripts DLQ was created from the
+start rather than reconciled in, and the event source mapping succeeded on the **first** attempt — so
+this morning's visibility-timeout derivation works from scratch on a clean account, which is the
+fresh-machine claim actually tested instead of asserted.
+
+**`feed.py` learned about a model-reader deployment.** `--deployed-reader bedrock` switches `verify()`
+from equality to structural checks, because `predict()` runs the offline lexicon and a model reads
+differently *by design* and is not deterministic even against itself — asserting equality there would
+manufacture a failure. The summary now says on screen that the printed prediction is the offline
+baseline the run is meant to differ from, not the expected answer.
+
+**Also recorded: three environment traps that cost real time.** A hanging AWS call is usually
+credential resolution, which `botocore.Config` timeouts do **not** cover — read `expiresAt` from the
+SSO cache locally first, it is instant. Redirecting Python's stdout to a file makes it block-buffered,
+so a killed run leaves an empty log and hides where it stopped (`python -u`). And patch scripts in this
+shell need raw strings for any text containing a backslash. `handover.md` was also cut from 180 lines
+back under its own ~60-line rule; traps a test now enforces were dropped in favour of the ones nothing
+can catch.
+
 **2026-09-03** · **The deployed pipeline runs end to end, and four defects were found by running it.**
 Commits `b9df104` → `3f40bab`, plus Arm B. ~$2.45 of $12 (Arm B was $0.027705; everything else free).
 

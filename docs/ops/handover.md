@@ -1,140 +1,133 @@
 # Handover
 
 **Imported by `CLAUDE.md`, so every conversation already has this.** Nobody pastes anything.
-Rewritten in place at each handover. **Keep it under ~60 lines.** It is a baton, not a history:
-next action, live blockers, traps already paid for. History goes in `progress.md` or git.
+Rewritten in place at each handover. Next action, live blockers, traps no test can catch. History
+goes in `progress.md` or git.
 
-**2026-09-03** · branch `build/ear-on-every-call` · **907 tests** (902 pass, 5 skip), separation
-guard over 45 modules + `tools/`, contrast gate over 674 colour pairs / 17 routes, ruff clean,
-**30 UI routes**
+**Budget: ~60 lines above "Traps", and the traps list is deliberately exempt.** It was one cap for
+the whole file until 2026-09-03, when the file reached 180 lines and the rule was being quietly
+broken instead of fixed. Splitting the traps into their own doc was the obvious move and is wrong:
+this file is what `CLAUDE.md` imports, so a trap only earns its keep by being in context *before*
+the mistake, not one link away. Prune a trap when a test starts enforcing it — that is what keeps
+the list finite.
+
+**2026-09-03** · `build/ear-on-every-call` · **908 tests** (903 pass, 5 skip) · ruff clean ·
+separation guard over 45 modules + `tools/` · 30 UI routes · **~$2.45 of $12 spent**
 
 ## First turn
 
 1. Say where the build stands and the next action, in two lines. Then start it.
-2. **`export AWS_PROFILE=genesis` before any AWS call.** Without it boto3 finds no credentials and
-   fails looking exactly like a dead SSO token. A genuinely dead token is
-   `TokenRetrievalError`; fix with `source tools/aws-login.sh --force`. **~$2.45 of $12 spent.**
-   Every keyed figure replays free with `EARSHOT_CACHE_MODE=replay` — a miss raises, so a replay
-   cannot spend.
-3. `progress.md` for work-package status. `decisions.md` before arguing.
+2. **`export AWS_PROFILE=genesis`** or boto3 finds no credentials and fails looking exactly like a
+   dead token. Every keyed figure replays free with `EARSHOT_CACHE_MODE=replay` (a miss raises).
+3. `progress.md` for status, `decisions.md` before arguing, `state-of-play.md` for the numbers.
 
-## Next action
+## Next action — finish the `demo` stage
 
-**The deployed pipeline runs end to end and agrees with the local one.** `tools/feed.py`: 130
-messages → 34 ledger entries → 1 case → `GET /cases` 200, deployed score `0.6526618648909545`
-against local `0.652662`. Both mappings Enabled, four queues, both consumed ones with a DLQ, 12 EMF
-metrics flowing. **That was the missing feasibility evidence and it now exists.**
+`dev` runs end to end and **agrees with the local pipeline**: 130 messages → 34 ledger entries → 1
+case → `GET /cases` 200, deployed `0.6526618648909545` vs local `0.652662`. That was the missing
+feasibility evidence.
 
-In order:
+**`demo` is half-deployed — the only untidy state in the repo.** Ravi authorised the model reader on
+real infrastructure (~$0.21); the SSO token expired mid-deploy. Nothing charged, no partial ledger.
 
-1. ~~**The UI write path**~~ — **decided 2026-09-03: stays read-only, labelled on screen.** Ravi's
-   call. A static page cannot sign an `AuthType=AWS_IAM` Function URL, and "HITL enforced by
-   absence" being literally true is a judging asset rather than a gap. The buttons keep printing
-   the body they *would* send. **Worth one check:** confirm the on-screen label actually says this
-   plainly, since it is now a deliberate demo answer rather than a known limitation.
-2. **Deploy the model reader and re-run the feed.** `deploy.py --extractor bedrock` has never run on
-   AWS. Today's 1-crossing-in-44 is the *keyless lexicon's* real rate, so the deployed figures and
-   the published reader figures come from different readers and **must not be quoted together**.
-   Costs real money per conversation — price it before running.
-3. **Prove an alarm fires — WRITTEN AND READY, one command, free.** No alarm has ever transitioned
-   to ALARM, so all six thresholds are reasoned rather than observed. `uv run --with boto3 python
-   tools/feed.py --stage dev --poison 1 --no-dry-run` sends one malformed transcript on a throwaway
-   FIFO group, then polls `describe_alarms` until `earshot-dev-ingest-failures` (`Failed >= 1`, Sum
-   over 300s) crosses. It exercises four things at once: the `Failed` EMF metric, the alarm, the
-   `batchItemFailures` isolation, and the transcripts DLQ added today. **Not yet run** — AWS was
-   unreachable at the end of 2026-09-03 (see the trap below). Ravi chose "prove one fires, no
-   action" over wiring a notifier, so item 4 below is settled as a deliberate no.
-4. ~~**Give the alarms an action**~~ — **decided 2026-09-03: no.** Ravi's call. The EventBridge →
-   Lambda route would be the first outward-reaching thing in a system whose HITL guarantee is
-   absence, and CloudWatch already keeps two weeks of alarm history, so a recorder would be
-   ceremony. Document the routing as target-state; do not build it.
-5. **`GET /cases/{id}` leaks `pk` / `gsi1pk` / `gsi1sk`** into the client body. The list route does
-   not. Not an answer-key leak, so `test_api.py` is right to pass.
+| resource | state |
+|---|---|
+| `earshot-demo-{ledger,cases,reviews}` | created, PITR on, empty |
+| 4 × `earshot-demo-*` queues | created, redrive at 3, visibility 360s / 1800s |
+| `earshot-demo-ingest` | **created**, `EARSHOT_EXTRACTOR=bedrock`, mapping Enabled |
+| `earshot-demo-{investigate,api}` | **NOT created** |
 
-**Priced and unspent, ~$9.5 of $12 left:** the model reader's own threshold ($13.96 — until then
-every model-arm crossing figure is an **upper bound**, and the tool says so itself) and the 10-seed
-keyed sweep (~$10, the one measurement that would settle the chance gate).
+```bash
+source tools/aws-login.sh --force     # needs a browser; the token WILL be dead
+uv run --with boto3 python tools/deploy.py --stage demo --no-dry-run --extractor bedrock
+uv run --with boto3 python tools/feed.py  --stage demo --no-dry-run \
+    --deployed-reader bedrock --settle 240
+```
+
+Both tools are idempotent — finished parts report SKIP. **`--deployed-reader bedrock` is required:**
+`predict()` runs the offline lexicon, so equality is the wrong contract against a non-deterministic
+model; the flag switches `verify()` to structural checks. **A second stage, not a re-feed of `dev`:**
+mixing two readers in one ledger is not a thing anyone deploys, and `dev` cannot be cleared anyway —
+`dynamodb:DeleteItem` is absent from the role, so never-discard is enforced at the IAM layer.
+**`dev` = keyless lexicon, `demo` = Haiku 4.5, same book, same infrastructure.** That is the beat.
+
+Then:
+
+1. **The 09-07 demo beat sheet — Ravi's, and nothing exists.** `docs/gates/` has the 08-10 check-in
+   and no plan for 08-24 or 09-07. Presentation is 10 points; the 25 feasibility points are earned
+   *in* the demo. He was offered a draft and hasn't said yes — **offer again.** Strongest unused
+   material: `CUST-0006-C0` scored **0.1306** on day 21 and is load-bearing 73 days later
+   (`retro_delta 0.5220`), in a deployed record. It lives only in a commit message today.
+2. **Prove an alarm fires — written, free, one command.** No alarm has ever reached ALARM, so all six
+   thresholds are reasoned rather than observed.
+   `tools/feed.py --stage dev --poison 1 --no-dry-run` sends one malformed transcript on a throwaway
+   FIFO group and polls until `earshot-dev-ingest-failures` crosses. Exercises the `Failed` metric,
+   the alarm, `batchItemFailures` isolation and the transcripts DLQ at once.
+
+**Ravi's open decision — do not spend without him:** the **$10 10-seed sweep**, the only measurement
+that would settle the co-primary chance gate the entry FAILS (18–8–4, `p=0.076`). ~$10 of ~$9.3
+remaining, so it permanently rules out the model reader's own threshold ($13.96). He is waiting to see
+whether the model-reader demo carries the weight without it.
+
+**Settled 2026-09-03, do not reopen:** the UI write path **stays read-only and labelled** (a static
+page cannot sign an IAM Function URL, and HITL-by-absence being literally true is an asset) · the
+alarms get **no action** (EventBridge → Lambda would be the first outward-reaching thing here, and
+CloudWatch already keeps two weeks of alarm history).
 
 ## State
 
-**Arm B is done and `build-plan.md` §4's last "not measured" item is closed** — but **§4 still says
-otherwise and needs your edit** (ask first; it is an architecture doc). Nova Lite, same 282
-conversations, $0.027705: coverage **181/282 vs Haiku's 177/282** at **$0.0982/1,000 vs $1.58**, p50
-873 vs 1,333 ms — and **60/80 crossings vs 65/80**. It repairs the one desk Haiku loses to the
-lexicon (`financial_distress` 27/72 → 42/72 vs 33/72), so *that published loss is Haiku's, not the
-model reader's*. Against it: **10 quotes not verbatim, 9 relocated, vs Haiku's 0 and 0** on
-identical text, 0 unparsable both. D-025 stands on evidence now: the 16× buys quote fidelity.
+**Arm B done** ($0.027705), so `build-plan.md` §4's last "not measured" item is closed — **but §4
+still says otherwise and needs Ravi's sign-off to edit** (architecture doc, ask first). Nova Lite vs
+Haiku on the same 282 conversations: coverage **181/282 vs 177/282** at **$0.0982/1,000 vs $1.58**,
+p50 873 vs 1,333 ms, but **60/80 crossings vs 65/80** and **10 quotes not verbatim + 9 relocated vs
+0 and 0**. It repairs the one desk Haiku loses to the lexicon, so *that published loss is Haiku's,
+not the model reader's*. D-025 stands on evidence: the 16× buys citation discipline.
 
-**The corpus was rebuilt 2026-08-31 and the pre-registered headline died.** **D-031** re-registers
-the primary as `full-ledger` vs `window3-top2` (**30–0–0**) bound to a **co-primary chance gate the
-entry FAILS** (18–8–4, `p=0.076`). The dead row keeps its place forever.
-
-**The claim is coverage, not ranking.** Same 282 planted conversations, one variable — who reads:
+**D-031** re-registers the primary as `full-ledger` vs `window3-top2` (**30–0–0**), bound to the
+chance gate above. The dead row keeps its place forever. **Coverage, not ranking, is the claim:**
 Complaints 0/20 → 20/20, Vulnerability 0/20 → 19/20, Retention 1/20 → 16/20, Collections 9/20 →
-10/20. **AT-57 29/50** (dismissals 13/25) — the agent did not change, the corpus stopped leaking.
-**AT-58 27/48, worse**, because the `complaints` row is empty. **AT-52: keep all four mechanisms**;
-the `dumb-ledger` "loss" is a tie-break artefact (11–13–6 randomised). **239/485 ledger entries are
-worth more now than at write; 0/485 under a plain count.**
+10/20. **AT-57 29/50** (the corpus stopped leaking, not the agent improving) · **AT-58 27/48, worse**
+(the `complaints` row is empty) · **AT-52: keep all four mechanisms** · **239/485 entries are worth
+more now than at write; 0/485 under a plain count.**
 
-One deployment (Northwind), nine seams, five the client's own. **One model, Haiku 4.5** (D-025).
-**CDK does not work here** (D-024). `boto3` stays optional; a fresh clone runs keyless.
+One deployment (Northwind), nine seams, five the client's own. **CDK does not work here** (D-024).
+`boto3` optional; a fresh clone runs keyless.
 
-## Traps already paid for
+## Traps no test can catch
 
-- **A hanging AWS call is usually credential resolution, and `Config` timeouts do not cover it.**
-  On 2026-09-03 every AWS call began hanging: `sts:GetCallerIdentity` timed out at 70s, and
-  `botocore.config.Config(connect_timeout=8, ...)` did **not** help, because it governs the service
-  client and not the SSO credential fetch underneath it. The token was **live** (checked locally
-  against `~/.aws/sso/cache/*.json`, ~40 minutes remaining), so this was the network, not the token.
-  **Diagnose in this order, cheapest first:** read `expiresAt` out of the SSO cache locally (no
-  network, instant) → then one short-timeout call. Do not re-run a 200s command to find out.
-- **Redirecting Python's stdout to a file makes it block-buffered**, so a killed run leaves an
-  EMPTY log and tells you nothing about where it stopped. Use `python -u` (or
-  `PYTHONUNBUFFERED=1`) on anything you might have to kill. This cost two blind timeouts.
-- **Patch scripts in this shell must use RAW strings (`r'''...'''`) for any text containing a
-  backslash.** A `
-` inside a quoted heredoc arrives at Python as `
-` and becomes a real
-  newline, so the match silently finds nothing. Cost four failed patches on 2026-09-03. The
-  asserts caught every one, which is why every patch here asserts its match count.
-- **Worktree isolation is BROKEN in this environment.** `Agent` with `isolation: "worktree"` either
-  refuses ("git could not be run to resolve it") or checks out **commit `4b71039`, the obsolete
-  ideation-phase tree** with no `tools/` or `src/`. One locked worktree is parked at
-  `.claude/worktrees/agent-ae208d8d4e6645e39` (a live `claude` pid holds it; do not kill it).
-  Until fixed: implement directly, and never run two file-writing agents at once.
 - **NEVER point two model runs at one cache path.** `ResponseCache` loads its file once in
-  `__init__` (`llm/cache.py:66-85`), so concurrent processes are blind to each other's writes. On
-  2026-08-30 a broken liveness check (`pgrep` **does not exist here** and reports every process
-  dead) led to a second sweep over a live one: **$12.33 spent, $4.60 wasted, 39 cache lines torn**,
-  permanently unreplayable. *(The first post-mortem blamed `prompt_sha` drift and was wrong: a
-  duplicate key proves the key was STABLE.)*
-- **`CachingProvider` counts hits/misses and never prints them** (`llm/cache.py:127-128`). A 47%
-  miss rate stayed invisible for 3,275 paid calls. Print the counter before spending.
-- **One cache file per provider AND per model AND per measurement.** `config_hash` does **not** cover
-  the code; manifests carry `pipeline_sha`. Land generator changes *before* spending.
+  `__init__` (`llm/cache.py:66-85`). On 2026-08-30 a broken liveness check (`pgrep` **does not exist
+  here** and reports every process dead) launched a second sweep over a live one: **$12.33 spent,
+  $4.60 wasted, 39 cache lines torn**, permanently unreplayable. *(The first post-mortem blamed
+  `prompt_sha` drift and was wrong — a duplicate key proves the key was STABLE.)*
+- **`CachingProvider` never prints its hit/miss counters** (`llm/cache.py:127-128`). A 47% miss rate
+  hid for 3,275 paid calls. Print them before spending.
+- **One cache file per provider AND model AND measurement.** `config_hash` does **not** cover the
+  code; manifests carry `pipeline_sha`. Land generator changes *before* spending.
+- **A hanging AWS call is usually credential resolution, and `botocore.Config` timeouts do NOT cover
+  it.** Diagnose cheapest-first: read `expiresAt` from `~/.aws/sso/cache/*.json` locally (instant, no
+  network), *then* one short-timeout call. Never re-run a 200s command to find out.
+- **Redirecting Python's stdout to a file makes it block-buffered**, so a killed run leaves an EMPTY
+  log and hides where it stopped. Use `python -u` on anything you might kill.
+- **Patch scripts in this shell need RAW strings (`r'''...'''`) for any text containing a backslash**
+  — a `\n` in a quoted heredoc reaches Python as an escape and matches nothing. Five failed patches
+  on 2026-09-03. Always assert the match count.
+- **A wrapper that hides an exit code turns failure into false success.** `timeout … | tail` under-ran
+  a 17-min job and let the kill return 0. Twice, ~$1.15. Echo `${PIPESTATUS[0]}`.
+- **A green test can coexist with contradicting infrastructure.** `test_ingest.py` proved poison-record
+  isolation while the queue had no DLQ; EMF was well-formed and produced **zero** metrics for want of
+  `_aws.Timestamp`, and `notBreaching` made four alarms read **OK**. Ask what the deployed thing did.
+- **Worktree isolation is BROKEN here.** `isolation: "worktree"` either refuses or checks out commit
+  `4b71039` — the obsolete ideation tree, no `src/` or `tools/`. One locked worktree is parked at
+  `.claude/worktrees/agent-ae208d8d4e6645e39` (a live `claude` pid holds it; do not kill it). Until
+  fixed: implement directly, never two file-writing agents at once.
 - **A replay at the wrong sample size looks like a broken cache and is not.** Match the published
-  invocation exactly — it is in `README.md` next to the figure.
-- **A wrapper that hides an exit code turns a failure into a false success.** `timeout 590 … | tail`
-  under-ran a 17-min AT-57 job and let the kill return 0. Twice, ~$1.15. Echo `$?`.
-- **A test can be green while the infrastructure contradicts it.** `test_ingest.py` proved
-  `batchItemFailures` isolates a poison record; the transcripts queue had no DLQ, so it retried for
-  4 days and — being FIFO — blocked that customer's whole stream. Same shape: EMF was well-formed
-  and produced **zero** metrics for want of `_aws.Timestamp`, and `notBreaching` made four alarms
-  read **OK** rather than INSUFFICIENT_DATA. **Ask what the deployed thing actually did, not what
-  the test asserts.**
+  invocation exactly — it sits in `README.md` beside the figure.
 - **Two thresholds disagree on purpose** — stream/`aws/ingest.py` use a fixed cut, `investigate` a
   budget-derived top-K. Never merge them.
-- **Queue visibility timeout must be ≥ the consumer's function timeout** or AWS refuses the event
-  source mapping outright. Derived as 6× from `deploy.FUNCTIONS`; never hand-type a second number.
-- **`feed.py` is on the guarded surface and passes structurally** — conversations arrive via
-  `cli.stream_inputs()`. Do not request an exemption; the cap is 3 and full.
-- **`feed.py`'s crossings are not re-feed-stable** (a complete ledger makes every conversation
-  cross); ledger/case/DLQ/API counts are. Never assert crossings == prediction.
 - **Quote nothing at 10 seeds** — not re-measured on the widened corpus.
-- **`stream.py` stays guarded only because `cli.stream_inputs()` hands it conversations.**
-- **The account tool takes `risk_signal`, never `latent_risk`.**
-- **Narration must never share the ledger reader's extractor**; a warm cache makes "live" a replay
-  (`EARSHOT_CACHE_MODE=off`).
-- **`outcome is not None` is always true** · a case id contains `#`, every link percent-encodes it ·
-  never delete an `__init__.py` · verify `pwd` before committing.
+- **Narration must never share the ledger reader's extractor**; a warm cache makes "live" a replay.
+- **`outcome is not None` is always true** · a case id contains `#`, percent-encode every link ·
+  never delete an `__init__.py` · verify `pwd` before committing · the account tool takes
+  `risk_signal`, never `latent_risk`.
 - **AWS/deploy traps live in `aws-infrastructure.md`**, not copied here.
