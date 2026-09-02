@@ -422,7 +422,9 @@ class CaseStore:
     def get_case(self, case_id: str) -> dict[str, Any] | None:
         resp = self._table.get_item(Key={"pk": f"CASE#{case_id}"})
         item = resp.get("Item")
-        return _decimals_to_float(item) if item is not None else None
+        if item is None:
+            return None
+        return _without_storage_keys(_decimals_to_float(item))
 
     def update_status(self, case_id: str, status: str) -> None:
         """Move a case between queues without touching its evidence chain -- see the class
@@ -444,7 +446,24 @@ class CaseStore:
             ScanIndexForward=False,
             Limit=limit,
         )
-        return [_decimals_to_float(item) for item in resp.get("Items", [])]
+        return [_without_storage_keys(_decimals_to_float(item)) for item in resp.get("Items", [])]
+
+
+# DynamoDB's key attributes, stripped on the way OUT. They are an artefact of how this table is
+# addressed and mean nothing to a client: `GET /cases/{id}` was returning `pk`, `gsi1pk` and
+# `gsi1sk` in the body, because it served the raw item while the list route happened to project
+# through `api._queue_row`. Stripping here rather than in each route makes it structural -- a new
+# route cannot forget, and the disk artifact and the DynamoDB item stay field-for-field
+# comparable, which is the whole point of `case_record()`.
+#
+# Read paths only. The writer still sets them, `update_status` addresses by `pk` it builds itself
+# from the case id, and the LEDGER's `pk`/`sk` are untouched -- `load_ledger` reconstructs signals
+# from those.
+_CASE_STORAGE_KEYS = ("pk", "gsi1pk", "gsi1sk")
+
+
+def _without_storage_keys(item: dict[str, Any]) -> dict[str, Any]:
+    return {k: v for k, v in item.items() if k not in _CASE_STORAGE_KEYS}
 
 
 # ---- Reviews -----------------------------------------------------------------------------------

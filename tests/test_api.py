@@ -390,3 +390,29 @@ def test_cors_is_off_unless_an_origin_is_configured(wired, monkeypatch) -> None:
 
 def test_a_preflight_is_answered_without_touching_a_store(wired) -> None:
     assert handler(_event("OPTIONS", "/cases"))["statusCode"] == 204
+
+
+def test_no_route_returns_a_dynamodb_key_attribute(api) -> None:
+    """`GET /cases/{id}` served `pk`, `gsi1pk` and `gsi1sk` in the body until 2026-09-03, because
+    it returned the raw item while the list route happened to project through `_queue_row`.
+
+    Every route is walked and every nested dict inspected via `_keys`, so a route added later is
+    covered without anyone remembering to extend this. These are not answer-key fields -- nothing
+    here was a leak of truth -- but they are storage internals that mean nothing to a client and
+    pin us to one table design in public.
+    """
+    from earshot.aws.stores import _CASE_STORAGE_KEYS
+
+    built, case_id = api
+    routes = [
+        ("GET", "/cases"),
+        ("GET", f"/cases/{case_id}"),
+        ("GET", f"/cases/{case_id}/reviews"),
+        ("GET", "/customers/C1/ledger"),
+    ]
+    for method, path in routes:
+        status, payload = route(built, method, path)
+        assert status == 200, f"{method} {path} -> {status}"
+        present = _keys(payload) & set(_CASE_STORAGE_KEYS)
+        assert not present, f"{method} {path} returns storage key(s) {sorted(present)}"
+

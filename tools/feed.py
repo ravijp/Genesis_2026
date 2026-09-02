@@ -357,10 +357,42 @@ def observe(
     }
 
 
-def verify(state: dict[str, Any]) -> list[str]:
-    """Deployed reality against the local answer key. Returns the failures, empty if it agrees."""
+def verify(state: dict[str, Any], *, strict: bool = True) -> list[str]:
+    """Deployed reality against the local answer key. Returns the failures, empty if it agrees.
+
+    `strict=False` when the DEPLOYED reader is a model. Then exact equality is the wrong contract
+    and asserting it would manufacture a failure: `predict()` runs the offline lexicon, a model
+    reads differently by design, and a model is not deterministic even against itself. What still
+    has to hold is structural -- the queues drained, nothing reached the DLQ, the reader found
+    something, the API answers, and every case it serves is genuinely at or above the online cut.
+    Reporting those honestly beats reporting a green equality that was never meaningful.
+    """
     prediction: Prediction = state["prediction"]
     failures = []
+    if not strict:
+        if state["ledger"] is not None and state["ledger"] <= 0:
+            failures.append("the ledger is empty -- the deployed reader found nothing at all")
+        if state["dlq"]:
+            failures.append(f"{state['dlq']} message(s) on the DLQ -- something failed three times")
+        if not state["drained"]:
+            failures.append("queues did not drain inside the settle window")
+        api = state["api"]
+        if api is None:
+            failures.append("GET /cases did not answer")
+        elif api["status"] != 200:
+            failures.append(f"GET /cases returned {api['status']}")
+        else:
+            for case in api["body"].get("cases") or []:
+                if not isinstance(case, dict):
+                    continue
+                score, cut = case.get("score"), case.get("threshold")
+                if score is None or cut is None:
+                    failures.append(f"case {case.get('case_id')} carries no score or threshold")
+                elif score < cut:
+                    failures.append(
+                        f"case {case.get('case_id')} scores {score} below its own cut {cut}"
+                    )
+        return failures
     if state["ledger"] is not None and state["ledger"] != prediction.ledger_writes:
         failures.append(
             f"ledger holds {state['ledger']} entries, local pipeline wrote "
@@ -412,6 +444,14 @@ def main() -> int:
         "--observe-only",
         action="store_true",
         help="read the deployed state and verify it, without sending anything",
+    )
+    parser.add_argument(
+        "--deployed-reader",
+        choices=("offline", "bedrock"),
+        default="offline",
+        help="which reader the DEPLOYED ingest handler is running (EARSHOT_EXTRACTOR). Must match, "
+        "or the local prediction is against a different system than the one being fed. `bedrock` "
+        "relaxes the equality checks to structural ones -- see `verify`.",
     )
     parser.add_argument(
         "--poison",
@@ -507,14 +547,21 @@ def main() -> int:
             return 0
 
     state = observe(ddb, sqs, lam, args.stage, prediction, args.settle)
-    failures = verify(state)
+    strict = args.deployed_reader == "offline"
+    failures = verify(state, strict=strict)
     print("\n" + "-" * 78)
     if failures:
         print(f"DISAGREES with the local pipeline -- {len(failures)} finding(s):")
         for failure in failures:
             print(f"  - {failure}")
         return 1
-    print("AGREES with the local pipeline: ledger, cases and GET /cases all match the prediction.")
+    if strict:
+        print("AGREES with the local pipeline: ledger, cases and GET /cases match the prediction.")
+    else:
+        print(f"deployed reader = {args.deployed_reader}; the local prediction above is the "
+              "OFFLINE lexicon's and is NOT the expected answer here -- it is the baseline this "
+              "run is meant to differ from. Structural checks passed: queues drained, DLQ empty, "
+              "the reader wrote to the ledger, and every case served is at or above its own cut.")
     return 0
 
 
