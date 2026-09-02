@@ -196,7 +196,8 @@ The model column is therefore what this budget surfaces *at the offline cut*, no
 model-thresholded deployment would surface. Never publish the row without this sentence.
 
 **Where the model loses, on the same run.** Its coverage of `financial_distress` is **0.38 (27 / 72)
-against the lexicon's 0.46 (33 / 72)** — worse, on the one family the lexicon was written to catch —
+against the lexicon's 0.46 (33 / 72)** — worse, on the one family the lexicon was written to catch,
+though Arm B below shows this is Haiku's weakness and not the model reader's —
 and it is only ahead on Collections crossings 10 / 20 to 9 / 20. It also pushes **3 / 20 churn and
 6 / 20 distress customers over the line on a *different* signal family**, so those cases exist but
 arrive at the wrong desk. This is a differently-shaped reader, not a uniformly better one.
@@ -214,6 +215,53 @@ EARSHOT_CACHE_MODE=replay uv run python tools/reader_coverage.py --reader both -
 **n = 20 customers per trajectory, one dataset, one seed.** It is a direction with a denominator on
 it, not an interval. Samples nest — first N by `customer_id` — so `--per-trajectory 40` re-reads
 nothing already cached and pays only the delta.
+
+#### Arm B: a second model on the same 282 conversations — cheaper, wider, and sloppier
+
+`--model amazon.nova-lite-v1:0`, **measured 2026-09-03 for $0.027705**. Same corpus config
+(`1ee962fd608f`), same pipeline (`4d71d37cae12`), same sample, same ledger, same threshold. One
+variable: which model reads. Nova Lite writes to its own cache file, so the published Haiku figures
+above stay replayable byte for byte.
+
+| | offline lexicon | Haiku 4.5 | Nova Lite |
+|---|---|---|---|
+| **Coverage, planted conversations found** | 59 / 282 | 177 / 282 | **181 / 282** |
+| `complaint_escalation` | 1 / 65 | 60 / 65 | 60 / 65 |
+| `life_event` | 9 / 68 | **50 / 68** | 44 / 68 |
+| `churn_intent` | 16 / 77 | **40 / 77** | 35 / 77 |
+| `financial_distress` | 33 / 72 | 27 / 72 | **42 / 72** |
+| **Customers crossing** | 10 / 80 | **65 / 80** | 60 / 80 |
+| Cost per 1,000 conversations | $0 | $1.58 | **$0.0982** |
+| p50 / p95 latency | — | 1,333 / 2,162 ms | **873 / 1,253 ms** |
+| Quotes rejected as not verbatim | — | **0** | 10 |
+| Quotes relocated | — | **0** | 9 |
+| Unparsable replies | — | 0 | 0 |
+
+**Nova Lite finds more planted evidence than Haiku at a sixteenth of the cost, and turns less of it
+into cases.** 181 / 282 against 177 / 282, $0.0982 per 1,000 against $1.58, and p50 latency a third
+lower — then 60 / 80 customers crossing against Haiku's 65 / 80. Finding evidence and accumulating it
+into a case that clears a threshold are not the same skill, and this is the cleanest measurement in
+the repo of the difference.
+
+**It also fixes the one desk where Haiku loses to the keyless lexicon.** `financial_distress` coverage
+goes 0.375 (27 / 72) → **0.583 (42 / 72)**, past the lexicon's 0.458. The loss published two sections
+above is a Haiku loss, not a model-reader loss.
+
+**And it is measurably worse at citing.** 10 quotes rejected for not being verbatim, 9 relocated, 1
+too short — against Haiku's 0, 0 and 0 on the identical conversations. Both models produced 0
+unparsable replies, so this is not a formatting problem; the cheaper model paraphrases evidence it was
+asked to quote. For a bank that is disqualifying rather than untidy: an evidence chain a reviewer
+cannot verify word-for-word is not evidence. The verbatim guard in `extract_model.py` caught all 20,
+which is the guard doing its job rather than a reason to relax it.
+
+**So D-025 stands, now on evidence rather than convenience.** Haiku 4.5 costs 16× more per
+conversation and earns it on quote fidelity and crossings, not on raw recall. The honest framing is a
+frontier, not a winner: a deployment that needs breadth per pound would pick Nova Lite and inherit a
+citation problem.
+
+```bash
+EARSHOT_CACHE_MODE=replay uv run python tools/reader_coverage.py --reader model   --per-trajectory 20 --customers 2400 --model amazon.nova-lite-v1:0
+```
 
 ### Extraction fidelity on our own prose
 

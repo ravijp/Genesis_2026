@@ -78,6 +78,50 @@ Status: `TODO` · `WIP` · `DONE` · `BLOCKED (who owns it)` · `DROPPED (why)`
 
 ## Log
 
+**2026-09-03** · **The deployed pipeline runs end to end, and four defects were found by running it.**
+Commits `b9df104` → `3f40bab`, plus Arm B. ~$2.45 of $12 (Arm B was $0.027705; everything else free).
+
+**The pipeline is connected and verified against the local answer.** Both event source mappings are
+Enabled with `ReportBatchItemFailures`. `tools/feed.py` pushed the whole Northwind book through:
+**130 messages in 44 FIFO groups → 34 ledger entries → 1 case → `GET /cases` 200**, matching the
+local prediction exactly, deployed score `0.6526618648909545` against local `0.652662`. The case
+carries three pieces of evidence and `CUST-0006-C0` is the entry's claim in a deployed record:
+scored **0.1306 at write** on day 21, a fifth of the cut, never discarded, and 73 days later
+load-bearing with `retro_delta 0.5220`. Fed twice: 260 messages, still 34 entries and 1 case.
+
+**Four defects, each found only by running the thing.**
+
+1. **Both mappings failed to create.** Not IAM — `provision.py` set no `VisibilityTimeout`, so both
+   queues sat at the SQS default 30s while the functions were 60s and 300s, and AWS refuses a mapping
+   below the function timeout. The constraint spanned two files with nothing connecting them. Now
+   derived as 6× `deploy.FUNCTIONS[...]["timeout"]`.
+2. **`_ensure_queue` was create-only**, so the fix above would have been *silently inert* on an
+   account where the queues already existed. It reconciles now, and proved the repair path on live
+   AWS: `RedrivePolicy (unset) -> {...}`.
+3. **EMF had never produced a single metric.** `_aws.Timestamp` is required and was omitted on the
+   theory that CloudWatch would fall back to the log event's time. It does not — it stores the line
+   and drops the metrics. 130 well-formed records, `list_metrics` empty. Worse than a gap: with
+   `TreatMissingData=notBreaching`, the four alarms on the `Earshot` namespace read **OK** while
+   guarding nothing. 12 metrics now flow; `DuplicateDeliveries 34` with `SignalsWritten 0` is the
+   second feed's own proof that at-least-once cannot double-count.
+4. **The transcripts queue had no DLQ**, while `aws/ingest.py` documented that a bad transcript
+   "eventually reaches the DLQ". On FIFO that is a stalled customer, not a lost message: the group is
+   the customer id, so a poison transcript blocks their whole stream for the 4-day retention while
+   re-invoking ingest, and under `EARSHOT_EXTRACTOR=bedrock` each retry is a paid call `budget.py`
+   cannot stop. `earshot-dev-transcripts-dlq.fifo` now exists, redriving at 3.
+
+**Arm B closes the last "not measured" item, and it is a frontier rather than a winner.** Nova Lite on
+the same 282 conversations: coverage **181 / 282 against Haiku's 177 / 282** at **$0.0982 per 1,000
+against $1.58** and p50 873 ms against 1,333 ms — and only **60 / 80 customers crossing against
+65 / 80**. It fixes the `financial_distress` desk where Haiku loses to the lexicon (0.375 → 0.583 vs
+0.458), so that published loss is Haiku's, not the model reader's. It is also measurably worse at
+citing: **10 quotes rejected as not verbatim, 9 relocated, 1 too short, against Haiku's 0/0/0** on
+identical text, with 0 unparsable on both — the cheaper model paraphrases evidence it was told to
+quote, and the verbatim guard caught all 20. D-025 stands on evidence now instead of convenience.
+
+**Tests 850 → 899** (5 skipped): `test_provision.py` (19), `test_feed.py` (21), 4 in
+`test_metrics.py`. Every one pins a property that was actually violated in production, not a label.
+
 **2026-08-31 (late)** · **All four keyed figures re-measured on the shipping corpus and published
 across every document** (`9da4169`, then the docs commits on `wp/final-numbers`). ~$2.42 of $12.
 

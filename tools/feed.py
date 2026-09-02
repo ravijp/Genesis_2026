@@ -19,13 +19,19 @@ with the local pipeline to six decimal places". A tool that printed a green summ
 would be the same mistake as the `timeout ... | tail` wrapper that turned a truncated run into a
 clean one (`docs/ops/handover.md`).
 
-**This module reads the generator, so it lives in `tools/` and can never move.** `predict()` needs
-`cli.stream_inputs`, which holds the corpus and therefore the answer key. `tools/` is deliberately
-outside the separation-guarded surface (`tests/test_separation.py` globs the package, not the
-scripts). What crosses to AWS is narrower than what this process can see, and `wire_payload()`
-enforces that by construction: it builds the five fields `aws/transcripts.parse_conversation`
-requires, from named attributes, and asserts the key set. A payload cannot pick up `stratum`,
-`outcome` or `latent_risk` by someone spreading a dataclass into it.
+**This file is ON the separation-guarded surface, and it stays there.** `tests/test_separation.py`
+globs `tools/` as well as the package, and `_TOOLS_EVALUATION_SIDE` is capped at three entries that
+are all taken -- so this module is scanned like any other. It passes for the same structural reason
+`stream.py` does: `predict()` gets its conversations from `cli.stream_inputs()`, which is the
+sanctioned seam. Nothing here imports `corpus` or names a ground-truth type, so the guard's four
+nets have nothing to catch. **Do not "fix" this by asking for an exemption** -- the exemption list
+is for harnesses that score against the answer key, and this one does not: it compares a deployed
+ledger to a local ledger, and neither side knows the truth.
+
+What crosses to AWS is narrower still, and `wire_payload()` enforces that by construction: the five
+fields `aws/transcripts.parse_conversation` requires, built from named attributes, key set
+asserted. A payload cannot pick up `stratum`, `outcome` or `latent_risk` from someone spreading a
+dataclass into it.
 
 **Ordering is the point, not a detail.** The claim is accumulation: a sub-threshold signal in
 conversation 1 still counts in conversation 3. That only reproduces if one customer's

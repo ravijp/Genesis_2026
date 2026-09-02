@@ -1,6 +1,6 @@
 # State of play
 
-**Updated 2026-08-31.** Rewritten in place every working session — **never appended to**. If
+**Updated 2026-09-03.** Rewritten in place every working session — **never appended to**. If
 something will not fit, it belongs in `decisions.md` (a choice), `working-agreements.md` (a rule), or
 Jira (work). Anything historical belongs in git.
 
@@ -93,30 +93,69 @@ ships as worse**: its confusion matrix's `complaints` row is entirely empty beca
 customer crossed under the offline reader, so 43 of 48 scorable cases are one desk — the coverage gap
 above, arriving through the routing door.
 
-**LLM spend: ~$2.42 of $12 for all four.** The AWS SSO token was re-minted 2026-08-29 and every keyed
-item ran. Total unspent and still open: the model's own coverage threshold ($13.96) and the 10-seed
-keyed sweep (~$10).
+**LLM spend: ~$2.45 of $12.** Arm B added $0.027705 on 2026-09-03; everything else this session was
+free. Total unspent and still open: the model's own coverage threshold ($13.96) and the 10-seed keyed
+sweep (~$10).
 
-**Health, measured 2026-08-31.** **850 passing, 5 skipped** (855 collected), ruff clean, separation
+**Arm B is measured, and it is a frontier rather than a winner — the last "not measured" item in
+`build-plan.md` §4 closes.** Nova Lite on the identical 282 conversations, identical config hash,
+identical threshold; one variable, which model reads:
+
+| | offline lexicon | Haiku 4.5 | Nova Lite |
+|---|---|---|---|
+| Coverage of planted conversations | 59 / 282 | 177 / 282 | **181 / 282** |
+| `financial_distress` coverage | 33 / 72 | 27 / 72 | **42 / 72** |
+| Customers crossing | 10 / 80 | **65 / 80** | 60 / 80 |
+| Cost per 1,000 | $0 | $1.58 | **$0.0982** |
+| p50 latency | — | 1,333 ms | **873 ms** |
+| Quotes not verbatim / relocated | — | **0 / 0** | 10 / 9 |
+
+Nova Lite finds *more* planted evidence at a sixteenth of the cost and converts *less* of it into
+cases. It also repairs the one desk where Haiku loses to the keyless lexicon, so that published loss
+is Haiku's rather than the model reader's. Against it: on identical text it produced 10 quotes that
+were not verbatim and 9 that had to be relocated, against Haiku's zero of each, with 0 unparsable
+replies on both — so it is paraphrasing evidence it was told to quote, and the verbatim guard caught
+all 20. **D-025 stands on evidence now instead of convenience:** for a bank, an evidence chain a
+reviewer cannot verify word-for-word is not evidence, and that is what the 16× buys.
+
+**Health, measured 2026-09-03.** **899 passing, 5 skipped** (904 collected), ruff clean, separation
 guard over **45** modules with both exemption lists still capped at 3, **30 UI routes** and 26 crawled
 links (`ui/smoke.mjs`), a contrast gate over **674** colour pairs across 17 routes and 2 themes. Next
-gate **2026-09-07**.
+gate **2026-09-07**. Of the 49 new tests, 44 were written today — `test_provision.py` (19),
+`test_feed.py` (21), `test_metrics.py` (14 → 18) — and the rest are `test_separation.py`'s glob
+picking up the new modules, which is the discovery working. Every one pins a property that was
+actually violated in production today rather than a label.
 
-**AWS is real, correct, and inert.** 3 DynamoDB tables with PITR, 3 SQS queues with DLQ redrive, 3
-Lambdas on python3.13 from one zip, a Function URL at `AuthType=AWS_IAM`. `GET /health` returns 200;
-everything touching a store returns 500 and neither queue is wired. Account `859430413223`,
-**us-east-1**, bucket `s3://agentic-trio`. Coordinates and the IAM ask: `aws-infrastructure.md`.
+**AWS is real and it runs.** 3 DynamoDB tables with PITR, **4** SQS queues (both consumed queues
+redrive at 3; a FIFO source needs a FIFO DLQ), 3 Lambdas on python3.13 from one zip, both event source
+mappings Enabled with `ReportBatchItemFailures`, a Function URL at `AuthType=AWS_IAM`. All six API
+routes answer against real DynamoDB.
+
+**The whole Northwind book has been through the deployed path and it agrees with the local pipeline.**
+`tools/feed.py`, 2026-09-03: 130 messages in 44 FIFO groups → **34 ledger entries → 1 case → `GET
+/cases` 200**, matching the local prediction exactly, deployed score `0.6526618648909545` against
+local `0.652662`. Fed twice — 260 messages, still 34 entries and 1 case, so at-least-once cannot
+double-count on real infrastructure and not only in a stub. The case's evidence chain is the entry's
+claim in a deployed record: `CUST-0006-C0` scored **0.1306 at write** on day 21, a fifth of the cut,
+and is load-bearing 73 days later with `retro_delta 0.5220`. **This is the feasibility evidence the
+entry did not have**, and 25 of the 100 rubric points are scored on it.
+
+One crossing in 44 customers is the keyless lexicon's real rate and is reported as such. This run is
+the deployment proof, not a reader result.
+
+Account `859430413223`, **us-east-1**, bucket `s3://agentic-trio`. Coordinates:
+`aws-infrastructure.md`. **`AWS_PROFILE=genesis` must be set** — without it boto3 finds no credentials
+and fails looking exactly like a dead SSO token.
 
 **One deployment (Northwind), framed as an integration.** Nine pipeline seams, **five** of them the
 client's own systems — the screen counts them rather than asserting it.
 
 ## Blocked, and on what
 
-- **The IAM policy — one inline policy, and the end-to-end path closes.** `zenon-poc-lambda-execution`
-  has no SQS, DynamoDB, Bedrock **or CloudWatch Logs** permission, so the deployed Lambdas are not
-  merely inert, they are **unobservable**: no log group exists despite invocations already made.
-  `iam:PutRolePolicy` was attempted and denied. Policy JSON and the reproducible error lines are in
-  `aws-infrastructure.md`.
+- **The IAM policy is DONE** — cleared by IT on 2026-08-31, verified, and as of 2026-09-03 the
+  deployed path is exercised rather than merely permissioned. `dynamodb:DeleteItem` is correctly
+  absent, so never-discard is enforced at the IAM layer and not only by a test. Nothing is blocked on
+  IT any more except CodeBuild, which we declined.
 - **Remaining LLM spend is a decision, not a technical block.** SSO was re-minted 2026-08-29 and every
   keyed item that was queued has run (~$2.42 of $12). What is left is priced and unspent, not blocked:
   the model's own coverage threshold ($13.96), the 10-seed keyed sweep (~$10), Arm B on Nova Lite
@@ -128,8 +167,11 @@ client's own systems — the screen counts them rather than asserting it.
 
 ## Next, in order
 
-1. **The IAM ticket** — the only hard blocker that is not a spend decision. One inline policy and the
-   deployed path stops being a diagram. It now also needs `logs:*`.
+1. **The reviewer UI's write path — now the largest open item, and it needs a decision.** A static
+   page cannot sign an `AuthType=AWS_IAM` Function URL, so the decision buttons currently print the
+   request body they *would* send and say so on screen. The options are a signing proxy, switching
+   the URL to `AuthType=NONE` behind a shared secret (bad), or leaving it honestly read-only for the
+   demo. Nothing else in the deployed path is unfinished.
 2. **Extend the reader-coverage sample to n=40 per trajectory (~$0.45 delta).** The lead claim is
    measured at n=20 on one seed — a direction, not an interval — and samples nest (first N by
    `customer_id`), so doubling re-reads nothing already cached and pays only the delta. The
@@ -146,15 +188,37 @@ client's own systems — the screen counts them rather than asserting it.
    are running the reader we publish as leaving two desks empty. Needs a code path, not just spend.
 5. **The 10-seed keyed sweep** (~$10, ONE process on ONE cache path) — the single most valuable
    unspent measurement, because it is what would settle the chance gate. Deferred deliberately.
-6. **Arm B**: Nova Lite for the reader arm (~$0.01 alone, $0.28 both). Last item on
-   `build-plan.md`'s "not measured" list. `extractor_cache_path()` is per-model, so it cannot pollute
-   the cache behind the published $1.58 / 1,000 reader figure.
+6. ~~**Arm B**~~ — **DONE 2026-09-03, $0.027705.** Nova Lite, own cache file, published Haiku
+   figures still replay byte for byte. Result above; it is a frontier, not a winner.
 7. **The silence-permitting corpus** — pre-registered in D-031 as a declared second arm published
    beside the first, never a substitution. It is an experiment, not a fix. Free.
-8. **Observability (W11, EMF)** and **the UI's write path** — both need the IAM fix first.
+8. **Give the six alarms an action, or decide not to.** They fire into nothing: no SNS on the
+   account, and the EventBridge → notifier-Lambda route would be the first thing in this system that
+   reaches outward, which the HITL-by-absence guarantee is built on. An operator notifier is not a
+   customer notifier, so this is a gap to close deliberately or to leave closed deliberately —
+   `tools/alarms.py`'s docstring already argues both sides. Worth noting the cheaper win first: **no
+   alarm here has ever transitioned to ALARM**, so every threshold is reasoned rather than observed,
+   and proving one fires costs nothing.
+9. **`GET /cases/{id}` serves DynamoDB internals** — `pk`, `gsi1pk` and `gsi1sk` come back in the
+   client-facing body. Not an answer-key leak and `test_api.py` is right to pass, but the list route
+   does not do this and the detail route should not either.
 
 ## Known-weak, stated rather than hidden
 
+- **The observability was decorative until 2026-09-03, and the reason is worth remembering.** EMF
+  omitted the `_aws.Timestamp` it requires, so CloudWatch stored every log line and dropped every
+  metric. 130 well-formed records produced zero datapoints. Because `TreatMissingData` is
+  `notBreaching` throughout, the four alarms on the `Earshot` namespace read **OK** — not
+  INSUFFICIENT_DATA — so the dashboard affirmatively reported health for metrics that did not exist.
+  W11 had been marked DONE for a week. Nothing but running real traffic through it would have found
+  this, which is the argument for `tools/feed.py` existing at all.
+- **No alarm has ever transitioned to ALARM.** All six thresholds are reasoned, not observed. Six
+  alarms that have never fired are six untested assertions, and two of them (`ingest-lag`,
+  `investigations-dlq`) are on SQS metrics whose behaviour under real load we have also never seen.
+- **The deployed end-to-end run proves the plumbing, not the product.** One crossing in 44 customers
+  is the keyless lexicon's real rate; the interesting readers are not deployed. `--extractor bedrock`
+  flips it and has never been run on AWS, so the deployed numbers and the published reader numbers
+  come from different readers and must not be quoted together.
 - **The ledger does not beat chance on any stratum at 30 seeds.** Diffuse 18–8–4 `p=0.076`;
   whole-portfolio 13–11–6 `p=0.839`; concentrated 16–12–2 `p=0.572`. The `p=0.345 → p=0.076` movement
   on diffuse is **one corpus change** and is not claimed as progress. Chance is competitive because
