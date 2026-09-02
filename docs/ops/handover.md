@@ -11,66 +11,72 @@ ruff clean, **30 UI routes**
 ## First turn
 
 1. Say where the build stands and the next action, in two lines. Then start it.
-2. **Every keyed figure is measured and published. ~$2.42 of $12 spent.** All four replay free with
+2. **Every keyed figure is measured and published. ~$2.42 of $12 spent.** All replay free with
    `EARSHOT_CACHE_MODE=replay` — a miss raises rather than calling out, so a replay cannot spend.
-   SSO was re-minted 2026-08-29; `aws sts get-caller-identity` is a **lying probe** (it answers from
-   a cached role credential while the token underneath is dead). Probe Bedrock.
+   **The SSO token expires in hours, not days.** Every AWS call failing with `TokenRetrievalError`
+   is a dead token, NOT a permissions problem — `sts:GetCallerIdentity` needs no permissions and
+   fails too. Fix: `source tools/aws-login.sh --force`. Then `tools/aws_probe.py` (34 probes, ~1 min).
 3. `progress.md` for work-package status and blocker owners. `decisions.md` before arguing.
 
 ## Next action
 
-**The documentation is caught up with the measurements as of 2026-08-31.** All four keyed figures are
-published with denominators, both conclusions that moved are published with the reason, and no
-superseded figure survives outside a labelled retraction. In order:
+**THE IAM BLOCKER IS GONE — cleared by IT on 2026-08-31 and verified.** `zenon-poc-lambda-inline`
+carries all four statements (SQS, DynamoDB, Bedrock `InvokeModel`, CloudWatch Logs) and
+**`dynamodb:DeleteItem` is correctly absent**, so never-discard is now enforced at the IAM layer and
+not only by a test. `GET /cases`, which touches DynamoDB, returns **200** where it returned 500.
+`earshot-dev-ingest` returns `batchItemFailures: []`. The deployed path is no longer a diagram.
 
-1. **The IAM ticket — the only hard blocker.** One inline policy, and it now also needs `logs:*`: the
-   deployed Lambdas are **unobservable**, not merely inert — no log group exists despite invocations
-   already made. JSON and the reproducible error lines are in `aws-infrastructure.md`.
-2. **The reader behind `ui/data.js` is still the offline lexicon**, and that is now the sharpest
-   inconsistency in the repo: the screens `ui/README.md` calls "the proof" run the exact reader we
-   publish as leaving two desks empty. Its *verdicts* are keyed (`4ec34cd`); `--extractor` does not
-   reach `earshot investigate`, so this needs a **code path**, not spend.
-3. **Extend reader coverage to `--per-trajectory 40`** (~$0.45 delta). Samples nest, so it re-reads
-   nothing cached. **Collections is the row worth the denominator** — the one family where the model
-   reader loses on coverage (0.38 vs 0.46) and wins by a single crossing.
-4. **Arm B: $0.01** on Nova Lite for the reader arm ($0.28 both). Last item on `build-plan.md`'s "not
-   measured" list. `extractor_cache_path()` is per-model, so it cannot pollute the cache behind the
-   published $1.58 / 1,000.
-5. **Free and unblocked:** the video and social deliverable, Phase C's leftovers in
-   `../corpus/04-plan.md`, and the per-mechanism tie-share ablation (`mechanism_ablations()` already
-   exists in `arms.py`).
+Work this unblocked, in order. **All of it is free except item 4.**
+
+1. **Wire the queues to their consumers.** Event source mappings: `earshot-dev-transcripts.fifo` →
+   `earshot-dev-ingest`, `earshot-dev-investigations` → `earshot-dev-investigate`. Nothing consumes
+   either queue today, so the pipeline is permissioned but not connected.
+2. **Feed it end to end and prove it.** The tables are empty (`count: 0` is real, not an error).
+   Push a batch through ingest → ledger → threshold → investigate → `GET /cases` and get a non-zero
+   queue out of the deployed system rather than a local run. **This is the feasibility evidence the
+   entry does not yet have** — 25 of 25 rubric points are scored on production readiness.
+3. **Give the six alarms an action.** They are created and page nobody. No SNS on this account, so
+   the route is EventBridge → Lambda. `tools/alarms.py`.
+4. **Arm B, ~$0.01.** `bedrock:InvokeModel` works, so the last "not measured" item in
+   `build-plan.md` §4 and the brief's explicit comparison-model promise close for a cent. Nova Lite:
+   `extractor_cache_path()` is per-model so it cannot pollute the published Haiku cache.
+5. **The UI write path.** A static page cannot sign an `AuthType=AWS_IAM` Function URL. The decision
+   buttons currently print the request body they *would* send and say so. Decide the signing story.
+
+**Still denied, and neither matters:** `codebuild:ListProjects` and `codepipeline:ListPipelines`.
+CodeBuild was declined deliberately on 2026-08-31 — `buildspec.yml` is stale (calls `cdk deploy`,
+`cd infra`, `ui/package.json`, none of which exist) and CI runs on GitHub Actions. `iam:CreateRole`
+**now passes**, so if CodeBuild is ever wanted the service role is self-serve; the blocker is our own
+buildspec, not IT.
 
 **Never spent, and priced:** the model reader's own threshold ($13.96 — until then every model-arm
 crossing figure is an **upper bound**, and the tool prints that itself) and the 10-seed keyed sweep
-(~$10, the one measurement that would settle the chance gate).
+(~$10, the one measurement that would settle the chance gate). ~$9.5 of the $12 budget is unspent.
 
 ## State
 
 **The corpus was rebuilt 2026-08-31 (Phase C) and the pre-registered headline died.** `full-ledger`
-vs `stateless-max` on diffuse: 29–0–1 → **15–13–2, `p=0.851`**. Cause was measured, not guessed: a
-`plant_at` bug meant the planted fragment was **silently never spoken** in 69 of 600 arc
-conversations, which had crippled the opponent. Fixing it un-crippled it. **D-031 re-registers** the
-primary as `full-ledger` vs `window3-top2` (**30–0–0**, both tie-breaks) bound to a **co-primary
-chance gate the entry currently FAILS** (18–8–4, `p=0.076`). The dead row keeps its place forever.
+vs `stateless-max` on diffuse: 29–0–1 → **15–13–2, `p=0.851`**. Cause was measured: a `plant_at` bug
+meant the planted fragment was **silently never spoken** in 69 of 600 arc conversations, crippling
+the opponent. **D-031 re-registers** the primary as `full-ledger` vs `window3-top2` (**30–0–0**, both
+tie-breaks) bound to a **co-primary chance gate the entry FAILS** (18–8–4, `p=0.076`). The dead row
+keeps its place forever.
 
-**The claim is coverage, not ranking, and both halves are measured.** Same 282 planted conversations,
-same ledger, same threshold, one variable — who reads: **complaints 0 / 20 → 20 / 20, vulnerability
-0 / 20 → 19 / 20**, retention 1 / 20 → 16 / 20, collections 9 / 20 → 10 / 20; coverage 59 / 282 →
-177 / 282. Corroborated externally at 0.8214 (92 / 112) vs 0.0357 (4 / 112) on real CFPB language.
-Every ranking arm sits in a 0.113–0.145 band whose floor is an RNG — that argument was never the
-winnable one. **The model column is an upper bound** (offline-derived threshold, held fixed).
+**The claim is coverage, not ranking, and it is the entry's strongest evidence.** Same 282 planted
+conversations, same ledger, same threshold, one variable — who reads: **Complaints 0/20 → 20/20,
+Vulnerability 0/20 → 19/20**, Retention 1/20 → 16/20, Collections 9/20 → 10/20. The keyless lexicon
+finds 59/282 and leaves two desks empty. Model reader **$1.58/1,000**, p50 1,333 ms, 0 unparsable.
+**The model column is an upper bound** (threshold is a top-K cut over the offline ranking).
 
-**Two conclusions moved on 2026-08-31 and both are published with the reason.** AT-57 went 22 / 50 →
-**29 / 50** and dismissals 4 / 25 → **13 / 25**, so "the agent escalates rather than filters" is
-retracted — **not one line of the agent changed**, the corpus stopped leaking the answer through
-surface form. AT-58 went 36 / 49 → **27 / 48** (2 wrong, 19 declined) and **ships as worse**: its
-`complaints` row is empty because no complaint customer crossed under the offline reader, so 43 of 48
-scorable cases are one desk. Do not let either be restated as an agent improvement or a regression.
+**AT-57 is 29/50** (was 22/50), dismissals **13/25** (was 4/25) — *the agent did not change*, the
+corpus stopped leaking the answer through surface form. **AT-58 is 27/48, worse** than 36/49, because
+the confusion matrix's `complaints` row is empty: no complaint customer crosses under the offline
+reader, so 43 of 48 scorable cases are one desk.
 
 **AT-52 answered: keep all four mechanisms.** The `dumb-ledger` "loss" (7–18–5, `p=0.043`) is a
-tie-break artefact — that arm makes 5 distinct scores over 1,500 customers, and randomised it is
-11–13–6, `p=0.839`. Structural leg: **239 / 485 ledger entries are worth more now than at write;
-0 / 485 under a plain count.** Retro re-scoring cannot exist in a count.
+tie-break artefact — 5 distinct scores over 1,500 customers; randomised it is 11–13–6, `p=0.839`.
+Structural leg: **239/485 ledger entries are worth more now than at write; 0/485 under a plain
+count.**
 
 One deployment (Northwind), nine seams, **five** the client's own. **One model, Haiku 4.5** (D-025).
 **CDK does not work here** (D-024). `boto3` stays optional; a fresh clone runs keyless.
