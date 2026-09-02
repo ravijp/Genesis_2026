@@ -252,6 +252,11 @@ def deploy_function(
 
     if dry_run:
         _record(f"lambda:{name}", "UPDATE" if exists else "CREATE", "DRY-RUN")
+        # Fall through to the mapping preview rather than returning. Queue wiring is the one step
+        # here that is not idempotent-by-inspection, so a dry-run that hides it previews the least
+        # of what a real run does.
+        if spec["queue"]:
+            _ensure_mapping(lam, sqs, stage, name, spec, dry_run, exists=exists)
         return
 
     common = {
@@ -282,18 +287,34 @@ def deploy_function(
         return
 
     if spec["queue"]:
-        _ensure_mapping(lam, sqs, stage, name, spec, dry_run)
+        _ensure_mapping(lam, sqs, stage, name, spec, dry_run, exists=True)
 
 
 def _ensure_mapping(
-    lam: Any, sqs: Any, stage: str, name: str, spec: dict[str, Any], dry_run: bool
+    lam: Any,
+    sqs: Any,
+    stage: str,
+    name: str,
+    spec: dict[str, Any],
+    dry_run: bool,
+    *,
+    exists: bool,
 ) -> None:
     """Wire the queue to the function. Idempotent: an existing mapping is left alone rather than
-    recreated, because deleting one drops in-flight messages."""
+    recreated, because deleting one drops in-flight messages.
+
+    `exists` says whether the function is already deployed. Only a dry-run can be called with
+    `exists=False`, and it must not ask Lambda to list mappings for a function that is not there
+    yet -- that raises, and a preview reporting FAILED for a resource it is about to create reads
+    as a blocker when it is not one.
+    """
     queue_name = f"earshot-{stage}-{spec['queue']}"
     arn = _queue_arn(sqs, queue_name)
     if arn is None:
         _record(f"mapping:{queue_name}", "WIRE", "FAILED queue not found -- run provision.py first")
+        return
+    if not exists:
+        _record(f"mapping:{queue_name}", "WIRE", f"DRY-RUN -- would wire to {name} after create")
         return
     try:
         existing = lam.list_event_source_mappings(FunctionName=name, EventSourceArn=arn)
