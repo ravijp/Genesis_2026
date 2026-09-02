@@ -595,3 +595,38 @@ corpus. `test_the_diffuse_result_is_not_a_restatement_of_the_dirichlet_alpha`.
 
 **Open:** the widened corpus is committed but nothing is published from it. The 10-seed keyed sweep
 that would decide adoption costs ~$10 with a pinned `prompt_sha`, and has not been run.
+
+## 2026-08-31 (late) · The IAM blocker cleared, and every keyed figure re-measured
+
+**W9's sibling blocker is gone.** IT attached `zenon-poc-lambda-inline` to
+`zenon-poc-lambda-execution`. Verified rather than assumed: all four requested statements present
+(SQS 5 actions, DynamoDB 5 actions, `bedrock:InvokeModel`, CloudWatch Logs 3 actions), plus S3
+read/write that was not asked for. **`dynamodb:DeleteItem` is correctly absent** — the never-discard
+guarantee is now enforced by the deployed role's own permissions, not only by a test scanning
+`LedgerStore` for a delete method. That is a materially stronger claim than the one the entry made
+yesterday: the role *cannot* delete a signal even if the code tried.
+
+Proof of function, not of policy: `GET /cases` — which touches DynamoDB and had returned **500** on
+every call since 2026-08-28 — returns **200** with a well-formed empty queue. `earshot-dev-ingest`
+returns `batchItemFailures: []`. `count: 0` is honest, not an error; the tables are empty because
+nothing has been ingested.
+
+**CodeBuild was declined, deliberately.** IT offered to create the project. `buildspec.yml` calls
+`npx cdk deploy`, `cd infra` and `npm run build` in `ui/`, and none of those exist — D-024 replaced
+CDK with boto3 and the UI is build-step-free by design (D-004). A project created today fails on its
+first command, and CI already runs on GitHub Actions. `iam:CreateRole` now passes, so if CodeBuild is
+ever wanted the service role is self-serve; the blocker is our stale buildspec, not a permission.
+Declining a favour is cheaper than accepting it and having it fail in someone else's name.
+
+**All four keyed figures re-measured on the shipping corpus, ~$2.42 of a $12 budget.** Reader coverage
+is the result: complaints **0/20 → 20/20**, vulnerability **0/20 → 19/20**, retention 1/20 → 16/20,
+collections 9/20 → 10/20, at **$1.58 / 1,000** with zero unparsable replies. AT-57 improved to 29/50
+with dismissals 4/25 → 13/25 — *the agent is unchanged*, the corpus stopped leaking the answer
+through surface form. AT-58 regressed to 27/48 and publishes as worse, because no complaint customer
+crosses under the offline reader so its `complaints` row is empty. Both demo fixtures re-recorded, so
+the screens finally show the Phase C prose.
+
+**~$1.15 of that spend was waste, and the cause is a reusable lesson.** AT-57 was wrapped in
+`timeout 590 … | tail`, which both under-ran a 17-minute job and let the kill return exit 0 — a
+truncated run looked clean, twice. Same family as the `pgrep` mistake: a wrapper that hides an exit
+code turns a failure into a false success. The cache meant the rerun re-bought only 16 calls.
