@@ -76,6 +76,42 @@ def _clear_rows():
     provision._rows.clear()
 
 
+def _plan_queues(stage: str) -> dict[str, dict[str, str]]:
+    """What `_provision_queues` would configure, per queue name.
+
+    Driven through the real function rather than restating its intent, so the assertions above are
+    about the shipped plan and not about a second description of it.
+    """
+    planned: dict[str, dict[str, str]] = {}
+
+    class PlanningSqs:
+        def get_queue_url(self, **kw):
+            name = kw["QueueName"]
+            if name not in planned:
+                raise _absent()
+            return {"QueueUrl": f"https://sqs.test/{name}"}
+
+        def get_queue_attributes(self, **kw):
+            name = kw["QueueUrl"].rsplit("/", 1)[-1]
+            asked = kw["AttributeNames"]
+            attrs = dict(planned.get(name, {}))
+            attrs["QueueArn"] = f"arn:aws:sqs:us-east-1:1:{name}"
+            if asked == ["QueueArn"]:
+                return {"Attributes": {"QueueArn": attrs["QueueArn"]}}
+            return {"Attributes": {k: v for k, v in attrs.items() if k in asked}}
+
+        def create_queue(self, **kw):
+            planned[kw["QueueName"]] = dict(kw.get("Attributes") or {})
+            return {"QueueUrl": f"https://sqs.test/{kw['QueueName']}"}
+
+        def set_queue_attributes(self, **kw):
+            planned[kw["QueueUrl"].rsplit("/", 1)[-1]].update(kw["Attributes"])
+            return {}
+
+    provision._provision_queues(PlanningSqs(), stage, False)
+    return planned
+
+
 def _results() -> list[str]:
     return [result for _, _, result in provision._rows]
 
@@ -112,6 +148,59 @@ def test_a_queue_with_no_consumer_gets_no_derived_timeout() -> None:
     """The DLQ has no entry in `deploy.FUNCTIONS`, so it must not appear here -- a derived value
     for it would be invented, not required."""
     assert "earshot-dev-investigations-dlq" not in provision.visibility_timeouts("dev")
+
+
+# ---- dead-letter coverage -------------------------------------------------------------------
+
+
+def test_every_consumed_queue_has_a_dead_letter_target() -> None:
+    """The transcripts queue had none until 2026-09-03, while `aws/ingest.py` documented that a
+    malformed transcript "eventually reaches the DLQ". On a FIFO queue the consequence is not a
+    lost message but a stalled customer: the group is ordered, so a poison transcript blocks every
+    later conversation for that customer for the full retention period."""
+    planned = _plan_queues("dev")
+    consumed = {f"earshot-dev-{spec['queue']}" for spec in deploy.FUNCTIONS.values() if spec.get("queue")}
+    assert consumed, "no queue-backed functions found"
+    for name in consumed:
+        attrs = planned[name]
+        assert "RedrivePolicy" in attrs, f"{name} is consumed by a Lambda and has no DLQ"
+        policy = json.loads(attrs["RedrivePolicy"])
+        assert policy["maxReceiveCount"] == provision.MAX_RECEIVE_COUNT
+        assert policy["deadLetterTargetArn"].endswith("-dlq") or policy[
+            "deadLetterTargetArn"
+        ].endswith("-dlq.fifo")
+
+
+def test_a_fifo_queues_dead_letter_target_is_itself_fifo() -> None:
+    """AWS refuses a standard DLQ for a FIFO source. Getting this wrong fails at provision time,
+    but only for whoever runs it against a fresh account."""
+    planned = _plan_queues("dev")
+    for name, attrs in planned.items():
+        if attrs.get("FifoQueue") != "true":
+            continue
+        policy = attrs.get("RedrivePolicy")
+        if not policy:
+            continue  # a DLQ itself has no onward target
+        target = json.loads(policy)["deadLetterTargetArn"]
+        assert target.endswith(".fifo"), f"{name} is FIFO and points at a non-FIFO DLQ {target}"
+        assert planned[target.rsplit(":", 1)[-1]]["FifoQueue"] == "true"
+
+
+def test_a_dlq_is_not_itself_consumed_by_a_lambda() -> None:
+    """A DLQ wired to the handler that rejected the message is an infinite loop with extra steps."""
+    consumed = {f"earshot-dev-{spec['queue']}" for spec in deploy.FUNCTIONS.values() if spec.get("queue")}
+    assert not any(name.endswith(("-dlq", "-dlq.fifo")) for name in consumed)
+
+
+def test_teardown_removes_every_queue_provisioning_creates() -> None:
+    """A DLQ left behind after teardown blocks the next `create_queue` on a name that AWS still
+    holds for 60 seconds, and reads as a permissions problem."""
+    import inspect
+
+    source = inspect.getsource(provision._teardown)
+    for name in _plan_queues("dev"):
+        stem = name.replace("earshot-dev-", "").replace(".fifo", "")
+        assert stem in source, f"{name} is created by provisioning and never torn down"
 
 
 # ---- reconciliation -------------------------------------------------------------------------

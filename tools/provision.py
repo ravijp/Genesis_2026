@@ -252,7 +252,13 @@ def _attribute_matches(name: str, live: str | None, wanted: Any) -> bool:
 
 
 def _reconcile_queue(
-    sqs: Any, name: str, url: str, attributes: dict[str, str], dry_run: bool
+    sqs: Any,
+    name: str,
+    url: str,
+    attributes: dict[str, str],
+    dry_run: bool,
+    *,
+    unevaluated: str = "",
 ) -> None:
     """Correct an existing queue's mutable attributes.
 
@@ -272,7 +278,12 @@ def _reconcile_queue(
         return
     drift = {k: v for k, v in wanted.items() if not _attribute_matches(k, live.get(k), v)}
     if not drift:
-        _record(f"sqs:{name}", "SKIP", "already exists, attributes match")
+        # `unevaluated` names an attribute this run could not compare -- in a dry-run the redrive
+        # policy needs a DLQ ARN that does not exist yet. Saying "attributes match" flat would
+        # contradict the WIRE row printed just above it, which is the dry-run under-reporting its
+        # own plan (the same defect `deploy.py` had, fixed 2026-09-02).
+        note = f"already exists, attributes match ({unevaluated} not evaluated)" if unevaluated             else "already exists, attributes match"
+        _record(f"sqs:{name}", "SKIP", note)
         return
     changed = ", ".join(f"{k} {live.get(k, '(unset)')} -> {v}" for k, v in sorted(drift.items()))
     if dry_run:
@@ -285,13 +296,15 @@ def _reconcile_queue(
         _record(f"sqs:{name}", "UPDATE", f"FAILED {_error_detail(exc)}")
 
 
-def _ensure_queue(sqs: Any, name: str, dry_run: bool, *, attributes: dict[str, str]) -> str | None:
+def _ensure_queue(
+    sqs: Any, name: str, dry_run: bool, *, attributes: dict[str, str], unevaluated: str = ""
+) -> str | None:
     """Create-if-missing, and repair-if-drifted. Returns the queue URL if the queue exists or was
     just created; `None` only in dry-run, when nothing was actually created and there is no URL to
     hand back."""
     url = _queue_url(sqs, name)
     if url is not None:
-        _reconcile_queue(sqs, name, url, attributes, dry_run)
+        _reconcile_queue(sqs, name, url, attributes, dry_run, unevaluated=unevaluated)
         return url
     if dry_run:
         _record(f"sqs:{name}", "CREATE", "DRY-RUN -- would create")
@@ -305,17 +318,61 @@ def _ensure_queue(sqs: Any, name: str, dry_run: bool, *, attributes: dict[str, s
         return None
 
 
+# Three delivery attempts before a message is set aside, on both queues.
+#
+# On the FIFO transcripts queue this bound is doing more work than it looks. A FIFO message group
+# is ordered, so a poison transcript blocks its OWN customer's entire stream until it is either
+# accepted or moved aside -- and until 2026-09-03 that queue had no DLQ at all, so the answer was
+# "neither": it retried for the full 4-day retention period, stalling that customer and
+# re-invoking ingest every visibility window. Under `EARSHOT_EXTRACTOR=bedrock` each of those
+# retries is a paid model call, and `llm/budget.py` cannot stop it, because every retry is a fresh
+# invocation with a fresh budget.
+#
+# 3 attempts x the 360s visibility timeout is about 18 minutes of head-of-line blocking for one
+# customer, then the group moves on. That is the trade: enough attempts to ride out a transient
+# DynamoDB or S3 blip, few enough that a malformed transcript cannot hold a stream hostage.
+MAX_RECEIVE_COUNT = 3
+
+
+def _dlq_arn(sqs: Any, url: str) -> str:
+    return sqs.get_queue_attributes(QueueUrl=url, AttributeNames=["QueueArn"])["Attributes"][
+        "QueueArn"
+    ]
+
+
+def _redrive(dlq_arn: str) -> str:
+    return json.dumps({"deadLetterTargetArn": dlq_arn, "maxReceiveCount": MAX_RECEIVE_COUNT})
+
+
 def _provision_queues(sqs: Any, stage: str, dry_run: bool) -> None:
-    print("\nSQS -- transcript ingest bus (FIFO) + investigation queue with a DLQ")
+    print("\nSQS -- transcript ingest bus (FIFO) + investigation queue, each with its own DLQ")
     visibility = visibility_timeouts(stage)
+
+    # A FIFO queue's dead-letter target must itself be FIFO, so this is its own queue rather than
+    # one bucket shared with the investigations DLQ.
+    transcripts_dlq = f"earshot-{stage}-transcripts-dlq.fifo"
+    transcripts_dlq_url = _ensure_queue(
+        sqs, transcripts_dlq, dry_run,
+        attributes={"FifoQueue": "true", "ContentBasedDeduplication": "false"},
+    )
+
     transcripts = f"earshot-{stage}-transcripts.fifo"
+    transcripts_attrs = {
+        "FifoQueue": "true",
+        "ContentBasedDeduplication": "false",
+        "VisibilityTimeout": str(visibility[transcripts]),
+    }
+    if transcripts_dlq_url is not None:
+        transcripts_attrs["RedrivePolicy"] = _redrive(_dlq_arn(sqs, transcripts_dlq_url))
+    elif dry_run:
+        _record(f"sqs:{transcripts}", "WIRE",
+                "DRY-RUN -- would wire a redrive policy to the FIFO DLQ above")
+    else:
+        _record(f"sqs:{transcripts}", "WIRE",
+                "FAILED -- FIFO DLQ was not created, cannot wire a redrive policy")
     _ensure_queue(
-        sqs, transcripts, dry_run,
-        attributes={
-            "FifoQueue": "true",
-            "ContentBasedDeduplication": "false",
-            "VisibilityTimeout": str(visibility[transcripts]),
-        },
+        sqs, transcripts, dry_run, attributes=transcripts_attrs,
+        unevaluated="" if "RedrivePolicy" in transcripts_attrs else "RedrivePolicy",
     )
     print("    (MessageGroupId=customer_id is set per-message by producers, not a queue "
           "attribute -- nothing to provision for it; content-based dedup is off, so producers "
@@ -333,13 +390,10 @@ def _provision_queues(sqs: Any, stage: str, dry_run: bool) -> None:
             _record(f"sqs:{inv_name}", "CREATE",
                      "FAILED -- DLQ was not created, cannot wire a redrive policy")
         return
-    dlq_arn = sqs.get_queue_attributes(QueueUrl=dlq_url, AttributeNames=["QueueArn"])
-    dlq_arn = dlq_arn["Attributes"]["QueueArn"]
-    redrive = json.dumps({"deadLetterTargetArn": dlq_arn, "maxReceiveCount": 3})
     _ensure_queue(
         sqs, inv_name, dry_run,
         attributes={
-            "RedrivePolicy": redrive,
+            "RedrivePolicy": _redrive(_dlq_arn(sqs, dlq_url)),
             "VisibilityTimeout": str(visibility[inv_name]),
         },
     )
@@ -374,8 +428,11 @@ def _teardown(ddb: Any, sqs: Any, stage: str, dry_run: bool) -> None:
         _teardown_table(ddb, table_name(stage, kind), dry_run)
 
     print("\nSQS")
+    # Source queues before their dead-letter targets, so a DLQ is never deleted out from under a
+    # redrive policy that still names it.
     for name in (
         f"earshot-{stage}-transcripts.fifo",
+        f"earshot-{stage}-transcripts-dlq.fifo",
         f"earshot-{stage}-investigations",
         f"earshot-{stage}-investigations-dlq",
     ):

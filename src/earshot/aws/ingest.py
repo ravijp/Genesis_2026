@@ -15,6 +15,16 @@ Five properties, each bought with a reason:
 2. **One bad record fails alone.** The handler returns `batchItemFailures`, so a malformed
    transcript retries and eventually reaches the DLQ while its healthy neighbours commit. Raising
    instead would redeliver the whole batch and re-run every extraction in it.
+
+   That sentence was **false on the deployed account until 2026-09-03**: the transcripts queue
+   had no DLQ, so "eventually reaches the DLQ" meant "retries for the full 4-day retention
+   period". On a FIFO queue that is not a lost message, it is a stalled customer -- the group is
+   ordered, so the poison transcript blocks every later conversation for that customer while
+   re-invoking this handler every visibility window, and with a model reader each retry is a paid
+   call that `llm/budget.py` cannot stop because every retry is a fresh invocation. The property
+   was in the code and absent from the infrastructure, which is the failure a green unit test
+   cannot see. `tools/provision.py` now creates `earshot-<stage>-transcripts-dlq.fifo` and wires
+   the redrive policy; the bound is 3 attempts.
 3. **Keyless by default.** The extractor is the offline lexicon unless `EARSHOT_EXTRACTOR=bedrock`
    says otherwise, chosen by an explicit `if`/`elif` -- `aws/__init__.py` forbids dynamic imports
    on the guarded surface, so there is no registry lookup here and there must never be one.
