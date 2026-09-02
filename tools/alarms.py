@@ -17,14 +17,26 @@ would be the first outbound contact surface in a system whose HITL guarantee is 
 deliberately, not a rule to break accidentally. Until then: **the alarms are visible, not
 actionable.**
 
-**An alarm on a metric that has never been emitted is not an error.** It sits in INSUFFICIENT_DATA
-until the first datapoint, which is the correct state for a system that has not run yet.
-`TreatMissingData` is `notBreaching` throughout: a queue with nothing in it is quiet, not broken,
-and an alarm that goes red every night at 3am trains people to ignore it.
+**`TreatMissingData` is `notBreaching` throughout**, and the cost of that is worth stating: a
+queue with nothing in it is quiet, not broken, and an alarm that goes red every night at 3am trains
+people to ignore the whole set. But `notBreaching` means an alarm with no data reads **OK**, not
+INSUFFICIENT_DATA. It does not merely fail to guard -- it affirmatively reports health.
 
-**Not verified against the account.** `cloudwatch:PutMetricAlarm` has never been exercised here.
-The specs below are unit-tested (`tests/test_alarms.py`); the API calls are not, and per
-`docs/ops/handover.md` a green stub test is not proof. Run the dry-run first and read the rows.
+That is not hypothetical. Until 2026-09-03, `aws/metrics.py` omitted the `_aws.Timestamp` EMF
+requires, so CloudWatch dropped every metric in the `Earshot` namespace while storing the log
+lines. The four alarms below that watch that namespace sat at OK, on metrics that did not exist,
+for as long as the alarms had existed. The two on `AWS/SQS` were unaffected -- SQS emits those
+itself, which is exactly why a real datapoint is worth more than a well-formed spec.
+
+The lesson is not to switch to `breaching`. It is that `notBreaching` shifts the burden onto
+proving the metric arrives: check `list_metrics` against the namespace after the first real
+traffic, which is what `tools/feed.py` produces.
+
+**Created and verified against the account** as of 2026-09-03: six alarms exist under the
+`earshot-dev-` prefix, all with zero actions. The specs are unit-tested (`tests/test_alarms.py`)
+and `cloudwatch:PutMetricAlarm` has now been exercised for real. What is still unproven is the
+part that matters most -- no alarm here has ever transitioned to ALARM, so the thresholds are
+reasoned, not observed. Run the dry-run first and read the rows.
 """
 
 from __future__ import annotations
