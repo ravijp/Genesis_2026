@@ -179,6 +179,28 @@ def _error_code(exc: Exception) -> str:
     return type(exc).__name__
 
 
+def _error_detail(exc: Exception) -> str:
+    """The AWS error code *and* its message, for a row a human can act on.
+
+    `_error_code` alone is why 2026-09-02's event source mapping failure read as a bare
+    `InvalidParameterValueException`. The message said exactly what was wrong -- "Queue visibility
+    timeout: 30 seconds is less than Function timeout: 60 seconds" -- and discarding it cost a
+    diagnostic round-trip against the live account. Control-flow callers still compare
+    `_error_code`; only the reported rows use this.
+    """
+    code = _error_code(exc)
+    response = getattr(exc, "response", None)
+    message = ""
+    if isinstance(response, dict):
+        message = str(response.get("Error", {}).get("Message", "") or "")
+    message = " ".join((message or str(exc)).split())
+    if not message or message == code:
+        return code
+    if len(message) > 160:
+        message = message[:157] + "..."
+    return f"{code}: {message}"
+
+
 def _exists(cw: Any, name: str) -> bool:
     found = cw.describe_alarms(AlarmNames=[name]).get("MetricAlarms", [])
     return bool(found)
@@ -208,7 +230,7 @@ def main() -> int:
         try:
             exists = _exists(cw, name)
         except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
-            _record(f"cloudwatch:{name}", "CHECK", f"FAILED {_error_code(exc)}")
+            _record(f"cloudwatch:{name}", "CHECK", f"FAILED {_error_detail(exc)}")
             continue
         if args.dry_run:
             _record(f"cloudwatch:{name}", "UPDATE" if exists else "CREATE", "DRY-RUN")
@@ -220,7 +242,7 @@ def main() -> int:
             cw.put_metric_alarm(ActionsEnabled=False, **spec)
             _record(f"cloudwatch:{name}", "UPDATE" if exists else "CREATE", "ok")
         except Exception as exc:  # noqa: BLE001
-            _record(f"cloudwatch:{name}", "UPDATE" if exists else "CREATE", f"FAILED {_error_code(exc)}")
+            _record(f"cloudwatch:{name}", "UPDATE" if exists else "CREATE", f"FAILED {_error_detail(exc)}")
 
     print("\nPARKED -- deliberate gaps, not oversights")
     _record(

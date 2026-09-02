@@ -30,12 +30,40 @@ import sys
 import time
 from typing import Any
 
+import deploy
 from earshot.aws.stores import REGION, STAGES, TABLE_SPECS, table_name
 
 # D-024's unlock: the one execution role every Lambda passes, since none of the three per-
 # function roles Appendix A rows 6-8 wanted can be created. Named here only so the PARKED
 # explanation below is concrete rather than vague about what "the existing role" refers to.
 LEDGER_LAMBDA_ROLE_ARN = "arn:aws:iam::859430413223:role/zenon-poc-lambda-execution"
+
+# AWS refuses an event source mapping whose queue visibility timeout is below the consuming
+# function's timeout, and recommends 6x it so a partially-failed batch has room to retry inside
+# one visibility window.
+#
+# The multiple is applied to `deploy.FUNCTIONS` rather than written here as a second number,
+# because the two numbers living in two files with nothing connecting them is the actual bug:
+# on 2026-09-02 both mappings failed to create, because this script left both queues at the SQS
+# default of 30s while the functions it never looked at were set to 60s and 300s. Raising a
+# Lambda timeout in `deploy.py` now raises the queue's visibility timeout with it.
+#
+# Accepted consequence: `maxReceiveCount` is 3 on the investigations queue, so a longer
+# visibility timeout also means a poison message takes proportionally longer to reach the DLQ.
+VISIBILITY_MULTIPLE = 6
+
+
+def visibility_timeouts(stage: str) -> dict[str, int]:
+    """Queue name -> the `VisibilityTimeout` its consumer's own timeout demands.
+
+    Keyed by queue rather than by function because that is how SQS is addressed, and because a
+    queue with no consumer in `deploy.FUNCTIONS` (the DLQ) correctly gets no entry.
+    """
+    return {
+        f"earshot-{stage}-{spec['queue']}": int(spec["timeout"]) * VISIBILITY_MULTIPLE
+        for spec in deploy.FUNCTIONS.values()
+        if spec.get("queue")
+    }
 
 Row = tuple[str, str, str]  # resource, action, result
 _rows: list[Row] = []
@@ -52,6 +80,28 @@ def _error_code(exc: Exception) -> str:
     guarded package surface, and has no other reason to depend on `earshot.aws.stores`'s
     private helpers."""
     return getattr(exc, "response", {}).get("Error", {}).get("Code", "") or type(exc).__name__
+
+
+def _error_detail(exc: Exception) -> str:
+    """The AWS error code *and* its message, for a row a human can act on.
+
+    `_error_code` alone is why 2026-09-02's event source mapping failure read as a bare
+    `InvalidParameterValueException`. The message said exactly what was wrong -- "Queue visibility
+    timeout: 30 seconds is less than Function timeout: 60 seconds" -- and discarding it cost a
+    diagnostic round-trip against the live account. Control-flow callers still compare
+    `_error_code`; only the reported rows use this.
+    """
+    code = _error_code(exc)
+    response = getattr(exc, "response", None)
+    message = ""
+    if isinstance(response, dict):
+        message = str(response.get("Error", {}).get("Message", "") or "")
+    message = " ".join((message or str(exc)).split())
+    if not message or message == code:
+        return code
+    if len(message) > 160:
+        message = message[:157] + "..."
+    return f"{code}: {message}"
 
 
 # ---- DynamoDB ------------------------------------------------------------------------------
@@ -79,7 +129,7 @@ def _ensure_pitr(ddb: Any, name: str, dry_run: bool) -> None:
         backups = ddb.describe_continuous_backups(TableName=name)["ContinuousBackupsDescription"]
         status = backups["PointInTimeRecoveryDescription"]["PointInTimeRecoveryStatus"]
     except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
-        _record(f"dynamodb:{name}:pitr", "CHECK", f"FAILED {_error_code(exc)}")
+        _record(f"dynamodb:{name}:pitr", "CHECK", f"FAILED {_error_detail(exc)}")
         return
     if status == "ENABLED":
         _record(f"dynamodb:{name}:pitr", "SKIP", "already on")
@@ -140,7 +190,7 @@ def _provision_tables(ddb: Any, stage: str, dry_run: bool) -> None:
                 )
                 _record(f"dynamodb:{name}", "CREATE", "created")
             except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
-                _record(f"dynamodb:{name}", "CREATE", f"FAILED {_error_code(exc)}")
+                _record(f"dynamodb:{name}", "CREATE", f"FAILED {_error_detail(exc)}")
                 continue  # PITR would fail too with nothing to point at; move to the next table
         _ensure_pitr(ddb, name, dry_run)
 
@@ -156,7 +206,7 @@ def _teardown_table(ddb: Any, name: str, dry_run: bool) -> None:
         ddb.delete_table(TableName=name)
         _record(f"dynamodb:{name}", "DELETE", "deleted")
     except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
-        _record(f"dynamodb:{name}", "DELETE", f"FAILED {_error_code(exc)}")
+        _record(f"dynamodb:{name}", "DELETE", f"FAILED {_error_detail(exc)}")
 
 
 # ---- SQS -----------------------------------------------------------------------------------
@@ -177,12 +227,71 @@ def _queue_url(sqs: Any, name: str) -> str | None:
         raise
 
 
+# `FifoQueue` is fixed at creation -- SQS rejects it in `set_queue_attributes`, and a queue cannot
+# be converted between standard and FIFO. Excluded from reconciliation so an existing FIFO queue
+# does not report a diff on every run that no run can ever close.
+_IMMUTABLE_ATTRIBUTES = frozenset({"FifoQueue"})
+
+# AWS re-serialises these, so key order and whitespace differ from what we sent. Compared as
+# parsed JSON: a string compare reports drift on every run and rewrites an identical policy
+# forever, which reads in the output exactly like a real change.
+_JSON_ATTRIBUTES = frozenset({"Policy", "RedrivePolicy", "RedriveAllowPolicy"})
+
+
+def _attribute_matches(name: str, live: str | None, wanted: Any) -> bool:
+    if live is None:
+        return False
+    if name in _JSON_ATTRIBUTES:
+        try:
+            return json.loads(live) == json.loads(str(wanted))
+        except ValueError:
+            return False
+    # Every SQS attribute comes back as a string. `"30" != 30`, so an int on our side would
+    # report a diff forever and set the same value on every run.
+    return live == str(wanted)
+
+
+def _reconcile_queue(
+    sqs: Any, name: str, url: str, attributes: dict[str, str], dry_run: bool
+) -> None:
+    """Correct an existing queue's mutable attributes.
+
+    Create-if-missing is not enough. On 2026-09-02 both queues on this account already existed at
+    the SQS default visibility timeout, so changing the desired value alone would have been
+    silently inert -- the tool reporting SKIP while the bug it was meant to fix survived. That is
+    a worse failure than an error, because it looks like success.
+    """
+    wanted = {k: v for k, v in attributes.items() if k not in _IMMUTABLE_ATTRIBUTES}
+    if not wanted:
+        _record(f"sqs:{name}", "SKIP", "already exists")
+        return
+    try:
+        live = sqs.get_queue_attributes(QueueUrl=url, AttributeNames=sorted(wanted))["Attributes"]
+    except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
+        _record(f"sqs:{name}", "CHECK", f"FAILED {_error_detail(exc)}")
+        return
+    drift = {k: v for k, v in wanted.items() if not _attribute_matches(k, live.get(k), v)}
+    if not drift:
+        _record(f"sqs:{name}", "SKIP", "already exists, attributes match")
+        return
+    changed = ", ".join(f"{k} {live.get(k, '(unset)')} -> {v}" for k, v in sorted(drift.items()))
+    if dry_run:
+        _record(f"sqs:{name}", "UPDATE", f"DRY-RUN -- would set {changed}")
+        return
+    try:
+        sqs.set_queue_attributes(QueueUrl=url, Attributes={k: str(v) for k, v in drift.items()})
+        _record(f"sqs:{name}", "UPDATE", changed)
+    except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
+        _record(f"sqs:{name}", "UPDATE", f"FAILED {_error_detail(exc)}")
+
+
 def _ensure_queue(sqs: Any, name: str, dry_run: bool, *, attributes: dict[str, str]) -> str | None:
-    """Create-if-missing. Returns the queue URL if the queue exists or was just created; `None`
-    only in dry-run, when nothing was actually created and there is no URL to hand back."""
+    """Create-if-missing, and repair-if-drifted. Returns the queue URL if the queue exists or was
+    just created; `None` only in dry-run, when nothing was actually created and there is no URL to
+    hand back."""
     url = _queue_url(sqs, name)
     if url is not None:
-        _record(f"sqs:{name}", "SKIP", "already exists")
+        _reconcile_queue(sqs, name, url, attributes, dry_run)
         return url
     if dry_run:
         _record(f"sqs:{name}", "CREATE", "DRY-RUN -- would create")
@@ -192,16 +301,21 @@ def _ensure_queue(sqs: Any, name: str, dry_run: bool, *, attributes: dict[str, s
         _record(f"sqs:{name}", "CREATE", "created")
         return url
     except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
-        _record(f"sqs:{name}", "CREATE", f"FAILED {_error_code(exc)}")
+        _record(f"sqs:{name}", "CREATE", f"FAILED {_error_detail(exc)}")
         return None
 
 
 def _provision_queues(sqs: Any, stage: str, dry_run: bool) -> None:
     print("\nSQS -- transcript ingest bus (FIFO) + investigation queue with a DLQ")
+    visibility = visibility_timeouts(stage)
     transcripts = f"earshot-{stage}-transcripts.fifo"
     _ensure_queue(
         sqs, transcripts, dry_run,
-        attributes={"FifoQueue": "true", "ContentBasedDeduplication": "false"},
+        attributes={
+            "FifoQueue": "true",
+            "ContentBasedDeduplication": "false",
+            "VisibilityTimeout": str(visibility[transcripts]),
+        },
     )
     print("    (MessageGroupId=customer_id is set per-message by producers, not a queue "
           "attribute -- nothing to provision for it; content-based dedup is off, so producers "
@@ -222,7 +336,13 @@ def _provision_queues(sqs: Any, stage: str, dry_run: bool) -> None:
     dlq_arn = sqs.get_queue_attributes(QueueUrl=dlq_url, AttributeNames=["QueueArn"])
     dlq_arn = dlq_arn["Attributes"]["QueueArn"]
     redrive = json.dumps({"deadLetterTargetArn": dlq_arn, "maxReceiveCount": 3})
-    _ensure_queue(sqs, inv_name, dry_run, attributes={"RedrivePolicy": redrive})
+    _ensure_queue(
+        sqs, inv_name, dry_run,
+        attributes={
+            "RedrivePolicy": redrive,
+            "VisibilityTimeout": str(visibility[inv_name]),
+        },
+    )
 
 
 def _teardown_queue(sqs: Any, name: str, dry_run: bool) -> None:
@@ -237,7 +357,7 @@ def _teardown_queue(sqs: Any, name: str, dry_run: bool) -> None:
         sqs.delete_queue(QueueUrl=url)
         _record(f"sqs:{name}", "DELETE", "deleted")
     except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
-        _record(f"sqs:{name}", "DELETE", f"FAILED {_error_code(exc)}")
+        _record(f"sqs:{name}", "DELETE", f"FAILED {_error_detail(exc)}")
 
 
 # ---- teardown, and the one resource it refuses ----------------------------------------------

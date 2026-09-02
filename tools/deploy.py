@@ -100,6 +100,28 @@ def _error_code(exc: Exception) -> str:
     return type(exc).__name__
 
 
+def _error_detail(exc: Exception) -> str:
+    """The AWS error code *and* its message, for a row a human can act on.
+
+    `_error_code` alone is why 2026-09-02's event source mapping failure read as a bare
+    `InvalidParameterValueException`. The message said exactly what was wrong -- "Queue visibility
+    timeout: 30 seconds is less than Function timeout: 60 seconds" -- and discarding it cost a
+    diagnostic round-trip against the live account. Control-flow callers still compare
+    `_error_code`; only the reported rows use this.
+    """
+    code = _error_code(exc)
+    response = getattr(exc, "response", None)
+    message = ""
+    if isinstance(response, dict):
+        message = str(response.get("Error", {}).get("Message", "") or "")
+    message = " ".join((message or str(exc)).split())
+    if not message or message == code:
+        return code
+    if len(message) > 160:
+        message = message[:157] + "..."
+    return f"{code}: {message}"
+
+
 def function_name(stage: str, kind: str) -> str:
     return f"earshot-{stage}-{kind}"
 
@@ -180,7 +202,7 @@ def upload(s3: Any, zip_path: Path, sha: str, dry_run: bool) -> str:
         s3.put_object(Bucket=BUCKET, Key=key, Body=zip_path.read_bytes())
         _record(f"s3:{key}", "UPLOAD", f"uploaded to s3://{BUCKET}")
     except Exception as exc:  # noqa: BLE001 - reported as a row, not a crash
-        _record(f"s3:{key}", "UPLOAD", f"FAILED {_error_code(exc)}")
+        _record(f"s3:{key}", "UPLOAD", f"FAILED {_error_detail(exc)}")
     return key
 
 
@@ -246,7 +268,7 @@ def deploy_function(
         lam.get_function(FunctionName=name)
     except Exception as exc:  # noqa: BLE001
         if _error_code(exc) != "ResourceNotFoundException":
-            _record(f"lambda:{name}", "CHECK", f"FAILED {_error_code(exc)}")
+            _record(f"lambda:{name}", "CHECK", f"FAILED {_error_detail(exc)}")
             return
         exists = False
 
@@ -283,7 +305,7 @@ def deploy_function(
             lam.get_waiter("function_active_v2").wait(FunctionName=name)
             _record(f"lambda:{name}", "CREATE", "created")
     except Exception as exc:  # noqa: BLE001
-        _record(f"lambda:{name}", "UPDATE" if exists else "CREATE", f"FAILED {_error_code(exc)}")
+        _record(f"lambda:{name}", "UPDATE" if exists else "CREATE", f"FAILED {_error_detail(exc)}")
         return
 
     if spec["queue"]:
@@ -335,7 +357,7 @@ def _ensure_mapping(
         )
         _record(f"mapping:{queue_name}", "WIRE", f"wired to {name}, batch {spec['batch_size']}")
     except Exception as exc:  # noqa: BLE001
-        _record(f"mapping:{queue_name}", "WIRE", f"FAILED {_error_code(exc)}")
+        _record(f"mapping:{queue_name}", "WIRE", f"FAILED {_error_detail(exc)}")
 
 
 def ensure_function_url(lam: Any, stage: str, dry_run: bool) -> None:
@@ -352,7 +374,7 @@ def ensure_function_url(lam: Any, stage: str, dry_run: bool) -> None:
         return
     except Exception as exc:  # noqa: BLE001
         if _error_code(exc) != "ResourceNotFoundException":
-            _record(f"url:{name}", "CHECK", f"FAILED {_error_code(exc)}")
+            _record(f"url:{name}", "CHECK", f"FAILED {_error_detail(exc)}")
             return
     if dry_run:
         _record(f"url:{name}", "CREATE", "DRY-RUN -- would create (AuthType=AWS_IAM)")
@@ -361,7 +383,7 @@ def ensure_function_url(lam: Any, stage: str, dry_run: bool) -> None:
         url = lam.create_function_url_config(FunctionName=name, AuthType="AWS_IAM")["FunctionUrl"]
         _record(f"url:{name}", "CREATE", url)
     except Exception as exc:  # noqa: BLE001
-        _record(f"url:{name}", "CREATE", f"FAILED {_error_code(exc)}")
+        _record(f"url:{name}", "CREATE", f"FAILED {_error_detail(exc)}")
 
 
 def main() -> int:
