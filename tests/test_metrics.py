@@ -50,6 +50,42 @@ def test_a_declared_metric_always_has_a_numeric_value_at_the_top_level() -> None
         assert isinstance(record[name], int | float), f"{name} is not numeric"
 
 
+def test_every_record_carries_the_timestamp_emf_requires() -> None:
+    """The one that was missing. EMF requires `_aws.Timestamp`; without it CloudWatch stores the
+    log line and silently DROPS the metrics. Measured on 2026-09-02: 130 well-formed ingest
+    records, every declared value numeric, and `list_metrics` on the `Earshot` namespace returned
+    nothing at all. Every alarm would have read INSUFFICIENT_DATA forever."""
+    record = emf("t", {"Ingested": (1, COUNT)})
+    assert "Timestamp" in record["_aws"], "no Timestamp: CloudWatch will drop these metrics"
+
+
+def test_the_timestamp_is_epoch_milliseconds_not_seconds() -> None:
+    """Seconds would be read as 1970 and land outside EMF's accepted window, which is the same
+    silent drop by a different route."""
+    record = emf("t", {"Ingested": (1, COUNT)})
+    stamp = record["_aws"]["Timestamp"]
+    assert isinstance(stamp, int)
+    # 1e12 ms is 2001; a seconds-valued clock would be ~1.8e9 and fail this.
+    assert stamp > 1_000_000_000_000, f"{stamp} looks like seconds, not milliseconds"
+
+
+def test_a_pinned_timestamp_is_used_verbatim() -> None:
+    """The parameter exists for tests and for a caller replaying a known time; it must not be
+    quietly overridden by the clock."""
+    record = emf("t", {"Ingested": (1, COUNT)}, timestamp_ms=1_700_000_000_123)
+    assert record["_aws"]["Timestamp"] == 1_700_000_000_123
+
+
+def test_every_handler_emits_a_timestamped_record(capsys) -> None:
+    """Asserted through the handlers rather than only on `emf()`, because the bug was invisible
+    precisely where the records are actually produced."""
+    from earshot.aws.metrics import emit
+
+    emit("ingest.ok", {"Ingested": (1, COUNT)})
+    for line in capsys.readouterr().out.strip().splitlines():
+        assert "Timestamp" in json.loads(line)["_aws"]
+
+
 def test_the_stage_is_always_a_dimension() -> None:
     """dev and demo write to the same namespace. Without this, a demo run moves the dev alarm."""
     record = emf("t", {"Ingested": (1, COUNT)})

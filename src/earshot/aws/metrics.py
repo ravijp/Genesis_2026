@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from typing import Any
 
 NAMESPACE = "Earshot"
@@ -53,9 +54,9 @@ def emf(
 ) -> dict[str, Any]:
     """Build one EMF record. Pure, so the shape is testable without capturing stdout.
 
-    `metrics` maps name -> (value, unit). `timestamp_ms` is accepted so a test can pin it; in
-    production it is omitted and CloudWatch stamps the record with the log event's own time, which
-    is more truthful than a clock this process read at a slightly different moment.
+    `metrics` maps name -> (value, unit). `timestamp_ms` is accepted so a test can pin it; left
+    out, it is stamped from this process's clock -- see the assignment below for why it must be
+    stamped at all.
     """
     dimensions = {"Stage": _stage(), **(dimensions or {})}
     directive: dict[str, Any] = {
@@ -72,8 +73,18 @@ def emf(
             }
         ]
     }
-    if timestamp_ms is not None:
-        directive["Timestamp"] = timestamp_ms
+    # EMF REQUIRES `_aws.Timestamp`, and omitting it does NOT make CloudWatch fall back to the
+    # log event's own time. The record is stored as a log line and its metrics are silently
+    # DROPPED -- the exact failure this module's comments warn about twice, arriving through the
+    # one field nobody was checking.
+    #
+    # Measured on 2026-09-02, after the first end-to-end feed: 130 ingest invocations wrote EMF
+    # with the right namespace, one dimension set, and every declared value numeric, and
+    # `list_metrics` on the `Earshot` namespace returned NOTHING. `get_metric_statistics` on
+    # `Ingested` returned zero datapoints. The only missing field was this one. Every alarm in
+    # `tools/alarms.py` would have sat in INSUFFICIENT_DATA forever, looking exactly like a
+    # healthy system.
+    directive["Timestamp"] = timestamp_ms if timestamp_ms is not None else int(time.time() * 1000)
 
     record: dict[str, Any] = {"_aws": directive, "event": event}
     record.update(dimensions)

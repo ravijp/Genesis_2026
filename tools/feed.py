@@ -38,6 +38,17 @@ that queue (`tools/provision.py`). A second feed of the same book is therefore a
 SQS's 5-minute dedup window, and a no-op on the ledger after it (`LedgerStore.append` writes
 conditional on `attribute_not_exists(sk)`) -- so re-running this tool is safe, and the duplicate
 count it reports is the A7 metric rather than an error.
+
+**What `verify()` checks is re-feed-stable, and that is deliberate.** Ledger count, case count, DLQ
+depth and `GET /cases` all land on the same values whether this is the first feed or the fifth.
+`Crossings` and `Investigations` do NOT: `predict()` models a ledger that starts empty, but on a
+re-feed the ledger is already complete, so every one of a crossing customer's conversations sees a
+crossing state rather than only the one that first reached the threshold. Measured on 2026-09-02:
+the first feed produced 1 crossing, the second produced 4 -- CUST-0006 has four conversations, and
+the second time round all four crossed. That is `aws/ingest.py`'s documented behaviour ("a crossing
+that stays crossed re-investigates") and it does not multiply cases, because
+`case_record.make_case_id` keys on the first crossing day. Do not add a crossings-equal-prediction
+assertion here: it would be correct on a clean stage and wrong on every rerun.
 """
 
 from __future__ import annotations
