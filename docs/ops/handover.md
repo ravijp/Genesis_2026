@@ -4,7 +4,7 @@
 Rewritten in place at each handover. **Keep it under ~60 lines.** It is a baton, not a history:
 next action, live blockers, traps already paid for. History goes in `progress.md` or git.
 
-**2026-09-03** · branch `build/ear-on-every-call` · **904 tests** (899 pass, 5 skip), separation
+**2026-09-03** · branch `build/ear-on-every-call` · **907 tests** (902 pass, 5 skip), separation
 guard over 45 modules + `tools/`, contrast gate over 674 colour pairs / 17 routes, ruff clean,
 **30 UI routes**
 
