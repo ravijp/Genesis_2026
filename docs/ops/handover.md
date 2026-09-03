@@ -21,53 +21,44 @@ separation guard over 45 modules + `tools/` · 30 UI routes · **~$2.45 of $12 s
    dead token. Every keyed figure replays free with `EARSHOT_CACHE_MODE=replay` (a miss raises).
 3. `progress.md` for status, `decisions.md` before arguing, `state-of-play.md` for the numbers.
 
-## Next action — finish the `demo` stage
+## Next action — rehearse the demo, on 2026-09-06
 
-`dev` runs end to end and **agrees with the local pipeline**: 130 messages → 34 ledger entries → 1
-case → `GET /cases` 200, deployed `0.6526618648909545` vs local `0.652662`. That was the missing
-feasibility evidence.
+**Everything Ravi asked for on 2026-09-03 is done except the sweep, which he declined.** Both stages
+are deployed and fed, the alarm has fired, and `docs/gates/2026-09-07-sprint-3-demo.md` is the
+script. **The gate is 2026-09-07.** The remaining work is rehearsal, not building.
 
-**`demo` is half-deployed — the only untidy state in the repo.** Ravi authorised the model reader on
-real infrastructure (~$0.21); the SSO token expired mid-deploy. Nothing charged, no partial ledger.
+**Two live stages, same book, same infrastructure, one variable — this is the demo's spine:**
 
-| resource | state |
-|---|---|
-| `earshot-demo-{ledger,cases,reviews}` | created, PITR on, empty |
-| 4 × `earshot-demo-*` queues | created, redrive at 3, visibility 360s / 1800s |
-| `earshot-demo-ingest` | **created**, `EARSHOT_EXTRACTOR=bedrock`, mapping Enabled |
-| `earshot-demo-{investigate,api}` | **NOT created** |
+| | `dev` — keyless lexicon | `demo` — Haiku 4.5 |
+|---|---|---|
+| ledger entries | 34 | **103** |
+| cases opened | 1 | **9** |
+| desks receiving work | Collections only | **Complaints, 9 of 9** |
 
-```bash
-source tools/aws-login.sh --force     # needs a browser; the token WILL be dead
-uv run --with boto3 python tools/deploy.py --stage demo --no-dry-run --extractor bedrock
-uv run --with boto3 python tools/feed.py  --stage demo --no-dry-run \
-    --deployed-reader bedrock --settle 240
-```
+`dev` also agrees with the local pipeline to the last digit (`0.6526618648909545` vs `0.652662`) and
+survived a double feed (260 messages → still 34 entries, 1 case). `earshot-dev-ingest-failures` went
+**OK → ALARM** on one malformed transcript while the other five alarms stayed OK.
 
-Both tools are idempotent — finished parts report SKIP. **`--deployed-reader bedrock` is required:**
-`predict()` runs the offline lexicon, so equality is the wrong contract against a non-deterministic
-model; the flag switches `verify()` to structural checks. **A second stage, not a re-feed of `dev`:**
-mixing two readers in one ledger is not a thing anyone deploys, and `dev` cannot be cleared anyway —
-`dynamodb:DeleteItem` is absent from the role, so never-discard is enforced at the IAM layer.
-**`dev` = keyless lexicon, `demo` = Haiku 4.5, same book, same infrastructure.** That is the beat.
+**Do these before 09-07, in order:**
 
-Then:
+1. **Rehearse Beat 2 and Beat 4 end to end (§7 of the script).** Beat 4 is the only beat with a live
+   dependency and it carries 25 rubric points. **Record it on 09-06** so a room with no wifi cannot
+   break it.
+2. **Verify the two flagged-unverified claims** in the script, or drop them: the poison message
+   reaching `earshot-dev-transcripts-dlq.fifo` (it was still retrying when last checked — redrive is
+   configured at 3, so allow ~18 min), and the exact deployed spend from the `Earshot`/`CostUsd`
+   metric on the `demo` stage. **They are marked in place; do not quietly promote them.**
+3. **Re-login the morning of, and again before walking in.** The SSO token expires in hours.
 
-1. **The 09-07 demo beat sheet — Ravi's, and nothing exists.** `docs/gates/` has the 08-10 check-in
-   and no plan for 08-24 or 09-07. Presentation is 10 points; the 25 feasibility points are earned
-   *in* the demo. He was offered a draft and hasn't said yes — **offer again.** Strongest unused
-   material: `CUST-0006-C0` scored **0.1306** on day 21 and is load-bearing 73 days later
-   (`retro_delta 0.5220`), in a deployed record. It lives only in a commit message today.
-2. **Prove an alarm fires — written, free, one command.** No alarm has ever reached ALARM, so all six
-   thresholds are reasoned rather than observed.
-   `tools/feed.py --stage dev --poison 1 --no-dry-run` sends one malformed transcript on a throwaway
-   FIFO group and polls until `earshot-dev-ingest-failures` crosses. Exercises the `Failed` metric,
-   the alarm, `batchItemFailures` isolation and the transcripts DLQ at once.
+**Optional, ~$0.90, Ravi has NOT approved it:** the `demo` stage reads with Haiku but *investigates*
+with the offline rule engine, because `--extractor bedrock` sets the reader and `--provider` still
+defaults to offline. So **8 of its 9 cases come back `insufficient_evidence` with `team=none`** — the
+verdicts are the documented floor, not a result. `--provider bedrock` plus a re-feed would give real
+verdicts, but a re-feed re-fires every crossing customer's conversations (~30 investigations). Decide
+whether the demo needs it; the reader story does not depend on it.
 
-**Ravi's open decision — do not spend without him:** the **$10 10-seed sweep**, the only measurement
-that would settle the co-primary chance gate the entry FAILS (18–8–4, `p=0.076`). ~$10 of ~$9.3
-remaining, so it permanently rules out the model reader's own threshold ($13.96). He is waiting to see
-whether the model-reader demo carries the weight without it.
+**Declined 2026-09-03, do not re-propose:** the **$10 10-seed sweep** against the co-primary chance
+gate the entry FAILS (18–8–4, `p=0.076`). The gate stays published as a failure.
 
 **Settled 2026-09-03, do not reopen:** the UI write path **stays read-only and labelled** (a static
 page cannot sign an IAM Function URL, and HITL-by-absence being literally true is an asset) · the
@@ -76,8 +67,8 @@ CloudWatch already keeps two weeks of alarm history).
 
 ## State
 
-**Arm B done** ($0.027705), so `build-plan.md` §4's last "not measured" item is closed — **but §4
-still says otherwise and needs Ravi's sign-off to edit** (architecture doc, ask first). Nova Lite vs
+**Arm B done** ($0.027705). `build-plan.md` §4 and §8's delta 8 are both updated — the brief's
+comparison-model obligation is **retired on evidence**, not on an argument about wording. Nova Lite vs
 Haiku on the same 282 conversations: coverage **181/282 vs 177/282** at **$0.0982/1,000 vs $1.58**,
 p50 873 vs 1,333 ms, but **60/80 crossings vs 65/80** and **10 quotes not verbatim + 9 relocated vs
 0 and 0**. It repairs the one desk Haiku loses to the lexicon, so *that published loss is Haiku's,

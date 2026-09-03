@@ -140,11 +140,38 @@ because the point of the section is that it is checkable rather than reassuring.
 - **p50 / p95 reader latency: 1,333 ms / 2,162 ms**, on the same 282-conversation run — 1,230 / 1,786
   on the demo's 130. **0 unparsable replies and 0 relocated quotes** on both.
 
-**Still not measured, and not pretended otherwise:** **a second model arm through the same harness** —
-arm B has never been run, and under D-022 it is now a Bedrock model (Nova Lite or Llama 3 8B) rather
-than GPT-4o-mini. It costs ~\$0.01 of model spend and one run to close; it is unclosed because of
-scheduling, not difficulty, and §8 logs it as an open delta against the brief. It is now the **last**
-item on this list that a single cheap run would close.
+**Arm B is measured — 2026-09-03, \$0.027705, and this list no longer has a cheap open item.** Nova
+Lite (`amazon.nova-lite-v1:0`, D-022's Bedrock substitution for GPT-4o-mini) over the identical 282
+conversations, identical `config_hash` (`1ee962fd608f`) and `pipeline_sha` (`4d71d37cae12`), identical
+ledger and threshold. One variable: which model reads. Its own cache file, so the Haiku figures above
+still replay byte for byte — verified by replaying both after the fact.
+
+| | offline lexicon | Haiku 4.5 | Nova Lite |
+|---|---|---|---|
+| Coverage of planted conversations | 59 / 282 | 177 / 282 | **181 / 282** |
+| `financial_distress` coverage | 33 / 72 | 27 / 72 | **42 / 72** |
+| Customers crossing | 10 / 80 | **65 / 80** | 60 / 80 |
+| Cost per 1,000 conversations | \$0 | \$1.58 | **\$0.0982** |
+| p50 / p95 latency | — | 1,333 / 2,162 ms | **873 / 1,253 ms** |
+| Quotes rejected as not verbatim | — | **0** | 10 |
+| Quotes relocated | — | **0** | 9 |
+| Unparsable replies | — | 0 | 0 |
+
+**It is a frontier, not a winner, and the entry says so.** Nova Lite finds *more* planted evidence
+than Haiku at a sixteenth of the cost and converts *less* of it into cases — 181 / 282 against
+177 / 282, but 60 / 80 crossings against 65 / 80. Finding evidence and accumulating it past a
+threshold are not the same skill, and this is the cleanest measurement of that gap in the repo.
+
+**It repairs the one desk where Haiku loses to the keyless lexicon.** `financial_distress` coverage
+goes 0.375 → **0.583**, past the lexicon's 0.458. The loss recorded above is therefore **Haiku's, not
+the model reader's**, and §4's earlier framing of it as a model-reader weakness was too broad.
+
+**And it is measurably worse at citing, which is what decides D-025.** On identical text: 10 quotes
+rejected for not being verbatim, 9 relocated, 1 too short — against Haiku's 0, 0 and 0 — with 0
+unparsable replies on both arms, so this is not a formatting artefact. The cheaper model paraphrases
+evidence it was instructed to quote, and `extract_model.py`'s verbatim guard caught all 20. For a bank
+an evidence chain a reviewer cannot verify word-for-word is not evidence, so the 16× buys citation
+discipline rather than recall. **D-025 now rests on measurement instead of convenience.**
 
 Also still open, and each one is priced: **the model reader's own threshold** (\$13.96 — until it is
 spent, every model-arm crossing figure above is an upper bound, and the tool prints that itself);
@@ -223,15 +250,16 @@ All within the refinement latitude the covering email reserved.
    and routing was measured at **41 / 49 correct with 0 wrong** on 2026-08-28 — so the filter is a view
    over a field, not new inference. What is genuinely lost is the Commercial *use case*: an upsell or
    value read on a conversation, which the ledger has never modelled.
-8. **The comparison model was never run, and it is an open delta rather than a retired obligation.**
-   The brief promises "a comparison model runs through the same harness so the numbers are honest"
-   ([`:86-87`](../sources/submission-ear-on-every-call.md)). It was retired on the reasoning that the
-   brief never asked for two *vendors* — true, and beside the point: it asked for a comparison **model**,
-   and one vendor's two models satisfy it exactly. So the obligation stands and is unmet. **Cost to
-   close: ~\$0.01 of model spend and one run** — Nova Lite or Llama 3 8B, both on-demand and invocable
-   today, both already priced in `llm/bedrock.py`, and `--extractor model` already takes the flag. There
-   is no integration work; this is unmet because of scheduling, and saying so is cheaper than defending
-   a retirement.
+8. ~~**The comparison model was never run**~~ — **CLOSED 2026-09-03 for \$0.027705.** The brief
+   promises "a comparison model runs through the same harness so the numbers are honest"
+   ([`:86-87`](../sources/submission-ear-on-every-call.md)). It was once retired on the reasoning that
+   the brief never asked for two *vendors* — true, and beside the point: it asked for a comparison
+   **model**, and one vendor's two models satisfy it exactly. The obligation stood, and it is now met:
+   Nova Lite through the same harness on the same 282 conversations, same `config_hash`, same
+   threshold, own cache file. Full table and reading in §4. **The delta is retired on evidence, not on
+   an argument about wording** — and the result was worth having rather than a formality: the cheaper
+   model finds more evidence, converts less of it, repairs the desk Haiku loses on, and fails the
+   verbatim guard 20 times where Haiku failed 0. That is what decides D-025.
 9. **The anchor metric — retention lift against a matched control — is not computed anywhere.** The
    brief names it as the anchor: "signals surfaced and acted on before the outcome, measured as the
    retention lift in the flagged group against a matched control"
