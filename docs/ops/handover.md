@@ -21,11 +21,26 @@ separation guard over 45 modules + `tools/` · 30 UI routes · **~$2.45 of $12 s
    dead token. Every keyed figure replays free with `EARSHOT_CACHE_MODE=replay` (a miss raises).
 3. `progress.md` for status, `decisions.md` before arguing, `state-of-play.md` for the numbers.
 
-## Next action — rehearse the demo, on 2026-09-06
+## Next action — the 2026-09-10 cut round, then rehearse
 
-**Everything Ravi asked for on 2026-09-03 is done except the sweep, which he declined.** Both stages
-are deployed and fed, the alarm has fired, and `docs/gates/2026-09-07-sprint-3-demo.md` is the
-script. **The gate is 2026-09-07.** The remaining work is rehearsal, not building.
+**The build is done for now; the work is presentation.** Everything Ravi asked for on 2026-09-03 is
+delivered except the $10 sweep, which he declined. Both stages are deployed and fed and the alarm has
+fired.
+
+**A meeting invite arrived 2026-09-03 that reframes the next gate:** **Thu 2026-09-10, 20:00–20:30**,
+**Venkat (CEO) and Farhan (COO) judging**, and it **determines the shortlist** for the Final Dry Run
+and Finals. Their ask is narrow — *committed vs what's actually done*. Script:
+**`docs/gates/2026-09-10-sprint-review.md`** (business-first, exec audience, Q&A prep in §8).
+`2026-09-07-sprint-3-demo.md` is the product-demo script and stays valid for whichever slot is a demo.
+
+**Confirm the calendar before the 8th:** `CLAUDE.md` and `sources/genesis-committee-comms.md` both
+record the Sprint 3 gate as frozen on **09-07**; the invite is **09-10**. Either it moved or these are
+two events. Ravi owns that question — do not silently rewrite the frozen date.
+
+**The one committed item that is missed: dry runs. Two committed, zero done** (checked — every
+"dry-run" in the repo is a tooling flag, not a rehearsal). The script has Ravi owning it and booking
+both for 09-08 and 09-09, with the demo recorded 09-09 so a room with no wifi cannot break it. **That
+is now the highest-value remaining work.**
 
 **Two live stages, same book, same infrastructure, one variable — this is the demo's spine:**
 
