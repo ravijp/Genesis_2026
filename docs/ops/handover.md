@@ -27,15 +27,19 @@ separation guard over 45 modules + `tools/` · 30 UI routes · **~$2.45 of $12 s
 delivered except the $10 sweep, which he declined. Both stages are deployed and fed and the alarm has
 fired.
 
-**A meeting invite arrived 2026-09-03 that reframes the next gate:** **Thu 2026-09-10, 20:00–20:30**,
-**Venkat (CEO) and Farhan (COO) judging**, and it **determines the shortlist** for the Final Dry Run
-and Finals. Their ask is narrow — *committed vs what's actually done*. Script:
-**`docs/gates/2026-09-10-sprint-review.md`** (business-first, exec audience, Q&A prep in §8).
-`2026-09-07-sprint-3-demo.md` is the product-demo script and stays valid for whichever slot is a demo.
+**The gate is 2026-09-10, 20:00–20:30, and 09-07 is dead** (Ravi confirmed 2026-09-03; `CLAUDE.md`
+updated, `sources/genesis-committee-comms.md:24` still shows the old date and is never-edit).
+**Venkat (CEO) and Farhan (COO) judge it and it decides the shortlist** for the Final Dry Run and
+Finals. **One script: `docs/gates/2026-09-10-sprint-review.md`**, 18 minutes including the demo. The
+09-07 demo doc was deleted rather than kept — two competing scripts defeated the simplification Ravi
+asked for, and its fallback ladder is folded in.
 
-**Confirm the calendar before the 8th:** `CLAUDE.md` and `sources/genesis-committee-comms.md` both
-record the Sprint 3 gate as frozen on **09-07**; the invite is **09-10**. Either it moved or these are
-two events. Ravi owns that question — do not silently rewrite the frozen date.
+**What these two judges want, in Ravi's words, and it is NOT what a technical committee wants:** how
+strong the product is · **dollar value impact** · *could I pitch this to a company and win a project*.
+**Cost-per-conversation and compliance are demoted to Q&A** — an earlier draft led with both and was
+wrong. The money lead is now the **£650 Ombudsman case fee** — a published tariff, not a projection —
+against desks that currently surface **0 of 20**. §1 hands over the value *model* and refuses to
+invent the client's two inputs; **keep that refusal**, it is what makes the measured half credible.
 
 **The one committed item that is missed: dry runs. Two committed, zero done** (checked — every
 "dry-run" in the repo is a tooling flag, not a rehearsal). The script has Ravi owning it and booking

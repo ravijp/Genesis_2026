@@ -55,8 +55,12 @@ Official judging: Zenon impact 25 / technical depth 25 / feasibility & productio
 originality 15 / presentation 10, plus an AI judge scoring engineering quality (evals, reproducibility,
 accuracy/cost/latency evidence).
 
-Frozen gates: **2026-08-10** 15-min check-in · **2026-08-24** combined Sprint 1+2 demo ·
-**2026-09-07** Sprint 3 demo. Details in `docs/sources/genesis-committee-comms.md`.
+Gates: **2026-08-10** 15-min check-in · **2026-08-24** combined Sprint 1+2 demo · ~~2026-09-07~~ →
+**2026-09-10, 20:00–20:30** the Sprint 3 review, **and it is a cut** — Venkat (CEO) and Farhan (COO)
+judge, and it decides the shortlist for the Final Dry Run and Finals. Ravi confirmed on 2026-09-03
+that 09-07 is superseded, so it is struck here rather than left to be rediscovered; the invite is the
+authority, not `docs/sources/genesis-committee-comms.md:24`, which still shows the old date and is
+never-edit. Script: `docs/gates/2026-09-10-sprint-review.md`.
 
 ## Python environment (uv)
 
