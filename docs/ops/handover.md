@@ -48,14 +48,17 @@ finds complaint escalation **60/65** vs the lexicon's **1/65**, churn **40/77** 
 event **50/68** vs **9/68**, and **loses distress 27/72 vs 33/72**, published. Keylessness is an
 auditor's reproducibility property, **never a product claim**.
 
-**③ A keyed 10-seed run is in flight** — `earshot run --seed 1..10 --customers 200 --extractor model`,
-Haiku 4.5, ~$1.06/seed, **~$10.6**, cache `artifacts/cache/extractor-cardstory-haiku.jsonl`. **It cannot test whether
-accumulation survives a model reader, and a free control proved that**: at this scale (200 customers,
-K=20) the *offline* reader scores `full-ledger` vs `window3-top2` at **4-3-3, p=1.00** against its
-published **30-0-0** at 1500 customers. The scale is the confound, not the reader. **A powered keyed
-version is blocked by wall-clock, not money** (~52,000 sequential model calls). **30-0-0 stands.**
-What the run does buy: reader quality at ten seeds (**extraction recall 0.68 model vs 0.24 lexicon**),
-quote fidelity, cost, latency, and keyed mechanism ablations.
+**③ The keyed 10-seed run is DONE — $10.66, `artifacts/cache/extractor-cardstory-haiku.jsonl`.**
+`earshot run --seed 1..10 --customers 200 --extractor model`, Haiku 4.5, 6,990 conversations.
+**Reader settled decisively: extraction recall 0.6549 vs the lexicon's 0.2435** over 10 datasets each;
+**11 non-verbatim + 2 relocated of 5,736 signals**; **$1.524/1,000**. Counterweight to say with it:
+**~7× more unplanted extractions**, matching the CFPB 8× FP result.
+**Arms inconclusive and it is a power failure, not a refutation** — `full-ledger` vs `window3-top2`
+**5-4-1 p=1.00**, but the *offline* reader at the same scale gives **4-3-3 p=1.00**. The published
+scale is ~52,000 sequential calls: **blocked by wall-clock, not money. 30-0-0 stands, offline-labelled.**
+**And one build decision is now measured:** the model's confidence float takes **21 distinct values
+across 5,112 emissions (0.85 alone = 28.4%)** and removing it moves only **10.5%** of the queue — the
+*least* load-bearing mechanism under a model reader. **Bucket it to three tiers; it is a formality.**
 
 **Then: the dry runs. Two committed, zero done** — still the highest-value remaining work. Book
 **09-09 and 09-10**, and **record the demo on 09-10** so a room with no wifi cannot break Beat 3.

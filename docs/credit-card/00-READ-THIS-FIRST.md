@@ -20,15 +20,25 @@
 > 4.5 finds complaint escalation in **60 of 65** planted conversations against the regex lexicon's
 > **1 of 65**. It **loses** financial distress, 27/72 against 33/72, and we publish that.
 >
-> **③ A keyed 10-seed re-measurement is running now** (~$10.6, Haiku 4.5). I set it up to ask whether
-> accumulation still beats a rolling window when a real model reads — and **a free control run says it
-> cannot answer that, so do not expect it to.** At this run's scale (200 customers, top-20 queue) the
-> *offline* reader — the one that produced the published 30-0-0 — scores **4-3-3, p=1.00**. The
-> experiment has no power at 200 customers; every arm sits on top of random. **A properly powered
-> keyed version is blocked by wall-clock, not money** (the published scale is 52,000 model calls,
-> which is hours of sequential inference). **So 30-0-0 stands, unchallenged and still offline-measured.**
-> What the keyed run *does* buy is the reader-quality headline at ten seeds — see ② — plus quote
-> fidelity, cost and latency. **Result lands in `03-REFERENCE.md` §5.**
+> **③ The keyed 10-seed run finished — $10.66, and it did one job well and one not at all.**
+> **The reader result is decisive and is now your gen-AI headline:** across 10 datasets and 6,990
+> conversations, **Haiku 4.5 recovers 0.6549 of the planted evidence against the regex lexicon's
+> 0.2435** — 2.7×, same corpora, same answer key. Quote fidelity: **11 non-verbatim and 2 relocated
+> out of 5,736 signals.** Say the counterweight with it: **it also fires ~7× more unplanted
+> extractions.** Better reader, noisier reader.
+>
+> **The arm comparison came out inconclusive and you should know why.** `full-ledger` vs
+> `window3-top2` was **5-4-1, p=1.00** against the published **30-0-0**. **That is a power failure,
+> not a refutation** — a free control at the same scale with the *offline* reader gave **4-3-3,
+> p=1.00**. At 200 customers every arm sits on chance. The published scale needs ~52,000 sequential
+> model calls, which is blocked by **wall-clock, not money. So 30-0-0 stands, and stays labelled an
+> offline-reader result.**
+>
+> **④ One build decision is now settled by measurement.** The model's confidence float takes **21
+> distinct values across 5,112 emissions, ten of which cover 95.3%, with 0.85 alone at 28.4%** — a
+> menu, not a probability. Removing it entirely moves only **10.5%** of the queue, making it the
+> *least* load-bearing mechanism under a model reader. **Bucketing it to three tiers is a formality,
+> not a trade-off — see `06-DEFENDING-THE-SCORE.md` §3.**
 >
 > **Also done:** the alternates file is now anchored and three stories are cut · the gate date moved
 > and both dead dates struck · `06-DEFENDING-THE-SCORE.md` answers the model-reproducibility

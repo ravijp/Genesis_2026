@@ -971,9 +971,86 @@ property for an auditor, never a product claim. *"Every number replays from a co
 key, so you can check it yourself — but the system runs on a model."* **Never open with "it works
 offline."**
 
-**Two things still measured only with the lexicon, and they are the headline mechanism claims:** the
-arm comparison (`full-ledger` vs `window3-top2`, 30-0-0) and the mechanism ablations. A keyed 10-seed
-re-measurement with the model reader was commissioned 2026-09-09 — see the block below.
+**Two things are still measured only with the lexicon, and they are the headline mechanism claims:**
+the arm comparison (`full-ledger` vs `window3-top2`, **30-0-0**) and the mechanism ablations. **The
+keyed 10-seed re-measurement ran on 2026-09-09 ($10.66) and did not change that** — it settled the
+reader decisively and was underpowered on the arms, for reasons the next section sets out. **30-0-0
+remains an offline-reader result and must be described as one.**
+
+## The keyed re-measurement — 2026-09-09, $10.66, and what it did and did not settle
+
+**Ravi raised the budget to $10-15 on 2026-09-09 to put the gen-AI reader behind the numbers.** This
+is what it bought. **10 seeds × 200 customers, 6,990 conversations, one model call each, Claude Haiku
+4.5 on Bedrock, $10.6586** (plus a $0.21 pilot). Invocation:
+`earshot run --seed 1..10 --customers 200 --extractor model`, cache
+`artifacts/cache/extractor-cardstory-haiku.jsonl`.
+
+### What it settled: the reader, decisively
+
+| | offline lexicon, 10 seeds | **Haiku 4.5, 10 seeds** |
+|---|---|---|
+| **extraction recall** | **0.2435** (min 0.2202, max 0.2819) | **0.6549** (min 0.6243, max 0.7003) |
+| quotes not verbatim | n/a (regex quotes the span) | **11** of 5,736 emitted signals |
+| quotes relocated | n/a | **2** |
+| unparsable replies | n/a | 11 of 6,990 calls (0.16%) |
+| cost per 1,000 conversations | $0 | **$1.524** |
+
+**The model reader finds 2.7× more of the planted evidence than the hand-tuned 26-regex lexicon, on
+the same corpora, against the same answer key, across ten independent datasets.** That is the
+gen-AI-led number this run was bought for, and it is the one to quote.
+
+**And the honest counterweight, which must be said with it: it also fires far more that was never
+planted — 2,818 unplanted extractions against the lexicon's ~40 per seed.** Roughly seven times as
+many. That mirrors the CFPB result exactly (0.8214 strict recall against 0.0357, at **8× the
+false-positive rate**), so it is a stable property of the trade, not an artefact. **Better reader,
+noisier reader.** Whether that is a good trade depends on the operating point, and for a ranked queue
+over fixed capacity it usually is.
+
+### What it did NOT settle, and it was never going to
+
+**The pre-registered primary did not reproduce.** `full-ledger` vs `window3-top2` came out **5-4-1,
+p=1.00** across the ten keyed seeds — against the published **30-0-0** — and `full-ledger` sits 7th of
+9 arms by mean recall (0.1111), above `random-rank` (0.0863) but below five simpler arms.
+
+**Do not read that as the accumulation claim failing under a real reader.** A free control settles it:
+running the **offline** reader — the exact reader that produced 30-0-0 — at this same scale gives
+**4-3-3, p=1.00**. **The scale is the confound, not the reader.** At 200 customers the queue is 20
+names deep and every arm sits on top of chance; the published result lives at 1,500 customers and a
+150-deep queue, where the arms separate.
+
+**Why it was not run at the published scale: wall-clock, not money.** 30 seeds × 1,500 customers is
+~52,000 sequential model calls — hours of inference, and the extractor makes one call per conversation
+with no safe parallel path (pointing two model runs at one cache is the most expensive mistake this
+project has made). **So `30-0-0` stands as an offline-reader result, unchallenged and un-corroborated,
+and that is exactly how it should be described.**
+
+**Say it this way if asked:** *"The accumulation comparison is measured with the cheap reader because
+that is the only reader we can afford to run thirty times. We re-ran it with the real model at a
+smaller scale and it was inconclusive — and so was the cheap reader at that same smaller scale, which
+tells you the experiment ran out of power, not that the result went away."*
+
+### The finding that changes a build decision
+
+**With a model reader, the confidence float is the LEAST load-bearing mechanism in the ledger.**
+Top-20 overlap against the full ledger when each mechanism is removed, 10 keyed seeds:
+
+| mechanism removed | model reader | *(offline lexicon, 30 datasets)* |
+|---|---|---|
+| **confidence weighting** | **89.5%** — least disruptive | *80.0% — joint most* |
+| cross-channel | 89.0% | *92.7%* |
+| escalation | 86.5% | *100.0% — inert* |
+| decay | 85.0% | *92.4%* |
+| corroboration | **82.0%** — most disruptive | *79.8% — joint most* |
+
+**The ordering flips between readers, and the reason is measurable.** The lexicon's confidences are
+hand-set per-cue constants that spread across a wide range, so they carry real ranking information.
+**The model's do not: 5,112 emitted values take only 21 distinct rounded values, ten of which cover
+95.3%, with 0.85 alone accounting for 28.4%.** A number that lands on the same ten values cannot
+reorder much.
+
+**This makes the §3 recommendation nearly free, and it is now measured from both directions:** the
+distribution says the float is a menu, and the ablation says removing it entirely only moves 10.5% of
+the queue. **Bucketing to three tiers is a formality, not a trade-off. Do it.**
 
 ## The chance gate — complete it or do not raise it
 
