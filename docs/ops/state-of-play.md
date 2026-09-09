@@ -247,8 +247,10 @@ client's own systems — the screen counts them rather than asserting it.
   INSUFFICIENT_DATA — so the dashboard affirmatively reported health for metrics that did not exist.
   W11 had been marked DONE for a week. Nothing but running real traffic through it would have found
   this, which is the argument for `tools/feed.py` existing at all.
-- **No alarm has ever transitioned to ALARM.** All six thresholds are reasoned, not observed. Six
-  alarms that have never fired are six untested assertions, and two of them (`ingest-lag`,
+- **One of six alarms has now fired; the other five are still untested assertions.** Verified from
+  CloudWatch alarm history on 2026-09-09: **`earshot-dev-ingest-failures` went OK → ALARM at
+  2026-09-03T04:06:22+05:30 and back to OK at 04:33:22** — the poison-transcript path is observed, not
+  reasoned. **The remaining five thresholds have never been crossed**, and two of them (`ingest-lag`,
   `investigations-dlq`) are on SQS metrics whose behaviour under real load we have also never seen.
 - **The deployed end-to-end run proves the plumbing, not the product.** One crossing in 44 customers
   is the keyless lexicon's real rate; the interesting readers are not deployed. `--extractor bedrock`

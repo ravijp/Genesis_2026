@@ -87,8 +87,10 @@ being literally true is a judging asset rather than a gap), and the six alarms g
 (EventBridge → Lambda would be the first outward-reaching thing in the system, and CloudWatch already
 retains two weeks of alarm history). The real alarm gap is narrower and now has a tool:
 `feed.py --poison 1` sends one malformed transcript on a throwaway FIFO group and polls until
-`earshot-dev-ingest-failures` crosses — no alarm here has ever transitioned to ALARM, so all six
-thresholds are reasoned rather than observed. Written and tested; **not yet run.**
+`earshot-dev-ingest-failures` crosses. At the time of writing no alarm had ever transitioned to ALARM,
+so all six thresholds were reasoned rather than observed. **Superseded 2026-09-03 and confirmed from
+CloudWatch on 2026-09-09: this alarm did fire, OK → ALARM at 04:06:22+05:30, back to OK at 04:33:22.**
+The other five remain unobserved.
 
 **`GET /cases/{id}` stopped serving DynamoDB key attributes.** It returned `pk`, `gsi1pk` and `gsi1sk`
 in the body because it served the raw item, while the list route only avoided it by projecting through
