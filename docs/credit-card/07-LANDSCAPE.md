@@ -20,11 +20,13 @@ an audit of what they *build*. A vendor with an unpublished capability will not 
    trend views and CSAT curves aggregate *for reporting*. None of them is a persistent per-customer
    feature that a downstream model consumes.
 3. **Persistent per-customer conversation state has one credible published example**, and it is not a
-   contact-centre vendor: **Twilio Conversation Memory (GA 2026)**, which extracts observations and
-   traits with an LLM and stores them against a re-identified customer profile across channels.
-4. **Retroactive re-scoring — re-valuing an earlier conversation in light of a later one — is
-   uncontested in published material.** Nobody found doing it, Twilio included. That is the narrow
-   claim, and it is the one to make.
+   contact-centre vendor: **Twilio Conversation Memory**, launched **May 2026**, which LLM-extracts
+   observations and stores them against an identity-resolved cross-channel profile.
+4. **And Twilio's own documentation draws our line for us.** Its **observation reconciliation** step
+   exists to *"reconcile the conflict and keep only the current truth."* **That is the design this
+   entry inverts, stated by the nearest competitor in their own words** — the strongest single piece
+   of evidence in this document, and it upgrades the differentiator from "nobody publishes doing it"
+   to "the closest one publishes doing the opposite.".
 5. **None of this is a moat and the story is right to say so.** It is a feature set with a lead, not a
    defensible position. Twilio is one product decision away.
 
@@ -49,7 +51,7 @@ marketing copy that describes an outcome rather than a computation. All retrieve
 | **Google CCAI Insights** | Per-interaction autolabelling + correlation rules; Quality AI evaluations | Per-interaction with correlation linking | Yes | **$0.02–$0.04 per interaction** `[verified]` |
 | **Genesys** | Aggregates cross-channel events into unified profiles; journey health, customer effort | Per-interaction → journey level | Yes | Not published |
 | **Salesforce Einstein Conversation Insights** | Records, transcribes, analyses; summaries stored natively in CRM; can trigger Flow | Per-interaction, stored in CRM and reachable by workflow | Yes | Not published; part of FSC SKU |
-| **Twilio Conversation Memory** (GA 2026) | LLM-extracts observations, preferences and context; stores summaries and traits per customer; re-identifies across channels | **Accumulated per-customer profile** | Yes | Not published; platform bundle |
+| **Twilio Conversation Memory** (launched May 2026) | LLM-extracts observations; identity-resolved cross-channel profile. **Reconciles conflicts to "keep only the current truth"** `[verified, their docs]` | **Accumulated — but reconciled, not retained** | Yes | Not published; platform bundle |
 | **Snowflake Cortex** | LLM functions for extraction from transcripts. No built-in accumulation | Per-interaction (primitives only) | Yes | **$4 per million tokens** `[verified]` |
 | **Personetics** | Proactive alerts and guidance — but on **transaction and behavioural data**, not conversations | Per-customer, wrong input | Yes | Not published |
 | **nCino** | AI benchmarking and workflow guidance; not conversation-led | Not conversation-focused | Yes | Not published |
@@ -59,23 +61,41 @@ marketing copy that describes an outcome rather than a computation. All retrieve
 
 ## Where the closest competitors sit, and what they would have to build
 
-### 1. Twilio Conversation Memory — the real one
+### 1. Twilio Conversation Memory — the real one, and its own docs draw the line for us
 
-It already does the hard half: **LLM extraction into a persistent, cross-channel, per-customer store.**
-Its design intent is *"remember what happened"* — forward-looking context so the next interaction is
-better informed.
+**Launched May 2026.** It already does the hard half: LLM **observation extraction** from every
+interaction across voice, SMS and chat, into a **persistent cross-channel customer profile** resolved
+by identity. Retention windows are configurable and **audit trails are on the roadmap for H2 2026**.
+*(Twilio product and docs pages, retrieved 2026-09-09.)*
 
-To become us it would need three things, and none is difficult:
+**And then it does the opposite of us, in its own words.** Twilio documents a step it calls
+**observation reconciliation**:
 
-1. **Retroactive re-evaluation** — when a new conversation lands, re-score the earlier entries.
-2. **Entry versioning** — what an entry contributed *then* versus *now*. Twilio's roadmap lists audit
-   trails for H2 2026; whether entries are versioned or merely appended is not published.
-3. **Deterministic re-weighting outside the model** — decay, corroboration and thresholds as code
-   rather than as prompt behaviour.
+> *"If a customer said they prefer email contact in January and called in to change that preference in
+> April, the memory system needs to reconcile the conflict and keep only the current truth."*
 
-**This is the honest competitive answer and it belongs in the objection playbook**: the nearest thing
-to us is a communications platform, not a contact-centre incumbent, and it is one roadmap decision
-away. Our lead is time and specificity, not architecture.
+**"Keep only the current truth" is the exact thing this entry inverts.** That is not our
+characterisation of a competitor — it is their design, stated by them, and it is the cleanest evidence
+in this document that the never-discard inversion is a real design fork rather than a marketing
+distinction.
+
+**The distinction to say out loud, and it is now sourced rather than asserted:**
+
+> The nearest thing to us isn't Verint — it's Twilio's Conversation Memory, which shipped this year
+> and does persistent per-customer extraction properly. **The difference is in their documentation:
+> when two things a customer said conflict, they reconcile and keep the current truth. We keep both,
+> and the old one can become worth more later.** Theirs is memory for a conversation. Ours is evidence
+> for a decision.
+
+To become us it would still need: **retroactive re-evaluation** of earlier entries when new evidence
+lands; **entry versioning** (what it contributed *then* vs *now*); and **deterministic re-weighting
+outside the model**. None is hard. **Our lead is time and specificity, not architecture** — and their
+audit-trail roadmap item is the one to watch.
+
+**One more thing they advertise that we should not ignore:** *"Memory is stored independently of any
+LLM runtime, so you can swap models without losing customer context."* **A competitor is already
+selling model-swap resilience as a feature**, which is exactly the ground `06-DEFENDING-THE-SCORE.md`
+covers. It raises the bar on that answer rather than lowering it.
 
 ### 2. Amazon Connect + Contact Lens + Customer Profiles
 
@@ -153,12 +173,12 @@ and the fact that it exists now — not that it is unbuildable.
 
 ## Could not verify
 
-- **Twilio Conversation Memory's retroactive behaviour.** Published material describes extraction and
-  persistence but does not state whether earlier observations are re-evaluated when new conversations
-  land. **Our central differentiation claim rests on the absence of a published statement, not on
-  evidence of absence.** That distinction matters and should be said if challenged.
-- **Whether Twilio's ledger entries are versioned or only appended.** Audit trails are on its H2 2026
-  roadmap; internals not published.
+- **Twilio's reconciliation is documented for *preferences and conflicting facts*.** Whether it also
+  discards or overwrites *evidence* of the kind we accumulate is not stated. The quote is real and
+  load-bearing, but **do not stretch it into a claim about their whole architecture** — it is about
+  conflicting observations, which is the case they chose to document.
+- **Whether Twilio's entries are versioned or only appended.** Audit trails are on its H2 2026
+  roadmap; internals not published. If that ships as entry-level versioning, the gap narrows fast.
 - **Amazon Q in Connect's conversation-to-feature workflow.** No technical detail published on whether
   extracted features write into Customer Profiles.
 - **Genesys "predictive engagement"** — whether it re-scores retroactively or only forward.
