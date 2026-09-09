@@ -121,7 +121,7 @@ number (T4)**.
   The right figure is the *effective* yield: CFPB 2025 reports **$160bn of interest on >$1.2tn** of
   balances = **13.3%**. So $5,300 × 13.3% = **~$705/yr**, not ~$1,336.
 - **#5's money is not the bank's money.** **Reg E (12 CFR §1005.2(m)) does not cover *authorised*
-  transfers**, so the $38,506 average is the **customer's** loss. That is why the buyer is the **BSA
+  transfers**, so that average is the **customer's** loss. That is why the buyer is the **BSA
   Officer** and the budget line is **financial-crimes compliance opex**. Pitch it anywhere else and it
   collapses on the first question.
 - **#8 mortgage keeps the best T3 and loses its dollar figure.** **Reg X §1024.39 mandates live contact
@@ -144,20 +144,23 @@ tell is in what the customer says — which is FinCEN's own position (advisory *
 
 - **T3 is the best available short of a legal mandate:** a SAR / elder-financial-exploitation alert
   queue that already exists and is already legally required. Nothing to build, no outbound motion.
-- **Two government primary anchors with hard denominators.** FBI IC3 2025 Elder Fraud Report:
-  **$7.75bn across 201,266 complaints** from victims aged 60+ (**$7.75bn ÷ 201,266 = $38,506
-  average**), with **12,400 victims losing ≥$100,000**. FinCEN Financial Trend Analysis (2024-04-18):
-  **~$27bn flagged across 155,415 BSA filings** in the year to 2023-06-15 (**$173,733 per filing**),
-  **banks filed 72%**.
+- **Two government primary anchors with hard denominators.** FBI IC3 2025 Elder Fraud Report
+  `[verified 2026-09-09]`: **201,266 complaints** from victims aged 60+, **more than $7.7 billion**
+  in losses, **average above $38,000**, **at least 12,400 victims losing $100,000 or more**, losses
+  **up 37% on 2024**. FinCEN Financial Trend Analysis (2024-04-18) `[secondary, unverified]`: ~$27bn
+  across **155,415 BSA filings** to 2023-06-15 (**$173,733 per filing**), **banks filed 72%**.
 - **It demos better than anything except attrition** — retro re-scoring turns an innocuous first
   conversation into evidence of grooming, which is the most vivid thing this system does.
-- **Two things that must be said in the same breath as the money**, or it collapses: the $38,506 is the
-  **customer's** loss, not the bank's; and elder exploitation is deposit- and wire-weighted, so at a
-  **card** issuer this is a detection surface feeding an existing programme, not a card-loss story.
+- **Two things that must be said in the same breath as the money**, or it collapses: that average loss is the
+  **customer's**, not the bank's, not the bank's — Reg E (12 CFR §1005.2(m)) does not reach *authorised*
+  transfers and a coached victim authorises their own payments; and elder exploitation is deposit- and
+  wire-weighted, so at a **card** issuer this is a detection surface feeding an existing programme,
+  not a card-loss story.
 - **Cost to point at it: ~$0.45 and a day of fragment authoring**, plus one genuinely new signal
   family — the largest content build of anything scoring above 24, and still small.
-- **Verify before quoting:** both figures were read from secondary summaries in this pass because the
-  IC3 and FinCEN PDFs returned unparseable binary. **Open the primaries before saying them on stage.**
+- **Verify before quoting:** the **IC3 figures are now verified** against fbi.gov and ic3.gov
+  (2026-09-09). **The FinCEN ones are still from a secondary summary** — open that primary before
+  saying it on stage.
 
 ### 2nd reserve — #6, complaint escalation avoidance *(27/35)*
 
@@ -235,14 +238,17 @@ per-relationship anchor that survives arithmetic.**
 **Predicts** that the customer is being defrauded now. **T3:** a SAR / elder-financial-exploitation
 alert queue that already exists and is legally required — the strongest T3 on the list.
 
-**Money, now anchored to two government primaries.** FBI IC3 2025 Elder Fraud Report: **$7.75bn across
-201,266 complaints** from victims aged 60+ = **$38,506 average**, with **12,400 victims losing
-≥$100,000**. FinCEN Financial Trend Analysis (2024-04-18): **~$27bn across 155,415 BSA filings** in the
-year to 2023-06-15 = **$173,733 per filing**, **72% filed by banks**.
+**Money, anchored to two government primaries.** **FBI IC3 2025 Elder Fraud Report `[verified against
+fbi.gov / ic3.gov, 2026-09-09]`: 201,266 complaints from victims aged 60+, losses of more than
+$7.7 billion, average loss per victim above $38,000, and at least 12,400 victims losing $100,000 or
+more — a 37% rise in losses over 2024.** *(Use the FBI's own phrasing — "more than $7.7 billion",
+"exceeded $38,000". Do not quote a derived $38,506; it implies a precision the report does not.)*
+FinCEN Financial Trend Analysis (2024-04-18): **~$27bn across 155,415 BSA filings** in the year to
+2023-06-15 = **$173,733 per filing**, **72% filed by banks** — `[secondary, still unverified]`.
 
 **But the money is not the bank's money, and this changes the buyer.** **Reg E (12 CFR §1005.2(m))
 does not reach *authorised* transfers**, and a coached victim authorises their own payments — so the
-$38,506 is the **customer's** loss. **The buyer is therefore the BSA Officer and the budget line is
+average is the **customer's** loss, not the bank's. **The buyer is therefore the BSA Officer and the budget line is
 financial-crimes compliance opex**, not fraud loss. Pitch it anywhere else and it collapses on the
 first question.
 
@@ -253,9 +259,8 @@ position (advisory **FIN-2022-A002**).
 **Weaknesses.** Elder exploitation is deposit- and wire-weighted, so at a **card** issuer this is a
 detection surface feeding an existing programme, not a card-loss story. It needs **one genuinely new
 signal family** — the largest content build of anything scoring above 24, though still ~a day plus
-~$0.45. False positives are expensive in customer trust. **And both figures above were read from
-secondary summaries because the IC3 and FinCEN PDFs would not parse — open the primaries before
-saying them on stage.**
+~$0.45. False positives are expensive in customer trust. **The IC3 figures are now verified against fbi.gov; the FinCEN
+ones are still from a secondary summary — open that primary before saying it on stage.**
 
 ### 6. Complaint escalation avoidance
 **Predicts** a complaint becoming formal or regulator-facing. **Money:** remediation and handling cost.
