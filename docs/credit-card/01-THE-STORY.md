@@ -227,8 +227,19 @@ early-warning claim and the safety claim contradict each other four minutes apar
 > `no-evidence` null with its own denominator — **never a defaulted zero**, because a zero reads
 > downstream as *confirmed low risk*, which is worse than no feature at all.
 >
-> And in the back-test we'll report performance **inside and outside** the scored population, and
-> coverage **among actual leavers** — not among the book.
+> And in the back-test we'll report coverage **among actual leavers** — not among the book — and your
+> model's performance **with and without our feature**, on the same population.
+
+**Wording corrected 2026-09-09 and this one matters.** The earlier promise was to report performance
+*"inside and outside the scored population"*. **That cannot be computed** — outside the scored
+population there is no score, so there is nothing to measure performance *of*. It was a commitment we
+could not keep, offered to the one person in the room most likely to try to collect on it.
+
+**What is computable, and is the right offer:** coverage among leavers (do the people who leave
+actually talk to you?), and your model's lift **with vs without** our feature on the customers who
+have a score. **If a modeller pushes further** — *"then you can't tell me the feature generalises"* —
+the answer is yes, that is true, and it is a property of every conversation-derived feature ever
+built, ours included.
 
 ### The governance sentence
 

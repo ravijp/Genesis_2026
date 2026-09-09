@@ -1085,10 +1085,24 @@ self-selection.
 attrition. It converts conversations already had and already discarded into an earlier, ordered read on
 **the leavers who do speak.** Smaller, true, still saleable.
 
-**And the measurement to commit to in the back-test:** report performance **separately inside and
-outside the scored population**, and report coverage **among actual leavers** — not among the book. If
-leavers are over-represented among people who call, that is a strong finding and it is cheap to
-compute. If they are under-represented, we need to know before the client does.
+**And the measurement to commit to in the back-test** — ~~report performance separately inside and
+outside the scored population~~ **corrected 2026-09-09 (KS-12): that is not computable.** Outside the
+scored population there is no score, so there is no performance to report. It was a commitment we
+could not keep, aimed at the one reader most likely to try to collect on it.
+
+**What is computable, and is what to commit to:**
+
+1. **Coverage among actual leavers** — not among the book. If leavers are over-represented among
+   people who call, that is a strong finding and it is cheap to compute. If they are
+   under-represented, we need to know before the client does.
+2. **Their model's lift with vs without our feature**, on the scored population only.
+3. **The base-rate difference** between the scored and unscored populations — which *is* computable
+   from their own label alone, needs nothing from us, and is the honest way to size the selection
+   effect.
+
+**And concede the limit rather than engineering around it:** a feature built from conversations can
+never be validated on customers who never had one. That is true of every conversation-derived feature
+ever built, and saying so is cheaper than being shown it.
 
 ## "Earlier" is worth nothing without a differential save rate
 
