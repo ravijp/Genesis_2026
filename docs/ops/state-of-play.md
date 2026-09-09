@@ -1,8 +1,28 @@
 # State of play
 
-**Updated 2026-09-03.** Rewritten in place every working session — **never appended to**. If
+**Updated 2026-09-09.** Rewritten in place every working session — **never appended to**. If
 something will not fit, it belongs in `decisions.md` (a choice), `working-agreements.md` (a rule), or
 Jira (work). Anything historical belongs in git.
+
+> ## The three live things, 2026-09-09
+>
+> **1. The gate is 2026-09-11, 20:30-21:00 IST** — moved from 09-10 (which had already replaced
+> 09-07). Venkat and Farhan judge; it decides the shortlist.
+>
+> **2. Two scripts exist for it and they disagree on market. This is the open decision and it is
+> Ravi's.** `gates/2026-09-11-sprint-review.md` is the **UK** story leading with the **£650 Ombudsman
+> tariff**; `docs/credit-card/` (7 files) is the **US** story and treats a pound sign as a way to lose
+> the room. The US work is deeper — two red-team passes, KS-1..KS-16 — but it gave up the best number
+> in the repo to get there, because the US has no tariff equivalent. **Neither is deleted.**
+>
+> **3. A keyed 10-seed run is in flight** (~$10.6, Haiku 4.5) testing whether accumulation still beats
+> a rolling window **when a real model does the reading** — the one headline claim still measured only
+> by the regex lexicon. **Seed 1 placed `full-ledger` 6th of 9 arms.** If that holds, it is a genuine
+> problem with the central claim and it gets published, not buried.
+>
+> **Standing instruction from Ravi, 2026-09-09:** this is a generative-AI product. **The keyless
+> lexicon is a fallback and an auditor's reproducibility property — never a product claim, and never
+> the source of a headline number.**
 
 **Fresh session, read in this order:** this file → `decisions.md` → `working-agreements.md` →
 `../../README.md` → `../architecture/architecture.md`. Then `../architecture/infrastructure.md` for the
