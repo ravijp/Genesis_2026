@@ -126,6 +126,17 @@ guide — are disclosed in the write-up rather than smoothed over. Everything is
 **[benchmarks/cfpb/](benchmarks/cfpb/)**; `uv run python benchmarks/cfpb/steps/05_score.py` reproduces
 every figure offline with no network.
 
+**Post-hoc, not pre-registered — added 2026-09-09.** The sample turned out to be **card-heavy: 55 of
+the 150 narratives are credit-card complaints** (51 general-purpose or charge card, 4 store card).
+Splitting the *already-published* run by product costs **$0** — it replays from the committed cache —
+and `PROTOCOL.md` and every published file are untouched. On those 55, the model reader fires on
+**29 / 29** documents a human marked as carrying any signal, and gets the exact type right on
+**26 / 35** marks. **And the row that matters most is the worst one: `churn_intent` is 1 / 8 on card
+documents**, against 4 / 5 on the 95 non-card ones. **This is a subgroup split of a pre-registered
+benchmark, so it is descriptive evidence and nothing more** — n = 8 cannot carry a conclusion in
+either direction, and CFPB narratives are complaints by construction, which over-represents
+escalation language and under-represents the quiet fee grumble a servicing call contains.
+
 This is the one measurement on this page that **does not move when our corpus moves**, because it does
 not touch our corpus. It is why the reader, not the ranking, is the binding constraint.
 
