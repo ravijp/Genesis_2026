@@ -230,8 +230,9 @@ client's own systems — the screen counts them rather than asserting it.
    account, and the EventBridge → notifier-Lambda route would be the first thing in this system that
    reaches outward, which the HITL-by-absence guarantee is built on. An operator notifier is not a
    customer notifier, so this is a gap to close deliberately or to leave closed deliberately —
-   `tools/alarms.py`'s docstring already argues both sides. Worth noting the cheaper win first: **no
-   alarm here has ever transitioned to ALARM**, so every threshold is reasoned rather than observed,
+   `tools/alarms.py`'s docstring already argues both sides. Worth noting the cheaper win first: **one alarm HAS since transitioned to ALARM** —
+   `earshot-dev-ingest-failures`, OK→ALARM 2026-09-03T04:06:22+05:30, back to OK at 04:33:22
+   (verified from CloudWatch alarm history 2026-09-09); the other five have not, so every threshold is reasoned rather than observed,
    and proving one fires costs nothing.
 9. **`GET /cases/{id}` serves DynamoDB internals** — `pk`, `gsi1pk` and `gsi1sk` come back in the
    client-facing body. Not an answer-key leak and `test_api.py` is right to pass, but the list route

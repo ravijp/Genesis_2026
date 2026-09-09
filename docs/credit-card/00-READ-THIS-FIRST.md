@@ -242,9 +242,9 @@ quietly — it changes who signs.
 |---|---|---|
 | 1 | **Do the two dry runs** | Two were committed, **zero done.** Every change I made is a *wording* change, and wording only survives a room if it's been said out loud once. This is the highest-value remaining work, ahead of any code |
 | 2 | **Record the demo the day before** | A room with no wifi must not be able to break your best beat |
-| 3 | **Run A + B + C** (~$0.45) | See decision 1 |
-| 4 | **Get a fresh CloudWatch alarm-history read** | `handover.md` says an alarm fired on a bad transcript; `state-of-play.md`, **same date**, says twice that no alarm has ever fired. The repo contradicts itself and you shouldn't claim it until you know |
-| 5 | ~~**Check if the CFPB benchmark sample is card-heavy**~~ **DONE 2026-09-09 — and it is.** **55 of 150** narratives are credit-card (51 general-purpose or charge, 4 store). Split by product for **$0**, replayed from cache. Card results: reader fires on **29/29** marked documents, exact type on **26/35** marks, **but churn intent 1/8.** Post-hoc, not pre-registered. **Read the honesty beat in `01-THE-STORY.md` before you quote any of it** — the 1/8 must be said in the same breath as the 29/29 |
+| 3 | **Step A — author 5–10 US-card churn fragments** | **Still the constraint, and still unbought.** It costs hours, not dollars. The $10.87 spent on 2026-09-09 bought the *reader* comparison, not card content — B and C without A still produce generic numbers under a card label. See decision 1 |
+| 4 | ~~**Get a fresh CloudWatch alarm-history read**~~ **DONE 2026-09-09** | The repo contradicted itself; it is settled from CloudWatch. **`earshot-dev-ingest-failures` went OK → ALARM at 2026-09-03 04:06:22 IST and back to OK at 04:33:22**; the other five alarms have never left OK. `handover.md` was right, `state-of-play.md` was stale and is fixed. **Safe to say in the demo** |
+| 5 | ~~**Check if the CFPB sample is card-heavy**~~ **DONE 2026-09-09** | **It is: 55 of 150** narratives are credit-card (51 general-purpose or charge, 4 store). Split by product for **$0** from the committed cache. On those 55 the reader fires on **29/29** marked documents and gets the exact type on **26/35** marks — **but churn intent is 1/8.** Post-hoc, not pre-registered. **Read the honesty beat in `01-THE-STORY.md` before quoting any of it**: the 1/8 goes in the same breath as the 29/29 |
 | 6 | **Re-login to AWS the morning of, and again before walking in** | The SSO token expires in hours and a dead token looks exactly like broken code |
 
 ---

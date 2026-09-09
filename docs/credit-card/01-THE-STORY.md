@@ -173,8 +173,9 @@ contributed *then*, the total *then*, what it contributes *now*, the total *now*
 remark and read both. **Observable, not asserted.**
 
 Three claims while the screens are up: **safe to re-run** (260 messages fed twice → still 34 entries,
-1 case) · **fails visibly** (poison records isolated and raised — *verify the alarm history first, the
-repo contradicts itself*) · **a human decides** (no outbound contact surface anywhere — not switched
+1 case) · **fails visibly** (poison records isolated and raised — **verified 2026-09-09**:
+`earshot-dev-ingest-failures` went **OK → ALARM at 2026-09-03 04:06 IST and back to OK at 04:33**,
+while the other five alarms stayed OK. Safe to say out loud) · **a human decides** (no outbound contact surface anywhere — not switched
 off, **absent**).
 
 ---
