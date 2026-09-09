@@ -786,7 +786,7 @@ The four things worth knowing before you read any of it:
 
 Judging: Zenon impact 25 · technical depth 25 · feasibility & production readiness 25 · originality 15 ·
 presentation 10, plus an AI judge scoring engineering quality. Gates: **2026-08-10** check-in ·
-**2026-08-24** combined Sprint 1+2 demo · **2026-09-07** Sprint 3.
+**2026-08-24** combined Sprint 1+2 demo · ~~2026-09-07~~ → ~~2026-09-10~~ → **2026-09-11, 20:30-21:00 IST** Sprint 3, a cut round.
 
 All data is synthetic, generated with ground truth authored *before* the text, per competition rules.
 No client data of any kind is used anywhere in this repository.

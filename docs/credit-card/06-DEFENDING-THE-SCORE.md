@@ -230,6 +230,29 @@ calibration and a literature against it.
 *(A single stale 400-customer run suggested confidence was uniquely dominant. On the current corpus at
 30 datasets it is not. The narrower claim is the one to make.)*
 
+**And the reader changes the answer — measured the same day with the keyed run.** Over 10 seeds with
+**Haiku 4.5** rather than the lexicon, the ordering **inverts**: removing confidence weighting leaves
+**89.5%** of the top-20 unchanged — the **least** disruptive mechanism — while corroboration becomes
+the most (82.0%).
+
+| Mechanism removed | offline lexicon, 30 datasets | **Haiku 4.5, 10 seeds** |
+|---|---|---|
+| confidence weighting | 80.0% — joint most | **89.5% — least** |
+| corroboration | 79.8% — joint most | **82.0% — most** |
+| decay | 92.4% | 85.0% |
+| escalation | 100.0% — inert | 86.5% |
+| cross-channel | 92.7% | 89.0% |
+
+**Why, and it is measurable rather than speculative:** the lexicon's confidences are hand-set per-cue
+constants spread across a wide range, so they carry real ranking information. **The model's do not —
+21 distinct values across 5,112 emissions, ten covering 95.3%.** A number that lands on the same ten
+values cannot reorder much.
+
+**This is the answer to give, because it is the one about the system you actually sell.** The
+production reader is the model. **Under the model, the uncalibrated float is the least load-bearing
+thing in the ledger — so removing or bucketing it costs almost nothing, and the governance objection
+evaporates.** Say the lexicon figure only if asked what the fallback does.
+
 **One incidental finding, outside this document's brief but worth someone's attention:** the
 escalation bonus changes **nothing at all** — 100.0% overlap on every one of 30 datasets. At this
 operating point it is inert. That does not refute AT-52's "keep all four mechanisms", which was
@@ -385,9 +408,13 @@ Claiming more than is true is worse than explaining the regime honestly. The lin
   `feed.py:verify()` never compares scores in strict mode. It is a human comparing a full float
   against a `.6f`-rounded print. **True as far as it goes, but it is an eyeball, not a check** — do
   not describe it as verified.
-- **Whether the confidence ablation behaves the same with a *model* reader.** The 30-dataset ablation
-  used the offline lexicon, whose confidences are hardcoded constants. **The measurement that matters
-  most — how much a *model-emitted* confidence moves the ranking — has not been run**, and it is the
-  one this whole section is about. It would cost real money; it is the right next spend.
+- ~~**Whether the confidence ablation behaves the same with a model reader.**~~ **RUN 2026-09-09, and
+  it reversed the conclusion — do not answer "unmeasured" to this question.** Over 10 keyed seeds with
+  Haiku 4.5, removing confidence weighting leaves **89.5%** of the top-20 unchanged, making it the
+  **least** load-bearing mechanism under a model reader — against **80.0%, joint most**, under the
+  offline lexicon. The reason is measured too: the model's float takes only **21 distinct values
+  across 5,112 emissions**, so it cannot reorder much. **This strengthens the recommendation rather
+  than weakening it** — bucketing costs almost nothing. See `03-REFERENCE.md`, "The keyed
+  re-measurement".
 - **Whether bucketing preserves the ranking.** Recommended in §3 on reasoning, not measured. The
   harness exists; run it before promising a client the change is neutral.

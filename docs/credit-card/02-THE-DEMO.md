@@ -165,14 +165,14 @@ Answer it unprompted and it becomes a sophistication beat instead of a liability
 | Claim | Evidence | Status |
 |---|---|---|
 | **Safe to re-run** | 260 messages fed twice → still 34 entries, 1 case. No double-counting | Measured |
-| **Fails visibly** | A malformed transcript is isolated and raises, rather than silently scoring zero | Tests support this. **See the caution below before saying more** |
+| **Fails visibly** | A malformed transcript is isolated and raises, rather than silently scoring zero — and the deployed alarm **did fire**: `earshot-dev-ingest-failures` OK → ALARM 2026-09-03 04:06:22 IST, back to OK 04:33:22 | **Measured, verified from CloudWatch 2026-09-09** |
 | **A human decides** | No outbound contact surface exists anywhere — no route, no button, no handler. Not switched off. **Absent** | Structural |
 
-**Caution on the middle one.** The repo contradicts itself: `handover.md` records an alarm going
-OK → ALARM on one bad transcript; `state-of-play.md`, carrying the **same date**, says twice that no
-alarm has ever transitioned. **Get a fresh CloudWatch alarm-history read before you say an alarm
-fired.** If it did not, the claim is only that poison records are isolated and raise — which is true
-and sufficient.
+**The middle one is verified — say it.** The repo used to contradict itself about whether any alarm
+had ever fired. Settled from CloudWatch alarm history on 2026-09-09:
+**`earshot-dev-ingest-failures` went OK → ALARM at 2026-09-03 04:06:22 IST and returned to OK at
+04:33:22.** The other five alarms have never left OK, which is the honest half — one threshold is
+observed, five are still reasoned.
 
 **Caution on the third one.** *"A human decides"* must arrive **together** with the answer to "so what
 happens on day 74 when the customer isn't calling?" (see `01-THE-STORY.md`, beat 4). Said alone, it
