@@ -337,28 +337,36 @@ expensive thing is not the code — it is choosing, which is why this file exist
 
 ---
 
-## 6. What I would do with your next hour when you wake up
+## 6. Where this file now stands — 2026-09-09, settled
 
-1. **Read §3.** If pre-delinquency persuades you, say so and I will rebuild `01-THE-STORY.md` around it
-   with attrition as beat B — that is a two-hour job, not a restart, and the demo arc barely changes.
-2. **If you want the dark horse**, say so and the first thing needed is a verified loss anchor for scam
-   and elder exploitation. One tight search, haiku, not a research programme.
-3. **If you want to stay with attrition**, nothing changes and everything is ready.
+**The choosing is over. Do not re-open it before 09-11.** Attrition leads; pre-delinquency is
+withdrawn; the market is US. Kept as a footnote: the UK complaints variant, in
+`03-REFERENCE.md` §7.
 
-**What I would not do:** pick #9, #11 or #13. Cross-sell has optics that undo our governance argument,
-credit-line decrease is the most attackable idea on the list, and agent coaching is a fight with
-incumbents on their own ground using our weakest asset.
+**This file's remaining job is Q&A.** If a judge asks *"why cards and not X?"*, the answer is in
+Table B and the three reserves. Nothing here needs a decision.
+
+**What I would still not pick, and would say so if asked:** #9 cross-sell (optics undo our own
+governance argument), #11 credit-line decrease (adverse action under Reg B with FCRA attaching — the
+most attackable idea on the list), #13 agent coaching (a fight with incumbents on their ground using
+our weakest asset). **#4, #10 and #13 are cut outright** — see the cut list in §2.
 
 ## Honest gaps in this document
 
-- **Ratings in Table B are my judgement, not measurements.** They are calibrated against the red-team
-  findings, but two people could reasonably reorder the middle of the table.
-- **Anchors are verified only for stories 1, 2, 3 and 6** (cards, delinquency, balances, complaints).
-  For deposits, scams, mortgage, SMB, CLI and CLD I have named where the money is but **not verified a
-  single figure.** Do not quote a number for those six without a search.
-- **The 7–10× claim in the headline** comes from comparing ~$550–800 per retained customer against
-  ~$5,000 per avoided charge-off on the published $6,610 average balance. The **$5,000** is my estimate
-  of net loss after recoveries; I have **not** verified a published recovery or severity rate, so treat
-  the multiple as an order of magnitude, not a figure.
-- **T1 (does the conversation exist, in volume) is unverified for every story.** No published US figure
-  for issuer contact rates was found in any pass. It is a client input everywhere.
+- **Ratings in Table B are my judgement, not measurements.** They are calibrated against the anchors
+  found in the 2026-09-09 pass and the KS-1..KS-16 record, but two people could reasonably reorder the
+  middle of the table.
+- **Anchors are now verified for stories 1, 2, 3, 5, 6 and 7.** Story 5's IC3 figures were checked
+  against fbi.gov/ic3.gov on 2026-09-09; **its FinCEN figures were not** and are tagged secondary.
+  **Stories 8, 9, 10, 11 and 12 still have no verified per-event figure** — do not quote a number for
+  those without a search.
+- **The withdrawn 7–10× multiple** compared ~$550–800 per retained customer against ~$5,000 per
+  avoided charge-off on a **$6,610 balance that is per borrower, not per account**. Corrected
+  2026-09-09: recoveries run **17–27% of gross card charge-offs** (Capital One H1 2026 27.1%;
+  Synchrony FY2025 21.8%), the balance *at charge-off* is published nowhere, honest net loss is
+  **~$3,400 (range $2,300–$5,000)**, and the multiple is **3–9×, centrally ~5×** — below 1× once
+  a ~4.5× higher false-positive cost is priced in. **The old figure is retained above only so the
+  correction has something to point at.**
+- **T1 (does the conversation exist, in volume) is unverified for every story.** No published US
+  figure for issuer contact rates was found in any pass. It is a client input everywhere — and it is
+  also the denominator KS-12's selection problem turns on.

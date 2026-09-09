@@ -1,4 +1,16 @@
-# Prompt for the next conversation
+# Prompt for the next conversation — **SPENT 2026-09-09. Do not run it again.**
+
+> **This brief was executed on 2026-09-09.** It produced `06-DEFENDING-THE-SCORE.md`,
+> `07-LANDSCAPE.md`, the KS-9..KS-16 red-team entries and the 2026-09-09 corrections.
+>
+> **It contains statements that are no longer true and must not be acted on:**
+> it describes the pre-delinquency recommendation as *"live and unresolved"* (**it is withdrawn and
+> settled**), it treats the conversation attrition score as needing a defence that now exists, and it
+> predates the market decision (**US attrition, settled 2026-09-09**), the keyed 10-seed run and the
+> SR 11-7 → SR 26-2 correction.
+>
+> **Kept only as the record of what was asked for and why.** Current state is
+> `00-READ-THIS-FIRST.md`; current next action is `docs/ops/handover.md`.
 
 Copy everything below the line into a fresh conversation.
 
