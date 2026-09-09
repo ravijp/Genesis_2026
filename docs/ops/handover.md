@@ -98,6 +98,15 @@ keyed run — both resolve by 09-11. **Reclaim it then**, rather than letting th
   here** and reports every process dead) launched a second sweep over a live one: **$12.33 spent,
   $4.60 wasted, 39 cache lines torn**, permanently unreplayable. *(The first post-mortem blamed
   `prompt_sha` drift and was wrong — a duplicate key proves the key was STABLE.)*
+- **`config_hash` does not include the EXTRACTOR, so an offline run and a model run at the same seed
+  and customer count write the SAME artifact filename and silently overwrite each other.** Cost me
+  keyed seeds 1-3 on 2026-09-09: an offline control launched while a paid keyed sweep was mid-flight
+  overwrote `run-1..3-<hash>.json` with offline results. **No money was lost** — the paid reads were
+  in the extractor cache, so `EARSHOT_CACHE_MODE=replay` regenerated them for $0 — but the artifacts
+  were gone and the aggregate silently reported 5 datasets instead of 8. **Check `manifest.provider`
+  after any run you did not watch, and copy keyed artifacts somewhere safe before running anything
+  else at the same seed/customer count.** This is the artifact-level twin of the one-cache-per-run
+  rule below.
 - **`CachingProvider` never prints its hit/miss counters** (`llm/cache.py:127-128`). A 47% miss rate
   hid for 3,275 paid calls. Print them before spending.
 - **One cache file per provider AND model AND measurement.** `config_hash` does **not** cover the
