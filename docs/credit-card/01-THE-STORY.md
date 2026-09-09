@@ -128,6 +128,12 @@ One sentence, then move:
 > dispositioned and gone, because on its own it was not actionable. **We never discard it** — and it
 > becomes actionable later, when something corroborates it.
 
+**"Reconciles to current truth" is not our phrase for a competitor — it is theirs.** Twilio's
+Conversation Memory documentation describes reconciling conflicting observations to *"keep only the
+current truth."* **If you have ten spare seconds in this beat, that citation is the best use of
+them**; it converts the inversion from a claim about the market into a quote from it. If you are
+running to time, drop it — it also lives in the playbook.
+
 Then the line that de-risks the whole thing for a CEO:
 
 > **The score is arithmetic, not model output.** Accumulation, decay and thresholds are deterministic,
