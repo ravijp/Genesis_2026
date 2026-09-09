@@ -657,10 +657,18 @@ retention produces more than a 25% increase in profit.
 | Share of US adults holding at least one card | **78%** | CFPB Consumer Credit Card Market Report | end-2024 |
 | Average APR, accounts **assessed interest** | **22.15%** | Federal Reserve G.19 | Q2 2026 |
 | Average APR, all accounts | **20.94%** | Federal Reserve G.19 | Q2 2026 |
-| Average balance per account | **$6,610** | TransUnion / Federal Reserve | Q2 2026 |
-| Card **net charge-off** rate | **3.70%** | Federal Reserve | Q2 2026 |
+| Average balance **per borrower** | **$6,610** | TransUnion / Federal Reserve | Q2 2026 |
+| Average balance **per open account** | **$2,077** | derived: $1.263T ÷ 608M accounts | Q2 2026 |
+| Card **net charge-off** rate | **3.82%** | Federal Reserve **CORCCACBS** ("Charge-Off and Delinquency Rates on Loans and Leases at Commercial Banks"), updated 2026-08-25 | Q2 2026 |
 | Card 30+ day delinquency | **2.85%** | Federal Reserve, commercial banks | Q2 2026 |
 | Share of card **balances** 90+ days delinquent | **12.92%** | NY Fed Consumer Credit Panel | Q2 2026 |
+
+> **Two corrections, 2026-09-09.** The charge-off row previously read **3.70%, "Federal Reserve"**, and
+> was often cited in this repo as **G.19**. **G.19 is the Consumer Credit release and publishes no
+> charge-off rates at all.** The correct series is **CORCCACBS**, which reads **3.82%** for Q2 2026.
+> And **$6,610 is per borrower, not per account** — the table said "per account" and that is a
+> three-fold error at the account level: $6,610 × 608M accounts is $4tn against $1.263tn of actual
+> balances. **Never put $6,610 in the same sentence as an account count.**
 | **Open general-purpose card accounts** | **608 million** (plus **185 million** private label) | **CFPB Consumer Credit Card Market Report** (pub. 2025-12-30) | year-end 2024 |
 | **Account closure rate — general purpose** | **"Between 0.7 and 1 percent of general purpose accounts are closed each month"** → **8.4–12.0% per year** | **CFPB**, same report, §Account Closure, from the Consumer Credit Information Panel (2% national longitudinal sample) | year-end 2024 |
 | Account closure rate — private label | **1–2% monthly**, with a spike to **3.4%** in May 2024 | CFPB, same report | 5-yr avg to 2024 |
@@ -709,7 +717,7 @@ retention produces more than a 25% increase in profit.
 > interest-assessed account.
 
 **That is gross interest, not margin, and the gap is large.** Subtract cost of funds, credit losses
-(charge-offs are running at **3.70%**, roughly **$245** per year on that balance), rewards cost, and
+(charge-offs are running at **3.82%**, roughly **$253** per year on a $6,610 borrower balance), rewards cost, and
 servicing and operating cost.
 
 **Do not do that subtraction on stage and present the result as their margin.** Show the structure,
@@ -805,9 +813,13 @@ or offer cost exceeds margin protected. Both testable. Say so.
 
 > **Three published facts. There are 608 million open general-purpose card accounts in the US, and
 > the CFPB says between 0.7 and 1 percent of them close every month — call it 8 to 12 percent a year.
-> Americans carry $1.263 trillion at 22.15% APR on balances assessed interest, about $1,464 a year of
-> gross interest on an average $6,610 balance. And charge-offs are running at 3.70%.** *(CFPB Consumer
-> Credit Card Market Report, published 2025-12-30; Federal Reserve G.19 and NY Fed, Q2 2026.)*
+> Americans carry $1.263 trillion at 22.15% APR on balances assessed interest — about $2,077 per open
+> account. And charge-offs are running at 3.82%.** *(CFPB Consumer Credit Card Market Report,
+> published 2025-12-30; NY Fed Q2 2026; charge-off rate CORCCACBS, updated 2026-08-25.)*
+>
+> *(Corrected 2026-09-09: this script previously said "$1,464 a year of gross interest on an average
+> $6,610 balance" and "3.70% ... Federal Reserve G.19". **$6,610 is per borrower, not per account**,
+> and **G.19 publishes no charge-off rate**. Do not restore either.)*
 >
 > **And here is the gap that matters: nobody publishes how much of that closure is voluntary. Not the
 > regulator, not a single issuer 10-K. Which is the first sign that this is a number managed

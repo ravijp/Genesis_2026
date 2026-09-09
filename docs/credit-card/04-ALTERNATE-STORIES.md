@@ -203,9 +203,11 @@ involuntary split is published nowhere, and the scored population skews toward c
 quiet leavers. Fully worked in `01-THE-STORY.md`.
 
 ### 2. Pre-delinquency / early hardship ★
-**Predicts** first missed payment and 30/60/90-day roll. **Money:** avoided charge-off, order of
-**$5,000** per event on a $6,610 average balance; charge-offs running **3.70%** and 90+ delinquency at
-**12.92% of balances** (Q2 2026). **T3:** hardship-programme eligibility and the pre-collections queue,
+**Predicts** first missed payment and 30/60/90-day roll. **Money — corrected 2026-09-09:** avoided
+charge-off, honestly **~$3,400 (range $2,300-$5,000)**, not $5,000; the old figure applied a 75%
+loss-given-charge-off to **$6,610, which is per borrower, not per account**, and the balance *at
+charge-off* is published nowhere. Charge-offs running **3.82%** (CORCCACBS, updated 2026-08-25 — not
+G.19, which publishes none) and 90+ delinquency at **12.92% of balances** (Q2 2026). **T3:** hardship-programme eligibility and the pre-collections queue,
 both already staffed. **Reuse:** `financial_distress` already built. **Weakness:** heavier supervisory
 scrutiny; and the honest question of whether a spoken *"things are tight"* beats a payment-ratio trend
 the bank already watches — our best answer is the intent/state distinction (§ `03-REFERENCE.md` row 7).

@@ -357,7 +357,7 @@ measured — or don't say a total at all.** Do not present it as an expected val
 > zero and so is the value. **That's a test, not a leap of faith.**
 
 **Three traps:** don't multiply $1.263T by an invented capture rate · don't quote the $1,464 gross
-interest as value per saved customer (it's before cost of funds, 3.70% charge-offs, rewards and opex) ·
+interest as value per saved customer (it's before cost of funds, 3.82% charge-offs, rewards and opex) ·
 don't lead with the optimistic column.
 
 ---

@@ -122,8 +122,9 @@ did not.
 
 **So the money story changed shape, and it is better for it.** It now rests on published market
 arithmetic — **608 million open general-purpose accounts**, **0.7–1.0% of them closing every month**
-(CFPB, published 2025-12-30), $1.263T balances at 22.15% APR, $6,610 average balance, 3.70%
-charge-offs (Fed G.19 / NY Fed, Q2 2026) — plus **client-verifiable** inputs for the two numbers that
+(CFPB, published 2025-12-30), $1.263T balances at 22.15% APR, **$2,077 per open account** (and
+$6,610 per *borrower* — never mix the two), **3.82%** charge-offs (CORCCACBS, updated 2026-08-25;
+**not** G.19, which publishes no charge-off rate) — plus **client-verifiable** inputs for the two numbers that
 convert revenue into value. **Re-acquisition cost stays in the chain as their number, not ours.** That
 is arguably stronger: a client cannot argue with their own CAC.
 
