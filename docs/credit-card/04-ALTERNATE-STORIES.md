@@ -231,12 +231,31 @@ already see on the screen. **T1 is also weakest here** (deposit customers contac
 than card customers) and the whole build is card/servicing flavoured. **Cut. Do not revive without a
 per-relationship anchor that survives arithmetic.**
 
-### 5. Scam and elder financial exploitation ★ dark horse
-**Predicts** that the customer is being defrauded now. **Money:** avoided loss, Reg E dispute cost,
-reputational and supervisory exposure. **T3:** a hold/verify flag into the fraud queue — the strongest
-T3 answer on the list, because the consuming process is *already* an alert queue. **Weakness:** anchors
-unverified; and false positives here are expensive in customer trust, so precision matters more than
-anywhere else.
+### 5. Scam and elder financial exploitation ★ **1st reserve — anchored 2026-09-09**
+**Predicts** that the customer is being defrauded now. **T3:** a SAR / elder-financial-exploitation
+alert queue that already exists and is legally required — the strongest T3 on the list.
+
+**Money, now anchored to two government primaries.** FBI IC3 2025 Elder Fraud Report: **$7.75bn across
+201,266 complaints** from victims aged 60+ = **$38,506 average**, with **12,400 victims losing
+≥$100,000**. FinCEN Financial Trend Analysis (2024-04-18): **~$27bn across 155,415 BSA filings** in the
+year to 2023-06-15 = **$173,733 per filing**, **72% filed by banks**.
+
+**But the money is not the bank's money, and this changes the buyer.** **Reg E (12 CFR §1005.2(m))
+does not reach *authorised* transfers**, and a coached victim authorises their own payments — so the
+$38,506 is the **customer's** loss. **The buyer is therefore the BSA Officer and the budget line is
+financial-crimes compliance opex**, not fraud loss. Pitch it anywhere else and it collapses on the
+first question.
+
+**Why it beats structured data for a documented reason:** a coached victim's transactions are
+authorised and individually plausible, so the tell is in what they *say* — which is FinCEN's own
+position (advisory **FIN-2022-A002**).
+
+**Weaknesses.** Elder exploitation is deposit- and wire-weighted, so at a **card** issuer this is a
+detection surface feeding an existing programme, not a card-loss story. It needs **one genuinely new
+signal family** — the largest content build of anything scoring above 24, though still ~a day plus
+~$0.45. False positives are expensive in customer trust. **And both figures above were read from
+secondary summaries because the IC3 and FinCEN PDFs would not parse — open the primaries before
+saying them on stage.**
 
 ### 6. Complaint escalation avoidance
 **Predicts** a complaint becoming formal or regulator-facing. **Money:** remediation and handling cost.
