@@ -17,12 +17,17 @@ Say these, in this order, and stop. Everything below is for the follow-up.
 > **"Half of that score is deterministic and half of it isn't, and I'll tell you which half.**
 > **The arithmetic is fixed code — same signals in, bit-identical score out, and there's a unit test
 > that asserts exactly that. The reading is a model, and a model is not bit-stable, so we don't
-> promise determinism there — we promise a fingerprint: every score carries the model id and the
-> prompt hash that produced it, and re-running that fingerprint reproduces the score.**
+> promise determinism there — we promise a fingerprint: the model version and prompt version are
+> pinned and recorded per run, and re-running that fingerprint reproduces the score.**
 > **You're asking what happens when the model changes. We've already changed it and measured it —
 > Nova Lite against Claude Haiku on the same 282 conversations, and I can show you the delta.**
 > **So model change here is a re-baselining run against a frozen benchmark, not a re-validation of
 > your propensity model."**
+
+**Say "recorded per run", not "every score carries the model id".** The stronger phrasing is
+**false today** — a stored signal carries its prompt version but not the served model
+(`extract_model.py:312`; `ExtractedSignal` has no model field), and the deployed Lambda path writes no
+run manifest at all. §4 has the fix and it is small. **Do not say the sentence until it is true.**
 
 **If he pushes on the confidence number specifically** — and the good ones will — do not defend it:
 
@@ -233,10 +238,18 @@ model-id change correctly busts the cache rather than silently returning old-mod
    fix, and you should not claim full fingerprint coverage until it is.**
 2. **`pipeline_sha` covers five modules — corpus, lexicon and ledger — but not `extract_model.py` or
    `llm/bedrock.py`.** Reader-side code changes are invisible to the fingerprint.
-3. **Persisted ledger entries carry `cue_id` (prompt version) but never the model id.** Model identity
-   lives only in run manifests — and **the deployed Lambda path writes no manifest at all**. So for a
-   score produced by the deployed pipeline, the model cannot currently be recovered from the stored
-   record.
+3. **Persisted ledger entries carry the prompt version but never the model id.** Verified: a stored
+   signal's identifying field is `cue_id`, written by the model reader as
+   `"{family}/{prompt_version}:{signal_type}"` (`extract_model.py:312`), and `ExtractedSignal` has no
+   model field at all (`schema.py`). Model identity lives only in run manifests and cache filenames —
+   and **nothing under `src/earshot/aws/` writes a manifest**, so for a score produced by the deployed
+   pipeline the model cannot currently be recovered from the stored record.
+
+   **This is the gap that actually matters for an auditor**, because it is the one that breaks the
+   sentence you want to say. *"Every score carries the model that produced it"* is **not true today**
+   for the deployed path. It is a small change — add the served model id to the persisted signal — and
+   until it is made, say *"every score carries its prompt version, and the model id is in the run
+   record; wiring it onto the entry itself is on the list."*
 
 **Therefore the honest answer to "can you trace a score to a model and prompt" is *partially*, and in
 the research harness rather than the deployed path.** Say "the fingerprint is designed in and three
@@ -318,7 +331,7 @@ Claiming more than is true is worse than explaining the regime honestly. The lin
 | Say this | Never say this |
 |---|---|
 | "The score arithmetic is deterministic and there is a test that asserts it" | "The system is deterministic" |
-| "Every score carries a model and prompt fingerprint — and three coverage gaps are open, here they are" | "Every score is fully reproducible" |
+| "The model and prompt versions are pinned and recorded per run — and three coverage gaps are open, here they are" | "Every score carries the model that produced it" — **not true today for the deployed path** |
 | "The confidence float is a raw model output, it is uncalibrated, and bucketing it is the next thing we build" | "Confidence is calibrated" / silence on the question |
 | "We've already swapped the model once and measured the delta" | "Model changes won't affect your feature" |
 | "The arithmetic sits at the light end of SR 26-2's tiering" | "Our score is not a model under SR 26-2" |
