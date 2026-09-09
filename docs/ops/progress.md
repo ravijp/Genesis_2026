@@ -720,3 +720,63 @@ the screens finally show the Phase C prose.
 `timeout 590 … | tail`, which both under-ran a 17-minute job and let the kill return exit 0 — a
 truncated run looked clean, twice. Same family as the `pgrep` mistake: a wrapper that hides an exit
 code turns a failure into a false success. The cache meant the rerun re-bought only 16 calls.
+
+## 2026-09-09 · The pitch hardened, the market settled, and $10.87 spent on the reader
+
+**Two rounds in one night, both driven by Ravi.** First a hardening pass on the US card pitch; then,
+after he moved the gate and raised the model budget, a keyed re-measurement and a market decision.
+
+**Four claims in `docs/credit-card/` were wrong, not merely weak, and are corrected in place.**
+
+1. **SR 11-7 is rescinded** — superseded 2026-04-17 by **SR 26-2**, a joint OCC/Fed/FDIC document;
+   **OCC Bulletin 2026-13** rescinds OCC 2011-12; applies above **$30bn** total assets. We cited dead
+   guidance twice. Its "model" definition excludes *"deterministic rule-based processes… where there
+   are no statistical, economic, or financial theories underpinning their design or use"*, which helps
+   the ledger; its GenAI footnote is a **scope carve-out, not an exemption**, and reading it as relief
+   would be worse than not raising it.
+2. **"Distress signals are structurally blocked from feeding an offer — a branch in code" is FALSE.**
+   There is no offer surface anywhere in `src/earshot/` to be blocked from. What exists is
+   `TRAJECTORY_TEAM` (`schema.py:35-40`) plus the absence of any contact capability. The true version
+   is stronger; the false one was checkable.
+3. **Charge-offs are 3.82%** (CORCCACBS, updated 2026-08-25). **G.19 publishes no charge-off rate.**
+4. **$6,610 is per borrower, not per account.** The pitch's own figures refute it: $1.263T ÷ 608M =
+   **$2,077 per open account**.
+
+**The confidence float turned out to be load-bearing and uncalibrated, and is now a settled build
+recommendation.** `memory.py:99` makes it a direct multiplier and the lexicon's hardcoded per-cue
+constants share the field. Measured two ways: across **30 offline datasets** removing it moves 20% of
+the top-150; and the model's own emissions are **21 distinct values across 5,112 signals, ten covering
+95.3%, 0.85 alone at 28.4%** — a menu, not a probability. **Recommendation: bucket to three tiers
+(~1 day).** Incidentally the escalation bonus is **inert** — 100.0% overlap on all 30 datasets.
+
+**The keyed 10-seed run — $10.6586 plus a $0.21 pilot, cache committed.**
+`earshot run --seed 1..10 --customers 200 --extractor model`, Haiku 4.5, 6,990 conversations.
+**Settled the reader decisively: extraction recall 0.6549 against the offline lexicon's 0.2435**, ten
+datasets each, same corpora and answer key; 11 non-verbatim + 2 relocated quotes of 5,736 signals;
+$1.524/1,000. **Published with its counterweight: ~7× more unplanted extractions**, matching the CFPB
+benchmark's 8× false-positive finding.
+**It did NOT settle the arms, and that is a power failure rather than a refutation.** `full-ledger`
+vs `window3-top2` came out **5-4-1 p=1.00** against the published **30-0-0** — but a free offline
+control at the same scale gives **4-3-3 p=1.00**. At 200 customers every arm sits on chance. Running
+it at the published scale is ~52,000 sequential model calls: **blocked by wall-clock, not money.**
+**30-0-0 stands and is labelled an offline-reader result.**
+
+**The CFPB gold set is 55/150 credit-card narratives**, so the first card-specific numbers exist for
+**$0** by replay: the reader fires on **29/29** marked card documents and gets **churn intent 1 of 8**.
+Post-hoc, not pre-registered; `PROTOCOL.md` untouched. **The 1/8 is said in the same breath as the
+29/29** everywhere it appears.
+
+**Two decisions Ravi made.** **Pre-delinquency is withdrawn** — the 7-10× multiple rested on a
+per-borrower balance and is really 3-9× (centrally ~5×, below 1× once precision is priced), and its
+T3 rating was backwards because hardship programmes are opt-in. **And the market is settled: US
+attrition runs.** The competing UK complaints script is superseded at
+`gates/2026-09-11-sprint-review.md` and kept as a footnote at `credit-card/03-REFERENCE.md` §7,
+because its **£650 Ombudsman case fee is the only published tariff in the entry**.
+
+**Two mistakes of my own, both recorded.** I flagged seed 1's arm result as a possible failure of the
+central claim before running the control — wrong, and retracted in three files. And I ran an offline
+control concurrently with the paid keyed sweep: **`config_hash` does not include the extractor**, so
+it overwrote keyed seeds 1-3's artifacts. No money lost (replay regenerated them for $0, costs
+matching to the cent), and the trap is now in `handover.md`.
+
+**Gate moved twice and both dead dates are struck:** 09-07 → 09-10 → **2026-09-11, 20:30-21:00 IST**.
