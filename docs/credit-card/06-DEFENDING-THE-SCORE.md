@@ -175,6 +175,36 @@ tiebreak. Three consequences, all of which a good modeller will find:
 | **Kadavath et al., arXiv:2207.05221 (2022-07-11)** | Larger models self-evaluate "P(True)" reasonably well **on multiple-choice formats**. That is not the free-form per-signal float we emit — do not cite this as support |
 | **Kalai et al., "Calibrated Language Models Must Hallucinate", arXiv:2311.14648 (2023-11)** | A calibrated LM is mathematically forced to hallucinate on rare facts. "Just calibrate it better" has a **hard floor**, not merely a practical one |
 
+### We measured our own model's confidence distribution, and it is a menu, not a probability
+
+**2026-09-09, $0** (read straight out of the paid extractor cache): **5,112 confidence values** emitted
+by **Claude Haiku 4.5** reading real conversations.
+
+| | |
+|---|---|
+| distinct values (2dp) | **21** |
+| ten most common values cover | **4,871 / 5,112 = 95.3%** |
+| most common single value | **0.85 — 28.4%** of all signals |
+| next three | 0.72 (16.6%) · 0.92 (16.4%) · 0.65 (12.7%) |
+| mean / median | 0.773 / 0.850 |
+| range | 0.25 – 0.95 — **never 1.0, never below 0.25** |
+| share ≥ 0.80 | 50.8% |
+
+**This is not a probability. It is a menu of about ten values, half of them above 0.8.** A genuine
+probability over 5,112 judgements would not put 28% of its mass on one number, and would occasionally
+reach the ends of its own scale.
+
+**This is the single most useful thing in this document, for two reasons.**
+
+1. **It converts a citation into a measurement.** Instead of *"the literature says verbalised LLM
+   confidence is coarse and overconfident"*, you can say *"we measured ours: 5,112 values, twenty-one
+   of them distinct, 28% of them exactly 0.85."* **Measuring your own weakness before anyone asks is
+   worth more than any defence of it** — and it is precisely the saturation Xiong et al. and the
+   coarse-value literature predict.
+2. **It makes the fix nearly free.** A float that only takes ten clustered values loses almost nothing
+   when bucketed into three. **Bucketing is no longer a trade-off, it is a formality** — and the
+   ablation below shows the same thing from the other direction.
+
 ### How much does the float actually matter? Measured, not argued
 
 `arms.py:310` already defines a `no-confidence-weighting` ablation, so this is measurable rather than
