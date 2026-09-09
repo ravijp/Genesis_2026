@@ -396,6 +396,13 @@ is a reproducibility property for a judge, not a product claim, and to a CEO it 
 product is a regex. **Keyless reproducibility belongs in Q&A**, phrased as: *"every number we quote
 replays from a committed cache with no key, so you can audit it — but the system runs on a model."*
 
+**The same fact plays in opposite directions to the two audiences judging this entry, so aim it
+deliberately.** To the **AI judge** scoring engineering quality — evals, reproducibility, accuracy and
+cost evidence — *"a fresh clone reproduces every published number with no key in 104 seconds"* is one
+of the strongest things this repo can say, and `README.md` should keep saying it. To **Venkat and
+Farhan**, the same sentence says *the product is a regex*. **Do not let the README's framing walk onto
+the stage.** Different rooms, different sentence, both true.
+
 ## Beat 6 — committed vs delivered, and the ask (1 min)
 
 **Lead with the misses.** It's faster and it buys the rest.
