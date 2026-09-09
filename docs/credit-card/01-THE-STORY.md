@@ -29,7 +29,7 @@ leads.**
 
 ---
 
-## The seven beats
+## The six beats
 
 | # | Beat | Min |
 |---|---|---|
@@ -39,9 +39,15 @@ leads.**
 | 4 | The score, and how you consume it | 3 |
 | 5 | The money | 3 |
 | 6 | Committed vs delivered, and the ask | 1 |
+| | **18 total** | |
 
 Beat 3 gets 7 of 18 because it is the only beat a competitor cannot reproduce. **Beats 1 and 2 must
 not sprawl** — the temptation is five minutes on the problem, and it costs you the demo.
+
+**Two sections in this file are not beats and have no minutes of their own:** *the reader beat* (the
+model-vs-lexicon table — say it whenever someone asks what the AI actually does, most likely inside
+beat 4 or in Q&A) and *the honesty beat* (which sits between beats 3 and 5, ~30 seconds taken out of
+beat 5).
 
 ---
 
@@ -55,6 +61,13 @@ not sprawl** — the temptation is five minutes on the problem, and it costs you
 > trillion** at **22.15%** APR on balances assessed interest, and charge-offs are running at
 > **3.82%**. *(NY Fed Q2 2026; charge-off rate CORCCACBS, Federal Reserve "Charge-Off and
 > Delinquency Rates on Loans and Leases at Commercial Banks", updated 2026-08-25.)*
+>
+> **And here is the tell: nobody publishes how much of that closure is voluntary. Not the regulator,
+> not one issuer 10-K.** Which is the first sign this is a number managed internally and never
+> measured well.
+>
+> **In a book like that, the customers you least want to lose are the profitable ones who leave
+> quietly.**
 
 **Two corrections made on 2026-09-09 — the old version of this paragraph was wrong twice.**
 **(a)** It said charge-offs were **3.70%, per Fed G.19**. G.19 is the Consumer Credit release and
@@ -65,13 +78,6 @@ figures in this very paragraph prove it: $1.263T ÷ 608M accounts = **$2,077 per
 $6,610 across 608 million accounts would be $4 trillion, three times the balance that actually exists.
 **Do not say $6,610 anywhere near an account count.** Either drop the per-unit balance or say
 "about $2,000 per open account, around $6,600 per borrowing household."
->
-> **And here is the tell: nobody publishes how much of that closure is voluntary. Not the regulator,
-> not one issuer 10-K.** Which is the first sign this is a number managed internally and never
-> measured well.
->
-> **In a book like that, the customers you least want to lose are the profitable ones who leave
-> quietly.**
 
 ### Then the claim — in the only form that survives an ex-card-book executive
 
@@ -344,6 +350,40 @@ interest as value per saved customer (it's before cost of funds, 3.70% charge-of
 don't lead with the optimistic column.
 
 ---
+
+## The reader beat — NOT a numbered beat. The answer to "what does the AI actually do?" (2026-09-09)
+
+**Ravi's instruction, 2026-09-09: stop letting the keyless lexicon carry the numbers. This is a
+generative-AI product and the evidence should be the model's.** It already is — this table was
+measured and paid for, and it is the single best evidence in the repo that the model is the product.
+
+**Same 282 conversations, same planted ground truth, two readers.** The lexicon is a hand-tuned
+26-regex fallback that exists so a judge with no API key can still run everything. The model is
+Claude Haiku 4.5 on Bedrock, which is what the deployed system runs.
+
+| Signal family | 26-regex lexicon | **Claude Haiku 4.5** |
+|---|---|---|
+| Churn intent | 16 / 77 planted conversations | **40 / 77** |
+| Complaint escalation | 1 / 65 | **60 / 65** |
+| Life event | 9 / 68 | **50 / 68** |
+| **Financial distress** | **33 / 72** | **27 / 72 — the model loses** |
+
+> **A rule engine finds one of the sixty-five conversations where a customer is escalating a
+> complaint. The model finds sixty.** That gap is the product. **And on financial distress the rule
+> engine beats it, 33 to 27** — because "I've lost my job" is a phrase, and phrases are what regexes
+> are for. We publish the row we lose.
+
+**Three reasons this is the right thing to lead with:**
+
+1. **It is a like-for-like comparison** — same conversations, same answer key, same denominators.
+2. **It contains a loss**, and the loss is mechanically explicable rather than embarrassing.
+3. **It is about reading, not ranking** — so it cannot be attacked as circular the way the
+   accumulation result can.
+
+**Do not describe the lexicon as "our offline mode" or lead with "it runs with zero API keys."** That
+is a reproducibility property for a judge, not a product claim, and to a CEO it sounds like the
+product is a regex. **Keyless reproducibility belongs in Q&A**, phrased as: *"every number we quote
+replays from a committed cache with no key, so you can audit it — but the system runs on a model."*
 
 ## Beat 6 — committed vs delivered, and the ask (1 min)
 

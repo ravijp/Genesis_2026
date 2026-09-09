@@ -21,16 +21,16 @@ separation guard over 45 modules + `tools/` · 30 UI routes · **~$2.45 of $12 s
    dead token. Every keyed figure replays free with `EARSHOT_CACHE_MODE=replay` (a miss raises).
 3. `progress.md` for status, `decisions.md` before arguing, `state-of-play.md` for the numbers.
 
-## Next action — the 2026-09-10 cut round, then rehearse
+## Next action — the 2026-09-11 cut round, then rehearse
 
 **The build is done for now; the work is presentation.** Everything Ravi asked for on 2026-09-03 is
 delivered except the $10 sweep, which he declined. Both stages are deployed and fed and the alarm has
 fired.
 
-**The gate is 2026-09-10, 20:00–20:30, and 09-07 is dead** (Ravi confirmed 2026-09-03; `CLAUDE.md`
+**The gate is 2026-09-11, 20:30-21:00 IST. Both 09-07 and 09-10 are dead** (moved 09-10 -> 09-11 by Ravi on 2026-09-09; `CLAUDE.md`
 updated, `sources/genesis-committee-comms.md:24` still shows the old date and is never-edit).
 **Venkat (CEO) and Farhan (COO) judge it and it decides the shortlist** for the Final Dry Run and
-Finals. **One script: `docs/gates/2026-09-10-sprint-review.md`**, 18 minutes including the demo. The
+Finals. **One script: `docs/gates/2026-09-11-sprint-review.md`**, 18 minutes including the demo. The
 09-07 demo doc was deleted rather than kept — two competing scripts defeated the simplification Ravi
 asked for, and its fallback ladder is folded in.
 
@@ -43,7 +43,7 @@ invent the client's two inputs; **keep that refusal**, it is what makes the meas
 
 **The one committed item that is missed: dry runs. Two committed, zero done** (checked — every
 "dry-run" in the repo is a tooling flag, not a rehearsal). The script has Ravi owning it and booking
-both for 09-08 and 09-09, with the demo recorded 09-09 so a room with no wifi cannot break it. **That
+both for 09-09 and 09-10, with the demo recorded 09-10 so a room with no wifi cannot break it. **That
 is now the highest-value remaining work.**
 
 **Two live stages, same book, same infrastructure, one variable — this is the demo's spine:**
@@ -58,10 +58,10 @@ is now the highest-value remaining work.**
 survived a double feed (260 messages → still 34 entries, 1 case). `earshot-dev-ingest-failures` went
 **OK → ALARM** on one malformed transcript while the other five alarms stayed OK.
 
-**Do these before 09-07, in order:**
+**Do these before 09-11, in order:**
 
 1. **Rehearse Beat 2 and Beat 4 end to end (§7 of the script).** Beat 4 is the only beat with a live
-   dependency and it carries 25 rubric points. **Record it on 09-06** so a room with no wifi cannot
+   dependency and it carries 25 rubric points. **Record it on 09-10** so a room with no wifi cannot
    break it.
 2. **Verify the two flagged-unverified claims** in the script, or drop them: the poison message
    reaching `earshot-dev-transcripts-dlq.fifo` (it was still retrying when last checked — redrive is

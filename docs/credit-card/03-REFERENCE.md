@@ -932,6 +932,37 @@ Stand the pitch on these. None depends on what the conversations are about.
   rather than a rewrite.
 - **908 tests** (903 pass, 5 skip), ruff clean, separation guard over 45 modules.
 
+## The reader is the product — say the model's numbers, not the lexicon's (2026-09-09)
+
+**Standing instruction from Ravi, 2026-09-09: the keyless lexicon is a fallback, not the story.** This
+entry is a generative-AI product and the evidence quoted on stage should be the model's.
+
+**The one table that makes the case**, measured on the same 282 conversations against the same planted
+ground truth, model = Claude Haiku 4.5 on Bedrock (what the deployed system runs), lexicon = the
+hand-tuned 26-regex fallback:
+
+| Family | lexicon | Haiku 4.5 |
+|---|---|---|
+| churn intent | 16 / 77 | **40 / 77** |
+| complaint escalation | 1 / 65 | **60 / 65** |
+| life event | 9 / 68 | **50 / 68** |
+| financial distress | **33 / 72** | 27 / 72 |
+
+*(`artifacts/runs/reader-coverage-20260809-1ee962fd608f-offline-model-pt20-replay.json`.)*
+
+**The distress row is a loss and it is published.** A regex is good at fixed phrases — "I lost my job"
+— and that is most of what the distress family looks like. **It is also the family a pre-delinquency
+story would depend on**, which is one more reason that story was withdrawn.
+
+**How to talk about keylessness without sounding like a regex vendor:** it is a *reproducibility*
+property for an auditor, never a product claim. *"Every number replays from a committed cache with no
+key, so you can check it yourself — but the system runs on a model."* **Never open with "it works
+offline."**
+
+**Two things still measured only with the lexicon, and they are the headline mechanism claims:** the
+arm comparison (`full-ledger` vs `window3-top2`, 30-0-0) and the mechanism ablations. A keyed 10-seed
+re-measurement with the model reader was commissioned 2026-09-09 — see the block below.
+
 ## The chance gate — complete it or do not raise it
 
 *"The published chance gate we fail at p=0.076"* tells a non-technical CEO **it doesn't work**.

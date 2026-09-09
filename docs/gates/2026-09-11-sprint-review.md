@@ -1,4 +1,26 @@
-# The 09-10 pitch — 2026-09-10, 20:00–20:30
+# The 09-11 pitch — 2026-09-11, 20:30-21:00 IST
+
+> ## ⚠ RAVI — DECIDE THIS FIRST: there are now TWO scripts for this meeting, and they disagree on market
+>
+> **This file is the UK story.** It leads with the **£650 Financial Ombudsman case fee**, UK card
+> delinquency and UK debt-collection buyers.
+>
+> **`docs/credit-card/01-THE-STORY.md` is the US story**, written 2026-09-09 for this same gate. It is
+> dollars, APR, annual fee and points, it deleted ten UK files deliberately, and it lists *"quote a
+> pound sign"* as one of the three things most likely to lose the room.
+>
+> **Both cannot be true. One of them has to go before you walk in**, and the handover already records
+> that two competing demo scripts is the exact failure this repo cleaned up once before.
+>
+> **My read, but it is your call:** the US story is the later, deeper and more heavily red-teamed work
+> (two adversarial passes, KS-1..KS-16), and your last three rounds of instruction have all been about
+> it. **Its weakness is that it threw away the single best number in the repo** — the £650 is a
+> *published tariff*, not a projection, and the US has no equivalent, which is why the US money beat
+> had to be rebuilt on a chain with an admitted hole in it.
+>
+> **If the audience is a Zenon cut round judging a UK-market entry, this file wins on the strength of
+> that one number. If the entry is US-market, this file is a liability.** I have not deleted anything.
+
 
 **The gate.** The 09-07 date is dead; this replaces it. One document, one story, **18 minutes
 including the demo**, leaving 12 for questions.

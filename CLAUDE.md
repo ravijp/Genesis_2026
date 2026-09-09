@@ -56,11 +56,12 @@ originality 15 / presentation 10, plus an AI judge scoring engineering quality (
 accuracy/cost/latency evidence).
 
 Gates: **2026-08-10** 15-min check-in · **2026-08-24** combined Sprint 1+2 demo · ~~2026-09-07~~ →
-**2026-09-10, 20:00–20:30** the Sprint 3 review, **and it is a cut** — Venkat (CEO) and Farhan (COO)
-judge, and it decides the shortlist for the Final Dry Run and Finals. Ravi confirmed on 2026-09-03
-that 09-07 is superseded, so it is struck here rather than left to be rediscovered; the invite is the
-authority, not `docs/sources/genesis-committee-comms.md:24`, which still shows the old date and is
-never-edit. Script: `docs/gates/2026-09-10-sprint-review.md`.
+~~2026-09-10~~ → **2026-09-11, 20:30-21:00 IST** the Sprint 3 review, **and it is a cut** — Venkat
+(CEO) and Farhan (COO) judge, and it decides the shortlist for the Final Dry Run and Finals. **The
+date moved twice**: Ravi confirmed 09-07 was superseded on 2026-09-03, and moved 09-10 → **09-11,
+20:30-21:00 IST** on 2026-09-09. Both dead dates are struck here rather than left to be rediscovered.
+**The invite is the authority**, not `docs/sources/genesis-committee-comms.md:24`, which still shows
+the oldest date and is never-edit. Script: `docs/gates/2026-09-11-sprint-review.md`.
 
 ## Python environment (uv)
 

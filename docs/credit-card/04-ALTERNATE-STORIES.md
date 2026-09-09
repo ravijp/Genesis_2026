@@ -48,116 +48,148 @@ useful thing in this document.
 
 ---
 
-## 2. The comparison
+## 2. The comparison — rebuilt 2026-09-09 with anchors, denominators and a cut list
 
-### Table A — what each story *is*
+**What changed in this pass.** The first version of these tables was judgement with a dollar guess
+attached. This one is anchored: every `$/event` either shows its arithmetic from a published source or
+says **"no anchor"** out loud. Three stories were **cut**, two are kept only as **named refusals**, and
+one new column — **ledger-dependent?** — turned out to matter more than any of the scores.
 
-| # | Story | What the score predicts | Buyer | What consumes it when the customer isn't calling (T3) |
-|---|---|---|---|---|
-| **1** | **Card attrition** *(current)* | Voluntary closure / balance run-off | Head of Retention Analytics | Case briefs the next inbound agent · feeds existing churn propensity model |
-| **2** | **Pre-delinquency / early hardship** | First missed payment, 30/60/90-day roll | Head of Collections Strategy or Credit Risk | **Hardship-program eligibility flag** · feeds existing roll-rate and loss-forecast models · pre-collections queue |
-| **3** | **Balance attrition (not account attrition)** | Balance transfer out / paydown-to-zero | Cards P&L owner, NII owner | Retention-pricing eligibility · feeds balance-forecast model |
-| **4** | **Deposit flight** | Deposit outflow, rate-shopping, relationship exit | Treasury / Deposit Strategy | Rate-exception eligibility · feeds deposit-beta and liquidity models |
-| **5** | **Scam and elder financial exploitation** | Customer is being defrauded *right now* or shortly | BSA/AML, Fraud Ops, Vulnerable Customer lead | **Hold/verify flag on the account** · alerts existing fraud queue |
-| **6** | **Complaint escalation avoidance** | Complaint becomes formal, regulator-facing, or litigated | Head of Complaints / Regulatory Affairs | Case-owner escalation in the existing complaints workflow |
-| **7** | **Collections promise reliability** | Whether a promise-to-pay will actually be kept | Collections Ops | Re-prioritises the existing dial/queue list. **No new contact — reorders contact they already make** |
-| **8** | **Mortgage loss-mitigation intake** | Borrower hardship, loss-mit eligibility | Default Servicing | **Reg X early-intervention contact is legally required** — we prioritise and brief a call they must make anyway |
-| **9** | **Cross-sell from stated life intent** | Imminent need: home, auto, business, education | Consumer Lending / Marketing | Next-best-product flag into existing campaign engine |
-| **10** | **Credit-line increase (prosperity)** | Capacity and appetite for more credit | Cards Growth / Portfolio | CLI campaign eligibility |
-| **11** | **Credit-line decrease / exposure management** | Deterioration before the bureau shows it | Credit Risk | Line-management review queue |
-| **12** | **Small-business relationship risk** | SMB attrition or distress | Business Banking | RM briefing · relationship review queue |
-| **13** | **Agent coaching / QA at 100% coverage** | Which calls need coaching | Contact Centre Ops | Coaching queue |
+### Table A — what each story is
 
-### Table B — how each story *scores*
+| # | Story (predicted event) | Buyer (signs) | Budget line | Signal families | Ledger-dependent? |
+|---|---|---|---|---|---|
+| **1** | **Card attrition** — voluntary closure / run-off *(the lead)* | Head of Retention Analytics | Cards retention & acquisition marketing opex | churn_intent (+ life_event) | **Yes** |
+| **2** | **Pre-delinquency** — first missed payment, 30/60/90 roll | Head of Collections Strategy or Credit Risk | Credit loss provision + collections opex | financial_distress | **Yes** |
+| **3** | **Balance attrition** — transfer out / paydown-to-zero, card stays open | Cards P&L / portfolio owner | Promotional-pricing (interest income) | churn_intent + financial_distress | **Yes** |
+| **4** | **Deposit flight** — outflow, rate-shopping, relationship exit | Treasury / Deposit Strategy | Deposit-pricing (funding cost) | churn_intent + life_event | Partial |
+| **5** | **Scam / elder financial exploitation** — customer is being defrauded now | **BSA Officer** signs; Fraud Ops + vulnerable-customer lead use | **Financial-crimes compliance opex** | *needs a new family*; nearest are financial_distress + life_event | Partial |
+| **6** | **Complaint escalation** — complaint becomes formal / regulator-facing | Head of Complaints / Regulatory Affairs | Complaints opex + remediation reserve | complaint_escalation | **Yes** |
+| **7** | **Collections promise reliability** — will this promise-to-pay hold | Head of Collections Operations | Collections opex (dialler + agent capacity) | financial_distress | Partial |
+| **8** | **Mortgage loss-mit intake** — borrower hardship, loss-mit eligibility | Head of Default Servicing | Servicing opex + default compliance | financial_distress + life_event | **Yes** |
+| **9** | **Cross-sell from life intent** — imminent need (home, auto, business) | CMO / Consumer Lending | Marketing | life_event | **Yes** |
+| **10** | **Credit-line increase** — capacity and appetite for more credit | Head of Portfolio Management | Credit strategy | life_event | Partial |
+| **11** | **Credit-line decrease** — deterioration before the bureau shows it | Chief Credit Officer | Credit strategy / provision | financial_distress | **Yes** |
+| **12** | **SMB relationship risk** — SMB attrition or distress | Head of Business Banking | RM coverage opex | churn_intent + financial_distress | **Yes** |
+| **13** | **Agent coaching / QA** — which calls need coaching | Contact Centre Ops | **Contact-centre opex — the line Verint/NICE already own** | none (per-call, not per-customer) | **No** |
 
-Ratings are my judgement, 1–5, high is good. **$/event is order of magnitude, not a quote.**
+**Read the last column first.** A story marked **No** cannot demo accumulation or retro re-scoring —
+the only thing in this build a competitor cannot reproduce. Its score is not comparable to the others.
 
-| # | Story | $ per event | Anchor quality (T4) | T3 answer | Reg weight *(low=good)* | Reuse of what's built | Demo-able | **Total** |
-|---|---|---|---|---|---|---|---|---|
-| **2** | **Pre-delinquency / hardship** | **~$5,000+** | **5** — Fed charge-off 3.70%, NY Fed delinquency, all primary | **5** | 3 | **5** — `financial_distress` already built | **5** | **★ 28** |
-| **5** | **Scam / elder exploitation** | ~$1,000s | 4 | **5** | 3 | 3 | **5** | **★ 25** |
-| **7** | **Collections promise reliability** | ~$100s–1,000s | 3 | **5** — reorders calls they already make | 4 | 4 | 4 | **★ 25** |
-| **1** | **Card attrition** *(current)* | ~$550–800 | 4 — CFPB closure rate, Amex/JPM CAC | 4 | **5** | **5** | **5** | 24 |
-| **8** | **Mortgage loss-mit intake** | ~$1,000s–10,000s | 4 | **5** — Reg X *mandates* the call | 2 | 3 | 4 | 24 |
-| **3** | **Balance attrition** | ~$1,000+ | 4 | 4 | **5** | 4 | 4 | 23 |
-| **6** | **Complaint escalation** | ~$100s–1,000s | 3 (US has no per-case tariff) | 4 | 4 | **5** — already built and measured | 4 | 22 |
-| **4** | **Deposit flight** | **~$1,000s–10,000s** | 3 — anchors not yet verified | 3 | 4 | 2 | 3 | 20 |
-| **12** | **SMB relationship risk** | ~$1,000s | 2 | 3 | 4 | 3 | 3 | 18 |
-| **10** | **Credit-line increase** | ~$100s | 3 | 3 | 3 | 3 | 3 | 18 |
-| **9** | **Cross-sell from life intent** | ~$100s–1,000s | 2 | 3 | 2 — **worst optics** | 3 | 4 | 16 |
-| **11** | **Credit-line decrease** | ~$1,000s | 3 | 3 | **1** — adverse action, ECOA/Reg B, FCRA | 3 | 3 | 15 |
-| **13** | **Agent coaching / QA** | ~$10s | 2 | 4 | 5 | 2 | 3 | **14 — do not pick** |
+### Table B — how each scores
 
----
+Seven dimensions, 1–5, high is good, **35 max**. All ratings `[our judgement]`, calibrated against the
+anchors found in this pass and the KS-1..KS-16 record. **Reg is scored 5 = light.** This ranks the
+options *behind* the settled lead; it is not a re-ranking of the lead.
 
-## 3. My recommendation
+| # | Story | $/event | T1 conv. | T2 not structural | T3 consuming | T4 anchor | T5 demo | Reg | Reuse | **Total** |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **1** | **Card attrition** *(lead)* | ~$550–800 | 4 | 3 | 4 | 4 | 5 | 5 | 5 | **30** |
+| **5** | **Scam / elder exploitation** | see note | **5** | **4** | **5** | 4 | 5 | 3 | 3 | **29** |
+| **6** | **Complaint escalation** | no anchor | **5** | 3 | 4 | 2 | 4 | 4 | **5** | **27** |
+| **2** | **Pre-delinquency** | ~$3,400 | 4 | **2** | **2** | **5** | 5 | 2 | 5 | **25** |
+| **7** | **Collections promise** | no anchor | **5** | 3 | **5** | 2 | 3 | 3 | 4 | **25** |
+| **3** | **Balance attrition** | ~$705/yr | 3 | **2** | 3 | 4 | 4 | 4 | 4 | **24** |
+| **13** | **Agent coaching / QA** | ~$10s | 5 | 4 | 4 | 1 | 3 | 5 | 2 | **24 — not comparable. CUT** |
+| **8** | **Mortgage loss-mit** | 42% of UPB* | 4 | 3 | **5** | 3 | 3 | 2 | 2 | **22** |
+| **9** | **Cross-sell** | no anchor | 4 | 3 | 3 | 1 | 4 | **1** | 3 | **19 — refusal, not option** |
+| **12** | **SMB relationship risk** | no anchor | 3 | 3 | 3 | 2 | 2 | 4 | 2 | **19** |
+| **4** | **Deposit flight** | **~$271/yr** | **2** | **2** | 3 | 2 | 3 | 4 | 2 | **18 — CUT** |
+| **10** | **Credit-line increase** | no anchor | 3 | **1** | 3 | 1 | 3 | 2 | 3 | **16 — CUT** |
+| **11** | **Credit-line decrease** | no anchor | 3 | **1** | 2 | 1 | 3 | **1** | 3 | **14 — refusal, not option** |
 
-### ~~Lead with #2, pre-delinquency and early hardship.~~ **WITHDRAWN 2026-09-09 — see the banner at the top of this file. The five reasons below are preserved with their faults marked.**
+\* 2019 figure, cycle-dependent. **"no anchor" means no published US per-event figure was found in
+this pass — not that the value is zero.**
 
-**Five reasons, in order of how much they matter to these two judges.**
+**Only three columns actually discriminate: T2, T3 and T4.** T1 is high nearly everywhere, because
+people talk about most of these. Where a story dies, it dies because **the bank already sees it (T2)**,
+because **the consuming process needs enrolment or an outbound motion (T3)**, or because **there is no
+number (T4)**.
 
-1. ~~**The money is 7–10× bigger per event.**~~ **Corrected to 3–9×, centrally about 5×, and below 1×
-   once precision is priced in.** The $5,000 applied a 75% loss-given-charge-off to **$6,610, which is
-   a per-borrower balance standing in for a per-account one** — this book's own figures give $2,077
-   per open account. Balance at charge-off is published nowhere. Honest net loss **~$3,400**. See the
-   banner.
-2. **The anchors are all primary and all current.** Card net charge-offs **3.70%**, 30+ delinquency
-   **2.85%**, share of balances 90+ days delinquent **12.92%** (Fed and NY Fed, Q2 2026), against
-   **608 million open general-purpose accounts** and **$1.263 trillion** outstanding (CFPB, published
-   2025-12-30; Fed G.19). **Nothing needs inventing** — and unlike attrition, the *loss* side is
-   disclosed by every issuer every quarter.
-3. ~~**T3 answers itself.**~~ **THIS IS BACKWARDS — the single biggest error in this file.** Hardship
-   programmes and forbearance are **opt-in**: the customer has to apply, or you have to reach out and
-   invite them. **You cannot enrol a silent customer without contacting them**, which is precisely the
-   thing this system is architecturally incapable of doing. So pre-delinquency's T3 answer is **worse
-   than attrition's**, not better — attrition's next-inbound-contact treatment works because the
-   customer eventually calls about something, whereas a hardship enrolment that waits for an inbound
-   call has usually waited past the missed payment. *(The pre-collections queue half survives: you can
-   reorder a dial list they already dial. But that is story #7, not story #2.)*
-4. **The label arrives in 90 days, not a year.** Delinquency roll is observable in one quarter.
-   Attrition takes a year of observation to label properly. **That halves the back-test and makes the
-   six-week pre-registered experiment far more credible** — you can genuinely settle it fast.
-5. **We have already built the signal family.** `financial_distress` exists, is measured, and has the
-   longest half-life in the config. The card-flavouring work is the same ~$0.45 job either way.
-   **But measured on what:** the CFPB benchmark's card evidence for distress is **2 / 2 documents**,
-   because **none of its 17 distress-enriched narratives is a credit-card complaint**. There is no
-   card-specific distress evidence at all — which is worse than attrition's position, not better.
+### The cut list, and why cutting is the point
 
-**The one thing that gets harder:** collections and hardship sit under closer supervisory scrutiny than
-retention marketing, and the "don't turn distress into a sales trigger" rule becomes *the whole
-product* rather than a guardrail. That is manageable — and honestly, it makes the ethical beat stronger,
-not weaker. *"We find people in trouble earlier and route them to help, and the system is
-architecturally incapable of contacting them"* is a better sentence than anything in the attrition
-story.
+| Story | Verdict | Why |
+|---|---|---|
+| **#4 deposit flight** | **CUT** | Its money collapsed under its own arithmetic: SCF-2022 median transaction balance **$8,000** × FDIC Q4-2025 net interest margin **3.39%** = **$271/yr**, not the "$1,000s–10,000s" the first draft claimed. And T2 kills it independently — **a deposit leaving is the loudest structural signal in retail banking.** We would be predicting a balance move from conversation while the balance itself is on the screen |
+| **#10 credit-line increase** | **CUT** | No anchor found in two searches. Worst T2 on the list — utilisation and bureau data *are* the CLI decision inputs. And it is the on-ramp to #11, which this document already says never to raise |
+| **#13 agent coaching / QA** | **CUT** | Scores 24 and the score is an artefact: it is **the only ledger-independent story on the list**. It throws away accumulation, retro re-scoring and the per-customer ledger — everything we are actually selling — and lands in the one budget line Verint and NICE already own |
+| **#9 cross-sell**, **#11 credit-line decrease** | **Keep as named refusals** | With a CEO and a COO, *"we ruled this out and here is exactly why"* is worth more than a marginal option. #11 is adverse action under **Reg B §1002.9** with **FCRA §1681m** attaching |
 
-### The strongest pairing for 18 minutes
+### Corrections to the first version's numbers
 
-> **One layer. Two desks. The same three conversations.**
->
-> **Beat A — pre-delinquency.** The customer says money is tight. Nothing crosses. Two months later
-> another remark corroborates it, and we open a hardship case **before a payment is missed** — which
-> is where the $5,000 lives.
->
-> **Beat B — attrition.** *The same customer, the same ledger, a different reader.* Now the signals
-> are about the annual fee and a failed redemption, and the case goes to retention instead.
->
-> **That is the layer argument made concrete instead of asserted** — and it happens to be what the
-> committee brief said the entry was in the first place.
-
-That also repairs the sharpest tension in the current pitch: the submitted brief says *"none of these
-is the headline; the layer is"*, and leading with one score negates it. **Two desks off one ledger
-honours the brief and still gives a CEO a single number to hold.**
-
-### If you want one dark-horse instead
-
-**#5, scam and elder financial exploitation.** Lower dollar value than pre-delinquency, but it is the
-**best story in the room** — a customer being coached by a fraudster says things on a call that no
-structured system can see, the harm is vivid, and "we cannot contact anyone, we can only tell your
-fraud team sooner" is an unimpeachable safety position. If the judges' scoring weights presentation
-and originality more than you expect, this is the one that gets remembered. **Weakest on T4** — I have
-not verified the loss anchors, and that is a search away, not an assumption to make.
+- **#3 balance attrition halved on its own source.** The first draft implied the headline **25.2% APR**.
+  The right figure is the *effective* yield: CFPB 2025 reports **$160bn of interest on >$1.2tn** of
+  balances = **13.3%**. So $5,300 × 13.3% = **~$705/yr**, not ~$1,336.
+- **#5's money is not the bank's money.** **Reg E (12 CFR §1005.2(m)) does not cover *authorised*
+  transfers**, so the $38,506 average is the **customer's** loss. That is why the buyer is the **BSA
+  Officer** and the budget line is **financial-crimes compliance opex**. Pitch it anywhere else and it
+  collapses on the first question.
+- **#8 mortgage keeps the best T3 and loses its dollar figure.** **Reg X §1024.39 mandates live contact
+  by day 36** — a legally required call we would prioritise and brief. But the only severity anchor
+  found is **2019** (Philadelphia Fed WP 19-19: GSE loss severity **42% of UPB**), and severity is
+  cycle-dependent.
 
 ---
+
+## 3. The recommendation — attrition leads, and here is what sits behind it
+
+**The lead is settled** (see the banner at the top of this file and the verdict in
+`00-READ-THIS-FIRST.md`). What follows is the bench, ranked, for Q&A and for the next quarter.
+
+### 1st reserve — #5, scam and elder financial exploitation *(29/35)*
+
+**The only story where the conversation beats the structured data for a reason a regulator has already
+written down.** A coached victim's transactions are *authorised* and individually plausible, so the
+tell is in what the customer says — which is FinCEN's own position (advisory **FIN-2022-A002**).
+
+- **T3 is the best available short of a legal mandate:** a SAR / elder-financial-exploitation alert
+  queue that already exists and is already legally required. Nothing to build, no outbound motion.
+- **Two government primary anchors with hard denominators.** FBI IC3 2025 Elder Fraud Report:
+  **$7.75bn across 201,266 complaints** from victims aged 60+ (**$7.75bn ÷ 201,266 = $38,506
+  average**), with **12,400 victims losing ≥$100,000**. FinCEN Financial Trend Analysis (2024-04-18):
+  **~$27bn flagged across 155,415 BSA filings** in the year to 2023-06-15 (**$173,733 per filing**),
+  **banks filed 72%**.
+- **It demos better than anything except attrition** — retro re-scoring turns an innocuous first
+  conversation into evidence of grooming, which is the most vivid thing this system does.
+- **Two things that must be said in the same breath as the money**, or it collapses: the $38,506 is the
+  **customer's** loss, not the bank's; and elder exploitation is deposit- and wire-weighted, so at a
+  **card** issuer this is a detection surface feeding an existing programme, not a card-loss story.
+- **Cost to point at it: ~$0.45 and a day of fragment authoring**, plus one genuinely new signal
+  family — the largest content build of anything scoring above 24, and still small.
+- **Verify before quoting:** both figures were read from secondary summaries in this pass because the
+  IC3 and FinCEN PDFs returned unparseable binary. **Open the primaries before saying them on stage.**
+
+### 2nd reserve — #6, complaint escalation avoidance *(27/35)*
+
+**The only story on this list our own card evidence actually supports.** On the CFPB benchmark's real
+US credit-card narratives the reader fires complaint escalation on **23 of 24** marked documents —
+against churn intent at **1 of 8** on the same corpus. Highest reuse on the list: built, deployed,
+measured, zero new build.
+
+**Why it is not the lead: there is no US dollar anchor.** The UK's £650 Ombudsman tariff has no
+American equivalent and CFPB's enforcement posture contracted through 2026, so the regulatory-threat
+lever is weak. It is a cost-reduction story sold to a cost centre.
+
+**This is the fallback if the attrition demo is challenged on evidence — a fallback, not a switch.**
+
+### 3rd reserve — #7, collections promise reliability *(25/35)*
+
+**The cleanest architectural fit on the entire list.** It reorders a dial list the bank already works —
+**no new contact motion of any kind.** And contact capacity is *capped by regulation* at **7 attempts
+per debt per 7 days (Reg F §1006.14(b)(2)(i))**, so better ordering has value **independent of
+precision** — which is the one thing we have never measured, and the hole KS-9 opened in the money
+chain. **Fastest label on the list: the promise date.** A back-test settles in a month.
+
+**Why not higher:** no published value anchor (BLS May 2025 median collector wage **$47,030** is a cost
+anchor, not a value one), it is the story most likely to already exist in some form, and it is **the
+weakest demo of the top group** — a promise is a per-episode judgement, so accumulation has less to
+bite on.
+
+### Kept in the folder, but not as options
+
+**#2 pre-delinquency** — the best anchors on the list, killed on T3, and settled. **#8 mortgage** — the
+only legally-mandated consuming process, which makes it the right answer to *"does this only work for
+cards?"*, but it is not a pitch.
 
 ## 4. The profiles
 
