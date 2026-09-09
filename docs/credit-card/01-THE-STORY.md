@@ -59,7 +59,8 @@ beat 5).
 > **between 0.7 and 1 percent of them close every month** — call it **8 to 12 percent a year**.
 > *(CFPB Consumer Credit Card Market Report, published 2025-12-30.)* Americans carry **$1.263
 > trillion** at **22.15%** APR on balances assessed interest, and charge-offs are running at
-> **3.82%**. *(NY Fed Q2 2026; charge-off rate CORCCACBS, Federal Reserve "Charge-Off and
+> **3.82%**. *(Balances: NY Fed Household Debt & Credit, released 2026-08-11. APR: Federal Reserve
+> G.19, accounts assessed interest. Charge-offs: Federal Reserve CORCCACBS, "Charge-Off and
 > Delinquency Rates on Loans and Leases at Commercial Banks", updated 2026-08-25.)*
 >
 > **And here is the tell: nobody publishes how much of that closure is voluntary. Not the regulator,

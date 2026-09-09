@@ -272,7 +272,7 @@ better than any prose file, and it never goes stale.
 
 ## 7. The parts most likely to surprise you
 
-**The tests are unusually load-bearing.** Measured 2026-08-31: **855 collected, 850 passing, 5
+**The tests are unusually load-bearing.** Measured 2026-09-09: **908 collected, 903 passing, 5
 deliberately skipped** with a stated reason. `uv run pytest -q` is where that number lives — if this
 sentence and the command disagree, the command is right. Several exist because a specific mistake was
 made once and must never recur — for example, a test that scans every module to prove the extractor
@@ -281,7 +281,7 @@ dimming retained evidence would draw exactly the behaviour this product inverts.
 
 **The UI has no build step.** Plain HTML/CSS/JS opened from `file://`. A judging room with no wifi and
 a laptop with no toolchain can still see the product. Two automated gates check it: one renders every
-screen against a stub DOM and crawls the links it emits, another computes WCAG contrast for all **650**
+screen against a stub DOM and crawls the links it emits, another computes WCAG contrast for all **674**
 colour pairs across 17 routes in both themes.
 
 **Documented failures are kept, not deleted.** A keyed model run on 2026-08-30 cost **$12.32 and

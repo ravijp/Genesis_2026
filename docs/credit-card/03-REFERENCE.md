@@ -656,7 +656,7 @@ retention produces more than a 25% increase in profit.
 
 | Metric | Figure | Source | As of |
 |---|---|---|---|
-| Total US credit card balances outstanding | **$1.263 trillion** | Federal Reserve G.19 | Q2 2026 |
+| Total US credit card balances outstanding | **$1.263 trillion** | **NY Fed Household Debt & Credit**, released 2026-08-11 ("rose by $21bn to $1.26 trillion") — **not G.19**, which reports revolving *consumer credit*, a different and larger series | Q2 2026 |
 | Share of US adults holding at least one card | **78%** | CFPB Consumer Credit Card Market Report | end-2024 |
 | Average APR, accounts **assessed interest** | **22.15%** | Federal Reserve G.19 | Q2 2026 |
 | Average APR, all accounts | **20.94%** | Federal Reserve G.19 | Q2 2026 |
