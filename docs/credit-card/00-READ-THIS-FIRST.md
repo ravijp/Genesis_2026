@@ -43,7 +43,8 @@
 > and both dead dates struck · `06-DEFENDING-THE-SCORE.md` answers the model-reproducibility
 > question · SR 11-7 is rescinded and corrected everywhere.
 
-Seven files, in reading order. If you only read one, read this. If you read two, add
+**Seven files that matter, in reading order** (an eighth, `05-NEXT-CONVERSATION-PROMPT.md`, is a
+spent brief and is bannered as such). If you only read one, read this. If you read two, add
 `06-DEFENDING-THE-SCORE.md` — because it answers the question most likely to end the pitch.
 
 | File | What it is | Read? |
@@ -120,7 +121,9 @@ increase) entirely**: it is the on-ramp to #11, which the document itself says n
 ## What the US switch changed
 
 **We lost our best number.** The UK pitch led with the £650 Ombudsman per-case tariff — published,
-verifiable, unarguable. **There is no US equivalent.** One candidate replacement worked and one
+verifiable, unarguable. **There is no US equivalent.** *(It is not thrown away: it is kept as the
+appendix at `03-REFERENCE.md` §7, and it is the honest answer to "is any of your value a hard number
+rather than a model?" — see the settled decision at the top of this page.)* One candidate replacement worked and one
 did not.
 
 **The one that did not — do not use it:**
