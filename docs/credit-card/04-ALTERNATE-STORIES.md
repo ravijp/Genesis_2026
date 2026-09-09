@@ -214,17 +214,22 @@ the bank already watches — our best answer is the intent/state distinction (§
 
 ### 3. Balance attrition, not account attrition
 **Predicts** balance transfer out or paydown-to-zero — the customer keeps the card and takes the
-balance. **Money:** direct NII loss; at 22.15% APR on a $6,610 balance that is ~$1,464/yr of gross
-interest per balance lost. **T3:** retention-pricing eligibility. **Weakness:** a balance transfer out
+balance. **Money — halved on its own source, 2026-09-09:** direct NII loss, but at the **effective**
+yield, not the headline APR. CFPB 2025 reports **$160bn of interest on >$1.2tn** of balances =
+**13.3%**, so a $5,300 balance is **~$705/yr**, not the ~$1,464 this profile used to claim from
+22.15% on $6,610 (which was also a per-borrower balance). **T3:** retention-pricing eligibility. **Weakness:** a balance transfer out
 is *visible* structurally the moment it happens, so the window is narrow — and the customers who move
 balances are rate-shoppers you may not want.
 
-### 4. Deposit flight
-**Predicts** deposit outflow and rate-shopping. **Money:** highest per-relationship value on this list —
-a single deposit relationship dwarfs a card. Board-level topical since 2023. **T3:** rate-exception
-eligibility and existing deposit-retention campaigns. **Weakness:** deposit customers talk to the bank
-far less often than card customers, so T1 is genuinely weaker; our whole build is card/servicing
-flavoured; **and I have verified no anchors here.**
+### 4. Deposit flight — **CUT 2026-09-09**
+**Predicts** deposit outflow and rate-shopping. **Money — the claim collapsed when it was finally
+anchored.** This profile said "highest per-relationship value on this list". Measured: Fed SCF-2022
+median transaction balance **$8,000** × FDIC QBP Q4-2025 net interest margin **3.39%** = **~$271/yr**.
+Not "$1,000s-10,000s". **And T2 kills it independently: a deposit leaving is the loudest structural
+signal in retail banking** — we would be predicting from conversation a balance move the bank can
+already see on the screen. **T1 is also weakest here** (deposit customers contact the bank far less
+than card customers) and the whole build is card/servicing flavoured. **Cut. Do not revive without a
+per-relationship anchor that survives arithmetic.**
 
 ### 5. Scam and elder financial exploitation ★ dark horse
 **Predicts** that the customer is being defrauded now. **Money:** avoided loss, Reg E dispute cost,
@@ -262,10 +267,11 @@ story here.** *"We listen to your service calls to sell you things"* is the head
 writes, and it puts every governance advantage we have on the wrong side of the argument. **I would not
 pick this** in a year when AI-and-consumers is a live political topic.
 
-### 10. Credit-line increase / prosperity signals
-**Predicts** capacity and appetite for more credit. **Money:** incremental balances and interchange.
-**T3:** CLI campaign eligibility. **Weakness:** low value per event, and it drifts toward credit
-decisioning where Reg B and FCRA attach.
+### 10. Credit-line increase / prosperity signals — **CUT 2026-09-09**
+**Predicts** capacity and appetite for more credit. **Money: no published anchor found** in two
+searches. **T2 is the worst on the list** — utilisation and bureau data *are* the CLI decision inputs,
+so conversation adds least here of anywhere. And it is **the on-ramp to #11**, which this document
+says never to raise. **Cut.**
 
 ### 11. Credit-line decrease / exposure management
 **Predicts** deterioration before the bureau shows it. **Money:** real — exposure reduction ahead of a
@@ -279,9 +285,11 @@ list. **Do not lead with it. Do not even raise it as roadmap.**
 **Weakness:** SMB conversation volume is lower and more relationship-mediated; harder to demo; and the
 value is diffuse across products.
 
-### 13. Agent coaching / QA at 100% coverage
-**Predicts** which calls need coaching. **Weakness: this is what Verint, NICE and CallMiner already
-sell, and they sell it well.** We would be entering their category with their feature. It also throws
+### 13. Agent coaching / QA at 100% coverage — **CUT 2026-09-09**
+**Predicts** which calls need coaching. **It scores 24/35 and the score is an artefact**: adding a
+ledger-dependence column showed it is the **only story on the list that does not use the ledger at
+all**, so its total is not comparable to the others. **Weakness: this is what Verint, NICE and
+CallMiner already sell, and they sell it well.** We would be entering their category with their feature. It also throws
 away our one real differentiator — the *per-customer ledger across time* — because coaching is a
 per-call judgement. **Do not pick this.**
 
