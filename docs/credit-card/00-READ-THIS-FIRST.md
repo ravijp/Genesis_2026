@@ -1,6 +1,34 @@
 # Read this first
 
-**Ravi — this is the whole thing in one page. 2026-09-09, for the 09-11 gate.**
+**Ravi — this is the whole thing in one page. Gate is 2026-09-11, 20:30-21:00 IST.**
+
+> ## What happened while you slept — 2026-09-09 overnight
+>
+> **Three decisions are waiting for you. Everything else is done and committed.**
+>
+> **① DECIDE: there are two scripts for this meeting and they disagree on market.**
+> `docs/gates/2026-09-11-sprint-review.md` is the **UK** story and leads with the **£650 Ombudsman
+> case fee**. This folder is the **US** story and calls a pound sign a way to lose the room. **Both
+> cannot run.** I did not delete either. The US work is deeper and more heavily red-teamed
+> (KS-1..KS-16 over two passes); the UK version owns the single best number in the repo, because
+> £650 is a *published tariff* and the US has no equivalent — which is exactly why the US money beat
+> had to be rebuilt on a chain with an admitted hole in it. **This is the highest-value thing you
+> decide today.**
+>
+> **② The lexicon no longer carries the numbers.** You asked for a gen-AI story, and the evidence was
+> already bought — see *the reader beat* in `01-THE-STORY.md`. On the same 282 conversations Haiku
+> 4.5 finds complaint escalation in **60 of 65** planted conversations against the regex lexicon's
+> **1 of 65**. It **loses** financial distress, 27/72 against 33/72, and we publish that.
+>
+> **③ A keyed 10-seed re-measurement is running now** (~$10.6, Haiku 4.5) to answer the one thing
+> still measured only with the lexicon: **does accumulation still beat a rolling window when a real
+> model does the reading?** **Seed 1 says maybe not** — `full-ledger` came 6th of 9 arms. If that
+> holds across ten seeds it is a genuine problem for the central claim and you need to know before
+> you walk in, not after. **Result is written into `03-REFERENCE.md` §5 when it lands.**
+>
+> **Also done:** the alternates file is now anchored and three stories are cut · the gate date moved
+> and both dead dates struck · `06-DEFENDING-THE-SCORE.md` answers the model-reproducibility
+> question · SR 11-7 is rescinded and corrected everywhere.
 
 Seven files, in reading order. If you only read one, read this. If you read two, add
 `06-DEFENDING-THE-SCORE.md` — because it answers the question most likely to end the pitch.

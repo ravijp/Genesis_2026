@@ -11,7 +11,7 @@ this file is what `CLAUDE.md` imports, so a trap only earns its keep by being in
 the mistake, not one link away. Prune a trap when a test starts enforcing it — that is what keeps
 the list finite.
 
-**2026-09-03** · `build/ear-on-every-call` · **908 tests** (903 pass, 5 skip) · ruff clean ·
+**2026-09-09** · `build/ear-on-every-call` · **908 tests** (903 pass, 5 skip) · ruff clean ·
 separation guard over 45 modules + `tools/` · 30 UI routes · **~$2.45 of $12 spent**
 
 ## First turn
@@ -21,87 +21,72 @@ separation guard over 45 modules + `tools/` · 30 UI routes · **~$2.45 of $12 s
    dead token. Every keyed figure replays free with `EARSHOT_CACHE_MODE=replay` (a miss raises).
 3. `progress.md` for status, `decisions.md` before arguing, `state-of-play.md` for the numbers.
 
-## Next action — the 2026-09-11 cut round, then rehearse
+## Next action — the 2026-09-11 cut round, and one decision only Ravi makes
 
-**The build is done for now; the work is presentation.** Everything Ravi asked for on 2026-09-03 is
-delivered except the $10 sweep, which he declined. Both stages are deployed and fed and the alarm has
-fired.
+**The build is done. The work is presentation, and one fork in the road.**
 
-**The gate is 2026-09-11, 20:30-21:00 IST. Both 09-07 and 09-10 are dead** (moved 09-10 -> 09-11 by Ravi on 2026-09-09; `CLAUDE.md`
-updated, `sources/genesis-committee-comms.md:24` still shows the old date and is never-edit).
-**Venkat (CEO) and Farhan (COO) judge it and it decides the shortlist** for the Final Dry Run and
-Finals. **One script: `docs/gates/2026-09-11-sprint-review.md`**, 18 minutes including the demo. The
-09-07 demo doc was deleted rather than kept — two competing scripts defeated the simplification Ravi
-asked for, and its fallback ladder is folded in.
+**The gate is 2026-09-11, 20:30-21:00 IST.** Both 09-07 and 09-10 are dead (moved by Ravi on
+2026-09-09). **Venkat (CEO) and Farhan (COO) judge it and it decides the shortlist** for the Final Dry
+Run and Finals. They want: how strong the product is · **dollar value impact** · *could I pitch this
+to a company and win a project*.
 
-**What these two judges want, in Ravi's words, and it is NOT what a technical committee wants:** how
-strong the product is · **dollar value impact** · *could I pitch this to a company and win a project*.
-**Cost-per-conversation and compliance are demoted to Q&A** — an earlier draft led with both and was
-wrong. The money lead is now the **£650 Ombudsman case fee** — a published tariff, not a projection —
-against desks that currently surface **0 of 20**. §1 hands over the value *model* and refuses to
-invent the client's two inputs; **keep that refusal**, it is what makes the measured half credible.
+**① THE FORK — two scripts exist for this meeting and they disagree on market. Ravi decides.**
 
-**The one committed item that is missed: dry runs. Two committed, zero done** (checked — every
-"dry-run" in the repo is a tooling flag, not a rehearsal). The script has Ravi owning it and booking
-both for 09-09 and 09-10, with the demo recorded 09-10 so a room with no wifi cannot break it. **That
-is now the highest-value remaining work.**
-
-**Two live stages, same book, same infrastructure, one variable — this is the demo's spine:**
-
-| | `dev` — keyless lexicon | `demo` — Haiku 4.5 |
+| | `docs/gates/2026-09-11-sprint-review.md` | `docs/credit-card/` (7 files) |
 |---|---|---|
-| ledger entries | 34 | **103** |
-| cases opened | 1 | **9** |
-| desks receiving work | Collections only | **Complaints, 9 of 9** |
+| market | **UK** | **US** |
+| money lead | **£650 Ombudsman case fee** — a published tariff | a value chain with an admitted hole |
+| depth | one script | two red-team passes, KS-1..KS-16 |
 
-`dev` also agrees with the local pipeline to the last digit (`0.6526618648909545` vs `0.652662`) and
-survived a double feed (260 messages → still 34 entries, 1 case). `earshot-dev-ingest-failures` went
-**OK → ALARM** on one malformed transcript while the other five alarms stayed OK.
+**Neither is deleted.** The US folder is the later and far deeper work and every instruction since
+2026-09-08 has been about it — but it threw away the best number in the repo to get there, because
+the US has no Ombudsman-tariff equivalent. **Do not start work on either until this is settled.**
 
-**Do these before 09-11, in order:**
+**② The gen-AI reframe is done** (Ravi, 2026-09-09: *stop letting the keyless lexicon drive
+numbers*). Evidence already bought and unused — same 282 conversations, same planted truth: Haiku 4.5
+finds complaint escalation **60/65** vs the lexicon's **1/65**, churn **40/77** vs **16/77**, life
+event **50/68** vs **9/68**, and **loses distress 27/72 vs 33/72**, published. Keylessness is an
+auditor's reproducibility property, **never a product claim**.
 
-1. **Rehearse Beat 2 and Beat 4 end to end (§7 of the script).** Beat 4 is the only beat with a live
-   dependency and it carries 25 rubric points. **Record it on 09-10** so a room with no wifi cannot
-   break it.
-2. **Verify the two flagged-unverified claims** in the script, or drop them: the poison message
-   reaching `earshot-dev-transcripts-dlq.fifo` (it was still retrying when last checked — redrive is
-   configured at 3, so allow ~18 min), and the exact deployed spend from the `Earshot`/`CostUsd`
-   metric on the `demo` stage. **They are marked in place; do not quietly promote them.**
-3. **Re-login the morning of, and again before walking in.** The SSO token expires in hours.
+**③ A keyed 10-seed run is in flight** — `earshot run --seed 1..10 --customers 200 --extractor model`,
+Haiku 4.5, ~$1.06/seed, **~$10.6**, cache `artifacts/cache/extractor-cardstory-haiku.jsonl`. It tests
+the one claim still measured only by regex: **does accumulation beat a rolling window when a real
+model reads?** **Seed 1 is a warning — `full-ledger` placed 6th of 9.** Aggregate with
+`scratchpad/aggregate_keyed.py` ($0). **If it loses across ten seeds, say so.**
 
-**Optional, ~$0.90, Ravi has NOT approved it:** the `demo` stage reads with Haiku but *investigates*
-with the offline rule engine, because `--extractor bedrock` sets the reader and `--provider` still
-defaults to offline. So **8 of its 9 cases come back `insufficient_evidence` with `team=none`** — the
-verdicts are the documented floor, not a result. `--provider bedrock` plus a re-feed would give real
-verdicts, but a re-feed re-fires every crossing customer's conversations (~30 investigations). Decide
-whether the demo needs it; the reader story does not depend on it.
+**Then: the dry runs. Two committed, zero done** — still the highest-value remaining work. Book
+**09-09 and 09-10**, and **record the demo on 09-10** so a room with no wifi cannot break Beat 3.
 
-**Declined 2026-09-03, do not re-propose:** the **$10 10-seed sweep** against the co-primary chance
-gate the entry FAILS (18–8–4, `p=0.076`). The gate stays published as a failure.
+**Declined 2026-09-03, do not re-propose:** the $10 10-seed sweep *against the chance gate*. The gate
+stays published as a failure (18-8-4, `p=0.076`). *(The keyed run above is a different measurement
+for a different purpose and Ravi authorised it on 2026-09-09.)*
 
-**Settled 2026-09-03, do not reopen:** the UI write path **stays read-only and labelled** (a static
-page cannot sign an IAM Function URL, and HITL-by-absence being literally true is an asset) · the
-alarms get **no action** (EventBridge → Lambda would be the first outward-reaching thing here, and
-CloudWatch already keeps two weeks of alarm history).
+**Settled, do not reopen:** UI stays read-only and labelled · alarms get no action.
 
 ## State
 
-**Arm B done** ($0.027705). `build-plan.md` §4 and §8's delta 8 are both updated — the brief's
-comparison-model obligation is **retired on evidence**, not on an argument about wording. Nova Lite vs
-Haiku on the same 282 conversations: coverage **181/282 vs 177/282** at **$0.0982/1,000 vs $1.58**,
-p50 873 vs 1,333 ms, but **60/80 crossings vs 65/80** and **10 quotes not verbatim + 9 relocated vs
-0 and 0**. It repairs the one desk Haiku loses to the lexicon, so *that published loss is Haiku's,
-not the model reader's*. D-025 stands on evidence: the 16× buys citation discipline.
+**2026-09-09: four claims in the card folder were wrong and are corrected in place.** **SR 11-7 is
+rescinded** (superseded 2026-04-17 by **SR 26-2**, joint OCC/Fed/FDIC, over **$30bn**) · **"distress
+signals are structurally blocked from feeding an offer — a branch in code" is FALSE**, there is no
+offer surface to block, only `TRAJECTORY_TEAM` (`schema.py:35-40`) plus absence · **charge-offs 3.82%**
+(CORCCACBS; **G.19 publishes none**) · **$6,610 is per borrower**, $1.263T ÷ 608M = **$2,077**.
 
-**D-031** re-registers the primary as `full-ledger` vs `window3-top2` (**30–0–0**), bound to the
-chance gate above. The dead row keeps its place forever. **Coverage, not ranking, is the claim:**
-Complaints 0/20 → 20/20, Vulnerability 0/20 → 19/20, Retention 1/20 → 16/20, Collections 9/20 →
-10/20. **AT-57 29/50** (the corpus stopped leaking, not the agent improving) · **AT-58 27/48, worse**
-(the `complaints` row is empty) · **AT-52: keep all four mechanisms** · **239/485 entries are worth
-more now than at write; 0/485 under a plain count.**
+**The confidence float is load-bearing and uncalibrated** — `memory.py:99` makes it a direct
+multiplier, sharing a field with the lexicon's constants. Over 30 offline datasets, removing it moves
+**20% of the top-150**; **escalation is inert (100.0% on all 30)**. Fix: **bucket to three tiers, ~1
+day**. **CFPB gold set is 55/150 card narratives** — reader fires **29/29** on marked card documents
+but **churn intent 1 of 8**; say both together. **Pre-delinquency withdrawn and settled** (3-9x not
+7-10x; its T3 was backwards — hardship is opt-in). Detail: `docs/credit-card/06-DEFENDING-THE-SCORE.md`
+and `00-READ-THIS-FIRST.md`.
 
-One deployment (Northwind), nine seams, five the client's own. **CDK does not work here** (D-024).
-`boto3` optional; a fresh clone runs keyless.
+**Arm B done** ($0.027705), comparison-model obligation retired on evidence. **D-031** primary is
+`full-ledger` vs `window3-top2` (**30-0-0 offline — being re-measured keyed**). **AT-57 29/50** ·
+**AT-58 27/48** · **AT-52 keep all four** · **239/485 entries worth more now than at write, 0/485
+under a plain count.** One deployment (Northwind), nine seams, five the client's. **CDK does not work
+here** (D-024). `boto3` optional; a fresh clone runs keyless.
+
+*(This file is ~30 lines over its 60-line budget. The overage is the live 09-11 fork and the in-flight
+keyed run — both resolve by 09-11. **Reclaim it then**, rather than letting the budget rot.)*
 
 ## Traps no test can catch
 
