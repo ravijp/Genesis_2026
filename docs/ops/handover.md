@@ -30,17 +30,13 @@ separation guard over 45 modules + `tools/` · 30 UI routes · **~$2.45 of $12 s
 Run and Finals. They want: how strong the product is · **dollar value impact** · *could I pitch this
 to a company and win a project*.
 
-**① THE FORK — two scripts exist for this meeting and they disagree on market. Ravi decides.**
-
-| | `docs/gates/2026-09-11-sprint-review.md` | `docs/credit-card/` (7 files) |
-|---|---|---|
-| market | **UK** | **US** |
-| money lead | **£650 Ombudsman case fee** — a published tariff | a value chain with an admitted hole |
-| depth | one script | two red-team passes, KS-1..KS-16 |
-
-**Neither is deleted.** The US folder is the later and far deeper work and every instruction since
-2026-09-08 has been about it — but it threw away the best number in the repo to get there, because
-the US has no Ombudsman-tariff equivalent. **Do not start work on either until this is settled.**
+**① THE FORK IS SETTLED (Ravi, 2026-09-09): US attrition runs.** `docs/credit-card/` is the pitch —
+`00-READ-THIS-FIRST.md` then `01-THE-STORY.md`. The competing UK complaints script is **superseded**
+at `docs/gates/2026-09-11-sprint-review.md` and survives as a footnote in
+**`docs/credit-card/03-REFERENCE.md` §7**, kept because the **£650 Ombudsman case fee is the only
+published tariff in this entry** and the US has no equivalent. **Never quote a pound sign except in
+answer to "is any of your value a hard number rather than a model?", and say "UK" in the same
+sentence.** Do not re-open this.
 
 **② The gen-AI reframe is done** (Ravi, 2026-09-09: *stop letting the keyless lexicon drive
 numbers*). Evidence already bought and unused — same 282 conversations, same planted truth: Haiku 4.5

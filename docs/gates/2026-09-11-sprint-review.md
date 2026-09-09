@@ -1,26 +1,18 @@
-# The 09-11 pitch — 2026-09-11, 20:30-21:00 IST
+# The UK complaints pitch — SUPERSEDED, retained as the §7 appendix source
 
-> ## ⚠ RAVI — DECIDE THIS FIRST: there are now TWO scripts for this meeting, and they disagree on market
+> ## SUPERSEDED 2026-09-09 — this is not the 09-11 pitch
 >
-> **This file is the UK story.** It leads with the **£650 Financial Ombudsman case fee**, UK card
-> delinquency and UK debt-collection buyers.
+> **The pitch is `docs/credit-card/`.** Ravi settled the two-script conflict on 2026-09-09:
+> **US attrition runs; this UK complaints story is kept as a footnote**, distilled into
+> **`docs/credit-card/03-REFERENCE.md` §7** with the £650 tariff, the FOS volumes and the two
+> questions that make it the right answer in the room.
 >
-> **`docs/credit-card/01-THE-STORY.md` is the US story**, written 2026-09-09 for this same gate. It is
-> dollars, APR, annual fee and points, it deleted ten UK files deliberately, and it lists *"quote a
-> pound sign"* as one of the three things most likely to lose the room.
->
-> **Both cannot be true. One of them has to go before you walk in**, and the handover already records
-> that two competing demo scripts is the exact failure this repo cleaned up once before.
->
-> **My read, but it is your call:** the US story is the later, deeper and more heavily red-teamed work
-> (two adversarial passes, KS-1..KS-16), and your last three rounds of instruction have all been about
-> it. **Its weakness is that it threw away the single best number in the repo** — the £650 is a
-> *published tariff*, not a projection, and the US has no equivalent, which is why the US money beat
-> had to be rebuilt on a chain with an admitted hole in it.
->
-> **If the audience is a Zenon cut round judging a UK-market entry, this file wins on the strength of
-> that one number. If the entry is US-market, this file is a liability.** I have not deleted anything.
-
+> **This file is retained, not deleted**, because it is the only place the full UK argument is written
+> out and because the £650 Ombudsman case fee is the one **published tariff** anywhere in this
+> entry — the US has no equivalent, which is exactly why the US money beat is a chain of
+> client-supplied inputs instead. **Do not rehearse from this file. Do not quote a pound sign in the
+> room** unless you are answering "is any of your value a hard number rather than a model?", and then
+> say "UK" in the same sentence.
 
 **The gate.** The 09-07 date is dead; this replaces it. One document, one story, **18 minutes
 including the demo**, leaving 12 for questions.

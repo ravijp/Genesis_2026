@@ -4,12 +4,15 @@
 whoever builds the card corpus works from. `00-READ-THIS-FIRST.md` and `01-THE-STORY.md` are the ones
 that matter on the night.
 
-Market: **United States.** Any UK figure that appears anywhere is an error — a prior pass assumed a UK
-issuer and was discarded on 2026-09-09.
+Market: **United States**, settled 2026-09-09. **Any UK figure in sections 1-6 is an error** — a
+prior pass assumed a UK issuer and was discarded. **The one deliberate exception is §7**, the UK
+complaints appendix, which Ravi kept as a footnote when he cut the two competing scripts down to one.
+Everything in §7 is labelled UK and is an *answer to a question*, never a beat.
 
 Contents: **1.** the signal taxonomy · **2.** the score, defined · **3.** how it is consumed ·
 **4.** the value model · **5.** claims triage — what we may and may not quote · **6.** the red-team
-record.
+record · **7.** appendix: the UK complaints variant, and the one published tariff this pitch does not
+have.
 
 ---
 
@@ -1240,3 +1243,77 @@ The house style is right that stated losses buy credit. These are the ones that 
   **reasoned from mechanism, not measured.**
 - Whether the CFPB 150-narrative gold set is card-heavy. **Still open, still ten minutes, still free,
   and now more valuable because it is US data.**
+---
+
+# 7. Appendix — the UK complaints variant, kept as a footnote
+
+**Settled 2026-09-09: the pitch is the US attrition story. This appendix is the footnote.** For two
+days there were two competing scripts for the 09-11 gate — this folder and a UK-market script leading
+on the Financial Ombudsman tariff. Ravi cut it: **US attrition runs, UK complaints is retained as an
+appendix.** The full UK script stays in git at `docs/gates/2026-09-11-sprint-review.md`, superseded
+and bannered; what is worth carrying is below.
+
+**Why it is kept at all, and it is not sentiment.** The UK variant owns **the one number this pitch
+does not have: a published per-case tariff.** Everything in the US money beat is a chain of
+client-supplied inputs with an admitted false-positive hole (KS-9). The UK number is a price list.
+**If someone asks "is there anywhere this has a hard number rather than a model?", this is the
+honest answer, and it is a good one.**
+
+## The number
+
+**The UK Financial Ombudsman charges a respondent firm £650 per case when a complaint is upheld
+against it and £475 when it is not — the firm pays either way**, capped at £680 against a £2,000
+annual allowance
+([Financial Ombudsman Service, case fees](https://www.financial-ombudsman.org.uk/businesses/resolving-complaint/case-fees)).
+From **2026-04-01** the largest firms are billed **quarterly in advance on expected volumes**
+([FOS consultation, 2025-08](https://www.financial-ombudsman.org.uk/files/324663/2025-08-Differentiated-case-fee-consultation.pdf)),
+which makes it a forecastable line item a COO already owns rather than a contingent cost.
+
+**Volume:** the Ombudsman took **214,600 new complaints in 2025/26**, down ~30% from **305,700** the
+year before; **credit cards alone were ~22,800**
+([FOS annual complaints data 2025/26](https://www.financial-ombudsman.org.uk/businesses/resolving-complaint/our-insight/annual-complaints-data-and-insight-2025-26)).
+
+**The arithmetic, with no invented input:** per **1,000** complaints stopped before referral,
+**£650,000 in case fees alone** — before redress, handling time or remediation. The multipliers on top
+are the client's, not ours.
+
+## Why this pairing is unusually strong, and why it still lost
+
+**It is the only story where our best-measured signal family and the best available money anchor are
+the same family.** Complaint escalation is what the reader reads best — **60 / 65** planted
+conversations on the synthetic corpus against the lexicon's 1 / 65, and **23 / 24** on real US
+credit-card complaint narratives in the CFPB benchmark, against churn intent's **1 / 8** on that same
+corpus. Zero new build; it is already deployed and measured.
+
+**It lost on three grounds, and they are recorded so this is not re-argued:**
+
+1. **Market.** The judges and the entry are being pitched US. A pound sign in a US-framed room is one
+   of the three fastest ways to lose it (`00-READ-THIS-FIRST.md`).
+2. **Depth of preparation.** The US folder carries two adversarial passes and sixteen answered kill
+   shots. Two days out with **zero dry runs done**, switching to the less-rehearsed script is the
+   higher-variance move regardless of which is theoretically stronger.
+3. **There is no US equivalent to import.** The CFPB's enforcement posture contracted through 2026 and
+   no US per-case tariff exists, so the "US market, complaints lead" hybrid gets the evidence
+   advantage and loses the money advantage — the worst of both.
+
+## What to actually do with it in the room
+
+**Do not volunteer it.** It is an answer, not a beat. Two questions make it the right answer:
+
+> **"Is any of your value based on a hard number rather than a model?"**
+>
+> Not in the US, and I won't pretend otherwise — the US has no per-case tariff and I'd be inventing
+> one. **In the UK it does: the Ombudsman charges £650 a case whether the firm wins or loses, billed
+> quarterly in advance from April.** Same layer, same signals, and complaint escalation happens to be
+> the family we read best — 60 of 65 on our corpus, 23 of 24 on real card complaints. **If you ever
+> point this at a UK book, the money stops being a model and becomes a price list.**
+
+> **"Does this only work for US cards?"**
+>
+> No — and the cleanest proof is that we costed a UK complaints version of exactly this layer against
+> a published regulator tariff. **Same code, same ledger, different desk and different currency.**
+
+**Two guardrails.** Never quote the £650 without saying "UK" in the same sentence. And **never mix the
+desk coverage table into the US story** — 0/20 → 20/20 was measured on a generic retail-banking corpus
+and is permitted only as labelled mechanism evidence (`§5`, and it is the most tempting number in the
+repo).

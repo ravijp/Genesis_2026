@@ -4,16 +4,15 @@
 
 > ## What happened while you slept — 2026-09-09 overnight
 >
-> **Three decisions are waiting for you. Everything else is done and committed.**
+> **The market decision is settled. What is left is rehearsal.** Everything below is done and committed.
 >
-> **① DECIDE: there are two scripts for this meeting and they disagree on market.**
-> `docs/gates/2026-09-11-sprint-review.md` is the **UK** story and leads with the **£650 Ombudsman
-> case fee**. This folder is the **US** story and calls a pound sign a way to lose the room. **Both
-> cannot run.** I did not delete either. The US work is deeper and more heavily red-teamed
-> (KS-1..KS-16 over two passes); the UK version owns the single best number in the repo, because
-> £650 is a *published tariff* and the US has no equivalent — which is exactly why the US money beat
-> had to be rebuilt on a chain with an admitted hole in it. **This is the highest-value thing you
-> decide today.**
+> **① SETTLED — you decided this on 2026-09-09. Nothing left to do.** There were two competing
+> scripts for this gate. **US attrition runs. The UK complaints story is a footnote**, distilled into
+> **`03-REFERENCE.md` §7** with the £650 Ombudsman tariff and the two questions that make it the right
+> answer. The old UK script is bannered superseded at `docs/gates/2026-09-11-sprint-review.md`, kept
+> because it holds the only **published tariff** in this entry. **Rehearse from `01-THE-STORY.md`
+> only. Never say a pound sign unless you are answering "is any of your value a hard number rather
+> than a model?" — and then say "UK" in the same sentence.**
 >
 > **② The lexicon no longer carries the numbers.** You asked for a gen-AI story, and the evidence was
 > already bought — see *the reader beat* in `01-THE-STORY.md`. On the same 282 conversations Haiku

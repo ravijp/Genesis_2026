@@ -9,11 +9,10 @@ Jira (work). Anything historical belongs in git.
 > **1. The gate is 2026-09-11, 20:30-21:00 IST** — moved from 09-10 (which had already replaced
 > 09-07). Venkat and Farhan judge; it decides the shortlist.
 >
-> **2. Two scripts exist for it and they disagree on market. This is the open decision and it is
-> Ravi's.** `gates/2026-09-11-sprint-review.md` is the **UK** story leading with the **£650 Ombudsman
-> tariff**; `docs/credit-card/` (7 files) is the **US** story and treats a pound sign as a way to lose
-> the room. The US work is deeper — two red-team passes, KS-1..KS-16 — but it gave up the best number
-> in the repo to get there, because the US has no tariff equivalent. **Neither is deleted.**
+> **2. The market question is SETTLED (Ravi, 2026-09-09): US attrition.** `docs/credit-card/` is the
+> pitch. The UK complaints script is superseded at `gates/2026-09-11-sprint-review.md` and kept as a
+> footnote in `credit-card/03-REFERENCE.md` §7 — it holds the **£650 Ombudsman tariff**, the only
+> published per-case number in the entry, which the US cannot match. Answer-only, never a beat.
 >
 > **3. The keyed 10-seed run is done — $10.66.** `earshot run --seed 1..10 --customers 200
 > --extractor model`, Haiku 4.5, 6,990 conversations. **Reader settled: extraction recall 0.6549 vs
