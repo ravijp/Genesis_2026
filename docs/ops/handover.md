@@ -56,6 +56,14 @@ scale is ~52,000 sequential calls: **blocked by wall-clock, not money. 30-0-0 st
 across 5,112 emissions (0.85 alone = 28.4%)** and removing it moves only **10.5%** of the queue — the
 *least* load-bearing mechanism under a model reader. **Bucket it to three tiers; it is a formality.**
 
+**A consistency audit ran 2026-09-09 and found three claims that would have been said out loud and
+were wrong** — all fixed: README still listed 09-07 as the live gate; `02-THE-DEMO.md` still told Ravi
+the alarm contradiction was unresolved (it was settled from CloudWatch that morning); and
+`06-DEFENDING-THE-SCORE.md`'s own could-not-verify list said the model-reader confidence ablation was
+unrun **when it had been run and had reversed the conclusion**. Also fixed: the $1.263tn balance is
+**NY Fed**, not G.19 (G.19 is the APR source), and three stale counts (30 routes not 21, 674 pairs not
+650, 908 tests not 855). **There is no slide deck for the US story** — the only deck is superseded.
+
 **Then: the dry runs. Two committed, zero done** — still the highest-value remaining work. Book
 **09-09 and 09-10**, and **record the demo on 09-10** so a room with no wifi cannot break Beat 3.
 

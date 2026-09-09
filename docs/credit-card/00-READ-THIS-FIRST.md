@@ -246,6 +246,7 @@ quietly — it changes who signs.
 | 4 | ~~**Get a fresh CloudWatch alarm-history read**~~ **DONE 2026-09-09** | The repo contradicted itself; it is settled from CloudWatch. **`earshot-dev-ingest-failures` went OK → ALARM at 2026-09-03 04:06:22 IST and back to OK at 04:33:22**; the other five alarms have never left OK. `handover.md` was right, `state-of-play.md` was stale and is fixed. **Safe to say in the demo** |
 | 5 | ~~**Check if the CFPB sample is card-heavy**~~ **DONE 2026-09-09** | **It is: 55 of 150** narratives are credit-card (51 general-purpose or charge, 4 store). Split by product for **$0** from the committed cache. On those 55 the reader fires on **29/29** marked documents and gets the exact type on **26/35** marks — **but churn intent is 1/8.** Post-hoc, not pre-registered. **Read the honesty beat in `01-THE-STORY.md` before quoting any of it**: the 1/8 goes in the same breath as the 29/29 |
 | 6 | **Re-login to AWS the morning of, and again before walking in** | The SSO token expires in hours and a dead token looks exactly like broken code |
+| 7 | **Decide whether you want slides at all** | **There is no deck for this story.** The only deck in the repo (`docs/gates/2026-09-10-pitch.html`, 14 pages) was built for the dead 09-10 date and the pre-US framing, and is now bannered superseded. Given 7 of 18 minutes are a live demo, slides may be the wrong tool — but decide it, do not discover it |
 
 ---
 
