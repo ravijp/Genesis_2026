@@ -403,8 +403,12 @@ replays from a committed cache with no key, so you can audit it — but the syst
 - **Two dry runs committed, zero done.**
 - **The anchor metric — retention lift against a matched control — still not built.** It now sits
   directly under the one metric being sold.
-- **Every own-measured number in this repo was measured on a generic retail-banking corpus with no
-  credit-card content in it.**
+- **Almost every own-measured number was measured on a generic retail-banking corpus with no
+  credit-card content.** The exception, found 2026-09-09, is the CFPB benchmark — **55 of its 150
+  hand-marked narratives are credit-card complaints**, and on those the reader gets **churn intent 1
+  of 8**. *(Full picture, including the good half, in the honesty beat below. **Do not state the old
+  absolute version — "not a single number is about cards" is no longer true**, and being corrected on
+  your own disclosure is worse than the disclosure.)*
 - What is done: **908 tests** (903 pass, 5 skip) · the comparison-model arm · the deployed AWS pipeline
   agreeing with local to the last digit · a published chance gate we **fail**.
 
@@ -424,10 +428,10 @@ numbers are about credit cards"* — and that becomes the only thing they rememb
 
 Sequencing is not hiding. It still lands before any quotable number, which is the actual obligation.
 
-> Every own-measured number we have was measured on a generic retail-banking corpus with **no
+> Almost every own-measured number we have was measured on a generic retail-banking corpus with **no
 > credit-card content in it**. What carries into a card story is the *mechanism* and the *market
-> facts*. **What does not yet exist is a single measured number that is both about attrition and about
-> credit cards.**
+> facts*. **The one exception is real US credit-card complaint text, and I'll give you both halves of
+> what it says.**
 
 ### That is no longer quite true — 2026-09-09, and it cuts both ways
 
