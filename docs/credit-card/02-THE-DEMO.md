@@ -209,8 +209,19 @@ The mechanism is built and deployed. The card content is not. In order:
 | **B** | `earshot sweep --seeds 30 --customers 1500` | **$0**, ~104s | First card-flavoured recall read |
 | **C** | `tools/reader_coverage.py --reader both --per-trajectory 20` | **~$0.45** | The single most pitch-relevant number: does the model reader find card churn evidence the lexicon misses |
 
-**Total ~$0.45 against roughly $9.55 remaining.** Quote whatever it produces with its denominator and
-the explicit caveat that it is a direction, not an interval.
+**Total ~$0.45.** Quote whatever it produces with its denominator and the explicit caveat that it is a
+direction, not an interval.
+
+**Budget update, 2026-09-09.** Ravi raised the ceiling to **$10-15** to make the gen-AI evidence
+stronger, and **~$10.5 of it went on a keyed 10-seed run** with Haiku 4.5 (`earshot run --seed 1..10
+--customers 200 --extractor model`). **Step A is still the constraint and still unbought** — it costs
+hours, not dollars, and steps B and C without it produce the same generic numbers under a new label.
+
+**And one card-specific result arrived for $0**, which is what step C was supposed to buy: the CFPB
+benchmark turned out to be **55/150 credit-card narratives**, so splitting the already-published run
+by product gives real card numbers from real US complaint language. **Both halves are in the honesty
+beat of `01-THE-STORY.md`** — the reader fires on **29/29** marked card documents and gets **churn
+intent 1 of 8**. Read it before quoting any of it.
 
 ---
 
