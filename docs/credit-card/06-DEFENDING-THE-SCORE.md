@@ -225,8 +225,9 @@ next thing you build, which is a stronger answer than a defence.
 
 ## 4. Reproducibility by fingerprint — and exactly where it leaks
 
-**The claim:** every score carries the model id and prompt hash that produced it, and re-running that
-fingerprint reproduces the score.
+**The claim you would like to make:** *every score carries the model id and prompt hash that produced
+it, and re-running that fingerprint reproduces the score.* **Do not make it yet.** The second half is
+true; the first half is not, and the gaps below say exactly where.
 
 **Verified as far as it goes:** the cache key covers model id, `prompt_sha`, messages and tools. A
 model-id change correctly busts the cache rather than silently returning old-model results.
