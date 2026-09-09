@@ -15,10 +15,12 @@ Jira (work). Anything historical belongs in git.
 > the room. The US work is deeper — two red-team passes, KS-1..KS-16 — but it gave up the best number
 > in the repo to get there, because the US has no tariff equivalent. **Neither is deleted.**
 >
-> **3. A keyed 10-seed run is in flight** (~$10.6, Haiku 4.5) testing whether accumulation still beats
-> a rolling window **when a real model does the reading** — the one headline claim still measured only
-> by the regex lexicon. **Seed 1 placed `full-ledger` 6th of 9 arms.** If that holds, it is a genuine
-> problem with the central claim and it gets published, not buried.
+> **3. A keyed 10-seed run is in flight** (~$10.6, Haiku 4.5). It was set up to test whether
+> accumulation survives a model reader — **and a free control shows it cannot.** At 200 customers /
+> K=20 the *offline* reader gives `full-ledger` vs `window3-top2` **4-3-3, p=1.00**, against its
+> published **30-0-0** at 1500. **The scale is the confound, not the reader**, and a powered keyed
+> version is blocked by wall-clock rather than money. **30-0-0 stands.** The run still buys the
+> reader-quality headline at ten seeds, quote fidelity, cost and keyed ablations.
 >
 > **Standing instruction from Ravi, 2026-09-09:** this is a generative-AI product. **The keyless
 > lexicon is a fallback and an auditor's reproducibility property — never a product claim, and never

@@ -49,10 +49,13 @@ event **50/68** vs **9/68**, and **loses distress 27/72 vs 33/72**, published. K
 auditor's reproducibility property, **never a product claim**.
 
 **③ A keyed 10-seed run is in flight** — `earshot run --seed 1..10 --customers 200 --extractor model`,
-Haiku 4.5, ~$1.06/seed, **~$10.6**, cache `artifacts/cache/extractor-cardstory-haiku.jsonl`. It tests
-the one claim still measured only by regex: **does accumulation beat a rolling window when a real
-model reads?** **Seed 1 is a warning — `full-ledger` placed 6th of 9.** Aggregate with
-`scratchpad/aggregate_keyed.py` ($0). **If it loses across ten seeds, say so.**
+Haiku 4.5, ~$1.06/seed, **~$10.6**, cache `artifacts/cache/extractor-cardstory-haiku.jsonl`. **It cannot test whether
+accumulation survives a model reader, and a free control proved that**: at this scale (200 customers,
+K=20) the *offline* reader scores `full-ledger` vs `window3-top2` at **4-3-3, p=1.00** against its
+published **30-0-0** at 1500 customers. The scale is the confound, not the reader. **A powered keyed
+version is blocked by wall-clock, not money** (~52,000 sequential model calls). **30-0-0 stands.**
+What the run does buy: reader quality at ten seeds (**extraction recall 0.68 model vs 0.24 lexicon**),
+quote fidelity, cost, latency, and keyed mechanism ablations.
 
 **Then: the dry runs. Two committed, zero done** — still the highest-value remaining work. Book
 **09-09 and 09-10**, and **record the demo on 09-10** so a room with no wifi cannot break Beat 3.

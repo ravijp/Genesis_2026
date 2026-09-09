@@ -20,11 +20,15 @@
 > 4.5 finds complaint escalation in **60 of 65** planted conversations against the regex lexicon's
 > **1 of 65**. It **loses** financial distress, 27/72 against 33/72, and we publish that.
 >
-> **③ A keyed 10-seed re-measurement is running now** (~$10.6, Haiku 4.5) to answer the one thing
-> still measured only with the lexicon: **does accumulation still beat a rolling window when a real
-> model does the reading?** **Seed 1 says maybe not** — `full-ledger` came 6th of 9 arms. If that
-> holds across ten seeds it is a genuine problem for the central claim and you need to know before
-> you walk in, not after. **Result is written into `03-REFERENCE.md` §5 when it lands.**
+> **③ A keyed 10-seed re-measurement is running now** (~$10.6, Haiku 4.5). I set it up to ask whether
+> accumulation still beats a rolling window when a real model reads — and **a free control run says it
+> cannot answer that, so do not expect it to.** At this run's scale (200 customers, top-20 queue) the
+> *offline* reader — the one that produced the published 30-0-0 — scores **4-3-3, p=1.00**. The
+> experiment has no power at 200 customers; every arm sits on top of random. **A properly powered
+> keyed version is blocked by wall-clock, not money** (the published scale is 52,000 model calls,
+> which is hours of sequential inference). **So 30-0-0 stands, unchallenged and still offline-measured.**
+> What the keyed run *does* buy is the reader-quality headline at ten seeds — see ② — plus quote
+> fidelity, cost and latency. **Result lands in `03-REFERENCE.md` §5.**
 >
 > **Also done:** the alternates file is now anchored and three stories are cut · the gate date moved
 > and both dead dates struck · `06-DEFENDING-THE-SCORE.md` answers the model-reproducibility
@@ -36,7 +40,7 @@ Seven files, in reading order. If you only read one, read this. If you read two,
 | File | What it is | Read? |
 |---|---|---|
 | **`00-READ-THIS-FIRST.md`** | This page. Recommendation, your decisions, checklist | **Yes** |
-| **`01-THE-STORY.md`** | The pitch. Seven beats, the actual words, objection playbook | **Yes** |
+| **`01-THE-STORY.md`** | The pitch. Six beats, the actual words, objection playbook | **Yes** |
 | **`02-THE-DEMO.md`** | The demo, screen by screen | Skim |
 | **`03-REFERENCE.md`** | Everything else — signals, score, governance, value model, what we may/may not quote, the red-team record | **No.** For when you're challenged |
 | **`04-ALTERNATE-STORIES.md`** | 13 other ways to point the same layer. **The recommendation to switch to pre-delinquency is now withdrawn — see the verdict below.** Q&A depth only | Skim |
@@ -67,7 +71,7 @@ happens when they aren't calling" answer **worse** than attrition's, not a 5/5; 
 line in the pitch** by making distress the product rather than the thing we deliberately refuse to
 sell against; and the CFPB card evidence for distress is **2/2 documents** — a denominator of two,
 because **none** of the benchmark's 17 distress-enriched narratives is a card complaint. Add that you
-are **48 hours out with zero dry runs done**, and switching stories now is the highest-risk available
+are **two days out with zero dry runs done**, and switching stories now is the highest-risk available
 use of the remaining time. **Keep `04-ALTERNATE-STORIES.md` as Q&A depth. Do not re-open this before
 09-11.**
 
