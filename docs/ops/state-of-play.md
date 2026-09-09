@@ -15,12 +15,18 @@ Jira (work). Anything historical belongs in git.
 > the room. The US work is deeper — two red-team passes, KS-1..KS-16 — but it gave up the best number
 > in the repo to get there, because the US has no tariff equivalent. **Neither is deleted.**
 >
-> **3. A keyed 10-seed run is in flight** (~$10.6, Haiku 4.5). It was set up to test whether
-> accumulation survives a model reader — **and a free control shows it cannot.** At 200 customers /
-> K=20 the *offline* reader gives `full-ledger` vs `window3-top2` **4-3-3, p=1.00**, against its
-> published **30-0-0** at 1500. **The scale is the confound, not the reader**, and a powered keyed
-> version is blocked by wall-clock rather than money. **30-0-0 stands.** The run still buys the
-> reader-quality headline at ten seeds, quote fidelity, cost and keyed ablations.
+> **3. The keyed 10-seed run is done — $10.66.** `earshot run --seed 1..10 --customers 200
+> --extractor model`, Haiku 4.5, 6,990 conversations. **Reader settled: extraction recall 0.6549 vs
+> the lexicon's 0.2435**, ten datasets each, same corpora and answer key; 11 non-verbatim + 2
+> relocated of 5,736 signals; $1.524/1,000. **Counterweight, always said with it: ~7× more unplanted
+> extractions** (matches the CFPB 8× FP finding). **Arms inconclusive — `full-ledger` vs
+> `window3-top2` 5-4-1 p=1.00 — and it is a power failure, not a refutation:** the *offline* reader at
+> the same scale gives 4-3-3 p=1.00. Published scale is ~52,000 sequential calls, blocked by
+> wall-clock. **30-0-0 stands, offline-labelled.**
+>
+> **4. The confidence float is now a settled build decision.** 21 distinct values across 5,112
+> emissions (0.85 alone = 28.4%); removing it moves 10.5% of the queue — the *least* load-bearing
+> mechanism under a model reader, the opposite of its rank under the lexicon. **Bucket to three tiers.**
 >
 > **Standing instruction from Ravi, 2026-09-09:** this is a generative-AI product. **The keyless
 > lexicon is a fallback and an auditor's reproducibility property — never a product claim, and never
