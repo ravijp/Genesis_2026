@@ -115,6 +115,8 @@ def main() -> None:
     ap.add_argument("--effort", default="high", choices=["low", "medium", "high", "xhigh", "max"])
     ap.add_argument("--model", default="gpt-6-astra")
     ap.add_argument("--no-reasoning", action="store_true", help="for models that reject the param")
+    # Routes differ on reasoning: deepseek rejects `summary`, qwen rejects effort "high".
+    ap.add_argument("--no-summary", action="store_true", help="for routes that reject reasoning.summary")
     args = ap.parse_args()
 
     # A non-default model is a rehearsal: tag its files so they cannot clobber the real run.
@@ -128,7 +130,9 @@ def main() -> None:
         "input": messages,
     }
     if not args.no_reasoning:
-        payload["reasoning"] = {"effort": args.effort, "summary": "auto"}
+        payload["reasoning"] = {"effort": args.effort}
+        if not args.no_summary:
+            payload["reasoning"]["summary"] = "auto"
     prev = prior_response_id(args.phase) if not suffix else None
     if prev:
         payload["previous_response_id"] = prev

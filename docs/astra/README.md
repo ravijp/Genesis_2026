@@ -79,6 +79,33 @@ read from `C:\tmp\astra_key.txt` and is never committed.
 | Price in / out / cached | **$10 / $50 / $1** per million |
 | Reasoning | `reasoning.effort` — `low, medium, high, xhigh, max`; default `medium` |
 
+## Access reality — checked 2026-09-11, and it is not what the credit page implies
+
+**`gpt-6-astra` could not be called.** A `$1` card verification is **not** spendable credit: every paid
+model returns `429 insufficient_quota` with `model_requires_purchase`. Probing 35 models — the frontier
+tier of every provider on the gateway, *and* every model whose slug ends `-free` — found exactly **four**
+callable, which is the same list the 429 error itself names:
+
+| Provider | Model | Notes |
+|---|---|---|
+| DeepSeek | `deepseek-v4.1-flash`, `deepseek-v4-flash` | 1.05M context, 393K max output |
+| OpenAI | `gpt-5.6-luna` | reports reasoning tokens |
+| Alibaba | `qwen3.8-27b` | 1M context; bills a trivial amount rather than exactly $0 |
+
+Everything else is gated, **including the explicitly-named `-free` models** — `minimax-m3-free`,
+`nemotron-3-ultra-550b-a55b-free`, `gemma-4-26b-a4b-it-free` and the rest all 429. Do not assume a
+`-free` slug means callable; probe it.
+
+**Per-route parameter quirks cost two wasted calls to find.** The routes disagree about `reasoning`:
+
+| Model | Rejects | Use |
+|---|---|---|
+| `deepseek-v4.1-flash` | `reasoning.summary` | `--no-summary` |
+| `qwen3.8-27b` | `effort: "high"` (allows `low`, `medium`, `xhigh`) | `--effort xhigh --no-summary` |
+| `gpt-5.6-luna` | — | defaults work |
+
+A 400 costs nothing, so probe a new model with a 16-token request before sending the brief.
+
 **Three traps.**
 
 1. **`temperature` and `top_p` are unsupported on this model.** The catalog declares
