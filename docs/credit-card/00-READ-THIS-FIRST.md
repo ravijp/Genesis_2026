@@ -280,6 +280,14 @@ work fixes that.** Which is why I turned the pitch from *a product with a value 
 experiment with a pre-registered criterion and a walk-away.* That's the version a CEO can act on.
 
 **The single best line you have is the one about deliberately not selling to a distressed customer.**
-Distress and life-event signals are blocked in code from feeding any offer. Two executives sitting
-through an AI pitch are waiting for the moment the vendor shows they know where the harm is. Give them
-that moment, unprompted, and most of the rest of the scepticism goes quiet.
+Distress routes to collections and life event to vulnerability — a mapping in code (`TRAJECTORY_TEAM`,
+`schema.py:35-40`) — and **there is no offer mechanism anywhere for either to feed**, because the system
+has no way to contact a customer at all. Two executives sitting through an AI pitch are waiting for the
+moment the vendor shows they know where the harm is. Give them that moment, unprompted, and most of the
+rest of the scepticism goes quiet.
+
+*(**Say it as routing plus absence, never as "blocked in code".** This paragraph said "blocked in code"
+until 2026-09-11 — the exact phrasing trap #5 above exists to stop, eighteen lines further up the same
+page. Found by an outside reviewer reading this file cold, which is precisely the kind of error that
+survives every internal pass. A guard can be switched off and shown; an absent capability cannot be
+either, which is why the true version is the stronger one.)*
