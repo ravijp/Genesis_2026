@@ -113,23 +113,29 @@ def main() -> None:
     ap.add_argument("phase", type=int, choices=[1, 2, 3])
     ap.add_argument("--send", action="store_true")
     ap.add_argument("--effort", default="high", choices=["low", "medium", "high", "xhigh", "max"])
+    ap.add_argument("--model", default="gpt-6-astra")
+    ap.add_argument("--no-reasoning", action="store_true", help="for models that reject the param")
     args = ap.parse_args()
+
+    # A non-default model is a rehearsal: tag its files so they cannot clobber the real run.
+    suffix = "" if args.model == "gpt-6-astra" else f"-{args.model}"
 
     messages = build_input(args.phase)
     payload = {
-        "model": "gpt-6-astra",
-        "reasoning": {"effort": args.effort, "summary": "auto"},
+        "model": args.model,
         "max_output_tokens": 40000,
         "store": True,
         "input": messages,
     }
-    prev = prior_response_id(args.phase)
+    if not args.no_reasoning:
+        payload["reasoning"] = {"effort": args.effort, "summary": "auto"}
+    prev = prior_response_id(args.phase) if not suffix else None
     if prev:
         payload["previous_response_id"] = prev
 
     chars = sum(len(m["content"]) for m in messages)
     est = chars / 4
-    print(f"phase       : {args.phase}   effort: {args.effort}")
+    print(f"phase       : {args.phase}   model: {args.model}   effort: {args.effort}")
     print(f"chains from : {prev or '(none — first call)'}")
     print(f"new input   : {chars:,} chars  ~{est:,.0f} tokens  ~${est / 1e6 * 10:.2f}")
     print("note        : chained calls may re-bill earlier turns; check usage after sending")
@@ -156,16 +162,17 @@ def main() -> None:
         sys.exit(f"HTTP {e.code}\n{e.read().decode()[:2000]}")
 
     RESPONSES.mkdir(exist_ok=True)
-    (RESPONSES / f"phase{args.phase}.json").write_text(json.dumps(body, indent=2), encoding="utf-8")
+    stem = f"phase{args.phase}{suffix}"
+    (RESPONSES / f"{stem}.json").write_text(json.dumps(body, indent=2), encoding="utf-8")
     text = extract_text(body)
-    (RESPONSES / f"phase{args.phase}.md").write_text(text, encoding="utf-8")
+    (RESPONSES / f"{stem}.md").write_text(text, encoding="utf-8")
 
     usage = body.get("usage", {})
     print(f"\ndone in {time.time() - started:.0f}s")
     print(f"response_id : {body.get('id')}")
     print(f"status      : {body.get('status')}")
     print(f"usage       : {json.dumps(usage)}")
-    print(f"answer      : {len(text):,} chars -> responses/phase{args.phase}.md")
+    print(f"answer      : {len(text):,} chars -> responses/{stem}.md")
 
 
 if __name__ == "__main__":
