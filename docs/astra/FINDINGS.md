@@ -1,302 +1,216 @@
-# What the outside read said — 2026-09-11
+# What seven independent reviews said — 2026-09-11
 
-**Total spend: $0.00.** `gpt-6-astra` was never reachable (see `README.md` §access). Everything below
-came from free-tier models, which weakens the *authority* of the result and not its *content* — read it
-as an argument to check, not a verdict to obey.
+**Total spend: $0.055** of the $5.96 balance. `gpt-6-astra` was never reachable (see `README.md`
+§access); four models ran on the gateway's free tier and three ran as subagents. Nothing here is
+authoritative — read it as seven arguments to check, not a verdict to obey.
 
-| Run | Model | State |
+---
+
+## The result in one line
+
+**Seven models read the same neutral brief. Not one chose card attrition.**
+
+None was told what we had picked. None was given our rankings or our reasoning — `brief.md` carries
+facts and no conclusions by design. They were asked what the product should be, and they produced six
+different answers, none of them ours.
+
+| Reviewer | Direction chosen | Route |
 |---|---|---|
-| Phase 1 · 2 · 3 | `deepseek-v4.1-flash` (DeepSeek) | done — the full trajectory |
-| Phase 1 · 2 | `gpt-5.6-luna` (OpenAI) | done — the replication check |
-| Phase 1 | `qwen3.8-27b` (Alibaba) | done — and it went somewhere neither other model did |
+| **Opus** | **Conduct surveillance** — find the *bank's* emerging systemic failures from what unconnected customers say | subagent |
+| Sonnet | Elder / vulnerable-customer exploitation | subagent |
+| Haiku | Complaint escalation | subagent |
+| `deepseek-v4.1-flash` | Elder exploitation / APP fraud | gateway, `high` |
+| `deepseek-v4-flash` | **Pre-delinquency** — the direction we withdrew | gateway, `max` |
+| `gpt-5.6-luna` | Authorized-payment scam, payment-event triggered | gateway, `high` |
+| `qwen3.8-27b` | **None — stop predicting at all.** Serve the memory: agent brief + suppression flag | gateway, `medium` |
+
+*(An eighth, Fable, died on a `429 out of usage credits`.)*
+
+### What that unanimity is and is not worth
+
+**It is not seven independent inventions.** Three landed on fraud-adjacent directions partly because
+direction #5 has the longest profile in `brief.md` — it had the most verified anchors (IC3, FinCEN
+FIN-2022-A002, the Reg E carve-out) and length is itself a signal. I may have pointed at it.
+
+**But the unanimity survives that.** Opus, qwen and haiku ignored those anchors entirely and reasoned
+from the *measurements*, and they still did not pick attrition. And `deepseek-v4-flash` picked
+**pre-delinquency** — the option we formally withdrew — which no amount of brief-emphasis explains,
+since the brief states its opt-in hardship problem and its 4.5× precision sensitivity plainly.
+
+The honest claim: **no reader of the facts alone reconstructs our choice.**
 
 ---
 
-## The one-line result
+## The diagnosis that replicated three times
 
-**All three models threw card attrition away, unprompted.** None was told what we had chosen, none was
-given the option rankings, none was asked to evaluate the choice. They were asked what the product
-should be, and none of them said this one.
+Each of the three models that ran phase 2 — reading our actual working documents *after* committing to
+its own position — independently reached the same finding in different words:
 
-**They did not agree on where to go instead**, and the disagreement is more useful than agreement would
-have been:
-
-| Model | Reframe | Needs a rebuild? |
-|---|---|---|
-| `deepseek` | Elder financial exploitation / APP fraud — a compliance-grade ledger feeding the BSA queue | **Yes** — new signal family, new corpus, new arcs |
-| `luna` | Authorized-payment scam, triggered by a pending payment event | **Yes** — plus real-time payment integration |
-| `qwen` | **Stop predicting anything.** Serve the memory: a pre-call agent brief, and a marketing suppression flag | **No** — reuses the existing demo |
-
-### How much weight the fraud convergence carries — honestly
-
-**Less than it first looks.** Direction #5 has the longest profile in `brief.md`, because it had the
-most verified anchors (IC3, FinCEN's FIN-2022-A002, the Reg E carve-out). Both models leaned on exactly
-those. So the honest claim is *"the best-evidenced option in the brief is not the one we are pitching"*
-— not *"two models independently invented the same idea."* Qwen, which ignored the anchors entirely and
-reasoned from the measurements instead, went somewhere else.
-
----
-
-## The answer that deserves the most attention
-
-`qwen3.8-27b` did something neither other model did: **it read our losing numbers as evidence about
-what the system actually is.**
-
-> *"The system is a faithful, thorough, quote-backed **reader and rememberer**. It is not a good
-> **forecaster**."*
-
-It cites 8th of 9 whole-portfolio, `dumb-ledger` beating the full ledger, and churn intent 1/8 — and
-concludes the problem is not the direction but **the decision to predict at all**. A score goes into
-someone else's model and becomes a feature with a weight of 0.003. So instead:
-
-- **The agent brief** — before the call connects, four items with their verbatim quotes, a flag line,
-  a trajectory note. The agent reads it in ten seconds.
-- **The suppression flag** — written to the CRM's suppression object. *"DO NOT INITIATE MARKETING
-  CONTACT. Reason: customer stated job loss and payment difficulty, 8/14, quote on file."*
-
-**Why this is worth taking seriously for today specifically:**
-
-1. **It needs no back-test, no control group, no 90-day wait, and no precision number.** The value is
-   immediate and observable — the next call goes differently and the next email does not go out. Every
-   evidence problem in `FINDINGS` above simply stops applying.
-2. **It reuses the demo we already have.** Same cardholder, same `$95` fee, same day 0 / 74 / 132 arc.
-   What changes is what the demo *claims*. This is the only one of the three that is actionable in
-   hours rather than weeks.
-3. **It turns our safety property into the product.** No outbound surface stops being a limitation to
-   explain away and becomes the thing being sold: the flag exists to stop the bank's *own* systems
-   contacting a distressed customer. The UDAAP argument becomes the compliance sale.
-4. **It keeps the submitted brief's buyer** — VP/SVP Contact Centre Operations with the CCO as
-   co-signer — which is the one the committee contract actually names, and which both other models
-   discarded.
-
-**Its demo opens by showing what the bank has today:** the CRM record, and one line of history —
-*"7/14, phone, billing inquiry, resolved."* Then: *"That is the bank's entire memory of this
-customer."* The moment is the agent panel appearing, with the day-0 remark's contribution visibly
-grown from 0.12 to 0.47. *"The system changed its mind about the past. It did not predict the future.
-It remembered."*
-
-**And one instruction worth reading twice:** *do not say "agentic."* The track is called client-facing
-agentic AI and the judges will expect the word — qwen argues that using it makes a COO hear "chatbot",
-and that the product is a memory, not an agent.
-
----
-
-## The finding that earned the exercise
-
-Phase 2 is where `deepseek` — having committed in phase 1 without seeing a word of ours — read our
-working documents and diagnosed the pattern:
-
-> **"The measurement gets the skepticism; the strategy gets the confidence."**
-
-It read our own verbs back at us. Around numbers: *corrected · withdrawn · cut · superseded ·
-resequenced*. Around strategic choices: *settled · decided · my recommendation*. Then:
-
-> *"They are scrupulously honest about holes in numbers they can buy their way out of, and evasive
-> about holes in the strategic choices they have settled on."*
-
-It credits the rigour as real — the pre-delinquency withdrawal, the `$6,610` per-borrower catch, the
-SR 11-7 → SR 26-2 correction, publishing the `p=0.076` failure — and then says that rigour is **aimed at
-the recoverable errors and not at the unrecoverable ones.**
-
-### It replicates — and the second model puts it harder
-
-`gpt-5.6-luna` ran the same phase 2 independently and reached the same diagnosis in different words:
-*"The documents repeatedly identify evidence that should change the product decision, then preserve the
-decision anyway."* It lists the pattern as five instances:
-
-| We found | We then did |
+| Model | Its phrasing |
 |---|---|
-| churn intent 1/8 on real card text | kept attrition as the lead |
-| full ledger 8th of 9 arms overall | kept the favourable diffuse stratum as the headline |
-| model reader 5-4-1, `p=1.00` | called it a power failure, kept the offline result |
-| precision unmeasured | still put `$1.65M` in the pitch |
-| latency does not apply to path 1 | kept latency as the headline |
+| `deepseek` | *"The measurement gets the skepticism; the strategy gets the confidence."* |
+| `luna` | *"The team has found a way to make the case for attrition more honest without making it more true."* |
+| `qwen` | *"The self-criticism is aimed at the numbers, not at the architecture."* |
 
-Its closing line is the sharpest sentence either model produced:
+DeepSeek read our own verbs back at us — *corrected, withdrawn, cut, superseded* around every number
+versus *settled, decided, my recommendation* around every strategic choice. Luna listed the pattern as
+five instances: churn 1/8 → keep attrition · 8th of 9 → keep the favourable stratum · `p=1.00` → call it
+a power failure · precision unmeasured → still say `$1.65M` · latency doesn't apply to path 1 → keep
+latency as the headline.
 
-> **"The team has found a way to make the case for attrition more honest without making it more true."**
+**This one cannot be explained by what the brief emphasised**, because the brief contains no
+self-criticism at all. That was the point of writing it that way. Qwen's version is the most actionable:
+we corrected the numbers and never corrected the architecture — *the score is still the product* even
+though the evidence says the score's ranking doesn't work.
 
-Two models, no shared context, same structural finding. That is the strongest result here, and unlike
-the direction convergence it **cannot** be explained by what the brief emphasised — the brief contains
-no self-criticism at all, because that was the whole point of writing it that way.
+And its consequence, which is the sentence to sit with:
 
----
-
-## Three findings that stand on their own, whatever we decide about direction
-
-### 1. The retro property has no user
-
-Training joins `score_at_write`. Inference and the queue use `score_now`. The next agent sees today's
-score. **So the retro column is displayed and never consumed** — it is the demo's mechanism, not the
-product's.
-
-The one user it does have is **point-in-time audit**: *what did you know, and when did you know it?*
-No other feature in a bank answers that. That is a compliance value proposition and it belongs to a
-CCO or BSA Officer, not a retention analyst.
-
-### 2. The demo peaks at the wrong beat
-
-The emotional climax is currently the 58-day gap — **a number we have just told the room we authored.**
-The peak should be the retro column, where a day-31 remark is worth eleven times more on day 79. We
-half-make that switch already (`02-THE-DEMO.md` calls the retro column "the hardest thing to fake") and
-should finish it.
-
-### 3. The sunk cost is the demo itself
-
-> *"Everything downstream of 'we have a strong attrition demo' has been shaped to protect the continued
-> use of that demo… the doc says 'the demo is genuinely strong' as if that settled the direction
-> question, when what it settles is the demo question."*
+> **"The CEO is being asked to fund a test, not to buy a thing. The product has not been sold. It has
+> been proposed."**
 
 ---
 
-## The money argument worth stealing regardless
+## The single best idea: Opus
 
-This is the single most portable thing in the whole read. No chain, no haircuts, no invented rate:
+Read `responses/phase1-opus.md` in full. Its reasoning is the strongest in the set.
 
-> **Reading every conversation your bank records costs about $8,000 a year. The FBI puts the average
-> confirmed elder financial exploitation loss above $38,000. One catch pays for the system five times.**
+**The reframe:** stop predicting one customer's future; detect **the bank's present**. Every large
+remediation has the same shape — customers described the failure to the call centre, individually,
+hundreds of times, for a year; each call handled correctly, refunded, coded generically, closed; nobody
+connecting them; then a regulator connects them and the bank pays redress plus a fine plus a
+forty-contractor eleven-week look-back. *"The bank was told. It kept the transaction and threw away the
+narration."*
 
-Both numbers are either published or already the bank's own. Compare the current chain — five
-multiplicative haircuts to `$1.65M gross` with no false-positive leg, which our own docs concede
-assumes precision is 100%.
+**Why this direction and not another — the argument that makes it stick:**
 
-It also names an asymmetry we never articulated: **a retention false positive annoys a customer; an
-elder false positive costs a specialist a minute and reaches nobody**, because there is no contact
-surface. Same unmeasured precision, very different blast radius.
+> *"Point the machine at the problem where its measured strengths are the requirements and its measured
+> weaknesses are not on the critical path."*
 
-### But the other model says do not say it — and it is right
+Recall 0.6549 · 13 bad quotes in 5,736 · $1.58/1,000 · reproducible to the decimal · point-in-time
+reconstruction — **those are the specifications for a conduct-evidence system.** Calibration, precision
+on a real book, per-customer ranking — the three things we never measured or measured badly — **are not
+required by it at all.**
 
-This is the most useful disagreement in the whole exercise, and it only exists because two models ran.
+**Category: conduct surveillance.** Trade surveillance pointed at customers instead of traders. Nasdaq
+SMARTS, Behavox, Shield, Smarsh already read 100% of employee comms, accumulate per person over time,
+queue to a human with the verbatim message as evidence, and keep an append-only audit trail. That is our
+architecture line for line, aimed at the other population — so the buyer needs no education, the budget
+line exists, and the incumbents don't touch customer conversations.
 
-`gpt-5.6-luna` **revised its own phase-1 position** on exactly this number:
+**The consent finding, which nobody else got and which may decide everything:** recordings made *"for
+quality and training purposes"* genuinely do cover monitoring service quality, complaint handling and
+conduct — that is what the words say. They do **not** cover marketing, cross-sell or retention. So
+conduct is the one direction that fits inside the consent the bank already has; every customer-value
+framing needs a new consent conversation nobody wants to have. **That is an argument about whether the
+deal closes, independent of the model.**
 
-> *"The team is right that the FBI's $7.7 billion and $38,000 average loss are **not bank value**. They
-> are market urgency and societal scale, not the buyer's ROI… I would not lead with 'we save $38,000
-> per victim.'"*
+**The demo is two dates.** *3 March* — when the system would have opened the case. *14 November* — when
+the bank actually found out. **256 days.** Then the accrual in the client's own numbers: 412 customers
+and ~$19K on the first date; 31,000 customers, $3.4M redress, a 21-month look-back by 40 people over 11
+weeks, and a consent order on the second.
 
-**It is correct, and our own `brief.md` already says why:** Reg E (12 CFR §1005.2(m)) does not reach
-*authorised* transfers, and a coached victim authorises their own payments. **The $38,000 is the
-customer's money, not the bank's.** A CFO will get there in one question, and the whole money beat
-collapses on it.
+> *"A finance executive does not have to believe a model to believe a date."*
 
-So: **the structure of the argument survives, the number does not.** What the bank actually saves is
-avoided reimbursement where it bears it, analyst investigation time, conduct and litigation exposure,
-and a BSA obligation it is already funding. The `$8,000` cost line is fine; the `$38,000` has to be
-labelled as the customer's loss and societal scale in the same breath, or dropped.
+**The close:** *"Give me your last five remediations and the date you found each one. In six weeks I'll
+give you five different dates."* — approvable **without believing anything you just said**.
 
-**Neither model would have caught this alone.** One proposed it, the other killed it.
-
----
-
-## Where the two models disagreed
-
-| | `gpt-5.6-luna` | `deepseek-v4.1-flash` | `qwen3.8-27b` |
-|---|---|---|---|
-| Name | Scam Sentinel | Standing Record | **Afterword** |
-| What it outputs | A fraud case before payment release | A case into the BSA queue | **A brief a human reads, and a flag a system enforces** |
-| Trigger | **A pending payment event wakes the memory** | Nightly batch, threshold crossing | The next inbound call |
-| Category | Payment-fraud decisioning (existing) | **"The stated record"** — the fourth source of truth beside transactions, balances and bureau | **"Customer memory"** |
-| Metric | Incremental recall at fixed alert budget | **Warning days** — you cannot A/B a fraud intervention | Handle time, first-call resolution, escalations |
-| Buyer | Head of Payments Fraud | BSA Officer | **VP Contact Centre Ops + CCO** (the submitted brief's own buyer) |
-
-**No single answer is the best one, and the composite is better than any of them:** qwen's *reframe
-away from prediction* removes every evidence problem · luna's *event trigger* is a better wake-up than
-a threshold · deepseek's *warning days* is the right metric for a memory · deepseek's *"the stated
-record"* is the strongest category line anyone wrote.
+**And it converts our worst result into the credibility play:** *we pre-registered whether this memory
+improves per-customer ranking, it does not beat chance, we published it as a failure — which is
+precisely why this product does not rank customers. It counts what customers told you, which is a fact,
+not a forecast.*
 
 ---
 
-## What phase 3 recommends, and the one thing it cannot see
+## The most actionable today: Qwen
 
-**Pivot to elder exploitation and pitch the pivot itself at the gate** — not quietly afterwards,
-because a greenlight given for the old framing buys three weeks of reframing a product nobody approved.
-It calls our reason for holding — *two days out, zero dry runs* — a decision-procedure argument
-promoted to a merit argument.
+Opus's version needs a cluster layer that does not exist (~8 weeks). **Qwen's needs no rebuild.**
 
-**It believes there are two days. The gate is today.** That was not in the brief and it inferred the
-date from our own documents. Authoring a new signal family, re-planting arcs and rebuilding the demo is
-a day of work minimum, so *pivot the demo today* is not on the table.
+It reads our losing numbers as evidence about what the system *is*: *"a faithful, thorough, quote-backed
+reader and rememberer — not a good forecaster."* So stop feeding a propensity model, where the score
+becomes a feature with a weight of 0.003, and serve the memory directly:
 
-What is on the table, given Ravi has said he can ask for more time and this is not the final round:
+- **The agent brief** — before the call connects, four items with verbatim quotes, a flag line, a
+  trajectory note. Read in ten seconds.
+- **The suppression flag** — written to the CRM suppression object. *"DO NOT INITIATE MARKETING CONTACT.
+  Reason: customer stated job loss and payment difficulty, 8/14, quote on file."*
 
-- **The qwen reframe is the only one that fits in hours**, because it reuses the demo that exists and
-  changes what it claims. Same customer, same arc, same screens. It stops claiming prediction and
-  starts claiming memory — which is the one claim every measurement in the repo actually supports.
-- **Fix the demo's peak** — move the climax off the 58-day gap and onto the retro column. Wording only,
-  and all three models independently said to do it.
-- **Add the suppression flag as a beat.** It needs one screen, it converts our safety property from a
-  caveat into a product, and it gives the CCO a reason to co-sign.
-- **Say the 1/8 finding as the reason for the framing**, not as a disclosure. Deepseek's version:
-  *"that is the strongest honest evidence against the direction we were pitching, and it is why we are
-  not pitching it anymore."*
-- **Do not say `$1.65M` as an expected value.** All three said so, in three different ways.
+It costs *"a week of re-authoring plus a day building the suppression flag"* — same engine, same ledger,
+same 908 tests. Output becomes brief-and-flag rather than score-and-queue · buyer becomes Operations and
+the CCO (**the submitted brief's own buyer**) · demo climax becomes the agent's screen rather than the
+score crossing · value becomes operational rather than a four-haircut chain.
+
+Its demo opens on the CRM showing one line of history — *"billing inquiry, resolved"* — and says: **that
+is the bank's entire memory of this customer.**
 
 ---
 
-## What it says to KEEP
+## The best technical argument: Sonnet
 
-Worth reading in full, because a reframe that quietly discards the good parts is the real risk:
+Sonnet made an argument nobody else did, and it is checkable against our own harness.
 
-the deterministic ledger · the four retro fields · the verbatim-quote extractor with its four-word
-boundary match · the deployed pipeline and every reproducibility guarantee · **the reader comparison
-including its losses** — complaint escalation 60/65 and life event 50/68 are the registers grooming
-actually shows up in, so those rows carry into an elder story where churn 40/77 does not · the
-no-autonomous-action property, which becomes *no model-authored accusation* · the test suite · **and
-the SR 26-2 section unchanged**, which it calls the strongest piece of work in the packet.
+**The mechanism's own best-measured property maps onto grooming and not onto attrition.** Never-discard
+beats forgetting **30-0-0 on diffuse** evidence and loses **0-30-0 on concentrated** evidence. Slow
+grooming *is* diffuse — a new online friend in week one, a fee that must be paid first in week three, a
+wire in week five, each utterance harmless and the sequence damning. Attrition is a concentrated ranking
+task, which is exactly where the system underperforms chance at portfolio scale.
 
-## What it says to STOP carrying
-
-The `$1.65M` chain · the 58-day gap as the emotional peak · churn intent as the lead family · the name
-"conversation attrition score" · the pre-delinquency analysis and the 13-alternates document as pitch
-content, both demoted to Q&A.
+Its constraint is the one to carry into any direction: **claim retrieval and memory, never judgment.**
+Agent verdict accuracy ~58% and sub-chance portfolio ranking do not support *"we predict fraud"* — only
+*"we never lose the quiet evidence."*
 
 ---
 
-## Eight things only the second model caught
+## Things that stand regardless of direction
 
-`gpt-5.6-luna`'s phase 2 found these and `deepseek` did not. Several are more actionable than anything
-about direction.
-
-1. **The competition may not permit the CFPB data.** The rules say synthetic or anonymised only.
-   *"Public does not automatically mean compliant with the competition rule."* If it does not qualify,
-   **every card-specific number we have is unusable in the competition** — and that is a
-   submission-control issue, not an evidence footnote. Nobody has checked this.
-2. **We never tested against a competent non-LLM baseline.** Beating 26 hand-tuned regexes proves a
-   model reads better than a deliberately limited pattern matcher. It says nothing against a supervised
-   text classifier, an embedding classifier, the bank's existing speech analytics, or a simple feature
-   built from complaint codes and contact reasons. *"The 'model is the product' line is wrong."*
-3. **Label leakage in the target definition.** "Voluntary closure" is not one event — product change,
-   balance transfer, paydown-to-zero, downgrade, inactivity, fee cancellation all differ. And **a
-   day-132 payoff enquiry may already be a near-outcome signal rather than an early-warning feature.**
-4. **Exporting the feature defeats the no-outbound argument.** Once the score is in a client's feature
-   store, *the client* can use it for offers, pricing or eligibility. Absence of an outbound surface in
-   our system does not constrain what the bank does downstream — that needs purpose limitation and
-   contractual restriction, not architecture.
-5. **The back-test measures predictive lift, not retention lift.** Top-decile uplift against a closure
-   label shows the feature ranks future closures; it does not show that acting on it makes anyone stay.
-   *"The team has quietly converted a causal value claim into a predictive model experiment."* The
-   submitted brief's anchor metric was retention lift against a matched control.
-6. **"Six weeks" is the modelling calendar, not the bank's.** Procurement, data access, privacy review
-   and model-risk intake make it three to six months.
-7. **Wall-clock is not a scientific barrier.** Our reason for not reproducing the 30-seed result with a
-   model reader is 52,000 sequential calls. *"With a year and a real budget, the calls can be
-   parallelised, batched, cached or run on a cheaper model."*
-8. **Deletion is a product blocker, not a Q&A item.** An append-only ledger with no purge means
-   production readiness is **not currently defensible** — and this is not a minor seam in a product
-   whose value depends on retaining quotes indefinitely.
-
-Its verdict on the demo is also more concrete than ours: label the crossing a **mechanism
-demonstration** rather than 58-day early prediction · **add a legitimate twin** with the same fee,
-rewards and APR language who does not leave · show a portfolio queue at fixed review capacity against a
-baseline. *"The current demo makes one authored customer look like a validated use case."*
+1. **The retro property has no user.** Training joins `score_at_write`, inference uses `score_now`, the
+   next agent sees today's score. It is displayed and never consumed — the demo's mechanism, not the
+   product's. Opus names its real user: **point-in-time audit**, *what did you know and when*. Built as
+   a forecasting feature; it is an audit feature, and *"audit features in banks are worth considerably
+   more than forecasting features, because they are bought by people with no alternative."*
+2. **The demo peaks on an authored fixture.** The 58-day gap is a number we told the room we chose.
+   Every model that addressed it said move the climax.
+3. **The sunk cost is the demo itself.** *"Everything downstream of 'we have a strong attrition demo'
+   has been shaped to protect the continued use of that demo."*
+4. **`$1.65M` should not be said as an expected value.** Unanimous, on grounds of the missing
+   false-positive leg.
+5. **Deletion is a production blocker, not a Q&A item.** An append-only ledger with no purge is
+   incompatible with retention schedules and state deletion rights. ~1 week to fix.
+6. **Nobody has checked whether CFPB narratives satisfy the competition's synthetic-or-anonymised
+   rule.** If they don't, every card-specific number is unusable. Submission-control issue.
+7. **We never tested against a competent non-LLM baseline.** Beating 26 hand-tuned regexes says nothing
+   about a supervised classifier or the bank's existing speech analytics.
 
 ---
 
-## Two things it got wrong or thin
+## Where they disagreed, and the disagreement that mattered
 
-- **"No anchor" for complaint escalation is one search short** — it says so itself about our document,
-  and the same applies to its own dismissal. Issuer remediation reserves and complaints-team headcount
-  disclosures are derivable; nobody hunted them.
-- **The unit economics do not close and it admits it.** It proposes a `$150K` floor against a `$7,900`
-  cost of goods, which is 19×, while conceding a regex does 30% of the job. There is a real pricing
-  question here that no one has answered.
+`deepseek` built its money beat on the FBI's $38,000 average elder loss. `luna` **revised its own phase
+1** to reject exactly that: *"the FBI's $7.7 billion and $38,000 average loss are not bank value… I
+would not lead with 'we save $38,000 per victim.'"* Reg E does not reach authorised transfers — **the
+money is the customer's.** Our own brief says so and neither we nor deepseek joined it up.
+
+**One model proposed the argument and another killed it. Neither would have caught it alone.** That is
+the strongest case for having run more than one.
+
+`deepseek-v4-flash` also picked **pre-delinquency**, which we withdrew — worth reading as a challenge to
+that withdrawal, not a refutation of it.
+
+---
+
+## What I would do with this
+
+**Before the gate**, only the wording changes are available: move the demo's climax off the 58-day gap ·
+stop presenting `$1.65M` as expected value · say the 1/8 card result as the *reason* for a framing
+rather than a disclosure · and consider Opus's credibility play, which turns the chance-gate failure
+from a liability into the reason the product doesn't rank customers.
+
+**After it**, the real question is which of three the evidence should decide:
+
+| | Cost | What it buys |
+|---|---|---|
+| **Qwen** — brief + flag | ~1 week | Needs no new evidence at all; every measurement problem stops applying |
+| **Opus** — conduct surveillance | ~8 weeks | The strongest story and the only one whose value chain has no accuracy term |
+| **Sonnet / deepseek** — elder exploitation | ~2 weeks | Best mechanism fit (diffuse), best-sourced anchor, mandatory consuming queue |
+
+All three keep the engine, the ledger, the retro fields, the verbatim-quote contract, the deployed
+pipeline and the test suite. **None of them is a rebuild.**
