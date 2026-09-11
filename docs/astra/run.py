@@ -88,12 +88,13 @@ def build_input(phase: int) -> list[dict]:
     return [{"role": "user", "content": read("docs/astra/ask-phase3.md")}]
 
 
-def prior_response_id(phase: int) -> str | None:
+def prior_response_id(phase: int, suffix: str = "") -> str | None:
+    """Chain to the previous phase of the SAME model — a rehearsal must not chain to Astra's."""
     if phase == 1:
         return None
-    prev = RESPONSES / f"phase{phase - 1}.json"
+    prev = RESPONSES / f"phase{phase - 1}{suffix}.json"
     if not prev.exists():
-        sys.exit(f"phase {phase - 1} has not been run — {prev} is missing")
+        sys.exit(f"phase {phase - 1} has not been run for this model — {prev} is missing")
     return json.loads(prev.read_text(encoding="utf-8"))["id"]
 
 
@@ -133,7 +134,7 @@ def main() -> None:
         payload["reasoning"] = {"effort": args.effort}
         if not args.no_summary:
             payload["reasoning"]["summary"] = "auto"
-    prev = prior_response_id(args.phase) if not suffix else None
+    prev = prior_response_id(args.phase, suffix)
     if prev:
         payload["previous_response_id"] = prev
 
