@@ -6,10 +6,9 @@ as an argument to check, not a verdict to obey.
 
 | Run | Model | State |
 |---|---|---|
-| Phase 1 | `gpt-5.6-luna` (OpenAI) | done |
-| Phase 1 · 2 · 3 | `deepseek-v4.1-flash` (DeepSeek) | done — the full three-phase trajectory |
+| Phase 1 · 2 · 3 | `deepseek-v4.1-flash` (DeepSeek) | done — the full trajectory |
+| Phase 1 · 2 | `gpt-5.6-luna` (OpenAI) | done — the replication check |
 | Phase 1 | `qwen3.8-27b` (Alibaba) | timed out at the gateway twice |
-| Phase 2 | `gpt-5.6-luna` | running |
 
 ---
 
@@ -46,6 +45,28 @@ resequenced*. Around strategic choices: *settled · decided · my recommendation
 It credits the rigour as real — the pre-delinquency withdrawal, the `$6,610` per-borrower catch, the
 SR 11-7 → SR 26-2 correction, publishing the `p=0.076` failure — and then says that rigour is **aimed at
 the recoverable errors and not at the unrecoverable ones.**
+
+### It replicates — and the second model puts it harder
+
+`gpt-5.6-luna` ran the same phase 2 independently and reached the same diagnosis in different words:
+*"The documents repeatedly identify evidence that should change the product decision, then preserve the
+decision anyway."* It lists the pattern as five instances:
+
+| We found | We then did |
+|---|---|
+| churn intent 1/8 on real card text | kept attrition as the lead |
+| full ledger 8th of 9 arms overall | kept the favourable diffuse stratum as the headline |
+| model reader 5-4-1, `p=1.00` | called it a power failure, kept the offline result |
+| precision unmeasured | still put `$1.65M` in the pitch |
+| latency does not apply to path 1 | kept latency as the headline |
+
+Its closing line is the sharpest sentence either model produced:
+
+> **"The team has found a way to make the case for attrition more honest without making it more true."**
+
+Two models, no shared context, same structural finding. That is the strongest result here, and unlike
+the direction convergence it **cannot** be explained by what the brief emphasised — the brief contains
+no self-criticism at all, because that was the whole point of writing it that way.
 
 ---
 
@@ -90,6 +111,28 @@ assumes precision is 100%.
 It also names an asymmetry we never articulated: **a retention false positive annoys a customer; an
 elder false positive costs a specialist a minute and reaches nobody**, because there is no contact
 surface. Same unmeasured precision, very different blast radius.
+
+### But the other model says do not say it — and it is right
+
+This is the most useful disagreement in the whole exercise, and it only exists because two models ran.
+
+`gpt-5.6-luna` **revised its own phase-1 position** on exactly this number:
+
+> *"The team is right that the FBI's $7.7 billion and $38,000 average loss are **not bank value**. They
+> are market urgency and societal scale, not the buyer's ROI… I would not lead with 'we save $38,000
+> per victim.'"*
+
+**It is correct, and our own `brief.md` already says why:** Reg E (12 CFR §1005.2(m)) does not reach
+*authorised* transfers, and a coached victim authorises their own payments. **The $38,000 is the
+customer's money, not the bank's.** A CFO will get there in one question, and the whole money beat
+collapses on it.
+
+So: **the structure of the argument survives, the number does not.** What the bank actually saves is
+avoided reimbursement where it bears it, analyst investigation time, conduct and litigation exposure,
+and a BSA obligation it is already funding. The `$8,000` cost line is fine; the `$38,000` has to be
+labelled as the customer's loss and societal scale in the same breath, or dropped.
+
+**Neither model would have caught this alone.** One proposed it, the other killed it.
 
 ---
 
@@ -148,6 +191,46 @@ the SR 26-2 section unchanged**, which it calls the strongest piece of work in t
 The `$1.65M` chain · the 58-day gap as the emotional peak · churn intent as the lead family · the name
 "conversation attrition score" · the pre-delinquency analysis and the 13-alternates document as pitch
 content, both demoted to Q&A.
+
+---
+
+## Eight things only the second model caught
+
+`gpt-5.6-luna`'s phase 2 found these and `deepseek` did not. Several are more actionable than anything
+about direction.
+
+1. **The competition may not permit the CFPB data.** The rules say synthetic or anonymised only.
+   *"Public does not automatically mean compliant with the competition rule."* If it does not qualify,
+   **every card-specific number we have is unusable in the competition** — and that is a
+   submission-control issue, not an evidence footnote. Nobody has checked this.
+2. **We never tested against a competent non-LLM baseline.** Beating 26 hand-tuned regexes proves a
+   model reads better than a deliberately limited pattern matcher. It says nothing against a supervised
+   text classifier, an embedding classifier, the bank's existing speech analytics, or a simple feature
+   built from complaint codes and contact reasons. *"The 'model is the product' line is wrong."*
+3. **Label leakage in the target definition.** "Voluntary closure" is not one event — product change,
+   balance transfer, paydown-to-zero, downgrade, inactivity, fee cancellation all differ. And **a
+   day-132 payoff enquiry may already be a near-outcome signal rather than an early-warning feature.**
+4. **Exporting the feature defeats the no-outbound argument.** Once the score is in a client's feature
+   store, *the client* can use it for offers, pricing or eligibility. Absence of an outbound surface in
+   our system does not constrain what the bank does downstream — that needs purpose limitation and
+   contractual restriction, not architecture.
+5. **The back-test measures predictive lift, not retention lift.** Top-decile uplift against a closure
+   label shows the feature ranks future closures; it does not show that acting on it makes anyone stay.
+   *"The team has quietly converted a causal value claim into a predictive model experiment."* The
+   submitted brief's anchor metric was retention lift against a matched control.
+6. **"Six weeks" is the modelling calendar, not the bank's.** Procurement, data access, privacy review
+   and model-risk intake make it three to six months.
+7. **Wall-clock is not a scientific barrier.** Our reason for not reproducing the 30-seed result with a
+   model reader is 52,000 sequential calls. *"With a year and a real budget, the calls can be
+   parallelised, batched, cached or run on a cheaper model."*
+8. **Deletion is a product blocker, not a Q&A item.** An append-only ledger with no purge means
+   production readiness is **not currently defensible** — and this is not a minor seam in a product
+   whose value depends on retaining quotes indefinitely.
+
+Its verdict on the demo is also more concrete than ours: label the crossing a **mechanism
+demonstration** rather than 58-day early prediction · **add a legitimate twin** with the same fee,
+rewards and APR language who does not leave · show a portfolio queue at fixed review capacity against a
+baseline. *"The current demo makes one authored customer look like a validated use case."*
 
 ---
 
