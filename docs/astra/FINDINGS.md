@@ -8,24 +8,76 @@ as an argument to check, not a verdict to obey.
 |---|---|---|
 | Phase 1 · 2 · 3 | `deepseek-v4.1-flash` (DeepSeek) | done — the full trajectory |
 | Phase 1 · 2 | `gpt-5.6-luna` (OpenAI) | done — the replication check |
-| Phase 1 | `qwen3.8-27b` (Alibaba) | timed out at the gateway twice |
+| Phase 1 | `qwen3.8-27b` (Alibaba) | done — and it went somewhere neither other model did |
 
 ---
 
 ## The one-line result
 
-**Both models that answered threw away card attrition, unprompted, and landed on scam / elder
-financial exploitation.** Neither was told what we had chosen, neither was told the option rankings,
-and neither was asked to evaluate the choice — they were asked what the product should be.
+**All three models threw card attrition away, unprompted.** None was told what we had chosen, none was
+given the option rankings, none was asked to evaluate the choice. They were asked what the product
+should be, and none of them said this one.
 
-### How much weight that carries — honestly
+**They did not agree on where to go instead**, and the disagreement is more useful than agreement would
+have been:
 
-**Less than it first looks, and still enough to act on.** Direction #5 has the longest profile in
-`brief.md`, because it had the most verified anchors (the IC3 figures, FinCEN's FIN-2022-A002, the Reg E
-carve-out). Both models leaned on exactly those. So this is closer to *"the best-evidenced option in
-the brief is not the one we are pitching"* than to *"two models independently invented the same idea."*
+| Model | Reframe | Needs a rebuild? |
+|---|---|---|
+| `deepseek` | Elder financial exploitation / APP fraud — a compliance-grade ledger feeding the BSA queue | **Yes** — new signal family, new corpus, new arcs |
+| `luna` | Authorized-payment scam, triggered by a pending payment event | **Yes** — plus real-time payment integration |
+| `qwen` | **Stop predicting anything.** Serve the memory: a pre-call agent brief, and a marketing suppression flag | **No** — reuses the existing demo |
 
-That is a weaker claim. It is also still an uncomfortable one, because it is true.
+### How much weight the fraud convergence carries — honestly
+
+**Less than it first looks.** Direction #5 has the longest profile in `brief.md`, because it had the
+most verified anchors (IC3, FinCEN's FIN-2022-A002, the Reg E carve-out). Both models leaned on exactly
+those. So the honest claim is *"the best-evidenced option in the brief is not the one we are pitching"*
+— not *"two models independently invented the same idea."* Qwen, which ignored the anchors entirely and
+reasoned from the measurements instead, went somewhere else.
+
+---
+
+## The answer that deserves the most attention
+
+`qwen3.8-27b` did something neither other model did: **it read our losing numbers as evidence about
+what the system actually is.**
+
+> *"The system is a faithful, thorough, quote-backed **reader and rememberer**. It is not a good
+> **forecaster**."*
+
+It cites 8th of 9 whole-portfolio, `dumb-ledger` beating the full ledger, and churn intent 1/8 — and
+concludes the problem is not the direction but **the decision to predict at all**. A score goes into
+someone else's model and becomes a feature with a weight of 0.003. So instead:
+
+- **The agent brief** — before the call connects, four items with their verbatim quotes, a flag line,
+  a trajectory note. The agent reads it in ten seconds.
+- **The suppression flag** — written to the CRM's suppression object. *"DO NOT INITIATE MARKETING
+  CONTACT. Reason: customer stated job loss and payment difficulty, 8/14, quote on file."*
+
+**Why this is worth taking seriously for today specifically:**
+
+1. **It needs no back-test, no control group, no 90-day wait, and no precision number.** The value is
+   immediate and observable — the next call goes differently and the next email does not go out. Every
+   evidence problem in `FINDINGS` above simply stops applying.
+2. **It reuses the demo we already have.** Same cardholder, same `$95` fee, same day 0 / 74 / 132 arc.
+   What changes is what the demo *claims*. This is the only one of the three that is actionable in
+   hours rather than weeks.
+3. **It turns our safety property into the product.** No outbound surface stops being a limitation to
+   explain away and becomes the thing being sold: the flag exists to stop the bank's *own* systems
+   contacting a distressed customer. The UDAAP argument becomes the compliance sale.
+4. **It keeps the submitted brief's buyer** — VP/SVP Contact Centre Operations with the CCO as
+   co-signer — which is the one the committee contract actually names, and which both other models
+   discarded.
+
+**Its demo opens by showing what the bank has today:** the CRM record, and one line of history —
+*"7/14, phone, billing inquiry, resolved."* Then: *"That is the bank's entire memory of this
+customer."* The moment is the agent panel appearing, with the day-0 remark's contribution visibly
+grown from 0.12 to 0.47. *"The system changed its mind about the past. It did not predict the future.
+It remembered."*
+
+**And one instruction worth reading twice:** *do not say "agentic."* The track is called client-facing
+agentic AI and the judges will expect the word — qwen argues that using it makes a COO hear "chatbot",
+and that the product is a memory, not an agent.
 
 ---
 
@@ -138,17 +190,19 @@ labelled as the customer's loss and societal scale in the same breath, or droppe
 
 ## Where the two models disagreed
 
-| | `gpt-5.6-luna` | `deepseek-v4.1-flash` |
-|---|---|---|
-| Name | Scam Sentinel | Standing Record |
-| Trigger | **A pending payment event wakes the memory** | Nightly batch, threshold crossing |
-| Category | Payment-fraud decisioning (existing category) | **"The stated record"** — the fourth source of truth beside transactions, balances and bureau |
-| Metric | Incremental recall at fixed alert budget | **Warning days** — because you cannot A/B a fraud intervention; you will not let half the scams through |
-| Buyer | Head of Payments Fraud | BSA Officer |
+| | `gpt-5.6-luna` | `deepseek-v4.1-flash` | `qwen3.8-27b` |
+|---|---|---|---|
+| Name | Scam Sentinel | Standing Record | **Afterword** |
+| What it outputs | A fraud case before payment release | A case into the BSA queue | **A brief a human reads, and a flag a system enforces** |
+| Trigger | **A pending payment event wakes the memory** | Nightly batch, threshold crossing | The next inbound call |
+| Category | Payment-fraud decisioning (existing) | **"The stated record"** — the fourth source of truth beside transactions, balances and bureau | **"Customer memory"** |
+| Metric | Incremental recall at fixed alert budget | **Warning days** — you cannot A/B a fraud intervention | Handle time, first-call resolution, escalations |
+| Buyer | Head of Payments Fraud | BSA Officer | **VP Contact Centre Ops + CCO** (the submitted brief's own buyer) |
 
-**The best version is a composite**, and neither model proposed it: luna's *payment-event trigger* is a
-better mechanism than threshold-crossing, deepseek's *warning days* is a better metric than lift, and
-deepseek's *"stated record"* is a better category than either product name.
+**No single answer is the best one, and the composite is better than any of them:** qwen's *reframe
+away from prediction* removes every evidence problem · luna's *event trigger* is a better wake-up than
+a threshold · deepseek's *warning days* is the right metric for a memory · deepseek's *"the stated
+record"* is the strongest category line anyone wrote.
 
 ---
 
@@ -165,13 +219,17 @@ a day of work minimum, so *pivot the demo today* is not on the table.
 
 What is on the table, given Ravi has said he can ask for more time and this is not the final round:
 
-- **Pitch the mechanism and name the direction**, using the current demo as the demonstration apparatus
-  while saying plainly which desk the evidence actually points at.
-- **Take the money argument now.** It needs no new build — two published numbers and a division.
-- **Fix the demo's peak** — move the climax from the 58-day gap to the retro column. Wording only.
-- **Say the 1/8 finding as the reason for the direction**, rather than as a disclosure. Phase 3's
-  version: *"that is the strongest honest evidence against the direction we were pitching, and it is
-  why we are not pitching it anymore."*
+- **The qwen reframe is the only one that fits in hours**, because it reuses the demo that exists and
+  changes what it claims. Same customer, same arc, same screens. It stops claiming prediction and
+  starts claiming memory — which is the one claim every measurement in the repo actually supports.
+- **Fix the demo's peak** — move the climax off the 58-day gap and onto the retro column. Wording only,
+  and all three models independently said to do it.
+- **Add the suppression flag as a beat.** It needs one screen, it converts our safety property from a
+  caveat into a product, and it gives the CCO a reason to co-sign.
+- **Say the 1/8 finding as the reason for the framing**, not as a disclosure. Deepseek's version:
+  *"that is the strongest honest evidence against the direction we were pitching, and it is why we are
+  not pitching it anymore."*
+- **Do not say `$1.65M` as an expected value.** All three said so, in three different ways.
 
 ---
 
